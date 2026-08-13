@@ -147,7 +147,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Nav */}
-          <div className="hidden md:flex items-center gap-0.5 xl:gap-1">
+          <div className="hidden lg:flex items-center gap-0 xl:gap-1">
             {directLinks.map((link) => {
               const active = isActiveRoute(link.path);
               return (
@@ -155,7 +155,7 @@ export function Navbar() {
                   key={link.path}
                   to={link.path}
                   className={cn(
-                    "px-3 xl:px-4 py-2 font-medium text-sm xl:text-base transition-colors rounded-md whitespace-nowrap",
+                    "px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors rounded-md whitespace-nowrap",
                     active
                       ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
                       : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
@@ -170,7 +170,7 @@ export function Navbar() {
             <div className="relative group/resources-dropdown">
               <button
                 className={cn(
-                  "flex items-center gap-1 px-3 xl:px-4 py-2 font-medium text-sm xl:text-base transition-colors cursor-default rounded-md whitespace-nowrap",
+                  "flex items-center gap-1 px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors cursor-default rounded-md whitespace-nowrap",
                   isResourcesActive
                     ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
                     : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
@@ -209,7 +209,7 @@ export function Navbar() {
             <div className="relative group/verify-dropdown">
               <button
                 className={cn(
-                  "flex items-center gap-1 px-3 xl:px-4 py-2 font-medium text-sm xl:text-base transition-colors cursor-default rounded-md whitespace-nowrap",
+                  "flex items-center gap-1 px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors cursor-default rounded-md whitespace-nowrap",
                   isVerifyActive
                     ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
                     : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
@@ -248,7 +248,7 @@ export function Navbar() {
             <div className="relative group/team-dropdown">
               <button
                 className={cn(
-                  "flex items-center gap-1 px-3 xl:px-4 py-2 font-medium text-sm xl:text-base transition-colors cursor-default rounded-md whitespace-nowrap",
+                  "flex items-center gap-1 px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors cursor-default rounded-md whitespace-nowrap",
                   isTeamActive
                     ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
                     : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
@@ -287,7 +287,7 @@ export function Navbar() {
             <Link
               to="/about"
               className={cn(
-                "px-3 xl:px-4 py-2 font-medium text-sm xl:text-base transition-colors rounded-md whitespace-nowrap",
+                "px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors rounded-md whitespace-nowrap",
                 isActiveRoute('/about')
                   ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
                   : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
@@ -350,7 +350,7 @@ export function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center gap-2">
+          <div className="lg:hidden flex items-center gap-2">
             <button
               onClick={() => setIsDark(!isDark)}
               className="p-2 rounded-md text-text-muted hover:text-warning hover:bg-black/10 dark:hover:bg-black/5 dark:bg-white/10 transition-colors"
@@ -375,7 +375,7 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-crust border-b border-black/10 dark:border-white/10 overflow-y-auto max-h-[calc(100dvh-80px)]"
+            className="lg:hidden bg-crust border-b border-black/10 dark:border-white/10 overflow-y-auto max-h-[calc(100dvh-80px)]"
           >
             <div className="px-4 py-4 space-y-1">
               {directLinks.map((link) => {
