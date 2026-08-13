@@ -24,6 +24,7 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from '@/components/ui/Logo';
+import { IndependenceDayFlag } from '@/components/ui/IndependenceDayFlag';
 import { useAuth } from '@/contexts/AuthContext';
 
 const directLinks = [
@@ -121,24 +122,29 @@ export function Navbar() {
     <nav className="print:hidden fixed top-0 left-0 right-0 z-50 bg-crust/90 backdrop-blur-md border-b border-black/10 dark:border-white/10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link 
-            to={location.pathname === '/podcast' ? "/podcast" : "/"} 
-            className="group flex flex-col justify-center shrink-0 py-1"
-          >
-            {location.pathname === '/podcast' ? (
-               <div className="flex items-center gap-3">
-                 <span className="font-black text-xl tracking-tight text-text-main group-hover:text-warning transition-colors">Podcast</span>
-               </div>
-            ) : (
-              <div className="flex flex-col items-start">
-                <Logo />
-                <span className="text-[10px] sm:text-[11px] text-text-muted uppercase tracking-widest mt-1 font-bold group-hover:text-warning transition-colors whitespace-nowrap">
-                  Your Partner in Forensic Precision
-                </span>
-              </div>
-            )}
-          </Link>
+          <div className="flex items-center gap-2">
+            {/* Logo */}
+            <Link 
+              to={location.pathname === '/podcast' ? "/podcast" : "/"} 
+              className="group flex flex-col justify-center shrink-0 py-1"
+            >
+              {location.pathname === '/podcast' ? (
+                 <div className="flex items-center gap-3">
+                   <span className="font-black text-xl tracking-tight text-text-main group-hover:text-warning transition-colors">Podcast</span>
+                 </div>
+              ) : (
+                <div className="flex flex-col items-start">
+                  <Logo />
+                  <span className="text-[10px] sm:text-[11px] text-text-muted uppercase tracking-widest mt-1 font-bold group-hover:text-warning transition-colors whitespace-nowrap">
+                    Your Partner in Forensic Precision
+                  </span>
+                </div>
+              )}
+            </Link>
+            
+            {/* Independence Day Animation */}
+            <IndependenceDayFlag />
+          </div>
 
           {/* Desktop Nav */}
           <div className="hidden md:flex items-center gap-0.5 xl:gap-1">

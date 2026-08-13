@@ -1,9 +1,7 @@
-name = "neo-forenclue"
+name = "new-forenclue"
 compatibility_date = "2026-08-13"
-
-[assets]
-directory = "./dist"
-not_found_handling = "single-page-application"
+pages_build_output_dir = "dist"
 
 [vars]
 NODE_VERSION = "25"
+
