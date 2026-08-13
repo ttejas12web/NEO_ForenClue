@@ -1,0 +1,332 @@
+import { motion } from 'motion/react';
+import { Users, CheckCircle2, Shield } from 'lucide-react';
+import { SEO } from '@/components/layout/SEO';
+
+const activeVolunteers = [
+  { 
+    name: 'Nikitha B', 
+    role: 'Forensic Analyst & Researcher', 
+    institute: 'Amity University',
+    badge: 'Verified Contributor',
+    id: 'FC-VOL-2026-025',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhofilNlkbJWvjAxFLk9i72sbgVT_2SwexBeXssxgZYH1EwiuEsAHceh5ESFONKrPOrvk1n7daXMe8lRVtXMpCtk20vWJC1BdHzG3V3sfQDuiBMD2E4WQYnge_a-ECnx6TSOjMB4s4ZFiEjPZM2WmCMhTeGN6mLT2Qjg333AwuyDoyapc3Vi8u_U6WcF4c/s1280/WhatsApp%20Image%202026-07-21%20at%2019.05.19.jpeg'
+  },
+  { 
+    name: 'Mayur Hangda', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-010',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEhcqG2ZvOSQhc-jnFDMibh5_n-WxbZAdzW5feh4OHlgXjP423kHpZ7j2tgVfC27M-qmRYz0GHK3W52GkHsTzO5oE36F2i4K2y8iDGJiqCU9SElzkpQtkhmMbHrHtbFFzLbbqHwIKesFKWesVpAQFXIoT3zErjnJE-Z9BMNG0_SdI3WhmI7NBs_ZxPswLic'
+  },
+  { 
+    name: 'Kalyani Kumari', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-024',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjuehxkvibikGCm0qLOP1sjl7Ou7wRXIla_fGvD45I-dZMKsQd4qSPfzAoUsZroHrgmtUt54IP_9w2K_gfWAjoO8EWDgM3OOxTnz1ccn2_I9mix6j_Vv3LWYg2doyc6Tllf_NFlDk88-B3w-g1S15ZGUYmGmelXx-K4Uu2oPHk5rLGIn-jQm73RWoYoHsA/s1599/WhatsApp%20Image%202026-07-20%20at%2015.37.50.jpeg'
+  },
+  { 
+    name: 'Sheenal Sharma', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-021',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEidAAeAg6jc08x9t83IfZ2oSvO-7cRgvZDN2wwC1zXXSNX0VzHRvyZnszcuc0z8TXnVGPDQbsOkXAm4daUgNvNjoiiODnVPTnM11LDaGZ2l-4jH51Ph415zlMpB_a6dPaVHXApbe78UiSTEg2q4whJ2XPMb8ABm9TqoseJRZxqQSd5luqJUteIqNDOO0Uw'
+  },
+  { 
+    name: 'Deepanshi Malviya', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-011',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiPBgFaRzm6PvVzor12dmxsoWGZumwmp2fWBfYmUuhrOfiEi4fKpHCuEB6nWh8g3xkINoZEYWx573iZl4gf7Bg4-3LVNZPAS2Tbt2cult8nMup5605reOHB2UjDwEdahylfvhzbF-L9GPAvFaFXfBqY0hokbVcseReWgqLKr9_W9VhPmMX9PD-PHIQTAmM/s593/WhatsApp%20Image%202026-07-20%20at%2018.35.14.jpeg'
+  },
+  { 
+    name: 'Poonam Kumari', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-007',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiIbeGbwnHkAU0OhswCeQNo2HojzYvTAKdNDiWNDfx8Hi3MTqbaI1BmqS4FrgpHXS2DLuHAZZ__NUtsQpEpX5COa-dvEJ1Nbc_ZXnY7rleNrlrRjRZ4gRzI1HRATrhdZXMqp4YXMmFXFSuV8RPUgeaCqJnelwtEB6QsYSo7WS-4gQY9cgLkvkgklIxV4-Q/s1528/WhatsApp%20Image%202026-07-20%20at%2015.28.04.jpeg'
+  },
+  { 
+    name: 'Daniella Acheampong', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-015',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj7NjsynbUNGEHtBcdAbwHvYcI97RxZjC37EFxJEzqjNfOuJoJE7NyqPj1wfF8V5BHp5xcqS05tY_PblKMJ8J5-i38Hh2d-uEvn_MHzo0AtMpXv3zM-qqd8R_hHZ11z48WAKzbwsmMQn9PrB4-IAEGYoDZh5pHKA2RYSzxLkCVU0uHgttUEhU3RToTOzQI/s818/WhatsApp%20Image%202026-07-20%20at%2018.15.07.jpeg'
+  },
+  {
+    name: 'Okorie Ketandu Victory',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-013',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgE7VcpHg85KhrC4rtZL0F5p7UC7dx8E5Wm5MmWld5fPc7pSOG7AwdGokOkA6bQA1iHfkQXE2mOzeNYgFiozJyuML_VWEezpnocni5UndNdSZN6z0LP1guOm5ZycvNwGorhpjA3xSnRDN_fJST-iODVkAA-xlWd6CFvuFJ3dWVQMH-kkd9a0FFu3ZT6apQ/s2560/WhatsApp%20Image%202026-07-21%20at%2012.03.07.jpeg'
+  },
+  {
+    name: 'Jubachukwu Adaeze Blessing',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-019',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgh_iueBO-7X7feaE-FKxU1oktps4zilIyn0s-NlfayYwbmcjlpUMue-20jw0tzhRQqNg7cFxllbvZHb6X90ZBS0bzz81BeUldr2_mCIpfa2UrIev8l0OvNt5td8MyVVTUxzO-g_o1TW0AG-JAiEX-63ZoId_hS8rvTnT5oq25O8OGHvR7ZSUl5RcylhjI/s1280/WhatsApp%20Image%202026-07-21%20at%2012.07.24.jpeg'
+  },
+  { 
+    name: 'Bhumi Gupta', 
+    role: 'Volunteer', 
+    id: 'FC-VOL-2026-042',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEjG6l0uLHM7FnhJ3xpGVZ6a5mZ5OtU396_4r85mGdC4IC7MOMtNOms7gErM1_T6_kUZJG45mjkez4f55K_wtRwrZHWTsBAGlKJZx-Sarm-h7itNybfxLSYJuuPX9WJyeHEdCT2Q1TYudwCv3rwyAG-GPJTN5Mf3_fn6_W1KOlb9rjboyGzt1Wh7nfn5900'
+  },
+  {
+    name: 'Sarannya Mukherjee',
+    role: 'Volunteer',
+    id: 'FC-VOL-2026-037',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEi5724LwsrX1qyvXG8mIGKb8knyxkungS3jl-ymd8jqh9KqRxSFUzY9dEMn4wG0zejHMJvcRFC07DhYRF9y4C6FmIGgHGGwaMM-GTpiJ9Wvb610BlVhzFN0baRAezZ--1pYmpYBkKnGGqTmM81UNGYdSEI8rLQYb0SjesdGmnhVZ59H7-VtZ41Z2BuIuMo'
+  },
+  {
+    name: 'ARSHIN AJESH O M',
+    role: 'Volunteer',
+    id: 'FC-VOL-2026-041',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEj5yKI7fOVi07MWv-kfd_DPaSkZykYxGj94j9I8nCnMwg87svIp23JAygMoNFUUlBcPf_7U6y3-HFeHjswYQZ8uypmsSuionbdTZ7KSwq39SAN3XYxf5k28HJQyw1Ik-iwotACKQrDVHE5aTpNpX-H_RZxc41gfhthciJVHSPj0p_AC5UE14O20NVbwdm0'
+  },
+  { 
+    name: 'Akshat Dubey', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-002',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg05f4gjDDi6aXxKjisOyunf7i7gs_QooVdhQjCuia8fUcr7Z163SOYlXJXKezWDKoskumVkL8KEw-TgdTuuK7ho4jO1hou-5SvcTXNTKQrJx8UMi7_UIlehyphenhyphen_Ok0gCZGpmI2dkVnMHXA0ummzj6T2BacpwZl3sszoQcHE4eZhkFFdzE0ynQcXwAvJ_UC8/s3184/WhatsApp%20Image%202026-07-20%20at%2018.03.52.jpeg'
+  },
+  { 
+    name: 'Ashmita Mondal', 
+    role: 'Content & Research Analyst', 
+    id: 'FC-VOL-2026-004',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEg-zkKV5Tj2dgMMuKoR5LjolXH933bZhCNtB4utipWa4aZYCkqHNjfLXYlRHQtjWbd9QvYSCpwEayct4L0qx56o1jG2flQQM8umJrA1sKtQJ5VhSEQgUaRcF4KHrzMgwruxk2DjlFhmSEi6hF8RzDkpHEmHS_dv_PvH6QVm8GDdiVrfGE2xHAv5yw5sqyc/s800/WhatsApp%20Image%202026-07-20%20at%2015.33.04.jpeg'
+  },
+  { 
+    name: 'Kailash Kaverappa', 
+    role: 'Cyber Security Specialist', 
+    id: 'FC-VOL-2026-018',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi1MG8ta4FQ_e8AldwfTKHRJPg9hoR9WkK2Uq564BcyYFpnTEtce_of4s_OUj25np6AQotVmLtfiWklmvDEwvzmcM1KVPViE0j8eCCsGZsz-LW0oV66pjZeLil9sPzIO-19wsyENCf0-8UCxrV_wd1gpwjciGl2CdYi-9zQtLnBizmV3w3kyqHMGzXASbA/s531/WhatsApp%20Image%202026-07-20%20at%2015.28.41.jpeg'
+  },
+  { 
+    name: 'Vaishnavi Harpale', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-006',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhXOLO7xQbQGkj50IJiAEQl2_umbgwl4_ctOvQtxc5hyr3SAaoupAY1XzydJdG52H8GT65jviaQjECXYR0jgpa52cj19W3mfrLwK8w42n6RK3W1g66rpg4kWNgUbetdEL_rRq6r7z9R5_W5mgFmxgqq3QxBd-GhsBjrFVBFBYdgGFJPlxYUASsozrtTRtg/s3593/TBP_5.jpeg'
+  },
+  { 
+    name: 'Nehal Rajput', 
+    role: 'Senior Research Analyst', 
+    id: 'FC-VOL-2026-001',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhdEP3_ff3FV7wwrQ-Q58LYaMTZR7md85f5yna7kDLe3tdHLnHHiWFYwR0w_l8MOSnUdzoZluSd_2plJUoswLZ7y-bV2pKG0GxU1glO3w3HfnGrVbJ2lFyhaL58pSiuYUdPM4KXq_gUCzqqPrjBSCXaMO-kYWCiSTUiUgHJELwJ-rhttvH74avKCPPNoko/s1599/WhatsApp%20Image%202026-07-20%20at%2015.39.02.jpeg'
+  },
+  { 
+    name: 'Dolby Harne', 
+    role: 'Forensic Research Associate', 
+    id: 'FC-VOL-2026-016',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhfLdNfmlvifm0TbX_jMZ3w4Hu-B0eHMtzxhmE9E84M7Yv2VLTf6fl9ofyeAMqtXnZrwoZ922dUIVN52PeTQqZ2GVTMTwEZGY9tLtXtMtxFn0587XDwU6OX4ZKNqapc6VFniN1zNGRp6-ObJnlD5-OOrt-NejjhDw09OiYPO2LCsTwX83VbVLn6DkFGJyg/s1600/WhatsApp%20Image%202026-07-20%20at%2020.31.36.jpeg'
+  },
+  {
+    name: 'Okeke Rejoice',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-003',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEh2lfWQbOpyUvbC2hsraNNxni4OWJizFhjEaHqdCHn_DCew5tPHHv3us0A9eYThwvtAYkBVom4Sn3--hI3D2dqmBGxlEQYHOA0oG4TPDNTnmDjCN9xstG4J8M-Cz_6sAKJLIkXRrDLE7WaruEJK4cDLVLaCNnaNvIztSPvP09IEXQB3kr0Ko4sBI1koVuw'
+  },
+  {
+    name: 'Shraddha Kamthe',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-035',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEgYHM-0KLB_YJumDXlqtAN3XOuXm_q8w-cIasuc4L8UujGuFiVG5hrb-D6dSZaKyCtJT3t-0os_qzqHC3xYoMKAKON3Cd593c9PdoGefG7oQctrFQCaCPDerK9sX-y97UksD0rJLzwvUdsKv0SwmbM6F8bjqJgRLB6NDaQfzmdlaX7GS3OABdOulADEpxM'
+  },
+  {
+    name: 'Madhura Arvind',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-033',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEioG8W7322QT-IP28v_-3DdO3mX02sFdRiMZJGrqcJHjBNgA1qmMpd0v3sOwMSTG5bsVTagFX_o0lTuKryB2haxuXtGGxEEL-CfdnbCsSA2lXpvdKZwtLvjTPXpjRwxkyZG5nRH5JX9RnJ3F_cLCgMl-hiuotmaULu_O7LgGv2pu_J7N0HUEioqfWglLC4'
+  },
+  {
+    name: 'Donaldson',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-038',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEiHqRTOGsomv5-TjBUebpTCJInPO4fSUdb70nTpx_ewAmwQyk0XF0CLSS0UOZfa-Vp5kBd55z61YvHLeX4YlM1fCB6feCaFjR9H21QJTq-82TkJapy5UixmuezPE0UPnLdutVQD3tvmZ1DCpueqeollI4pVVG5Uo3lxkS4rcrXGl7AKk3bTljTiUhq2H2E'
+  },
+  {
+    name: 'Anjali Chaudhary',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-032',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgAi9yJzaBOhUlhbvDjFetzJpf2uwbWqxwjssctgYoUpfZ8q93QUjFNCYVKRxkm-38-BDkwAUh1EsI7mUKdsO9xMDZc_t45dPae8mSrwk19UC3sUPZUAvrNtXr1ATM6Rn4wajv6IJieK42m9C_QPQ7Y3IbU7J9mfK_zJRPUzQNWSIjdjVLpeAHQpLwkjj4/s962/Screenshot%202026-08-07%20at%207.36.45%E2%80%AFPM.png'
+  },
+  {
+    name: 'Adebayo Kehinde',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-029',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEjng9ACXuQ2Iy2TGz3vpaM2o0uWdDm3YVMAk1rULLiAZywRJOoktWVMxiYhwq546gpVCyEn_TpJp7gvPxQHV_WAT2sRPJvMNe8uupRssB7rUa8AIbyNWNwv1253Jit2Llg0-9PjOpHxxrB1CgyUzNLF4dkeG1yGVrpUt_nzLeHpzO0o7SojbMgSNyEhbmg'
+  },
+  {
+    name: 'Pranav Kale',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-027',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEglbMaPKjUEnGzxCKf6Zi4SngP7TdlJ5B20dgg1-lU65kefVlwmsj3R6aPEXs62AmESwjFA2edK9ihg9i2MggaWeLxHH4i8TD2qOjyLXShHoceayRCFA-53FyAn8ZPsk3C9qd9l7xSJj9k5L86zmu8FbLp4Jorggd6BRHKz6HxQJlHHcFcHZ5MfaT-ehy0'
+  },
+  {
+    name: 'Aayna Mohanty',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-034',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEjDgqH71PwpJkbImhmxktPJQJmUqg1hVsEdGitDoCa4C4d8Ex_5kJnXOpXPdGuvrleWDO9y3tzHshK43PiQCLk5T_AgVT5AFiHD_e-OMO0_yBnT6SaH46GLN_TuZ4bqiCxa7dfw1wXr06WGRFdAFAyC07xL9S3Zoxu9hRjjGMzkFDWw-TCYAs0a9s9Qf2M'
+  },
+  {
+    name: 'Navina Nathan',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-026',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEhSmi6R8NG44ZIkt-lXxCnkwehvvzbqGFIhpGRcIZb_IaEmdIOCNTzkVqcK7h5yepPVmUqJsTxpTGGZJd7jML4OZ2_H42saENcasy4Ut0aRc-4vSwYGcrZblVvafEfpv5oUo3iEUXBv4XHw7a5FoBpfw9I0PLGNTcnQqX3zVv9oMMFWR7zUDUkQ1VmRGww'
+  },
+  {
+    name: 'Kaashiha S U',
+    role: 'Forensic Research Associate',
+    id: 'FC-VOL-2026-036',
+    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEje4Z7HVU19rpFN0-y_0emVkQl8hzygVJzL5uTpyIQRxSicLm_RG55KO_SKWP8ldPxO1N16T_9vEd2GkqAAT4QhFe8Vc8G9BgqoOCsa-d7NxqY-np6dtaEx5j_2iCvCAsoy2xg4v2es3-DDO2ssbie8VBOQxW1k_c49mVh3aHZoIUx509NsFWzDzq1ZDfE'
+  }
+];
+
+export default function Volunteers() {
+  const volunteerSchemas = activeVolunteers.map(vol => ({
+    '@type': 'Person',
+    '@id': `https://www.forenclue.in/volunteers#${vol.id}`,
+    'name': vol.name,
+    'jobTitle': vol.role,
+    'memberOf': {
+      '@type': 'Organization',
+      '@id': 'https://www.forenclue.in/#organization',
+      'name': 'ForenClue'
+    },
+    'image': vol.image,
+    'identifier': vol.id,
+    ...(vol.institute ? { 'alumniOf': { '@type': 'Organization', 'name': vol.institute } } : {})
+  }));
+
+  return (
+    <div className="min-h-screen bg-base relative overflow-hidden">
+      <SEO 
+        title="ForenClue Volunteer League | Precision Mentorship"
+        description="Join the ForenClue Global Volunteer Program. Work alongside expert forensic examiners, contribute to cases, and receive certified career mentorship."
+        keywords="forensic volunteer, forensic science internship, cyber forensics community, forensic education, ForenClue career"
+        image="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgKXJQb5UkVJcbG4a0rTFiNdhEa1wfFDfbew92r5tR1XXbYUkW7AbdMR_MSFwgCJg1zsDwpJX3jVns0as8FzPWrcK_SqiR9c-ah5jHmHksFm2AmiHtC46umM02LTfmeBBoxOjTRJnAzl6gW1dLY0AmDpDdQw2tl1L2D0R_hFonlFjnoNf22TNpbh9Hz9Kw/s1884/Screenshot%202026-07-20%20at%2012.06.52%E2%80%AFAM.png"
+        customSchema={volunteerSchemas}
+      />
+
+      {/* Cyber Grid Background */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-10 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-[35rem] z-0 opacity-30 pointer-events-none">
+        <div className="absolute top-[-10%] left-[10%] w-[25rem] h-[25rem] rounded-full bg-warning/5 blur-[100px]" />
+        <div className="absolute top-[40%] right-[10%] w-[28rem] h-[28rem] rounded-full bg-warning/5 blur-[120px]" />
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 py-16 relative z-10 pt-10 sm:pt-16">
+        {/* Header */}
+        <div className="text-center max-w-3xl mx-auto mb-16">
+          <motion.div
+            initial={{ opacity: 0, y: -15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="relative inline-block mb-6 group mx-auto"
+          >
+            {/* Ambient background glow */}
+            <div className="absolute inset-0 bg-warning/20 rounded-full blur-xl scale-95 opacity-75 group-hover:scale-105 transition-all duration-500" />
+            
+            <div className="relative w-36 h-36 mx-auto rounded-full overflow-hidden flex items-center justify-center p-2 bg-surface/40 backdrop-blur-sm border border-warning/20">
+              <img 
+                src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhng-MXzvpUPOTyJVM2FmjmzGdmvjTSkeZ7vcI0q-_PHyUk-coH-GCe4yFaAuwKySjVDD2LBWQXgYj5yfm5xLt_Pk2ujBmdcHY15RYx8Ozp-EP1KSGJcbxY4_tz0wYW2FfhT05OUvE0GcaGGGbm4Uav6v7l6rsN_Vlj-ip7KJogy0DD-SO0d6CiwjCh_PA/s1024/f66d107f-b714-43eb-834b-d2c97483071b.png" 
+                alt="ForenClue Verified Volunteer Badge" 
+                className="w-full h-full object-contain relative z-10"
+                referrerPolicy="no-referrer"
+              />
+              
+              {/* Infinite diagonal shine sweep */}
+              <motion.div 
+                className="absolute top-0 bottom-0 w-1/2 bg-gradient-to-r from-transparent via-white/25 to-transparent -skew-x-12 z-20"
+                initial={{ left: '-100%' }}
+                animate={{ left: '200%' }}
+                transition={{
+                  repeat: Infinity,
+                  repeatType: "loop",
+                  duration: 2.5,
+                  ease: "easeInOut",
+                  repeatDelay: 1.5
+                }}
+              />
+            </div>
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl sm:text-6xl font-heading font-black tracking-tight uppercase text-text-main mb-6"
+          >
+            ForenClue <span className="text-transparent bg-clip-text bg-gradient-to-r from-warning to-warning-dark">Volunteers</span>
+          </motion.h1>
+        </div>
+
+        {/* Verified Volunteer Directory */}
+        <div className="mb-20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {activeVolunteers.map((vol, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, scale: 0.75, y: 40 }}
+                whileInView={{ opacity: 1, scale: 1, y: 0 }}
+                viewport={{ once: true, margin: "-30px" }}
+                whileHover={{ scale: 1.03, y: -8 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ 
+                  delay: (idx % 6) * 0.07, 
+                  type: "spring", 
+                  stiffness: 260, 
+                  damping: 18 
+                }}
+                className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6 relative group hover:border-warning/50 hover:shadow-[0_20px_35px_-10px_rgba(0,0,0,0.5),_0_0_30px_rgba(217,119,6,0.18)] transition-all duration-300 shadow-xl flex flex-col items-center text-center justify-between cursor-pointer"
+              >
+                {/* Status Indicator */}
+                <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-mono uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Active
+                </div>
+
+                <div className="absolute top-4 right-4 text-warning bg-warning/5 border border-warning/10 p-1.5 rounded-full">
+                  <Shield size={14} className="stroke-[2.5]" />
+                </div>
+
+                {/* Profile Image / Avatar */}
+                <div className="mt-4 mb-5 relative">
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-warning/30 bg-base/80 flex items-center justify-center relative shadow-lg group-hover:border-warning transition-colors duration-300">
+                    {vol.image ? (
+                      <img 
+                        src={vol.image} 
+                        alt={vol.name} 
+                        className="w-full h-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-warning/10 to-warning/5 flex flex-col items-center justify-center relative">
+                        <Users className="text-warning/30 w-8 h-8" />
+                        <span className="absolute bottom-2 text-[9px] font-mono text-warning/60 font-bold uppercase">SECURE</span>
+                      </div>
+                    )}
+                  </div>
+                  {/* Digital Verification Check */}
+                  <div className="absolute -bottom-1 right-2 bg-warning text-base-dark w-6 h-6 rounded-full flex items-center justify-center border-2 border-surface shadow-md">
+                    <CheckCircle2 size={12} className="stroke-[3]" />
+                  </div>
+                </div>
+
+                {/* Info */}
+                <div className="space-y-2.5 w-full">
+                  <div>
+                    <h3 className="text-base font-heading font-black uppercase text-text-main group-hover:text-warning transition-colors tracking-tight">
+                      {vol.name}
+                    </h3>
+                    <p className="text-[10px] font-mono text-warning font-bold uppercase tracking-widest mt-0.5">
+                      {vol.id}
+                    </p>
+                  </div>
+
+
+                </div>
+
+                {/* Verification Status */}
+                <div className="w-full border-t border-black/5 dark:border-white/5 pt-3 mt-4 flex items-center justify-center text-[9px] font-mono text-text-muted/60">
+                  <span className="uppercase text-emerald-500/80 font-bold">VERIFIED VOLUNTEER</span>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

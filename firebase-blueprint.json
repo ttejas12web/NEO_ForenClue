@@ -1,0 +1,349 @@
+{
+  "entities": {
+    "User": {
+      "title": "User Profile",
+      "description": "User account, progress, and community data",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "mobileNumber": { "type": "string" },
+        "universityName": { "type": "string" },
+        "studyingYear": { "type": "string" },
+        "educationLevel": { "type": "string" },
+        "achievementTags": { "type": "array", "items": { "type": "string" } },
+        "purchasedCourses": { "type": "array", "items": { "type": "integer" } },
+        "bookmarks": { "type": "array", "items": { "type": "integer" } },
+        "lessonBookmarks": { "type": "object" },
+        "wishlist": { "type": "array", "items": { "type": "integer" } },
+        "doubtsCount": { "type": "integer" },
+        "commentsCount": { "type": "integer" },
+        "progress": { "type": "object" },
+        "quizScores": { "type": "object" },
+        "careerSpeciality": { "type": "string" },
+        "careerQuizAnswers": { "type": "array", "items": { "type": "string" } }
+      },
+      "required": ["uid", "email", "createdAt"]
+    },
+    "Doubt": {
+      "title": "Community Doubt",
+      "description": "A user-posted forensic question or observation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "content": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "category": { "type": "string", "enum": ["General", "DNA Analysis", "Fingerprinting", "Digital Forensics", "Ballistics", "Crime Scene Investigation", "Toxicology"] },
+        "likes": { "type": "array", "items": { "type": "string" } },
+        "resolved": { "type": "boolean" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "content", "authorId", "createdAt"]
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "A reply to a community doubt",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "content", "authorId", "createdAt"]
+    },
+    "Report": {
+      "title": "Incident Report",
+      "description": "A report filed against harmful content",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetType": { "type": "string", "enum": ["doubt", "comment"] },
+        "reporterId": { "type": "string" },
+        "reason": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "targetId", "targetType", "reporterId", "createdAt"]
+    },
+    "CourseStat": {
+      "title": "Course Stat",
+      "description": "Stores dynamic statistics for courses such as enrolled students",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "integer" },
+        "students": { "type": "integer" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["courseId", "students"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "Admin dynamically publishable courses",
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "price": { "type": "integer" }
+      },
+      "required": ["id", "title", "description", "price"]
+    },
+    "EBook": {
+      "title": "E-Book",
+      "description": "Library and reference books and documents",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "pdfUrl": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "author": { "type": "string" },
+        "year": { "type": "string" },
+        "category": { "type": "string" },
+        "tabCategory": { "type": "string" },
+        "type": { "type": "string" },
+        "size": { "type": "string" },
+        "desc": { "type": "string" },
+        "uploaded": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" }
+      },
+      "required": ["title", "pdfUrl"]
+    },
+    "WebsiteText": {
+      "title": "Website Text Copy",
+      "description": "Dynamic web copy mapped by page IDs",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" }
+      },
+      "required": ["text"]
+    },
+    "PodcastEpisode": {
+      "title": "Podcast Episode",
+      "description": "Podcast episode detail block with play source and duration Info",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "coverImage": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "date": { "type": "string" },
+        "duration": { "type": "string" },
+        "durationSec": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "audioUrl"]
+    },
+    "Case": {
+      "title": "Forensic Case Study",
+      "description": "A declassified forensic case file for investigative study",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "summary": { "type": "string" },
+        "details": { "type": "string" },
+        "image": { "type": "string" },
+        "tag": { "type": "string" },
+        "year": { "type": "string" },
+        "location": { "type": "string" },
+        "difficulty": { "type": "string" },
+        "type": { "type": "string" },
+        "status": { "type": "string" },
+        "evidenceLabels": { "type": "array", "items": { "type": "string" } },
+        "forensicTechniques": { "type": "array", "items": { "type": "string" } },
+        "contentImages": { "type": "array" },
+        "attachments": { "type": "array", "items": { "type": "string" } },
+        "createdBy": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "updatedAt"]
+    },
+    "LectureQna": {
+      "title": "Lecture Question and Answer",
+      "description": "A user-submitted question for a specific lecture",
+      "type": "object",
+      "properties": {
+        "courseId": { "type": "string" },
+        "lessonId": { "type": "string" },
+        "content": { "type": "string" },
+        "authorId": { "type": "string" },
+        "authorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["courseId", "lessonId", "content", "authorId", "createdAt"]
+    },
+    "Certificate": {
+      "title": "Certificate",
+      "description": "Verification data for issued certificates by Forenclue",
+      "type": "object",
+      "properties": {
+        "certificateNo": { "type": "string" },
+        "fullName": { "type": "string" },
+        "courseTitle": { "type": "string" },
+        "certificateType": { "type": "string" },
+        "issueDate": { "type": "string" },
+        "imageUrl": { "type": "string" },
+        "pdfUrl": { "type": "string" },
+        "additionalDetails": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["certificateNo", "fullName", "courseTitle", "issueDate", "createdAt"]
+    },
+    "Employee": {
+      "title": "Employee Profile",
+      "description": "ForenClue official employee verification and digital ID profile",
+      "type": "object",
+      "properties": {
+        "employeeId": { "type": "string" },
+        "fullName": { "type": "string" },
+        "position": { "type": "string" },
+        "department": { "type": "string" },
+        "joiningDate": { "type": "string" },
+        "expiryDate": { "type": "string" },
+        "status": { "type": "string", "enum": ["Active", "Suspended", "Expired"] },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "imageUrl": { "type": "string" },
+        "qrCodeUrl": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["employeeId", "fullName", "position", "department", "joiningDate", "expiryDate", "status", "createdAt"]
+    },
+    "Quiz": {
+      "title": "Quiz and Weekly Challenge",
+      "description": "Interactive forensic quiz or weekly timed challenge",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "category": { "type": "string" },
+        "isWeeklyChallenge": { "type": "boolean" },
+        "scheduledStartTime": { "type": "string" },
+        "scheduledEndTime": { "type": "string" },
+        "durationMinutes": { "type": "integer" },
+        "totalPoints": { "type": "integer" },
+        "passingScore": { "type": "integer" },
+        "enrolledUserIds": { "type": "array", "items": { "type": "string" } },
+        "questions": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "createdBy": { "type": "string" }
+      },
+      "required": ["title", "description"]
+    },
+    "QuizAttempt": {
+      "title": "Quiz Attempt Result",
+      "description": "Recorded attempt for a quiz with score and time taken for leaderboard",
+      "type": "object",
+      "properties": {
+        "quizId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "userPhoto": { "type": "string" },
+        "score": { "type": "integer" },
+        "totalPoints": { "type": "integer" },
+        "timeTakenSeconds": { "type": "integer" },
+        "completedAt": { "type": "string" },
+        "answers": { "type": "object" }
+      },
+      "required": ["quizId", "userId", "score"]
+    },
+    "College": {
+      "title": "College or University",
+      "description": "Global directory of forensic science colleges and universities",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "country": { "type": "string" },
+        "state": { "type": "string" },
+        "city": { "type": "string" },
+        "type": { "type": "string" },
+        "website": { "type": "string" },
+        "description": { "type": "string" },
+        "coursesOffered": { "type": "array" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "country", "city"]
+    }
+  },
+  "firestore": {
+    "/colleges/{collegeId}": {
+      "schema": "College",
+      "description": "Global directory of forensic science colleges and universities"
+    },
+    "/quizzes/{quizId}": {
+      "schema": "Quiz",
+      "description": "Administrator created quizzes and weekly challenges"
+    },
+    "/quizAttempts/{attemptId}": {
+      "schema": "QuizAttempt",
+      "description": "User quiz attempt submissions for scoring and leaderboard"
+    },
+    "/employees/{employeeId}": {
+      "schema": "Employee",
+      "description": "Publicly verifiable digital employee credentials"
+    },
+    "/certificates/{certificateId}": {
+      "schema": "Certificate",
+      "description": "Publicly verifiable certificates issued by Forenclue"
+    },
+    "/podcastEpisodes/{episodeId}": {
+      "schema": "PodcastEpisode",
+      "description": "Admin dynamically publishable podcast episodes"
+    },
+    "/cases/{caseId}": {
+      "schema": "Case",
+      "description": "Declassified forensic case documents"
+    },
+    "/lectureQna/{qnaId}": {
+      "schema": "LectureQna",
+      "description": "Course lecture questions"
+    },
+    "/lectureQna/{qnaId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Replies to course lecture questions"
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Custom administrator-controlled investigation courses"
+    },
+    "/ebooks/{ebookId}": {
+      "schema": "EBook",
+      "description": "Reference eBooks listed dynamically in the library"
+    },
+    "/websiteTexts/{textId}": {
+      "schema": "WebsiteText",
+      "description": "Editable content parts on website screens"
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Individual user profiles protected by UID"
+    },
+    "/courseStats/{courseId}": {
+      "schema": "CourseStat",
+      "description": "Public statistics for courses"
+    },
+    "/doubts/{doubtId}": {
+      "schema": "Doubt",
+      "description": "Main community feed of questions"
+    },
+    "/doubts/{doubtId}/comments/{commentId}": {
+      "schema": "Comment",
+      "description": "Replies nested under doubts"
+    },
+    "/reports/{reportId}": {
+      "schema": "Report",
+      "description": "Content reports for moderation"
+    }
+  }
+}

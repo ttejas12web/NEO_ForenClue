@@ -1,0 +1,11 @@
+node_modules
+.env
+dist
+uploads
+*.log
+.DS_Store
+search_keys.txt
+tags.txt
+patch_*
+test_*
+test-*
