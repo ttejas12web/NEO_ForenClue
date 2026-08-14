@@ -1486,8 +1486,8 @@ export default function Admin() {
           size: sizeStr
         }));
         setPdfSuccessText(uploadResult.isFallback 
-          ? `PDF saved offline successfully! (${file.name})` 
-          : `PDF uploaded successfully: ${file.name}`
+          ? `⚠️ PDF saved to local browser offline storage only (localdb). Cloud upload unreachable.` 
+          : `PDF uploaded to R2 storage successfully: ${file.name}`
         );
         setPdfErrorText('');
       } catch (err: any) {
@@ -1520,8 +1520,8 @@ export default function Admin() {
           image: downloadUrl
         }));
         setCoverSuccessText(uploadResult.isFallback
-          ? `Cover image saved offline successfully! (${file.name})`
-          : `Cover image uploaded successfully: ${file.name}`
+          ? `⚠️ Cover image saved to local offline storage only (localdb).`
+          : `Cover image uploaded to R2 storage successfully: ${file.name}`
         );
         setCoverErrorText('');
       } catch (err: any) {

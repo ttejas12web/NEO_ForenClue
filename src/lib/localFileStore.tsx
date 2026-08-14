@@ -122,7 +122,7 @@ const convertToBase64 = (file: File): Promise<string> => {
 };
 
 async function uploadToServerDisk(file: File, cloudPath: string, onStatusChange?: (msg: string) => void): Promise<string> {
-  if (onStatusChange) onStatusChange('Routing upload safely to High-Performance Server storage...');
+  if (onStatusChange) onStatusChange('Routing upload to Cloudflare R2 Object Storage...');
   const base64Data = await convertToBase64(file);
   const response = await fetch('/api/upload', {
     method: 'POST',
@@ -131,21 +131,28 @@ async function uploadToServerDisk(file: File, cloudPath: string, onStatusChange?
     },
     body: JSON.stringify({
       fileName: file.name,
-      fileType: file.type,
+      fileType: file.type || 'application/octet-stream',
       base64Data: base64Data,
       cloudPath: cloudPath
     })
   });
 
-  if (!response.ok) {
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
     const text = await response.text();
-    console.error(`[uploadToServerDisk] Server returned failing status ${response.status}:`, text);
-    throw new Error(`Server side upload pipeline rejected (${response.status}): ${text || response.statusText}`);
+    console.error(`[uploadToServerDisk] Expected JSON response from /api/upload but received ${contentType || 'non-JSON'}:`, text.substring(0, 200));
+    throw new Error(`Cloudflare / Server upload endpoint returned non-JSON response (${response.status})`);
+  }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error(`[uploadToServerDisk] Server returned failing status ${response.status}:`, errorData);
+    throw new Error(errorData.error || `Upload rejected by server (${response.status})`);
   }
 
   const data = await response.json();
   if (data && data.url) {
-    console.log(`[uploadToServerDisk] Successfully uploaded file to server. URL:`, data.url);
+    console.log(`[uploadToServerDisk] Successfully uploaded file to R2 / Server storage. URL:`, data.url);
     return data.url;
   }
   console.error(`[uploadToServerDisk] Server response parsed but missing URL:`, data);
@@ -154,7 +161,7 @@ async function uploadToServerDisk(file: File, cloudPath: string, onStatusChange?
 
 /**
  * Splits a file into ultra-conservative, small chunks (e.g. 300KB each), transfers them individually 
- * using /api/upload-chunk to bypass nginx client_max_body_size limits in preview iframe environment, 
+ * using /api/upload-chunk to bypass reverse proxy request limits, 
  * and gets the final aggregated remote url location back.
  */
 async function uploadChunksToServer(
@@ -163,7 +170,7 @@ async function uploadChunksToServer(
   onStatusChange?: (msg: string) => void
 ): Promise<string> {
   const uploadId = `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
-  const chunkSize = 300 * 1024; // 300KB chunks (highly conservative, well below 1MB nginx reverse proxy cap)
+  const chunkSize = 300 * 1024; // 300KB chunks
   const totalChunks = Math.ceil(file.size / chunkSize);
   
   if (onStatusChange) onStatusChange(`Preparing secure multi-part chunked transfer (${totalChunks} segments)...`);
@@ -198,29 +205,35 @@ async function uploadChunksToServer(
         chunkIndex,
         totalChunks,
         fileName: file.name,
-        fileType: file.type,
+        fileType: file.type || 'application/octet-stream',
         base64Data,
         cloudPath
       })
     });
 
-    if (!response.ok) {
+    const contentType = response.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
       const text = await response.text();
-      console.error(`[uploadChunksToServer] Chunk ${chunkIndex} upload failed with status ${response.status}:`, text);
-      throw new Error(`Slice transmission rejected (Piece ${chunkIndex + 1}/${totalChunks}): ${text || response.statusText}`);
+      console.error(`[uploadChunksToServer] Chunk ${chunkIndex} received non-JSON (${contentType}):`, text.substring(0, 200));
+      throw new Error(`Cloudflare / Server chunk endpoint returned non-JSON response (${response.status})`);
     }
 
-    // If it is the final chunk, parse response to fetch the aggregated relative server path URL
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error(`[uploadChunksToServer] Chunk ${chunkIndex} upload failed with status ${response.status}:`, errorData);
+      throw new Error(errorData.error || `Slice transmission rejected (Piece ${chunkIndex + 1}/${totalChunks})`);
+    }
+
+    // If it is the final chunk, parse response to fetch the aggregated remote url location
     if (chunkIndex === totalChunks - 1) {
       const data = await response.json();
       if (data && data.url) {
         console.log(`[uploadChunksToServer] Success! Server merged all chunks. Result URL:`, data.url);
-        if (onStatusChange) onStatusChange('All segments successfully merged and published on high-speed server!');
+        if (onStatusChange) onStatusChange('All segments successfully merged and published on Cloudflare R2!');
         return data.url;
       }
-      throw new Error('Server merged pieces but failed to return coupled URL directory referencing upload.');
+      throw new Error('Server merged pieces but failed to return URL referencing upload.');
     } else {
-      // Very small delay to allow microtask cycle and prevent browser worker locking
       await new Promise(resolve => setTimeout(resolve, 30));
     }
   }
@@ -253,7 +266,13 @@ export async function uploadFileResilient(
     let serverUrl: string;
     if (fileToUpload.size > 300 * 1024) {
       console.log(`[uploadFileResilient] File size is ${fileToUpload.size} bytes. Utilizing chunked upload pipeline.`);
-      serverUrl = await uploadChunksToServer(fileToUpload, cloudPath, onStatusChange);
+      try {
+        serverUrl = await uploadChunksToServer(fileToUpload, cloudPath, onStatusChange);
+      } catch (chunkErr) {
+        console.warn("[uploadFileResilient] Chunked upload failed, retrying with direct R2 upload pipeline:", chunkErr);
+        if (onStatusChange) onStatusChange('Retrying with direct R2 storage transfer...');
+        serverUrl = await uploadToServerDisk(fileToUpload, cloudPath, onStatusChange);
+      }
     } else {
       console.log(`[uploadFileResilient] File size is ${fileToUpload.size} bytes. Utilizing direct upload.`);
       serverUrl = await uploadToServerDisk(fileToUpload, cloudPath, onStatusChange);

@@ -4,4 +4,9 @@ pages_build_output_dir = "dist"
 
 [vars]
 NODE_VERSION = "25"
+R2_CUSTOM_DOMAIN = "https://www.forenclue.in"
+
+[[r2_buckets]]
+binding = "R2_BUCKET"
+bucket_name = "forenclue"
 
