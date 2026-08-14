@@ -115,8 +115,12 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage = "Operati
 function getApiCandidates(apiPath: string): string[] {
   const cleanPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
   const list: string[] = [cleanPath];
+  const workerBackend = 'https://neo-forenclue.webcreator500.workers.dev';
   const primaryBackend = 'https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
   const devBackend = 'https://ais-dev-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
+
+  // Add Cloudflare Worker endpoint as highest priority edge worker route
+  list.push(`${workerBackend}${cleanPath}`);
 
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     const currentOrigin = window.location.origin;

@@ -86,77 +86,104 @@ function getR2Client(): S3Client | null {
   }
 }
 
-function getR2BucketName(): string {
-  let raw = process.env.R2_BUCKET_NAME || "forenclue";
+function getR2BucketCandidates(): string[] {
+  let raw = process.env.R2_BUCKET_NAME || "neo-forenclue";
   if (raw.includes('.r2.cloudflarestorage.com/')) {
     const parts = raw.split('.r2.cloudflarestorage.com/');
     if (parts[1]) raw = parts[1].split('/')[0];
   }
-  return raw.trim() || "forenclue";
+  const primary = raw.trim() || "neo-forenclue";
+  const candidates = [primary];
+  if (primary === "neo-forenclue") {
+    candidates.push("forenclue");
+  } else if (primary === "forenclue") {
+    candidates.push("neo-forenclue");
+  }
+  return candidates;
 }
 
 async function uploadToR2(buffer: Buffer, objectKey: string, contentType?: string): Promise<string | null> {
   const client = getR2Client();
-  const bucketName = getR2BucketName();
+  const bucketCandidates = getR2BucketCandidates();
 
-  if (!client || !bucketName) {
+  if (!client || bucketCandidates.length === 0) {
     console.log("[Cloudflare R2] R2 S3 API keys not fully configured in Settings (R2_ACCESS_KEY_ID & R2_SECRET_ACCESS_KEY required). Skipping S3 direct R2 upload.");
     return null;
   }
 
-  try {
-    const cleanKey = objectKey.replace(/^\/+/, "");
-    console.log(`[Cloudflare R2] Uploading object "${cleanKey}" (${buffer.length} bytes) to R2 bucket "${bucketName}"...`);
-
-    const command = new PutObjectCommand({
-      Bucket: bucketName,
-      Key: cleanKey,
-      Body: buffer,
-      ContentType: contentType || "application/octet-stream",
-    });
-
-    await client.send(command);
-
-    let domain = process.env.R2_CUSTOM_DOMAIN || "https://www.forenclue.in";
-    if (!domain.startsWith("http://") && !domain.startsWith("https://")) {
-      domain = `https://${domain}`;
-    }
-    domain = domain.replace(/\/+$/, "");
-
-    const publicUrl = `${domain}/${cleanKey}`;
-    console.log(`[Cloudflare R2] Successfully uploaded to R2 Object Storage! Public URL: ${publicUrl}`);
-    return publicUrl;
-  } catch (err: any) {
-    console.error("[Cloudflare R2 Upload Error]:", err);
-    return null;
+  const cleanKey = objectKey.replace(/^\/+/, "");
+  let domain = process.env.R2_CUSTOM_DOMAIN || "https://www.forenclue.in";
+  if (!domain.startsWith("http://") && !domain.startsWith("https://")) {
+    domain = `https://${domain}`;
   }
+  domain = domain.replace(/\/+$/, "");
+
+  let lastErr: any = null;
+
+  for (const bucketName of bucketCandidates) {
+    try {
+      console.log(`[Cloudflare R2] Uploading object "${cleanKey}" (${buffer.length} bytes) to R2 bucket "${bucketName}"...`);
+
+      const command = new PutObjectCommand({
+        Bucket: bucketName,
+        Key: cleanKey,
+        Body: buffer,
+        ContentType: contentType || "application/octet-stream",
+      });
+
+      await client.send(command);
+
+      const publicUrl = `${domain}/${cleanKey}`;
+      console.log(`[Cloudflare R2] Successfully uploaded to R2 Object Storage (bucket: "${bucketName}")! Public URL: ${publicUrl}`);
+      return publicUrl;
+    } catch (err: any) {
+      lastErr = err;
+      const isNoSuchBucket = err?.name === 'NoSuchBucket' || err?.Code === 'NoSuchBucket' || String(err?.message || '').includes('NoSuchBucket');
+      const isAccessDenied = err?.name === 'AccessDenied' || err?.Code === 'AccessDenied';
+      if (isNoSuchBucket || isAccessDenied) {
+        console.warn(`[Cloudflare R2 Warning] Bucket "${bucketName}" returned ${err?.name || 'error'} (${err?.message || 'Access issue'}). Checking fallback bucket candidate...`);
+      } else {
+        console.error(`[Cloudflare R2 Upload Error for bucket "${bucketName}"]:`, err?.message || err);
+      }
+    }
+  }
+
+  console.warn(`[Cloudflare R2] Unable to upload to candidate buckets [${bucketCandidates.join(', ')}]. Falling back to alternate storage.`);
+  return null;
 }
 
 async function deleteFromR2(objectKey: string): Promise<boolean> {
   const client = getR2Client();
-  const bucketName = getR2BucketName();
+  const bucketCandidates = getR2BucketCandidates();
 
-  if (!client || !bucketName) {
+  if (!client || bucketCandidates.length === 0) {
     console.log("[Cloudflare R2] R2 credentials not fully configured. Skipping R2 deletion.");
     return false;
   }
 
-  try {
-    const cleanKey = objectKey.replace(/^\/+/, "");
-    console.log(`[Cloudflare R2] Deleting object "${cleanKey}" from R2 bucket "${bucketName}"...`);
+  const cleanKey = objectKey.replace(/^\/+/, "");
 
-    const command = new DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: cleanKey,
-    });
+  for (const bucketName of bucketCandidates) {
+    try {
+      console.log(`[Cloudflare R2] Deleting object "${cleanKey}" from R2 bucket "${bucketName}"...`);
 
-    await client.send(command);
-    console.log(`[Cloudflare R2] Successfully deleted object "${cleanKey}" from R2 bucket "${bucketName}".`);
-    return true;
-  } catch (err: any) {
-    console.error(`[Cloudflare R2 Delete Error] for object "${objectKey}":`, err);
-    return false;
+      const command = new DeleteObjectCommand({
+        Bucket: bucketName,
+        Key: cleanKey,
+      });
+
+      await client.send(command);
+      console.log(`[Cloudflare R2] Successfully deleted object "${cleanKey}" from R2 bucket "${bucketName}".`);
+      return true;
+    } catch (err: any) {
+      const isNoSuchBucket = err?.name === 'NoSuchBucket' || err?.Code === 'NoSuchBucket';
+      if (!isNoSuchBucket) {
+        console.warn(`[Cloudflare R2 Delete Warning for bucket "${bucketName}"]:`, err?.message || err);
+      }
+    }
   }
+
+  return false;
 }
 
 async function startServer() {
