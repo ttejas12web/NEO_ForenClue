@@ -54,11 +54,19 @@ function getDbAdmin() {
 let _r2Client: S3Client | null = null;
 function getR2Client(): S3Client | null {
   if (_r2Client) return _r2Client;
-  const accountId = process.env.R2_ACCOUNT_ID;
+  
+  let rawAccountId = process.env.R2_ACCOUNT_ID || "2a5149dd1503ffc0beb9c262809e3be0";
+  // Extract clean account ID if full URL was provided
+  if (rawAccountId.includes('.r2.cloudflarestorage.com')) {
+    const match = rawAccountId.match(/https?:\/\/([a-zA-Z0-9_-]+)\.r2\.cloudflarestorage\.com/);
+    if (match) rawAccountId = match[1];
+  }
+  const accountId = rawAccountId.trim();
+
   const accessKeyId = process.env.R2_ACCESS_KEY_ID;
   const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 
-  if (!accountId || !accessKeyId || !secretAccessKey) {
+  if (!accessKeyId || !secretAccessKey) {
     return null;
   }
 
@@ -67,8 +75,8 @@ function getR2Client(): S3Client | null {
       region: "auto",
       endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
       credentials: {
-        accessKeyId,
-        secretAccessKey,
+        accessKeyId: accessKeyId.trim(),
+        secretAccessKey: secretAccessKey.trim(),
       },
     });
     return _r2Client;
@@ -78,12 +86,21 @@ function getR2Client(): S3Client | null {
   }
 }
 
+function getR2BucketName(): string {
+  let raw = process.env.R2_BUCKET_NAME || "forenclue";
+  if (raw.includes('.r2.cloudflarestorage.com/')) {
+    const parts = raw.split('.r2.cloudflarestorage.com/');
+    if (parts[1]) raw = parts[1].split('/')[0];
+  }
+  return raw.trim() || "forenclue";
+}
+
 async function uploadToR2(buffer: Buffer, objectKey: string, contentType?: string): Promise<string | null> {
   const client = getR2Client();
-  const bucketName = process.env.R2_BUCKET_NAME;
+  const bucketName = getR2BucketName();
 
   if (!client || !bucketName) {
-    console.log("[Cloudflare R2] R2 credentials not fully configured (R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET_NAME required). Skipping R2 upload.");
+    console.log("[Cloudflare R2] R2 S3 API keys not fully configured in Settings (R2_ACCESS_KEY_ID & R2_SECRET_ACCESS_KEY required). Skipping S3 direct R2 upload.");
     return null;
   }
 
@@ -117,7 +134,7 @@ async function uploadToR2(buffer: Buffer, objectKey: string, contentType?: strin
 
 async function deleteFromR2(objectKey: string): Promise<boolean> {
   const client = getR2Client();
-  const bucketName = process.env.R2_BUCKET_NAME;
+  const bucketName = getR2BucketName();
 
   if (!client || !bucketName) {
     console.log("[Cloudflare R2] R2 credentials not fully configured. Skipping R2 deletion.");
