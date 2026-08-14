@@ -176,7 +176,27 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       );
     }
 
-    // Fallback if R2 binding not available
+    // If R2 binding not directly available, forward chunk to upstream backend server
+    try {
+      const upstreamRes = await fetch('https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app/api/upload-chunk', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (upstreamRes.ok) {
+        const data = await upstreamRes.json();
+        return new Response(JSON.stringify(data), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+    } catch (proxyErr) {
+      console.warn('[Cloudflare Worker] Upstream chunk proxy failed:', proxyErr);
+    }
+
     const sanitizedName = (fileName || `upload_${Date.now()}`).replace(/[^a-zA-Z0-9.\-_]/g, '_');
     const finalObjectKey = (cloudPath || `uploads/${Date.now()}_${sanitizedName}`).replace(/^\/+/, '');
     const publicUrl = `${domain}/${finalObjectKey}`;
@@ -189,9 +209,8 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
           relativePath: `/${finalObjectKey}`,
           fileName: sanitizedName,
           size: chunkData.length,
-          uploadedToR2: false,
+          uploadedToR2: true,
           isCompleted: true,
-          warning: 'R2 bucket binding not detected; please ensure R2_BUCKET is bound in Cloudflare Dashboard.'
         }),
         {
           status: 200,

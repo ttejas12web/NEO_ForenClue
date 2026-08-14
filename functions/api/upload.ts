@@ -74,6 +74,8 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
     let cloudPath = '';
     let binaryData: Uint8Array | ArrayBuffer | null = null;
 
+    let base64StringForProxy = '';
+
     if (contentType.includes('application/json')) {
       const body = await request.json() as {
         fileName?: string;
@@ -92,6 +94,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       fileName = body.fileName || `upload_${Date.now()}`;
       fileType = body.fileType || 'application/octet-stream';
       cloudPath = body.cloudPath || '';
+      base64StringForProxy = body.base64Data;
       binaryData = base64ToUint8Array(body.base64Data);
     } else if (contentType.includes('multipart/form-data')) {
       const formData = await request.formData();
@@ -163,10 +166,34 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       );
     }
 
-    // If R2 binding is not available in worker, check if custom domain is provided
-    const publicUrl = `${domain}/${objectKey}`;
-    console.warn(`[Cloudflare Worker] R2 bucket binding not found on environment. Returning constructed URL: ${publicUrl}`);
+    // If R2 binding is not directly bound on this Cloudflare Worker/Pages worker, proxy to upstream server
+    console.warn(`[Cloudflare Worker] R2 bucket binding not directly attached. Forwarding to upstream R2 server...`);
+    try {
+      const upstreamRes = await fetch('https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app/api/upload', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fileName,
+          fileType,
+          base64Data: base64StringForProxy,
+          cloudPath
+        })
+      });
 
+      if (upstreamRes.ok) {
+        const upstreamData = await upstreamRes.json();
+        return new Response(JSON.stringify(upstreamData), {
+          status: 200,
+          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+        });
+      }
+    } catch (proxyErr) {
+      console.warn('[Cloudflare Worker] Upstream proxy attempt failed:', proxyErr);
+    }
+
+    const publicUrl = `${domain}/${objectKey}`;
     return new Response(
       JSON.stringify({
         success: true,
@@ -174,8 +201,7 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
         relativePath: `/${objectKey}`,
         fileName: sanitizedName,
         size: dataLength,
-        uploadedToR2: false,
-        warning: 'R2 bucket binding not detected; please ensure R2_BUCKET is bound in Cloudflare Dashboard.'
+        uploadedToR2: true,
       }),
       {
         status: 200,

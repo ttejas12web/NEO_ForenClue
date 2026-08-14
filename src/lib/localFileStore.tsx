@@ -112,6 +112,24 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage = "Operati
   });
 }
 
+function getApiCandidates(apiPath: string): string[] {
+  const cleanPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
+  const list: string[] = [cleanPath];
+  const primaryBackend = 'https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
+  const devBackend = 'https://ais-dev-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
+
+  if (typeof window !== 'undefined' && window.location && window.location.origin) {
+    const currentOrigin = window.location.origin;
+    if (!currentOrigin.includes('asia-southeast1.run.app')) {
+      list.push(`${primaryBackend}${cleanPath}`);
+      list.push(`${devBackend}${cleanPath}`);
+    }
+  } else {
+    list.push(`${primaryBackend}${cleanPath}`);
+  }
+  return list;
+}
+
 const convertToBase64 = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -124,39 +142,51 @@ const convertToBase64 = (file: File): Promise<string> => {
 async function uploadToServerDisk(file: File, cloudPath: string, onStatusChange?: (msg: string) => void): Promise<string> {
   if (onStatusChange) onStatusChange('Routing upload to Cloudflare R2 Object Storage...');
   const base64Data = await convertToBase64(file);
-  const response = await fetch('/api/upload', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      fileName: file.name,
-      fileType: file.type || 'application/octet-stream',
-      base64Data: base64Data,
-      cloudPath: cloudPath
-    })
-  });
+  const endpoints = getApiCandidates('/api/upload');
+  let lastError: any = null;
 
-  const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) {
-    const text = await response.text();
-    console.error(`[uploadToServerDisk] Expected JSON response from /api/upload but received ${contentType || 'non-JSON'}:`, text.substring(0, 200));
-    throw new Error(`Cloudflare / Server upload endpoint returned non-JSON response (${response.status})`);
+  for (const endpoint of endpoints) {
+    try {
+      console.log(`[uploadToServerDisk] Attempting upload to endpoint: ${endpoint}`);
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          fileName: file.name,
+          fileType: file.type || 'application/octet-stream',
+          base64Data: base64Data,
+          cloudPath: cloudPath
+        })
+      });
+
+      const contentType = response.headers.get('content-type') || '';
+      if (!contentType.includes('application/json')) {
+        const text = await response.text();
+        console.warn(`[uploadToServerDisk] Endpoint ${endpoint} returned non-JSON response (${response.status}):`, text.substring(0, 150));
+        throw new Error(`Endpoint ${endpoint} returned non-JSON (${response.status})`);
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.warn(`[uploadToServerDisk] Endpoint ${endpoint} rejected upload (${response.status}):`, errorData);
+        throw new Error(errorData.error || `Upload rejected with status ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data && data.url) {
+        console.log(`[uploadToServerDisk] Successfully uploaded file to R2 storage via ${endpoint}. URL:`, data.url);
+        return data.url;
+      }
+      throw new Error(`Malformed response from ${endpoint}`);
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[uploadToServerDisk] Failed on endpoint ${endpoint}:`, err.message);
+    }
   }
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    console.error(`[uploadToServerDisk] Server returned failing status ${response.status}:`, errorData);
-    throw new Error(errorData.error || `Upload rejected by server (${response.status})`);
-  }
-
-  const data = await response.json();
-  if (data && data.url) {
-    console.log(`[uploadToServerDisk] Successfully uploaded file to R2 / Server storage. URL:`, data.url);
-    return data.url;
-  }
-  console.error(`[uploadToServerDisk] Server response parsed but missing URL:`, data);
-  throw new Error('Malformed server file-upload response');
+  throw lastError || new Error('All R2 upload endpoints failed.');
 }
 
 /**
@@ -172,73 +202,94 @@ async function uploadChunksToServer(
   const uploadId = `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
   const chunkSize = 300 * 1024; // 300KB chunks
   const totalChunks = Math.ceil(file.size / chunkSize);
+  const endpointCandidates = getApiCandidates('/api/upload-chunk');
   
   if (onStatusChange) onStatusChange(`Preparing secure multi-part chunked transfer (${totalChunks} segments)...`);
   console.log(`[uploadChunksToServer] Initiating chunked upload of "${file.name}" (${file.size} bytes). Total pieces: ${totalChunks}`);
 
-  for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-    const start = chunkIndex * chunkSize;
-    const end = Math.min(start + chunkSize, file.size);
-    const chunkBlob = file.slice(start, end);
-    
-    // Progress calculation
-    const percent = Math.round((chunkIndex / totalChunks) * 100);
-    if (onStatusChange) {
-      onStatusChange(`Uploading section ${chunkIndex + 1}/${totalChunks} (${percent}% uploaded)...`);
-    }
+  let lastError: any = null;
 
-    // Convert slice to data URL
-    const base64Data = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error(`Failed to convert slice ${chunkIndex} to Base64`));
-      reader.readAsDataURL(chunkBlob);
-    });
+  // Try endpoint candidates in order
+  for (const chunkEndpoint of endpointCandidates) {
+    try {
+      console.log(`[uploadChunksToServer] Trying chunk upload endpoint: ${chunkEndpoint}`);
+      let endpointSuccess = true;
 
-    const response = await fetch('/api/upload-chunk', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        uploadId,
-        chunkIndex,
-        totalChunks,
-        fileName: file.name,
-        fileType: file.type || 'application/octet-stream',
-        base64Data,
-        cloudPath
-      })
-    });
+      for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
+        const start = chunkIndex * chunkSize;
+        const end = Math.min(start + chunkSize, file.size);
+        const chunkBlob = file.slice(start, end);
+        
+        // Progress calculation
+        const percent = Math.round((chunkIndex / totalChunks) * 100);
+        if (onStatusChange) {
+          onStatusChange(`Uploading section ${chunkIndex + 1}/${totalChunks} (${percent}% uploaded)...`);
+        }
 
-    const contentType = response.headers.get('content-type') || '';
-    if (!contentType.includes('application/json')) {
-      const text = await response.text();
-      console.error(`[uploadChunksToServer] Chunk ${chunkIndex} received non-JSON (${contentType}):`, text.substring(0, 200));
-      throw new Error(`Cloudflare / Server chunk endpoint returned non-JSON response (${response.status})`);
-    }
+        // Convert slice to data URL
+        const base64Data = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error(`Failed to convert slice ${chunkIndex} to Base64`));
+          reader.readAsDataURL(chunkBlob);
+        });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error(`[uploadChunksToServer] Chunk ${chunkIndex} upload failed with status ${response.status}:`, errorData);
-      throw new Error(errorData.error || `Slice transmission rejected (Piece ${chunkIndex + 1}/${totalChunks})`);
-    }
+        const response = await fetch(chunkEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            uploadId,
+            chunkIndex,
+            totalChunks,
+            fileName: file.name,
+            fileType: file.type || 'application/octet-stream',
+            base64Data,
+            cloudPath
+          })
+        });
 
-    // If it is the final chunk, parse response to fetch the aggregated remote url location
-    if (chunkIndex === totalChunks - 1) {
-      const data = await response.json();
-      if (data && data.url) {
-        console.log(`[uploadChunksToServer] Success! Server merged all chunks. Result URL:`, data.url);
-        if (onStatusChange) onStatusChange('All segments successfully merged and published on Cloudflare R2!');
-        return data.url;
+        const contentType = response.headers.get('content-type') || '';
+        if (!contentType.includes('application/json')) {
+          const text = await response.text();
+          console.warn(`[uploadChunksToServer] Chunk ${chunkIndex} received non-JSON (${contentType}) from ${chunkEndpoint}:`, text.substring(0, 150));
+          endpointSuccess = false;
+          break;
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          console.warn(`[uploadChunksToServer] Chunk ${chunkIndex} rejected by ${chunkEndpoint} (${response.status}):`, errorData);
+          endpointSuccess = false;
+          break;
+        }
+
+        // If it is the final chunk, parse response to fetch the aggregated remote url location
+        if (chunkIndex === totalChunks - 1) {
+          const data = await response.json();
+          if (data && data.url) {
+            console.log(`[uploadChunksToServer] Success! R2 merged all chunks via ${chunkEndpoint}. Result URL:`, data.url);
+            if (onStatusChange) onStatusChange('All segments successfully merged and published on Cloudflare R2!');
+            return data.url;
+          }
+          endpointSuccess = false;
+          break;
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 20));
+        }
       }
-      throw new Error('Server merged pieces but failed to return URL referencing upload.');
-    } else {
-      await new Promise(resolve => setTimeout(resolve, 30));
+
+      if (!endpointSuccess) {
+        throw new Error(`Endpoint ${chunkEndpoint} failed to complete chunk transfer.`);
+      }
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`[uploadChunksToServer] Endpoint ${chunkEndpoint} failed:`, err.message);
     }
   }
 
-  throw new Error('Unpredicted flow termination during segment transfer sequence.');
+  throw lastError || new Error('All chunk upload endpoints failed.');
 }
 
 /**
