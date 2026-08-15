@@ -7,6 +7,7 @@ import crypto from 'crypto';
 import admin from 'firebase-admin';
 import { getFirestore } from 'firebase-admin/firestore';
 import fs from 'fs';
+import multer from 'multer';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 import { COURSES } from './src/constants.js';
@@ -997,17 +998,37 @@ async function startServer() {
     }
   });
 
-  // Base64 server disk file upload endpoint for resilient backup
-  app.post("/api/upload", async (req, res) => {
+  const uploadMiddleware = multer({ 
+    storage: multer.memoryStorage(), 
+    limits: { fileSize: 100 * 1024 * 1024 } 
+  });
+
+  // Base64 or FormData server disk file upload endpoint for resilient backup
+  app.post("/api/upload", uploadMiddleware.single("file"), async (req: any, res) => {
     try {
-      const { fileName, fileType, base64Data, cloudPath } = req.body;
-      if (!base64Data) {
-        return res.status(400).json({ error: "Missing base64Data of file." });
+      let fileName = "";
+      let fileType = "application/octet-stream";
+      let cloudPath = "";
+      let buffer: Buffer | null = null;
+
+      if (req.file) {
+        // Multipart/form-data upload
+        fileName = req.file.originalname || `upload_${Date.now()}`;
+        fileType = req.file.mimetype || "application/octet-stream";
+        cloudPath = req.body?.cloudPath || "";
+        buffer = req.file.buffer;
+      } else if (req.body?.base64Data) {
+        // Base64 JSON upload
+        fileName = req.body.fileName || `upload_${Date.now()}`;
+        fileType = req.body.fileType || "application/octet-stream";
+        cloudPath = req.body.cloudPath || "";
+        const base64Clean = req.body.base64Data.replace(/^data:.*?;base64,/, "");
+        buffer = Buffer.from(base64Clean, "base64");
       }
 
-      // Stripping data URL prefix if sent
-      const base64Clean = base64Data.replace(/^data:.*?;base64,/, "");
-      const buffer = Buffer.from(base64Clean, "base64");
+      if (!buffer) {
+        return res.status(400).json({ error: "Missing file or base64Data in upload request." });
+      }
 
       const sanitizedName = (fileName || `upload_${Date.now()}`).replace(/[^a-zA-Z0-9.\-_]/g, "_");
       const objectPath = cloudPath || `uploads/${Date.now()}_${sanitizedName}`;

@@ -145,13 +145,41 @@ const convertToBase64 = (file: File): Promise<string> => {
 
 async function uploadToServerDisk(file: File, cloudPath: string, onStatusChange?: (msg: string) => void): Promise<string> {
   if (onStatusChange) onStatusChange('Routing upload to Cloudflare R2 Object Storage...');
-  const base64Data = await convertToBase64(file);
   const endpoints = getApiCandidates('/api/upload');
   let lastError: any = null;
 
   for (const endpoint of endpoints) {
     try {
       console.log(`[uploadToServerDisk] Attempting upload to endpoint: ${endpoint}`);
+
+      // 1. Try multipart/form-data for high efficiency and minimal RAM usage
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('cloudPath', cloudPath);
+        formData.append('fileName', file.name);
+
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await response.json();
+            if (data && data.url) {
+              console.log(`[uploadToServerDisk] Successfully uploaded file via FormData to ${endpoint}. URL:`, data.url);
+              return data.url;
+            }
+          }
+        }
+      } catch (formErr) {
+        console.warn(`[uploadToServerDisk] FormData attempt failed on ${endpoint}, trying Base64 JSON:`, formErr);
+      }
+
+      // 2. Fallback to Base64 JSON payload
+      const base64Data = await convertToBase64(file);
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
