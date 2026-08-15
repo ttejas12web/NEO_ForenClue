@@ -386,5 +386,16 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if true;
     }
+
+    // Cloud Blobs & PDF Storage Collection (Cross-device cloud binary synchronization)
+    match /_cloud_blobs/{blobId} {
+      allow read: if true;
+      allow create, update, delete: if true;
+
+      match /chunks/{chunkId} {
+        allow read: if true;
+        allow create, update, delete: if true;
+      }
+    }
   }
 }

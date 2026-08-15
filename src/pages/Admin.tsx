@@ -1487,7 +1487,9 @@ export default function Admin() {
         }));
         setPdfSuccessText(uploadResult.isFallback 
           ? `⚠️ PDF saved to local browser offline storage only (localdb). Cloud upload unreachable.` 
-          : `PDF uploaded to R2 storage successfully: ${file.name}`
+          : downloadUrl.startsWith('firestore-blob://')
+            ? `✅ PDF uploaded & synchronized across all devices via Cloud Storage: ${file.name}`
+            : `✅ PDF uploaded to Cloudflare R2 storage successfully: ${file.name}`
         );
         setPdfErrorText('');
       } catch (err: any) {

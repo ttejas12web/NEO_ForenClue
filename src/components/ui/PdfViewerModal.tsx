@@ -91,7 +91,7 @@ export function PdfViewerModal({ isOpen, onClose, resource }: PdfViewerModalProp
 
       const targetUrl = resource.pdfUrl || 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png';
 
-      if (targetUrl.startsWith('localdb://')) {
+      if (targetUrl.startsWith('localdb://') || targetUrl.startsWith('firestore-blob://')) {
         const url = await resolveFileUrl(targetUrl);
         if (active) {
           setResolvedPdfUrl(url);
@@ -270,7 +270,7 @@ export function PdfViewerModal({ isOpen, onClose, resource }: PdfViewerModalProp
       let url = downloadUrl;
       let isBlob = false;
 
-      if (downloadUrl.startsWith('localdb://')) {
+      if (downloadUrl.startsWith('localdb://') || downloadUrl.startsWith('firestore-blob://')) {
         const blob = await localFileStore.getFile(downloadUrl);
         if (blob) {
           url = URL.createObjectURL(blob);

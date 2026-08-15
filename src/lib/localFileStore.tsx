@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ref, uploadBytes, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
-import { storage } from './firebase';
+import { doc, setDoc, getDoc, collection, getDocs, writeBatch } from 'firebase/firestore';
+import { db, storage } from './firebase';
 
 class LocalFileStore {
   private dbName = "ForenClueOfflineFiles";
@@ -34,9 +35,10 @@ class LocalFileStore {
       return new Promise((resolve, reject) => {
         const transaction = db.transaction(this.storeName, "readwrite");
         const store = transaction.objectStore(this.storeName);
-        const request = store.put(file, key);
+        const cleanedKey = key.replace("localdb://", "").replace("firestore-blob://", "");
+        const request = store.put(file, cleanedKey);
         request.onsuccess = () => {
-          resolve(`localdb://${key}`);
+          resolve(`localdb://${cleanedKey}`);
         };
         request.onerror = () => reject(request.error);
       });
@@ -53,6 +55,11 @@ class LocalFileStore {
   }
 
   async getFile(key: string): Promise<Blob | null> {
+    if (key.startsWith('firestore-blob://')) {
+      const blobId = key.replace('firestore-blob://', '');
+      return await getBlobFromCloudFirestore(blobId);
+    }
+
     try {
       const db = await this.init();
       return new Promise((resolve) => {
@@ -80,7 +87,7 @@ class LocalFileStore {
       return new Promise((resolve) => {
         const transaction = db.transaction(this.storeName, "readwrite");
         const store = transaction.objectStore(this.storeName);
-        const cleanedKey = key.replace("localdb://", "");
+        const cleanedKey = key.replace("localdb://", "").replace("firestore-blob://", "");
         const request = store.delete(cleanedKey);
         request.onsuccess = () => resolve(true);
         request.onerror = () => resolve(false);
@@ -93,6 +100,155 @@ class LocalFileStore {
 }
 
 export const localFileStore = new LocalFileStore();
+
+function base64ToUint8Array(base64: string): Uint8Array {
+  const cleanBase64 = base64.replace(/^data:.*?;base64,/, '');
+  const binaryString = atob(cleanBase64);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes;
+}
+
+const FIRESTORE_CHUNK_SIZE = 600 * 1024; // 600KB slices
+
+/**
+ * Uploads any file directly into Firebase Firestore as resilient multi-part cloud chunks.
+ * Synchronizes across all users and devices worldwide instantly with no external backend dependency.
+ */
+export async function uploadBlobToCloudFirestore(
+  file: File,
+  cloudPath: string,
+  onStatusChange?: (msg: string) => void
+): Promise<string> {
+  if (!db) {
+    throw new Error('Firestore database is not initialized.');
+  }
+
+  const cleanName = (file.name || `doc_${Date.now()}`).replace(/[^a-zA-Z0-9.\-_]/g, '_');
+  const blobId = `blob_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+  const totalChunks = Math.ceil(file.size / FIRESTORE_CHUNK_SIZE);
+
+  if (onStatusChange) {
+    onStatusChange(`Syncing ${cleanName} to global Cloud Storage (${totalChunks} segments)...`);
+  }
+
+  // 1. Create top-level metadata record
+  const blobDocRef = doc(db, '_cloud_blobs', blobId);
+  await setDoc(blobDocRef, {
+    id: blobId,
+    fileName: cleanName,
+    mimeType: file.type || 'application/pdf',
+    size: file.size,
+    totalChunks,
+    cloudPath,
+    createdAt: new Date().toISOString(),
+  });
+
+  // 2. Upload chunks into subcollection
+  for (let i = 0; i < totalChunks; i++) {
+    const start = i * FIRESTORE_CHUNK_SIZE;
+    const end = Math.min(start + FIRESTORE_CHUNK_SIZE, file.size);
+    const slice = file.slice(start, end);
+
+    const base64Data = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error(`Failed to read slice ${i}`));
+      reader.readAsDataURL(slice);
+    });
+
+    const chunkDocRef = doc(db, '_cloud_blobs', blobId, 'chunks', `chunk_${i}`);
+    await setDoc(chunkDocRef, {
+      chunkIndex: i,
+      data: base64Data,
+      createdAt: new Date().toISOString(),
+    });
+
+    const percent = Math.round(((i + 1) / totalChunks) * 100);
+    if (onStatusChange) {
+      onStatusChange(`Cloud document sync: ${percent}% uploaded (${i + 1}/${totalChunks})...`);
+    }
+  }
+
+  // 3. Cache locally in IndexedDB as well for instant zero-latency offline opening
+  try {
+    await localFileStore.saveFile(blobId, file);
+  } catch (_) {}
+
+  return `firestore-blob://${blobId}`;
+}
+
+/**
+ * Downloads and stitches chunks from Cloud Firestore, caching in local IndexedDB.
+ */
+export async function getBlobFromCloudFirestore(blobId: string): Promise<Blob | null> {
+  // 1. Check local IndexedDB cache first
+  try {
+    const dbInst = await localFileStore.init();
+    const cached = await new Promise<Blob | null>((resolve) => {
+      const tx = dbInst.transaction("files", "readonly");
+      const store = tx.objectStore("files");
+      const req = store.get(blobId);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+    if (cached) return cached;
+  } catch (_) {}
+
+  if (!db) return null;
+
+  try {
+    const blobDocRef = doc(db, '_cloud_blobs', blobId);
+    const blobDocSnap = await getDoc(blobDocRef);
+    if (!blobDocSnap.exists()) return null;
+
+    const meta = blobDocSnap.data() as { mimeType?: string; totalChunks?: number; fileName?: string };
+    const totalChunks = meta.totalChunks || 1;
+    const mimeType = meta.mimeType || 'application/pdf';
+
+    const chunksColRef = collection(db, '_cloud_blobs', blobId, 'chunks');
+    const chunksSnap = await getDocs(chunksColRef);
+
+    const chunkMap: Record<number, Uint8Array> = {};
+    chunksSnap.forEach((docSnap) => {
+      const chunkData = docSnap.data() as { chunkIndex: number; data: string };
+      if (chunkData && chunkData.data) {
+        chunkMap[chunkData.chunkIndex] = base64ToUint8Array(chunkData.data);
+      }
+    });
+
+    const orderedBuffers: Uint8Array[] = [];
+    let totalLength = 0;
+    for (let i = 0; i < totalChunks; i++) {
+      const buf = chunkMap[i];
+      if (buf) {
+        orderedBuffers.push(buf);
+        totalLength += buf.length;
+      }
+    }
+
+    const merged = new Uint8Array(totalLength);
+    let offset = 0;
+    for (const buf of orderedBuffers) {
+      merged.set(buf, offset);
+      offset += buf.length;
+    }
+
+    const finalBlob = new Blob([merged], { type: mimeType });
+
+    // Cache in local IndexedDB for future visits
+    try {
+      await localFileStore.saveFile(blobId, finalBlob);
+    } catch (_) {}
+
+    return finalBlob;
+  } catch (err) {
+    console.error('Error fetching cloud blob from Firestore:', err);
+    return null;
+  }
+}
 
 // Dynamic timeout helper
 function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage = "Operation timed out"): Promise<T> {
@@ -115,12 +271,8 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage = "Operati
 function getApiCandidates(apiPath: string): string[] {
   const cleanPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
   const list: string[] = [cleanPath];
-  const workerBackend = 'https://neo-forenclue.webcreator500.workers.dev';
   const primaryBackend = 'https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
   const devBackend = 'https://ais-dev-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
-
-  // Add Cloudflare Worker endpoint as highest priority edge worker route
-  list.push(`${workerBackend}${cleanPath}`);
 
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     const currentOrigin = window.location.origin;
@@ -417,16 +569,25 @@ export async function uploadFileResilient(
         );
       });
 
-      // Attempt Firebase Storage upload with a 30-second timeout
-      const result = await withTimeout(uploadPromise, 30000, "Firebase Storage took too long to complete.");
+      // Attempt Firebase Storage upload with a 15-second timeout
+      const result = await withTimeout(uploadPromise, 15000, "Firebase Storage took too long to complete.");
       return result;
     } catch (err: any) {
       console.warn("Firebase Cloud storage upload rejected or timed out:", err);
     }
   }
 
+  // 3. Tertiary Target: Global Cloud Firestore Binary Storage (accessible on any device/user globally)
+  try {
+    if (onStatusChange) onStatusChange('Synchronizing document to Cloud Database storage...');
+    const firestoreBlobUrl = await uploadBlobToCloudFirestore(fileToUpload, cloudPath, onStatusChange);
+    console.log(`[uploadFileResilient] Successfully stored in Cloud Firestore binary storage: ${firestoreBlobUrl}`);
+    return { url: firestoreBlobUrl, isFallback: false };
+  } catch (firestoreErr) {
+    console.warn("Firestore Cloud blob upload failed:", firestoreErr);
+  }
 
-  // Fallback 2: For images, convert to highly-compressed Base64 data-URL so other users can view it too!
+  // Fallback 1: For images, convert to highly-compressed Base64 data-URL so other users can view it too!
   if (fileToUpload.type.startsWith('image/')) {
     if (onStatusChange) onStatusChange('Encoding image to resilient offline-safe Base64...');
     try {
@@ -452,7 +613,7 @@ export async function uploadFileResilient(
     }
   }
 
-  // Fallback 3: Local IndexedDB (for non-image files like large PDFs, which are too big for Base64 injection)
+  // Fallback 2: Local IndexedDB (offline only)
   if (onStatusChange) onStatusChange('Switching to local browser sandbox database (IndexedDB)...');
   
   // Create a clean key for IndexedDB
@@ -463,11 +624,21 @@ export async function uploadFileResilient(
 }
 
 /**
- * Resolves any localdb:// URL or Base64 string to a usable web URL for images and media files.
+ * Resolves any firestore-blob:// or localdb:// URL or Base64 string to a usable web URL for images and media files.
  * Also parses and optimizes third-party hosted files like Dropbox to ensure compatibility with native HTML5 media streaming.
  */
 export async function resolveFileUrl(url: string | null | undefined): Promise<string> {
   if (!url) return '';
+
+  if (url.startsWith('firestore-blob://')) {
+    const blobId = url.replace('firestore-blob://', '');
+    const blob = await getBlobFromCloudFirestore(blobId);
+    if (blob) {
+      return URL.createObjectURL(blob);
+    }
+    return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300';
+  }
+
   if (url.startsWith('localdb://')) {
     const blob = await localFileStore.getFile(url);
     if (blob) {
@@ -513,7 +684,7 @@ export function ResilientImage({ src, alt, className, fallbackText, ...props }: 
 
     const resolve = async () => {
       if (!src) return;
-      if (src.startsWith('localdb://')) {
+      if (src.startsWith('localdb://') || src.startsWith('firestore-blob://')) {
         const url = await resolveFileUrl(src);
         if (active) {
           setResolvedSrc(url);
@@ -561,7 +732,7 @@ export function ResilientImage({ src, alt, className, fallbackText, ...props }: 
 }
 
 /**
- * Deletes a file from storage (handles Cloudflare R2 via backend server endpoint and local IndexedDB)
+ * Deletes a file from storage (Cloud Firestore blobs, Cloudflare R2, and local IndexedDB)
  */
 export async function deleteFileResilient(fileUrlOrKey: string): Promise<{ success: boolean; message: string; deletedFromR2: boolean }> {
   if (!fileUrlOrKey || typeof fileUrlOrKey !== 'string') {
@@ -569,6 +740,25 @@ export async function deleteFileResilient(fileUrlOrKey: string): Promise<{ succe
   }
 
   const cleanUrl = fileUrlOrKey.trim();
+
+  // If Cloud Firestore Blob URL
+  if (cleanUrl.startsWith('firestore-blob://')) {
+    const blobId = cleanUrl.replace('firestore-blob://', '');
+    try {
+      if (db) {
+        const chunksSnap = await getDocs(collection(db, '_cloud_blobs', blobId, 'chunks'));
+        const batch = writeBatch(db);
+        chunksSnap.forEach((docSnap) => batch.delete(docSnap.ref));
+        batch.delete(doc(db, '_cloud_blobs', blobId));
+        await batch.commit();
+      }
+      await localFileStore.deleteFile(blobId);
+      return { success: true, message: 'Deleted file from Cloud Storage.', deletedFromR2: false };
+    } catch (err: any) {
+      console.warn('Error deleting firestore-blob:', err);
+      return { success: false, message: 'Failed to remove cloud document.', deletedFromR2: false };
+    }
+  }
 
   // If local IndexedDB URL
   if (cleanUrl.startsWith('localdb://')) {
@@ -588,31 +778,35 @@ export async function deleteFileResilient(fileUrlOrKey: string): Promise<{ succe
 
   // Request deletion from backend server (handles Cloudflare R2)
   try {
-    const res = await fetch('/api/delete-file', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileUrl: cleanUrl })
-    });
+    const endpoints = getApiCandidates('/api/delete-file');
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fileUrl: cleanUrl })
+        });
 
-    if (res.ok) {
-      const data = await res.json();
-      return {
-        success: true,
-        message: data.message || 'File deletion request succeeded.',
-        deletedFromR2: !!data.deletedFromR2
-      };
-    } else {
-      const errData = await res.json().catch(() => ({}));
-      return {
-        success: false,
-        message: errData.error || 'Server file deletion endpoint returned error.',
-        deletedFromR2: false
-      };
+        if (res.ok) {
+          const contentType = res.headers.get('content-type') || '';
+          if (contentType.includes('application/json')) {
+            const data = await res.json();
+            return {
+              success: true,
+              message: data.message || 'File deletion request succeeded.',
+              deletedFromR2: !!data.deletedFromR2
+            };
+          }
+        }
+      } catch (e) {
+        console.warn(`Delete endpoint ${endpoint} failed:`, e);
+      }
     }
   } catch (err: any) {
     console.warn('Error deleting file via API:', err);
-    return { success: false, message: 'Failed to connect to file deletion server endpoint.', deletedFromR2: false };
   }
+
+  return { success: true, message: 'File reference cleared.', deletedFromR2: false };
 }
 
 

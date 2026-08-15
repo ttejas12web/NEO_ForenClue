@@ -274,9 +274,27 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["name", "country", "city"]
+    },
+    "CloudBlob": {
+      "title": "Cloud Binary Blob",
+      "description": "Resilient multi-part cloud storage for ebooks, PDFs, and media assets",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fileName": { "type": "string" },
+        "mimeType": { "type": "string" },
+        "size": { "type": "integer" },
+        "totalChunks": { "type": "integer" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "fileName", "mimeType", "totalChunks"]
     }
   },
   "firestore": {
+    "/_cloud_blobs/{blobId}": {
+      "schema": "CloudBlob",
+      "description": "Resilient cross-device cloud binary storage for PDFs and eBooks"
+    },
     "/colleges/{collegeId}": {
       "schema": "College",
       "description": "Global directory of forensic science colleges and universities"
