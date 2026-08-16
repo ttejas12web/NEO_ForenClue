@@ -24,7 +24,6 @@ import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 import { Logo } from '@/components/ui/Logo';
-import { IndependenceDayFlag } from '@/components/ui/IndependenceDayFlag';
 import { useAuth } from '@/contexts/AuthContext';
 
 const directLinks = [
@@ -141,9 +140,6 @@ export function Navbar() {
                 </div>
               )}
             </Link>
-            
-            {/* Independence Day Animation */}
-            <IndependenceDayFlag />
           </div>
 
           {/* Desktop Nav */}

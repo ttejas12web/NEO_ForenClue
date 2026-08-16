@@ -41,9 +41,10 @@ export default function LinkedInCallback() {
 
         // Try candidate backend endpoints in sequence if relative call fails
         const backendCandidates = [
+          `${origin}/api/auth/linkedin/callback`,
           '/api/auth/linkedin/callback',
-          'https://forenclue.in/api/auth/linkedin/callback',
-          'https://www.forenclue.in/api/auth/linkedin/callback'
+          'https://www.forenclue.in/api/auth/linkedin/callback',
+          'https://forenclue.in/api/auth/linkedin/callback'
         ];
 
         let response: Response | null = null;

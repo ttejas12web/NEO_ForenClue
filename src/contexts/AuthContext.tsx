@@ -3,6 +3,7 @@ import {
   User, 
   onAuthStateChanged, 
   signInWithCustomToken, 
+  signInAnonymously,
   signOut, 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -311,10 +312,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isSettled) return;
           isSettled = true;
           cleanup();
-          const { customToken } = event.data;
+          const { customToken, user: authUser, email } = event.data;
           try {
             if (customToken) {
               await signInWithCustomToken(auth, customToken);
+              recordSuccessfulLogin('linkedin_oauth');
+            } else if (authUser) {
+              // Edge / serverless fallback without Admin customToken
+              let activeFirebaseUser = auth.currentUser;
+              if (!activeFirebaseUser) {
+                try {
+                  const anonCred = await signInAnonymously(auth);
+                  activeFirebaseUser = anonCred.user;
+                } catch (anonErr) {
+                  console.warn("Anonymous sign-in fallback for LinkedIn:", anonErr);
+                }
+              }
+
+              if (activeFirebaseUser) {
+                try {
+                  await updateProfile(activeFirebaseUser, {
+                    displayName: authUser.displayName || 'LinkedIn User',
+                    photoURL: authUser.photoURL || undefined
+                  });
+                } catch (profErr) {
+                  console.warn("Could not update auth profile:", profErr);
+                }
+
+                try {
+                  const userRef = doc(db, 'users', activeFirebaseUser.uid);
+                  await setDoc(userRef, {
+                    uid: activeFirebaseUser.uid,
+                    email: authUser.email || email || activeFirebaseUser.email || '',
+                    displayName: authUser.displayName || activeFirebaseUser.displayName || 'LinkedIn User',
+                    photoURL: authUser.photoURL || activeFirebaseUser.photoURL || '',
+                    provider: 'linkedin',
+                    linkedinUid: authUser.uid,
+                    updatedAt: serverTimestamp()
+                  }, { merge: true });
+                } catch (fsErr) {
+                  console.warn("Could not merge Firestore profile:", fsErr);
+                }
+              }
               recordSuccessfulLogin('linkedin_oauth');
             }
             resolve();
