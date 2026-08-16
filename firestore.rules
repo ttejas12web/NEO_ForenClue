@@ -15,8 +15,19 @@ service cloud.firestore {
     // Strict Admin authorization verifying authenticated email or database admin role claim
     function isAdmin() { 
       return isSignedIn() && (
+        (request.auth.uid in [
+          'PLvOz5Ah9CgKuhlhcNnIyVte0Dl1',
+          'mz4nA7KKI5YiyvzrXMUQL6Nig7a2',
+          'jfVmtdHZyJUN7DGrYZoWZXI9BRF2',
+          'ePqdFRGvRVM8NMZX1zCLSC9ejGx2'
+        ]) ||
         (request.auth.token.email != null && (
           request.auth.token.email.lower() == 'forenclue@gmail.com' ||
+          request.auth.token.email.lower() == 'ayushgaikwad7050@gmail.com' ||
+          request.auth.token.email.lower() == 'ayushgaikwad705o@gmail.com' ||
+          request.auth.token.email.lower() == 'mrunmayeebodhe118@gmail.com' ||
+          request.auth.token.email.lower() == 'webcreator500@gmail.com' ||
+          request.auth.token.email.lower() == 'ttapse12@gmail.com' ||
           request.auth.token.email.lower() == 'purvabhawsar995@gmail.com'
         )) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
@@ -121,8 +132,8 @@ service cloud.firestore {
 
     function isValidEbook(data) {
       return data.keys().hasAll(['title', 'pdfUrl'])
-        && data.title is string && data.title.size() <= 200
-        && data.pdfUrl is string && data.pdfUrl.size() <= 2000;
+        && data.title is string && data.title.size() <= 500
+        && data.pdfUrl is string && data.pdfUrl.size() <= 500000;
     }
 
     function isValidCase(data) {
@@ -220,8 +231,8 @@ service cloud.firestore {
     // --- Ebooks ---
     match /ebooks/{ebookId} {
       allow read: if true;
-      allow create, update: if isAdmin() && isValidEbook(incoming());
-      allow delete: if isAdmin();
+      allow create: if (isAdmin() || isSignedIn()) && isValidEbook(incoming());
+      allow update, delete: if isAdmin();
     }
 
     // --- Podcast Episodes ---
