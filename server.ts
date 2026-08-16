@@ -215,8 +215,20 @@ async function startServer() {
     fs.mkdirSync(tempDirBase, { recursive: true });
   }
 
-  // Serve uploaded files statically
-  app.use("/api/uploads", express.static(uploadsDir));
+  // Serve uploaded files statically with proper CORS and cache headers
+  const serveStaticUploads = express.static(uploadsDir, {
+    setHeaders: (res, filePath) => {
+      res.setHeader("Access-Control-Allow-Origin", "*");
+      res.setHeader("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS");
+      res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+      if (filePath.endsWith('.pdf')) {
+        res.setHeader("Content-Type", "application/pdf");
+      }
+    }
+  });
+
+  app.use("/api/uploads", serveStaticUploads);
+  app.use("/uploads", serveStaticUploads);
   app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
   app.use("/og", express.static(path.join(process.cwd(), "public", "og")));
 

@@ -271,18 +271,27 @@ function withTimeout<T>(promise: Promise<T>, ms: number, errorMessage = "Operati
 function getApiCandidates(apiPath: string): string[] {
   const cleanPath = apiPath.startsWith('/') ? apiPath : `/${apiPath}`;
   const list: string[] = [cleanPath];
-  const primaryBackend = 'https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
-  const devBackend = 'https://ais-dev-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app';
 
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     const currentOrigin = window.location.origin;
-    if (!currentOrigin.includes('asia-southeast1.run.app')) {
-      list.push(`${primaryBackend}${cleanPath}`);
-      list.push(`${devBackend}${cleanPath}`);
+    const originEndpoint = `${currentOrigin}${cleanPath}`;
+    if (!list.includes(originEndpoint)) {
+      list.push(originEndpoint);
     }
-  } else {
-    list.push(`${primaryBackend}${cleanPath}`);
   }
+
+  // Include official production domain endpoints as fallback routes
+  const prodEndpoints = [
+    `https://forenclue.in${cleanPath}`,
+    `https://www.forenclue.in${cleanPath}`
+  ];
+
+  for (const ep of prodEndpoints) {
+    if (!list.includes(ep)) {
+      list.push(ep);
+    }
+  }
+
   return list;
 }
 
@@ -319,7 +328,7 @@ async function uploadToServerDisk(file: File, cloudPath: string, onStatusChange?
         if (response.ok) {
           const contentType = response.headers.get('content-type') || '';
           if (contentType.includes('application/json')) {
-            const data = await response.json();
+            const data = await response.json().catch(() => null);
             if (data && data.url) {
               console.log(`[uploadToServerDisk] Successfully uploaded file via FormData to ${endpoint}. URL:`, data.url);
               return data.url;
@@ -352,16 +361,14 @@ async function uploadToServerDisk(file: File, cloudPath: string, onStatusChange?
         throw new Error(`Endpoint ${endpoint} returned non-JSON (${response.status})`);
       }
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        console.warn(`[uploadToServerDisk] Endpoint ${endpoint} rejected upload (${response.status}):`, errorData);
-        throw new Error(errorData.error || `Upload rejected with status ${response.status}`);
+      const responseJson = await response.json().catch(() => null);
+      if (!response.ok || !responseJson) {
+        throw new Error(responseJson?.error || `Upload rejected with status ${response.status}`);
       }
 
-      const data = await response.json();
-      if (data && data.url) {
-        console.log(`[uploadToServerDisk] Successfully uploaded file to R2 storage via ${endpoint}. URL:`, data.url);
-        return data.url;
+      if (responseJson.url) {
+        console.log(`[uploadToServerDisk] Successfully uploaded file to R2 storage via ${endpoint}. URL:`, responseJson.url);
+        return responseJson.url;
       }
       throw new Error(`Malformed response from ${endpoint}`);
     } catch (err: any) {
@@ -451,7 +458,7 @@ async function uploadChunksToServer(
 
         // If it is the final chunk, parse response to fetch the aggregated remote url location
         if (chunkIndex === totalChunks - 1) {
-          const data = await response.json();
+          const data = await response.json().catch(() => null);
           if (data && data.url) {
             console.log(`[uploadChunksToServer] Success! R2 merged all chunks via ${chunkEndpoint}. Result URL:`, data.url);
             if (onStatusChange) onStatusChange('All segments successfully merged and published on Cloudflare R2!');
@@ -636,7 +643,7 @@ export async function resolveFileUrl(url: string | null | undefined): Promise<st
     if (blob) {
       return URL.createObjectURL(blob);
     }
-    return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300';
+    return '';
   }
 
   if (url.startsWith('localdb://')) {
@@ -644,8 +651,14 @@ export async function resolveFileUrl(url: string | null | undefined): Promise<st
     if (blob) {
       return URL.createObjectURL(blob);
     }
-    // Return a beautiful fallback if not present in DB
-    return 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300';
+    return '';
+  }
+
+  // Optimize relative server uploads paths (/uploads or /api/uploads)
+  if (url.startsWith('/uploads/') || url.startsWith('/api/uploads/')) {
+    if (typeof window !== 'undefined' && window.location && window.location.origin) {
+      return `${window.location.origin}${url}`;
+    }
   }
 
   // Optimize Dropbox URLs for direct streaming in audio/video players

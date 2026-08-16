@@ -7,30 +7,33 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // --- PHASE 3: Primitives ---
-    function isSignedIn() { return request.auth != null; }
+    // --- Core Security Primitives ---
+    function isSignedIn() { 
+      return request.auth != null; 
+    }
     
-    // Admin check inspecting authentic Firebase Auth email claim or manual/simulated admin
-    function isAdminEmail() { 
-      return true;
+    // Strict Admin authorization verifying authenticated email or database admin role claim
+    function isAdmin() { 
+      return isSignedIn() && (
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'forenclue@gmail.com' ||
+          request.auth.token.email.lower() == 'purvabhawsar995@gmail.com'
+        )) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true)
+      );
     }
     
     function incoming() { return request.resource.data; }
     function existing() { return resource.data; }
     function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
-    function isSimulatedUser(userId) {
-      return userId == 'manual_admin' || userId.matches('^google_sim_.*');
-    }
-    function isOwnerOrSimulated(userId) {
-      return isOwner(userId) || isSimulatedUser(userId);
-    }
     function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
 
     // Validation Blueprints (with strict type checks and .size() limits)
     function isValidUser(data) {
       return data.keys().hasAll(['uid', 'createdAt'])
         && data.uid is string && data.uid.size() <= 128
-        && (data.uid == request.auth.uid || isSimulatedUser(data.uid))
+        && data.uid == request.auth.uid
         && (!('email' in data) || data.email == null || (data.email is string && data.email.size() <= 256))
         && (!('displayName' in data) || data.displayName == null || (data.displayName is string && data.displayName.size() <= 256))
         && (!('photoURL' in data) || data.photoURL == null || (data.photoURL is string && data.photoURL.size() <= 2000))
@@ -203,73 +206,73 @@ service cloud.firestore {
     // --- Cases ---
     match /cases/{caseId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidCase(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidCase(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- Courses ---
     match /courses/{courseId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidCourse(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidCourse(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- Ebooks ---
     match /ebooks/{ebookId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidEbook(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidEbook(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- Podcast Episodes ---
     match /podcastEpisodes/{episodeId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidPodcastEpisode(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidPodcastEpisode(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- Announcements ---
     match /announcements/{announcementId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidAnnouncement(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidAnnouncement(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- Website Texts ---
     match /websiteTexts/{textId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidWebsiteText(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidWebsiteText(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- Certificates ---
     match /certificates/{certificateId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidCertificate(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidCertificate(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- Employees ---
     match /employees/{employeeId} {
       allow read: if true;
-      allow create, update: if isAdminEmail() && isValidEmployee(incoming());
-      allow delete: if isAdminEmail();
+      allow create, update: if isAdmin() && isValidEmployee(incoming());
+      allow delete: if isAdmin();
     }
 
     // --- User Profiles ---
     match /users/{userId} {
-      // Allow public get so profile details can be seen in community links
+      // Allow get profile details
       allow get: if true;
-      allow list: if isSignedIn() || isSimulatedUser(userId); 
+      allow list: if isSignedIn(); 
       
-      allow create: if isOwnerOrSimulated(userId) && isValidUser(incoming()) && (isSimulatedUser(userId) || incoming().createdAt == request.time);
-      allow update: if isOwnerOrSimulated(userId) && isValidUser(incoming()) && incoming().uid == existing().uid;
+      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().createdAt == request.time;
+      allow update: if isOwner(userId) && isValidUser(incoming()) && incoming().uid == existing().uid;
     }
 
     // --- Reports ---
     match /reports/{reportId} {
       allow create: if isSignedIn() && isValidId(reportId) && isValidReport(incoming()) && incoming().id == reportId && incoming().createdAt == request.time;
-      allow read: if false; 
+      allow read: if isAdmin(); 
     }
 
     // --- Course Stats ---
@@ -285,25 +288,24 @@ service cloud.firestore {
     // --- Course Overrides (Admin dynamically editable courses) ---
     match /courseOverrides/{courseId} {
       allow read: if true;
-      allow write: if isAdminEmail();
+      allow write: if isAdmin();
     }
 
     // --- Lecture QnA ---
     match /lectureQna/{qnaId} {
       allow read: if true;
       allow create: if isSignedIn() && isValidQna(incoming()) && incoming().authorId == request.auth.uid && incoming().createdAt == request.time;
-      allow update, delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdminEmail());
+      allow update, delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdmin());
 
       match /comments/{commentId} {
         allow read: if true;
         allow create: if isSignedIn() && isValidQnaComment(incoming()) && incoming().authorId == request.auth.uid && incoming().createdAt == request.time;
-        allow update, delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdminEmail());
+        allow update, delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdmin());
       }
     }
 
     // --- Community Doubts ---
     match /doubts/{doubtId} {
-      // Allow anyone (even unauthenticated) to view doubts
       allow get: if true;
       allow list: if true; 
 
@@ -316,7 +318,7 @@ service cloud.firestore {
         // Action: Edit (owner only)
         (existing().authorId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['title', 'content', 'category', 'imageUrl', 'updatedAt']) && incoming().updatedAt == request.time)
       );
-      allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdminEmail());
+      allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdmin());
 
       // Nested Comments
       match /comments/{commentId} {
@@ -330,71 +332,71 @@ service cloud.firestore {
           // Action: Edit (owner only)
           (existing().authorId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['content', 'updatedAt']) && incoming().updatedAt == request.time)
         );
-        allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdminEmail());
+        allow delete: if isSignedIn() && (existing().authorId == request.auth.uid || isAdmin());
       }
     }
 
     // Webinar Registrations Rule
     match /webinar_registrations/{registrationId} {
       allow get: if true;
-      allow create: if true; // anyone can sign up/register
-      allow list: if isAdminEmail() || (isSignedIn() && (resource.data.email == request.auth.token.email || resource.data.userId == request.auth.uid));
-      allow update, delete: if isAdminEmail();
+      allow create: if true;
+      allow list: if isAdmin() || (isSignedIn() && (resource.data.email == request.auth.token.email || resource.data.userId == request.auth.uid));
+      allow update, delete: if isAdmin();
     }
 
     // Webinar Feedbacks Rule
     match /webinar_feedbacks/{feedbackId} {
       allow read: if true;
       allow create: if true;
-      allow update, delete: if isAdminEmail();
+      allow update, delete: if isAdmin();
     }
 
     // Google Forms Rule
     match /google_forms/{formId} {
       allow read: if true;
-      allow create, update, delete: if isAdminEmail();
+      allow create, update, delete: if isAdmin();
     }
 
     // Quizzes & Weekly Challenges Rule
     match /quizzes/{quizId} {
       allow read: if true;
-      allow create, delete: if isAdminEmail();
+      allow create, delete: if isAdmin();
       // Allow admin to update OR enrolled signed-in user updating enrolledUserIds
-      allow update: if isAdminEmail() || (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['enrolledUserIds']));
+      allow update: if isAdmin() || (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['enrolledUserIds']));
     }
 
     // Contact Messages Rule
     match /contact_messages/{messageId} {
       allow create: if true;
-      allow read, update, delete: if true;
+      allow read, update, delete: if isAdmin();
     }
 
     match /quizAttempts/{attemptId} {
       allow read: if true;
       allow create: if isSignedIn() && isValidQuizAttempt(incoming()) && incoming().userId == request.auth.uid;
-      allow update, delete: if isAdminEmail();
+      allow update, delete: if isAdmin();
     }
 
     // Colleges & Universities Directory
     match /colleges/{collegeId} {
       allow read: if true;
-      allow create, update, delete: if isAdminEmail();
+      allow create, update, delete: if isAdmin();
     }
 
     // LinkedIn Posts Collection
     match /linkedin_posts/{postId} {
       allow read: if true;
-      allow create, update, delete: if true;
+      allow create, update, delete: if isAdmin();
     }
 
     // Cloud Blobs & PDF Storage Collection (Cross-device cloud binary synchronization)
     match /_cloud_blobs/{blobId} {
       allow read: if true;
-      allow create, update, delete: if true;
+      allow write: if isSignedIn();
 
       match /chunks/{chunkId} {
         allow read: if true;
-        allow create, update, delete: if true;
+        allow write: if isSignedIn();
       }
     }
   }

@@ -1,11 +1,32 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, onAuthStateChanged, signInWithCustomToken, signOut, OAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile, sendEmailVerification, sendPasswordResetEmail } from 'firebase/auth';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
+import { 
+  User, 
+  onAuthStateChanged, 
+  signInWithCustomToken, 
+  signOut, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword, 
+  updateProfile, 
+  sendEmailVerification, 
+  sendPasswordResetEmail,
+  reload
+} from 'firebase/auth';
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
-import { Fingerprint, Search, ShieldCheck, Activity } from 'lucide-react';
+import { Fingerprint, Search, ShieldAlert, Clock, X } from 'lucide-react';
+import { 
+  checkLoginRateLimit, 
+  recordFailedLogin, 
+  recordSuccessfulLogin, 
+  checkPasswordResetRateLimit, 
+  recordPasswordResetRequest, 
+  checkEmailVerificationCooldown, 
+  recordEmailVerificationSent,
+  SESSION_INACTIVITY_LIMIT_MS
+} from '../lib/security';
 
-interface UserProfile {
+export interface UserProfile {
   uid: string;
   email: string | null;
   displayName: string | null;
@@ -29,11 +50,14 @@ interface AuthContextType {
   isAdmin: boolean;
   isQuizOnlyAdmin: boolean;
   accessToken: string | null;
+  sessionExpiredNotice: boolean;
+  clearSessionExpiredNotice: () => void;
   signInWithLinkedIn: () => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string) => Promise<User>;
   signInWithEmail: (email: string, pass: string) => Promise<User>;
   sendVerificationEmail: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
+  reloadUser: () => Promise<void>;
   logout: () => Promise<void>;
   adminLogin?: (email: string, password: string) => Promise<boolean>;
 }
@@ -56,20 +80,8 @@ export const adminUids = [
   'PLvOz5Ah9CgKuhlhcNnIyVte0Dl1',
   'mz4nA7KKI5YiyvzrXMUQL6Nig7a2',
   'jfVmtdHZyJUN7DGrYZoWZXI9BRF2',
-  'ePqdFRGvRVM8NMZX1zCLSC9ejGx2',
-  'admin_purvabhawsar995',
-  'admin_forenclue',
-  'manual_admin'
+  'ePqdFRGvRVM8NMZX1zCLSC9ejGx2'
 ];
-
-export const getAssignedUidForEmail = (email?: string | null, firebaseUser?: User | null): string => {
-  if (firebaseUser?.uid) return firebaseUser.uid;
-  if (!email) return 'manual_admin';
-  const normalized = email.trim().toLowerCase();
-  if (normalized === 'purvabhawsar995@gmail.com') return 'admin_purvabhawsar995';
-  if (normalized === 'forenclue@gmail.com') return 'admin_forenclue';
-  return `admin_${normalized.replace(/[^a-z0-9]/g, '_')}`;
-};
 
 export const checkIsAdmin = (uid: string | null | undefined, email?: string | null): boolean => {
   if (email && adminEmails.map(e => e.toLowerCase()).includes(email.trim().toLowerCase())) return true;
@@ -84,66 +96,53 @@ export const checkIsQuizOnlyAdmin = (email?: string | null): boolean => {
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
-enum OperationType {
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-  LIST = 'list',
-  GET = 'get',
-  WRITE = 'write',
-}
-
-interface FirestoreErrorInfo {
-  error: string;
-  operationType: OperationType;
-  path: string | null;
-  authInfo: {
-    userId?: string | null;
-    email?: string | null;
-    emailVerified?: boolean | null;
-    isAnonymous?: boolean | null;
-    tenantId?: string | null;
-    providerInfo?: {
-      providerId?: string | null;
-      email?: string | null;
-    }[];
-  }
-}
-
-function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
-  const errInfo: FirestoreErrorInfo = {
-    error: error instanceof Error ? error.message : String(error),
-    authInfo: {
-      userId: auth.currentUser?.uid,
-      email: auth.currentUser?.email,
-      emailVerified: auth.currentUser?.emailVerified,
-      isAnonymous: auth.currentUser?.isAnonymous,
-      tenantId: auth.currentUser?.tenantId,
-      providerInfo: auth.currentUser?.providerData?.map(provider => ({
-        providerId: provider.providerId,
-        email: provider.email,
-      })) || []
-    },
-    operationType,
-    path
-  }
-  console.error('Firestore Error: ', JSON.stringify(errInfo));
-  throw new Error(JSON.stringify(errInfo));
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [manualAdmin, setManualAdmin] = useState<{ email: string; displayName: string } | null>(() => {
-    try {
-      const saved = localStorage.getItem('manualAdmin') || sessionStorage.getItem('manualAdmin');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState(false);
+  const lastActivityRef = useRef<number>(Date.now());
+
+  // Inactivity timeout handler
+  const handleInactivityLogout = useCallback(async () => {
+    if (auth.currentUser) {
+      console.warn("[Security] User session expired due to inactivity (>2h). Logging out securely.");
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.error("Error during inactivity signOut:", err);
+      }
+      setUser(null);
+      setUserProfile(null);
+      setSessionExpiredNotice(true);
     }
-  });
+  }, []);
+
+  // Track user activity to prevent premature session expiration during active usage
+  useEffect(() => {
+    const updateActivity = () => {
+      lastActivityRef.current = Date.now();
+    };
+
+    const events = ['mousemove', 'keydown', 'touchstart', 'scroll', 'click'];
+    events.forEach(event => window.addEventListener(event, updateActivity, { passive: true }));
+
+    // Check inactivity every 60 seconds
+    const interval = setInterval(() => {
+      if (auth.currentUser) {
+        const idleTime = Date.now() - lastActivityRef.current;
+        if (idleTime > SESSION_INACTIVITY_LIMIT_MS) {
+          handleInactivityLogout();
+        }
+      }
+    }, 60000);
+
+    return () => {
+      events.forEach(event => window.removeEventListener(event, updateActivity));
+      clearInterval(interval);
+    };
+  }, [handleInactivityLogout]);
 
   // Auth Listener
   useEffect(() => {
@@ -152,6 +151,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!currentUser) {
         setUserProfile(null);
         setLoading(false);
+      } else {
+        lastActivityRef.current = Date.now();
       }
     }, (error) => {
       console.error("Auth change error:", error);
@@ -161,97 +162,39 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => unsubscribe();
   }, []);
 
-  // Manual User state (session-only)
-  const [manualUser, setManualUser] = useState<{ email: string; displayName: string; uid: string; photoURL?: string } | null>(() => {
-    try {
-      const saved = localStorage.getItem('manualUser') || sessionStorage.getItem('manualUser');
-      return saved ? JSON.parse(saved) : null;
-    } catch {
-      return null;
-    }
-  });
+  const isAdmin = checkIsAdmin(user?.uid, user?.email);
+  const isQuizOnlyAdmin = checkIsQuizOnlyAdmin(user?.email);
 
-  const handleSetManualUser = (usr: typeof manualUser) => {
-    setManualUser(usr);
-    if (usr) {
-      localStorage.setItem('manualUser', JSON.stringify(usr));
-      sessionStorage.setItem('manualUser', JSON.stringify(usr));
-    } else {
-      localStorage.removeItem('manualUser');
-      sessionStorage.removeItem('manualUser');
-    }
-  };
-
-  const assignedUid = user?.uid || (manualAdmin ? getAssignedUidForEmail(manualAdmin.email, user) : 'manual_admin');
-
-  const effectiveUser = manualAdmin 
-    ? { email: manualAdmin.email, uid: assignedUid, displayName: manualAdmin.displayName } as any 
-    : manualUser
-    ? { email: manualUser.email, uid: manualUser.uid, displayName: manualUser.displayName, photoURL: manualUser.photoURL } as any
-    : user;
-
-  const effectiveUserProfile = manualAdmin
-    ? {
-        uid: assignedUid,
-        email: manualAdmin.email,
-        displayName: manualAdmin.displayName,
-        photoURL: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150',
-        purchasedCourses: [],
-        bookmarks: [],
-        achievementTags: ['Forenclue Administrator'],
-        progress: {},
-        doubtsCount: 0,
-        commentsCount: 0
-      } as UserProfile
-    : manualUser
-    ? (userProfile || {
-        uid: manualUser.uid,
-        email: manualUser.email,
-        displayName: manualUser.displayName,
-        photoURL: manualUser.photoURL || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150',
-        purchasedCourses: [],
-        bookmarks: [],
-        achievementTags: ['Forensic Novice'],
-        progress: {},
-        doubtsCount: 0,
-        commentsCount: 0
-      } as UserProfile)
-    : userProfile;
-
-  const isAdmin = checkIsAdmin(effectiveUser?.uid, effectiveUser?.email);
-  const isQuizOnlyAdmin = checkIsQuizOnlyAdmin(effectiveUser?.email);
-
-  // Profile Listener linked to effectiveUser so simulated accounts sync fully with Firestore
+  // Profile Listener for authentic Firebase user
   useEffect(() => {
-    if (!effectiveUser) return;
+    if (!user) return;
 
     let unsubscribeProfile: (() => void) | null = null;
 
     const initProfile = async () => {
-      const userRef = doc(db, 'users', effectiveUser.uid);
+      const userRef = doc(db, 'users', user.uid);
       
       try {
-        let exists = true; // Assume exists by default to avoid overwriting if fetch fails
+        let exists = true;
         try {
-          // Try getting from cache/server first to ensure doc exists
           const userSnap = await getDoc(userRef);
           exists = userSnap.exists();
         } catch (e: any) {
           console.warn("Could not fetch initial profile, proceeding to listener:", e);
-          exists = false; // Need to create doc if no cache
+          exists = false;
         }
           
         if (!exists) {
           try {
             await setDoc(userRef, {
-              uid: effectiveUser.uid,
-              email: effectiveUser.email || '',
-              displayName: effectiveUser.displayName || 'Investigator',
-              photoURL: effectiveUser.photoURL || '',
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || 'Investigator',
+              photoURL: user.photoURL || '',
               createdAt: serverTimestamp(),
               purchasedCourses: [],
               bookmarks: [],
-              achievementTags: ['Forensic Novice'],
+              achievementTags: isAdmin ? ['Forenclue Administrator'] : ['Forensic Novice'],
               progress: {},
               doubtsCount: 0,
               commentsCount: 0
@@ -262,9 +205,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         // Setup real-time listener
-        unsubscribeProfile = onSnapshot(userRef, (doc) => {
-          if (doc.exists()) {
-            const data = doc.data();
+        unsubscribeProfile = onSnapshot(userRef, (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data();
             setUserProfile({
               ...data,
               purchasedCourses: data.purchasedCourses || []
@@ -273,16 +216,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setLoading(false);
         }, (error) => {
           console.error("Profile sync error:", error);
-          // Fallback to local profile if listener fails
           if (!userProfile) {
             setUserProfile({
-              uid: effectiveUser.uid,
-              email: effectiveUser.email,
-              displayName: effectiveUser.displayName,
-              photoURL: effectiveUser.photoURL,
+              uid: user.uid,
+              email: user.email,
+              displayName: user.displayName,
+              photoURL: user.photoURL,
               purchasedCourses: [],
               bookmarks: [],
-              achievementTags: ['Forensic Novice'],
+              achievementTags: isAdmin ? ['Forenclue Administrator'] : ['Forensic Novice'],
               progress: {},
               doubtsCount: 0,
               commentsCount: 0
@@ -301,7 +243,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => {
       if (unsubscribeProfile) unsubscribeProfile();
     };
-  }, [effectiveUser]);
+  }, [user, isAdmin]);
 
   // Safety Timeout for loading
   useEffect(() => {
@@ -310,7 +252,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.warn("Auth initialization timed out. Forcing app to load.");
         setLoading(false);
       }
-    }, 8000); // 8 seconds max for auth/profile init
+    }, 8000);
 
     return () => clearTimeout(timer);
   }, [loading]);
@@ -369,24 +311,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isSettled) return;
           isSettled = true;
           cleanup();
-          const { customToken, tempPassword, email, user: linkedinUser } = event.data;
+          const { customToken } = event.data;
           try {
             if (customToken) {
               await signInWithCustomToken(auth, customToken);
-            } else if (email && tempPassword) {
-              await signInWithEmailAndPassword(auth, email, tempPassword);
-            } else if (linkedinUser) {
-              handleSetManualUser(linkedinUser);
+              recordSuccessfulLogin('linkedin_oauth');
             }
             resolve();
           } catch (err: any) {
-            console.warn("Firebase custom auth error, falling back to session auth:", err);
-            if (linkedinUser) {
-              handleSetManualUser(linkedinUser);
-              resolve();
-            } else {
-              reject(err);
-            }
+            console.error("Firebase custom auth error with LinkedIn:", err);
+            reject(err);
           }
         } else if (event.data?.type === 'LINKEDIN_AUTH_ERROR') {
           if (isSettled) return;
@@ -400,28 +334,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const sendVerificationEmail = async () => {
+  const reloadUser = async () => {
     if (auth.currentUser) {
-      await sendEmailVerification(auth.currentUser);
+      await reload(auth.currentUser);
+      setUser({ ...auth.currentUser });
     }
   };
 
+  const sendVerificationEmail = async () => {
+    if (!auth.currentUser) {
+      throw new Error("No active session. Please sign in to verify your email.");
+    }
+    const email = auth.currentUser.email || '';
+    const rateCheck = checkEmailVerificationCooldown(email);
+    if (!rateCheck.allowed) {
+      throw new Error(`Verification email was recently dispatched. Please wait ${rateCheck.cooldownSeconds}s before resending.`);
+    }
+
+    await sendEmailVerification(auth.currentUser);
+    recordEmailVerificationSent(email);
+  };
+
   const signUpWithEmail = async (email: string, pass: string, name: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const rateCheck = checkLoginRateLimit(normalizedEmail);
+    if (!rateCheck.allowed) {
+      throw new Error(`Too many registration/auth requests. For security, please wait ${rateCheck.lockoutSeconds} seconds.`);
+    }
+
     try {
-      const result = await createUserWithEmailAndPassword(auth, email, pass);
+      const result = await createUserWithEmailAndPassword(auth, normalizedEmail, pass);
       await updateProfile(result.user, {
-        displayName: name
+        displayName: name.trim() || 'Investigator'
       });
+      
       try {
         await sendEmailVerification(result.user);
+        recordEmailVerificationSent(normalizedEmail);
       } catch (e) {
-        console.warn("Email verification send error:", e);
+        console.warn("Email verification send warning:", e);
       }
+
       const userRef = doc(db, 'users', result.user.uid);
       await setDoc(userRef, {
         uid: result.user.uid,
-        email: result.user.email || '',
-        displayName: name || 'Investigator',
+        email: result.user.email || normalizedEmail,
+        displayName: name.trim() || 'Investigator',
         photoURL: '',
         createdAt: serverTimestamp(),
         purchasedCourses: [],
@@ -431,8 +389,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         doubtsCount: 0,
         commentsCount: 0
       });
+
+      recordSuccessfulLogin(normalizedEmail);
+      lastActivityRef.current = Date.now();
       return result.user;
-    } catch (error) {
+    } catch (error: any) {
+      recordFailedLogin(normalizedEmail);
       console.error("Error signing up with email and password: ", error);
       throw error;
     }
@@ -441,47 +403,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithEmail = async (email: string, pass: string) => {
     const normalizedEmail = email.trim().toLowerCase();
     
-    // Check if matching preset admin credentials
-    const validAdmins: Record<string, { pass: string; displayName: string }> = {
-      'forenclue@gmail.com': { pass: 'forenclue@2025', displayName: 'Forenclue Team Admin' },
-      'purvabhawsar995@gmail.com': { pass: 'purva123@md', displayName: 'Purva Bhawsar (Quiz Admin)' }
-    };
-
-    if (validAdmins[normalizedEmail] && pass === validAdmins[normalizedEmail].pass) {
-      try {
-        const result = await signInWithEmailAndPassword(auth, email, pass);
-        return result.user;
-      } catch (err: any) {
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-email') {
-          try {
-            const res = await createUserWithEmailAndPassword(auth, email, pass);
-            await updateProfile(res.user, { displayName: validAdmins[normalizedEmail].displayName });
-            return res.user;
-          } catch (signUpErr) {
-            console.warn("Could not register preset admin to Firebase Auth:", signUpErr);
-          }
-        }
-        const session = { email: normalizedEmail, displayName: validAdmins[normalizedEmail].displayName };
-        setManualAdmin(session);
-        localStorage.setItem('manualAdmin', JSON.stringify(session));
-        sessionStorage.setItem('manualAdmin', JSON.stringify(session));
-        return { email: normalizedEmail, uid: getAssignedUidForEmail(normalizedEmail, null), displayName: validAdmins[normalizedEmail].displayName } as any;
-      }
+    // Check client rate limiting (Brute-force protection)
+    const rateCheck = checkLoginRateLimit(normalizedEmail);
+    if (!rateCheck.allowed) {
+      throw new Error(`Security Lockout: Too many failed login attempts for this account. Please wait ${rateCheck.lockoutSeconds} seconds before trying again.`);
     }
 
     try {
-      const result = await signInWithEmailAndPassword(auth, email, pass);
+      const result = await signInWithEmailAndPassword(auth, normalizedEmail, pass);
+      recordSuccessfulLogin(normalizedEmail);
+      lastActivityRef.current = Date.now();
       return result.user;
     } catch (error: any) {
-      console.warn("Sign-in with email failed:", error?.code || error?.message || error);
+      const failed = recordFailedLogin(normalizedEmail);
+      console.warn(`Sign-in failed for ${normalizedEmail}. Remaining attempts: ${failed.remainingAttempts}`);
+      if (!failed.allowed) {
+        throw new Error(`Account locked for security. Too many invalid attempts. Please wait ${failed.lockoutSeconds} seconds.`);
+      }
       throw error;
     }
   };
 
   const sendPasswordReset = async (email: string) => {
+    const normalizedEmail = email.trim().toLowerCase();
+    const rateCheck = checkPasswordResetRateLimit(normalizedEmail);
+    if (!rateCheck.allowed) {
+      throw new Error(rateCheck.reason || `Please wait ${rateCheck.cooldownSeconds}s before requesting another reset.`);
+    }
+
     try {
-      await sendPasswordResetEmail(auth, email);
-    } catch (error) {
+      await sendPasswordResetEmail(auth, normalizedEmail);
+      recordPasswordResetRequest(normalizedEmail);
+    } catch (error: any) {
       console.error("Error sending password reset email: ", error);
       throw error;
     }
@@ -489,16 +442,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      if (manualAdmin) {
-        setManualAdmin(null);
-        localStorage.removeItem('manualAdmin');
-        sessionStorage.removeItem('manualAdmin');
-      }
-      if (manualUser) {
-        handleSetManualUser(null);
-      }
       await signOut(auth);
+      setUser(null);
+      setUserProfile(null);
       setAccessToken(null);
+      lastActivityRef.current = Date.now();
     } catch (error) {
       console.error("Error signing out: ", error);
       throw error;
@@ -508,36 +456,83 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const adminLogin = async (email: string, password: string): Promise<boolean> => {
     const normalizedEmail = email.trim().toLowerCase();
     
-    const validAdmins: Record<string, { pass: string; displayName: string }> = {
-      'forenclue@gmail.com': { pass: 'forenclue@2025', displayName: 'Forenclue Team Admin' },
-      'purvabhawsar995@gmail.com': { pass: 'purva123@md', displayName: 'Purva Bhawsar (Quiz Admin)' }
-    };
-
-    if (validAdmins[normalizedEmail] && password === validAdmins[normalizedEmail].pass) {
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (err: any) {
-        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/invalid-email') {
-          try {
-            await createUserWithEmailAndPassword(auth, email, password);
-          } catch (signUpErr) {
-            console.warn("Could not register manual admin user to Firebase Auth:", signUpErr);
-          }
-        } else {
-          console.warn("Firebase Auth login failed for manual admin:", err);
-        }
-      }
-      const session = { email: normalizedEmail, displayName: validAdmins[normalizedEmail].displayName };
-      setManualAdmin(session);
-      localStorage.setItem('manualAdmin', JSON.stringify(session));
-      sessionStorage.setItem('manualAdmin', JSON.stringify(session));
-      return true;
+    // Check rate limiter for admin endpoint
+    const rateCheck = checkLoginRateLimit(normalizedEmail);
+    if (!rateCheck.allowed) {
+      throw new Error(`Administrator Access Locked: Too many failed attempts. Cooldown: ${rateCheck.lockoutSeconds} seconds.`);
     }
-    return false;
+
+    try {
+      const result = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+      
+      // Verify user has authorized admin status
+      const isUserAdmin = checkIsAdmin(result.user.uid, result.user.email) || checkIsQuizOnlyAdmin(result.user.email);
+      
+      if (!isUserAdmin) {
+        // Immediately revoke and sign out unauthorized user attempting admin access
+        await signOut(auth);
+        recordFailedLogin(normalizedEmail);
+        throw new Error("Access Denied: Your account is not authorized with Administrator privileges.");
+      }
+
+      recordSuccessfulLogin(normalizedEmail);
+      lastActivityRef.current = Date.now();
+      return true;
+    } catch (err: any) {
+      recordFailedLogin(normalizedEmail);
+      console.error("Admin authentication rejected:", err?.message || err);
+      throw err;
+    }
   };
 
+  const clearSessionExpiredNotice = () => setSessionExpiredNotice(false);
+
   return (
-    <AuthContext.Provider value={{ user: effectiveUser, userProfile: effectiveUserProfile, loading, isAdmin, isQuizOnlyAdmin, accessToken, signInWithLinkedIn, signUpWithEmail, signInWithEmail, sendVerificationEmail, sendPasswordReset, logout, adminLogin }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      userProfile, 
+      loading, 
+      isAdmin, 
+      isQuizOnlyAdmin, 
+      accessToken, 
+      sessionExpiredNotice,
+      clearSessionExpiredNotice,
+      signInWithLinkedIn, 
+      signUpWithEmail, 
+      signInWithEmail, 
+      sendVerificationEmail, 
+      sendPasswordReset, 
+      reloadUser,
+      logout, 
+      adminLogin 
+    }}>
+      {/* Session Expired Security Banner */}
+      <AnimatePresence>
+        {sessionExpiredNotice && (
+          <motion.div 
+            initial={{ opacity: 0, y: -50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            className="fixed top-4 left-1/2 -translate-x-1/2 z-50 max-w-md w-[90%] bg-surface border border-red-500/40 rounded-2xl p-4 shadow-2xl backdrop-blur-xl flex items-center gap-3 text-text-main"
+          >
+            <div className="p-2.5 rounded-xl bg-red-500/10 text-red-500">
+              <Clock size={20} />
+            </div>
+            <div className="flex-1 text-xs">
+              <p className="font-bold text-red-400">Session Expired</p>
+              <p className="text-text-muted mt-0.5">Your session was safely closed due to 2 hours of inactivity. Please sign in again.</p>
+            </div>
+            <button 
+              onClick={clearSessionExpiredNotice}
+              className="p-1 text-text-muted hover:text-text-main rounded-lg"
+              title="Dismiss"
+            >
+              <X size={16} />
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div 
