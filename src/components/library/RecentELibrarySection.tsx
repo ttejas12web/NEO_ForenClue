@@ -19,6 +19,7 @@ import {
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { PdfViewerModal } from '@/components/ui/PdfViewerModal';
+import { ResilientImage } from '@/lib/localFileStore';
 
 const bookCoverUrl = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png';
 
@@ -71,7 +72,7 @@ export function RecentELibrarySection() {
           size: d.size || '5MB',
           desc: d.desc || 'Academic study documentation and reference materials.',
           pdfUrl: d.pdfUrl || '',
-          image: d.image || d.coverImage || '',
+          image: d.image || d.coverImage || d.coverUrl || d.thumbnailUrl || d.thumbnail || '',
           rating: d.rating || 4.8,
           downloads: d.downloads || 0,
           createdAt: d.createdAt || new Date().toISOString(),
@@ -206,22 +207,20 @@ export function RecentELibrarySection() {
                     onClick={() => handleOpenViewer(item)}
                     className="aspect-[16/9] sm:aspect-[16/10] w-full rounded-xl bg-gradient-to-br from-[#070A10] via-[#0E1524] to-[#162035] border border-white/10 relative overflow-hidden flex items-center justify-center p-2 mb-3.5 shadow-inner cursor-pointer group-hover:border-warning/40 transition-colors"
                   >
-                    {item.image || item.coverImage ? (
-                      <img 
-                        src={item.image || item.coverImage} 
-                        alt={item.title} 
-                        referrerPolicy="no-referrer"
-                        className="h-full w-full object-cover sm:object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] group-hover:scale-[1.03] transition-transform duration-300"
-                      />
-                    ) : (
-                      <div className="flex flex-col items-center justify-center h-full w-full p-3 text-center">
-                        <div className="p-2 rounded-full bg-warning/15 text-warning mb-1.5 border border-warning/25 shadow-sm">
-                          <BookOpen size={20} />
+                    <ResilientImage 
+                      src={item.image || item.coverImage || ''} 
+                      alt={item.title} 
+                      className="h-full w-full object-cover sm:object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] group-hover:scale-[1.03] transition-transform duration-300"
+                      fallback={
+                        <div className="flex flex-col items-center justify-center h-full w-full p-3 text-center">
+                          <div className="p-2 rounded-full bg-warning/15 text-warning mb-1.5 border border-warning/25 shadow-sm">
+                            <BookOpen size={20} />
+                          </div>
+                          <span className="text-[11px] font-black text-white uppercase tracking-wider line-clamp-1 max-w-[200px]" style={{ color: '#ffffff' }}>{item.title}</span>
+                          <span className="text-[9px] font-mono text-slate-400 truncate max-w-[180px] mt-0.5">{item.author}</span>
                         </div>
-                        <span className="text-[11px] font-black text-white uppercase tracking-wider line-clamp-1 max-w-[200px]" style={{ color: '#ffffff' }}>{item.title}</span>
-                        <span className="text-[9px] font-mono text-slate-400 truncate max-w-[180px] mt-0.5">{item.author}</span>
-                      </div>
-                    )}
+                      }
+                    />
                   </div>
 
                   {/* Title & Author */}

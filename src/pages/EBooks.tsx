@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils';
 import { db } from '@/lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { PdfViewerModal } from '@/components/ui/PdfViewerModal';
+import { ResilientImage } from '@/lib/localFileStore';
 
 // Static book cover asset (same as original/fallback)
 const bookCoverUrl = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png';
@@ -95,7 +96,7 @@ export default function EBooks() {
           size: d.size || '5MB',
           desc: d.desc || 'Forensic reference documentation.',
           pdfUrl: d.pdfUrl || '',
-          image: d.image || d.coverImage || '',
+          image: d.image || d.coverImage || d.coverUrl || d.thumbnailUrl || d.thumbnail || '',
           rating: d.rating || 4.5,
           downloads: d.downloads || 0,
           uploadedBy: d.uploadedBy || d.uploaderName || '',
@@ -414,11 +415,12 @@ function ShareModal({ isOpen, onClose, item }: ShareModalProps) {
           {/* Item Preview Card */}
           <div className="mt-4 p-3 bg-base border border-black/10 dark:border-white/5 rounded-xl flex items-center gap-3">
             <div className="w-12 h-16 bg-black/30 rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center border border-white/10">
-              {item.image || item.coverImage ? (
-                <img src={item.image || item.coverImage} alt={item.title} className="w-full h-full object-cover" />
-              ) : (
-                <BookOpen size={20} className="text-warning/50" />
-              )}
+              <ResilientImage 
+                src={item.image || item.coverImage || ''} 
+                alt={item.title} 
+                className="w-full h-full object-cover" 
+                fallback={<BookOpen size={20} className="text-warning/50" />}
+              />
             </div>
             <div className="min-w-0 flex-1">
               <span className="text-[9px] font-mono uppercase bg-warning/10 text-warning px-1.5 py-0.5 rounded font-bold">
@@ -605,23 +607,21 @@ function ResourceCard({ item, onOpen, onDownload, onShare }: ResourceCardProps) 
             <Share2 size={13} />
           </button>
 
-          {item.image || item.coverImage ? (
-            <img 
-              src={item.image || item.coverImage} 
-              alt={item.title} 
-              referrerPolicy="no-referrer"
-              className="h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] group-hover:scale-[1.03] transition-transform duration-300"
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-between h-full w-full py-2">
-              <span className="text-[9px] font-mono text-warning/40 uppercase tracking-widest">{item.type}</span>
-              <BookOpen size={24} className="text-warning/30 my-2 group-hover:scale-110 transition-transform text-center" />
-              <div className="text-center">
-                <span className="block text-[10px] font-bold text-slate-100 uppercase tracking-wide truncate max-w-[180px]">{item.title}</span>
-                <span className="block text-[8px] font-mono text-text-muted mt-0.5 truncate max-w-[180px]">{item.author}</span>
+          <ResilientImage 
+            src={item.image || item.coverImage || ''} 
+            alt={item.title} 
+            className="h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] group-hover:scale-[1.03] transition-transform duration-300"
+            fallback={
+              <div className="flex flex-col items-center justify-between h-full w-full py-2">
+                <span className="text-[9px] font-mono text-warning/40 uppercase tracking-widest">{item.type}</span>
+                <BookOpen size={24} className="text-warning/30 my-2 group-hover:scale-110 transition-transform text-center" />
+                <div className="text-center">
+                  <span className="block text-[10px] font-bold text-slate-100 uppercase tracking-wide truncate max-w-[180px]">{item.title}</span>
+                  <span className="block text-[8px] font-mono text-text-muted mt-0.5 truncate max-w-[180px]">{item.author}</span>
+                </div>
               </div>
-            </div>
-          )}
+            }
+          />
         </div>
 
         {/* Action Button Row */}
@@ -687,10 +687,9 @@ function ResourceCard({ item, onOpen, onDownload, onShare }: ResourceCardProps) 
                 {/* Profile Photo / Avatar Icon with Verification Checkmark */}
                 <div className="relative shrink-0">
                   {item.uploaderPhoto ? (
-                    <img 
+                    <ResilientImage 
                       src={item.uploaderPhoto} 
                       alt={item.uploaderName || item.uploadedBy || 'Contributor'} 
-                      referrerPolicy="no-referrer"
                       className="w-8 h-8 rounded-full object-cover border border-warning/40 shadow-sm group-hover/uploader:scale-105 transition-transform"
                     />
                   ) : (

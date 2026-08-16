@@ -686,39 +686,89 @@ export async function resolveFileUrl(url: string | null | undefined): Promise<st
   return url;
 }
 
-export function ResilientImage({ src, alt, className, fallbackText, ...props }: { src: string; alt: string; className?: string; fallbackText?: string; [key: string]: any }) {
-  const [resolvedSrc, setResolvedSrc] = useState<string>('');
+// In-memory cache for resolved blobs to avoid repeated async round-trips
+const blobUrlCache = new Map<string, string>();
+
+export function ResilientImage({ 
+  src, 
+  alt, 
+  className, 
+  fallbackText, 
+  fallback,
+  ...props 
+}: { 
+  src?: string | null; 
+  alt?: string; 
+  className?: string; 
+  fallbackText?: string; 
+  fallback?: React.ReactNode;
+  [key: string]: any;
+}) {
+  const [resolvedSrc, setResolvedSrc] = useState<string>(() => {
+    if (!src) return '';
+    if (blobUrlCache.has(src)) return blobUrlCache.get(src)!;
+    if (!src.startsWith('localdb://') && !src.startsWith('firestore-blob://')) {
+      return src;
+    }
+    return '';
+  });
   const [hasError, setHasError] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (!src) return false;
+    if (blobUrlCache.has(src)) return false;
+    return src.startsWith('localdb://') || src.startsWith('firestore-blob://');
+  });
 
   useEffect(() => {
     let active = true;
-    let objectUrl = '';
     setHasError(false);
 
-    const resolve = async () => {
-      if (!src) return;
-      if (src.startsWith('localdb://') || src.startsWith('firestore-blob://')) {
-        const url = await resolveFileUrl(src);
-        if (active) {
-          setResolvedSrc(url);
-          objectUrl = url;
-        }
-      } else {
-        if (active) {
-          setResolvedSrc(src);
-        }
-      }
-    };
+    if (!src || !src.trim()) {
+      setResolvedSrc('');
+      setIsLoading(false);
+      return;
+    }
 
-    resolve();
+    if (blobUrlCache.has(src)) {
+      setResolvedSrc(blobUrlCache.get(src)!);
+      setIsLoading(false);
+      return;
+    }
+
+    if (src.startsWith('localdb://') || src.startsWith('firestore-blob://')) {
+      setIsLoading(true);
+      resolveFileUrl(src)
+        .then((url) => {
+          if (active) {
+            if (url) {
+              blobUrlCache.set(src, url);
+              setResolvedSrc(url);
+            } else {
+              setHasError(true);
+            }
+            setIsLoading(false);
+          }
+        })
+        .catch(() => {
+          if (active) {
+            setHasError(true);
+            setIsLoading(false);
+          }
+        });
+    } else {
+      setResolvedSrc(src);
+      setIsLoading(false);
+    }
 
     return () => {
       active = false;
-      if (objectUrl && objectUrl.startsWith('blob:')) {
-        URL.revokeObjectURL(objectUrl);
-      }
     };
   }, [src]);
+
+  // If there is an explicit fallback element and error / missing src
+  if ((hasError || !src || !src.trim()) && fallback) {
+    return <>{fallback}</>;
+  }
 
   if (hasError && fallbackText) {
     return (
@@ -728,17 +778,28 @@ export function ResilientImage({ src, alt, className, fallbackText, ...props }: 
     );
   }
 
-  if (!resolvedSrc) {
-    return <div className={className ? className + " animate-pulse bg-black/5 dark:bg-white/5" : "animate-pulse bg-black/5 dark:bg-white/5 rounded-lg w-full h-full"} />;
+  if (isLoading || (!resolvedSrc && src)) {
+    return <div className={className ? className + " animate-pulse bg-black/10 dark:bg-white/10" : "animate-pulse bg-black/10 dark:bg-white/10 rounded-lg w-full h-full"} />;
+  }
+
+  if (!resolvedSrc || hasError) {
+    if (fallback) return <>{fallback}</>;
+    return (
+      <div className={className ? className + " flex items-center justify-center bg-black/20 text-slate-400 text-xs font-mono p-2" : "w-full h-full flex items-center justify-center bg-black/20 text-slate-400 text-xs font-mono rounded-lg p-2"}>
+        <span>{alt || 'Image unavailable'}</span>
+      </div>
+    );
   }
 
   return (
     <img 
       src={resolvedSrc} 
-      alt={alt} 
+      alt={alt || ''} 
       className={className} 
       referrerPolicy="no-referrer" 
-      onError={() => setHasError(true)}
+      onError={() => {
+        setHasError(true);
+      }}
       {...props} 
     />
   );
