@@ -1,53 +1,109 @@
-interface Env {
+export interface LinkedInEnv {
   LINKEDIN_CLIENT_ID?: string;
   LINKEDIN_CLIENT_SECRET?: string;
-  VITE_LINKEDIN_CLIENT_ID?: string;
-  [key: string]: any;
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+type RequestContext = {
+  request: Request;
+  env: LinkedInEnv;
 };
 
-export const onRequestOptions = async () => {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
+type LinkedInUserInfo = {
+  sub?: string;
+  email?: string;
+  name?: string;
+  given_name?: string;
+  family_name?: string;
+  picture?: string;
 };
 
-function getLinkedInCredentials(env: Env) {
-  const clientId = env.LINKEDIN_CLIENT_ID || env.VITE_LINKEDIN_CLIENT_ID || '86fnkfb4khjr8g';
-  const clientSecret = env.LINKEDIN_CLIENT_SECRET || ['WPL_AP1', 'RNPYrFPdKMe2yBQV', 'YdOGCA=='].join('.');
-  return { clientId, clientSecret };
+const CALLBACK_PATH = '/api/auth/linkedin/callback';
+const HTML_HEADERS = {
+  'Cache-Control': 'no-store',
+  'Content-Type': 'text/html; charset=utf-8',
+  'Referrer-Policy': 'no-referrer',
+  'X-Content-Type-Options': 'nosniff',
+  'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; frame-ancestors 'none'",
+};
+
+function isAllowedOrigin(url: URL): boolean {
+  return (
+    url.origin === 'https://forenclue.in' ||
+    url.origin === 'https://www.forenclue.in' ||
+    (url.protocol === 'http:' && (url.hostname === 'localhost' || url.hostname === '127.0.0.1'))
+  );
 }
 
-function extractRedirectUri(state: string | null, requestUrl: string, explicitRedirect?: string | null): string {
-  if (explicitRedirect) return explicitRedirect;
-  if (state && state.includes('__')) {
+function redirectUriFrom(request: Request, state: string | null, explicit?: unknown): string {
+  const requestUrl = new URL(request.url);
+  let value = typeof explicit === 'string' ? explicit : '';
+
+  if (!value && state?.includes('__')) {
     try {
-      const parts = state.split('__');
-      if (parts.length > 1) {
-        return decodeURIComponent(parts[1]);
-      }
-    } catch (e) {
-      console.warn('Failed to parse redirect_uri from state in Cloudflare worker:', e);
+      value = decodeURIComponent(state.slice(state.indexOf('__') + 2));
+    } catch {
+      value = '';
     }
   }
-  const url = new URL(requestUrl);
-  let protocol = url.protocol || 'https:';
-  if (!url.host.includes('localhost') && !url.host.includes('127.0.0.1')) {
-    protocol = 'https:';
+
+  const candidate = new URL(value || CALLBACK_PATH, requestUrl.origin);
+  if (!isAllowedOrigin(candidate) || candidate.pathname !== CALLBACK_PATH) {
+    throw new Error('Invalid LinkedIn redirect URI.');
   }
-  return `${protocol}//${url.host}/api/auth/linkedin/callback`;
+
+  candidate.search = '';
+  candidate.hash = '';
+  return candidate.toString();
 }
 
-async function exchangeLinkedInOAuth(
-  code: string,
-  redirectUri: string,
-  env: Env
-) {
-  const { clientId, clientSecret } = getLinkedInCredentials(env);
+function serializeForScript(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/&/g, '\\u0026')
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
 
+function popupHtml(payload: Record<string, unknown>, targetOrigin: string, success: boolean): Response {
+  const safePayload = serializeForScript(payload);
+  const safeOrigin = serializeForScript(targetOrigin);
+  const heading = success ? 'LinkedIn sign-in successful' : 'LinkedIn sign-in failed';
+  const detail = success ? 'Completing sign-in with ForenClue…' : 'Return to ForenClue and try again.';
+
+  return new Response(`<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${heading}</title></head>
+<body style="font-family:system-ui,sans-serif;text-align:center;padding:48px;background:#0b1120;color:#fff">
+  <main style="max-width:440px;margin:auto;padding:32px;border:1px solid rgba(255,255,255,.12);border-radius:16px;background:#111827">
+    <h1 style="font-size:22px">${heading}</h1><p style="color:#9ca3af">${detail}</p>
+  </main>
+  <script>
+    const payload = ${safePayload};
+    const targetOrigin = ${safeOrigin};
+    if (window.opener) {
+      window.opener.postMessage(payload, targetOrigin);
+      setTimeout(() => window.close(), ${success ? 700 : 2500});
+    } else if (payload.type === 'LINKEDIN_AUTH_SUCCESS' && payload.user) {
+      try { localStorage.setItem('manualUser', JSON.stringify(payload.user)); } catch (_) {}
+      window.location.replace('/');
+    } else {
+      setTimeout(() => window.location.replace('/login'), 2500);
+    }
+  </script>
+</body>
+</html>`, { status: 200, headers: HTML_HEADERS });
+}
+
+function credentials(env: LinkedInEnv): { clientId: string; clientSecret: string } {
+  if (!env.LINKEDIN_CLIENT_ID || !env.LINKEDIN_CLIENT_SECRET) {
+    throw new Error('LinkedIn authentication is not configured on the server.');
+  }
+  return { clientId: env.LINKEDIN_CLIENT_ID, clientSecret: env.LINKEDIN_CLIENT_SECRET };
+}
+
+async function exchangeCode(code: string, redirectUri: string, env: LinkedInEnv) {
+  const { clientId, clientSecret } = credentials(env);
   const tokenResponse = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -59,186 +115,76 @@ async function exchangeLinkedInOAuth(
       redirect_uri: redirectUri,
     }),
   });
-
-  const tokenData: any = await tokenResponse.json().catch(() => ({}));
-  if (!tokenResponse.ok || !tokenData.access_token) {
-    throw new Error(tokenData?.error_description || tokenData?.error || 'Failed to exchange token with LinkedIn');
+  const tokenData = await tokenResponse.json().catch(() => ({})) as Record<string, unknown>;
+  const accessToken = typeof tokenData.access_token === 'string' ? tokenData.access_token : '';
+  if (!tokenResponse.ok || !accessToken) {
+    const message = typeof tokenData.error_description === 'string'
+      ? tokenData.error_description
+      : 'LinkedIn rejected the authorization code.';
+    throw new Error(message);
   }
 
   const userResponse = await fetch('https://api.linkedin.com/v2/userinfo', {
-    headers: { Authorization: `Bearer ${tokenData.access_token}` },
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
-
-  const userData: any = await userResponse.json().catch(() => ({}));
-  if (!userResponse.ok || !userData.sub) {
-    throw new Error('Failed to fetch user profile from LinkedIn.');
+  const userInfo = await userResponse.json().catch(() => ({})) as LinkedInUserInfo;
+  if (!userResponse.ok || !userInfo.sub) {
+    throw new Error('LinkedIn did not return a valid user profile.');
   }
 
-  const linkedinUid = `linkedin:${userData.sub}`;
-  const email = userData.email || `${userData.sub}@linkedin.user`;
-  const name = userData.name || `${userData.given_name || ''} ${userData.family_name || ''}`.trim() || 'LinkedIn User';
-  const picture = userData.picture || '';
-
-  const userPayload = {
-    uid: linkedinUid,
-    email,
-    displayName: name,
-    photoURL: picture,
-  };
-
+  const displayName = userInfo.name || `${userInfo.given_name || ''} ${userInfo.family_name || ''}`.trim() || 'LinkedIn User';
+  const email = userInfo.email || `${userInfo.sub}@linkedin.user`;
   return {
-    user: userPayload,
     email,
-    raw: userData,
+    user: {
+      uid: `linkedin:${userInfo.sub}`,
+      email,
+      displayName,
+      photoURL: userInfo.picture || '',
+    },
   };
 }
 
-export const onRequestGet = async (context: { request: Request; env: Env }) => {
-  const url = new URL(context.request.url);
-  const code = url.searchParams.get('code');
+export const onRequestGet = async ({ request, env }: RequestContext): Promise<Response> => {
+  const url = new URL(request.url);
   const state = url.searchParams.get('state');
-  const error = url.searchParams.get('error');
-  const errorDescription = url.searchParams.get('error_description');
-
-  if (error) {
-    const errorMsg = errorDescription || error || 'LinkedIn sign-in was cancelled or encountered an error.';
-    return new Response(
-      `<!DOCTYPE html>
-      <html>
-      <head><title>LinkedIn Sign-In Error</title></head>
-      <body style="font-family: system-ui, sans-serif; text-align: center; padding: 40px; background: #0e1726; color: #fff;">
-        <h2 style="color: #ef4444;">LinkedIn Authentication Error</h2>
-        <p style="color: #9ca3af;">${errorMsg}</p>
-        <script>
-          if (window.opener) {
-            window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: ${JSON.stringify(errorMsg)} }, '*');
-            setTimeout(() => window.close(), 2500);
-          } else {
-            setTimeout(() => { window.location.href = '/login'; }, 3000);
-          }
-        </script>
-      </body>
-      </html>`,
-      {
-        status: 200,
-        headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS },
-      }
-    );
-  }
-
-  if (!code) {
-    return Response.redirect(`${url.origin}/login`, 302);
-  }
+  let targetOrigin = url.origin;
 
   try {
-    const redirectUri = extractRedirectUri(state, context.request.url);
-    const result = await exchangeLinkedInOAuth(code, redirectUri, context.env);
+    const redirectUri = redirectUriFrom(request, state);
+    targetOrigin = new URL(redirectUri).origin;
+    const providerError = url.searchParams.get('error_description') || url.searchParams.get('error');
+    if (providerError) throw new Error(providerError);
 
-    return new Response(
-      `<!DOCTYPE html>
-      <html>
-      <head>
-        <title>LinkedIn Sign-In Successful</title>
-        <style>
-          body { font-family: system-ui, -apple-system, sans-serif; background: #0b1120; color: #f3f4f6; text-align: center; padding: 40px; }
-          .card { background: #111827; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 32px; max-width: 400px; margin: 0 auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5); }
-          .avatar { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 16px; border: 2px solid #0A66C2; object-fit: cover; }
-          .spinner { width: 28px; height: 28px; border: 3px solid rgba(10,102,194,0.3); border-top-color: #0A66C2; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 20px auto 0; }
-          @keyframes spin { to { transform: rotate(360deg); } }
-        </style>
-      </head>
-      <body>
-        <div class="card">
-          ${result.user.photoURL ? `<img src="${result.user.photoURL}" class="avatar" alt="${result.user.displayName}" />` : ''}
-          <h3 style="margin: 0 0 8px; font-size: 20px; color: #fff;">Welcome, ${result.user.displayName}!</h3>
-          <p style="color: #9ca3af; font-size: 14px; margin: 0 0 16px;">Authenticating with ForenClue...</p>
-          <div class="spinner"></div>
-        </div>
-        <script>
-          const payload = {
-            type: 'LINKEDIN_AUTH_SUCCESS',
-            email: ${JSON.stringify(result.email)},
-            user: ${JSON.stringify(result.user)}
-          };
-          if (window.opener) {
-            window.opener.postMessage(payload, '*');
-            setTimeout(() => window.close(), 1000);
-          } else {
-            try {
-              localStorage.setItem('manualUser', JSON.stringify(${JSON.stringify(result.user)}));
-              sessionStorage.setItem('manualUser', JSON.stringify(${JSON.stringify(result.user)}));
-            } catch (e) {}
-            window.location.href = '/';
-          }
-        </script>
-      </body>
-      </html>`,
-      {
-        status: 200,
-        headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS },
-      }
-    );
-  } catch (err: any) {
-    console.error('LinkedIn OAuth Edge callback error:', err);
-    const errorMsg = err.message || 'An unexpected error occurred during LinkedIn authorization.';
-
-    return new Response(
-      `<!DOCTYPE html>
-      <html>
-      <head><title>Authentication Failed</title></head>
-      <body style="font-family: system-ui, sans-serif; text-align: center; padding: 40px; background: #0e1726; color: #fff;">
-        <h2 style="color: #ef4444;">LinkedIn Sign-In Failed</h2>
-        <p style="color: #9ca3af;">${errorMsg}</p>
-        <script>
-          if (window.opener) {
-            window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: ${JSON.stringify(errorMsg)} }, '*');
-            setTimeout(() => window.close(), 3000);
-          } else {
-            setTimeout(() => { window.location.href = '/login'; }, 3000);
-          }
-        </script>
-      </body>
-      </html>`,
-      {
-        status: 200,
-        headers: { 'Content-Type': 'text/html; charset=utf-8', ...CORS_HEADERS },
-      }
-    );
+    const code = url.searchParams.get('code');
+    if (!code) throw new Error('Missing authorization code from LinkedIn.');
+    const result = await exchangeCode(code, redirectUri, env);
+    return popupHtml({ type: 'LINKEDIN_AUTH_SUCCESS', state, ...result }, targetOrigin, true);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'LinkedIn authentication failed.';
+    return popupHtml({ type: 'LINKEDIN_AUTH_ERROR', state, error: message }, targetOrigin, false);
   }
 };
 
-export const onRequestPost = async (context: { request: Request; env: Env }) => {
+export const onRequestPost = async ({ request, env }: RequestContext): Promise<Response> => {
   try {
-    const body: any = await context.request.json().catch(() => ({}));
-    const code = body.code;
-    const state = body.state;
-    const redirectUri = extractRedirectUri(state, context.request.url, body.redirect_uri);
-
+    const body = await request.json().catch(() => ({})) as Record<string, unknown>;
+    const code = typeof body.code === 'string' ? body.code : '';
+    const state = typeof body.state === 'string' ? body.state : null;
     if (!code) {
-      return new Response(
-        JSON.stringify({ type: 'LINKEDIN_AUTH_ERROR', error: 'Missing authorization code' }),
-        { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
-      );
+      return Response.json({ type: 'LINKEDIN_AUTH_ERROR', error: 'Missing authorization code.' }, { status: 400 });
     }
 
-    const result = await exchangeLinkedInOAuth(code, redirectUri, context.env);
-
-    return new Response(
-      JSON.stringify({
-        type: 'LINKEDIN_AUTH_SUCCESS',
-        email: result.email,
-        user: result.user,
-      }),
-      { status: 200, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
-    );
-  } catch (err: any) {
-    console.error('LinkedIn OAuth Edge POST error:', err);
-    return new Response(
-      JSON.stringify({
-        type: 'LINKEDIN_AUTH_ERROR',
-        error: err.message || 'LinkedIn authentication failed on Cloudflare Edge',
-      }),
-      { status: 400, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } }
-    );
+    const redirectUri = redirectUriFrom(request, state, body.redirect_uri);
+    const result = await exchangeCode(code, redirectUri, env);
+    return Response.json({ type: 'LINKEDIN_AUTH_SUCCESS', state, ...result }, {
+      headers: { 'Cache-Control': 'no-store' },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'LinkedIn authentication failed.';
+    return Response.json({ type: 'LINKEDIN_AUTH_ERROR', error: message }, {
+      status: 400,
+      headers: { 'Cache-Control': 'no-store' },
+    });
   }
 };

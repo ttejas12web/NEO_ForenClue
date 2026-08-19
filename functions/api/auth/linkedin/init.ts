@@ -1,34 +1,69 @@
-interface Env {
+export interface LinkedInEnv {
   LINKEDIN_CLIENT_ID?: string;
-  VITE_LINKEDIN_CLIENT_ID?: string;
-  [key: string]: any;
 }
 
-const CORS_HEADERS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+type RequestContext = {
+  request: Request;
+  env: LinkedInEnv;
 };
 
-export const onRequestOptions = async () => {
-  return new Response(null, { status: 204, headers: CORS_HEADERS });
-};
+const CALLBACK_PATH = '/api/auth/linkedin/callback';
 
-export const onRequest = async (context: { request: Request; env: Env }) => {
-  const url = new URL(context.request.url);
-  const clientId = context.env.LINKEDIN_CLIENT_ID || context.env.VITE_LINKEDIN_CLIENT_ID || '86fnkfb4khjr8g';
-  const redirectUri = url.searchParams.get('redirect_uri') || `${url.origin}/api/auth/linkedin/callback`;
-  const state = url.searchParams.get('state') || 'auth_' + Math.random().toString(36).substring(7);
-  const scope = 'openid profile email';
+function isAllowedOrigin(url: URL): boolean {
+  return (
+    url.origin === 'https://forenclue.in' ||
+    url.origin === 'https://www.forenclue.in' ||
+    (url.protocol === 'http:' && (url.hostname === 'localhost' || url.hostname === '127.0.0.1'))
+  );
+}
 
-  const authUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${encodeURIComponent(scope)}`;
+function getRedirectUri(request: Request): string {
+  const requestUrl = new URL(request.url);
+  const requested = requestUrl.searchParams.get('redirect_uri');
+  const candidate = new URL(requested || CALLBACK_PATH, requestUrl.origin);
 
-  if (context.request.headers.get('accept')?.includes('application/json') || url.searchParams.get('json') === 'true') {
-    return new Response(JSON.stringify({ authUrl, clientId, redirectUri, state }), {
-      status: 200,
-      headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
-    });
+  if (!isAllowedOrigin(candidate) || candidate.pathname !== CALLBACK_PATH) {
+    throw new Error('Invalid LinkedIn redirect URI.');
   }
 
-  return Response.redirect(authUrl, 302);
+  candidate.search = '';
+  candidate.hash = '';
+  return candidate.toString();
+}
+
+function randomState(redirectUri: string): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  const nonce = Array.from(bytes, byte => byte.toString(16).padStart(2, '0')).join('');
+  return `${nonce}__${encodeURIComponent(redirectUri)}`;
+}
+
+export const onRequestGet = async ({ request, env }: RequestContext): Promise<Response> => {
+  try {
+    if (!env.LINKEDIN_CLIENT_ID) {
+      return Response.json({ error: 'LinkedIn authentication is not configured.' }, { status: 503 });
+    }
+
+    const redirectUri = getRedirectUri(request);
+    const requestUrl = new URL(request.url);
+    const state = requestUrl.searchParams.get('state') || randomState(redirectUri);
+    const authUrl = new URL('https://www.linkedin.com/oauth/v2/authorization');
+    authUrl.search = new URLSearchParams({
+      response_type: 'code',
+      client_id: env.LINKEDIN_CLIENT_ID,
+      redirect_uri: redirectUri,
+      state,
+      scope: 'openid profile email',
+    }).toString();
+
+    if (requestUrl.searchParams.get('json') === 'true' || request.headers.get('Accept')?.includes('application/json')) {
+      return Response.json({ authUrl: authUrl.toString(), redirectUri, state }, {
+        headers: { 'Cache-Control': 'no-store' },
+      });
+    }
+
+    return Response.redirect(authUrl.toString(), 302);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unable to initialize LinkedIn authentication.';
+    return Response.json({ error: message }, { status: 400 });
+  }
 };

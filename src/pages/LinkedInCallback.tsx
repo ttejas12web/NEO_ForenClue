@@ -9,6 +9,7 @@ export default function LinkedInCallback() {
 
   useEffect(() => {
     async function processCallback() {
+      const callbackOrigin = window.location.origin;
       const code = searchParams.get('code');
       const state = searchParams.get('state');
       const error = searchParams.get('error');
@@ -19,7 +20,7 @@ export default function LinkedInCallback() {
         setStatus('error');
         setErrorMessage(msg);
         if (window.opener) {
-          window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: msg }, '*');
+          window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: msg, state }, callbackOrigin);
           setTimeout(() => window.close(), 2500);
         }
         return;
@@ -29,54 +30,26 @@ export default function LinkedInCallback() {
         setStatus('error');
         setErrorMessage('Missing authorization code from LinkedIn.');
         if (window.opener) {
-          window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: 'Missing authorization code' }, '*');
+          window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: 'Missing authorization code', state }, callbackOrigin);
           setTimeout(() => window.close(), 2500);
         }
         return;
       }
 
       try {
-        const origin = window.location.origin;
-        const redirectUri = `${origin}/api/auth/linkedin/callback`;
-
-        // Try candidate backend endpoints in sequence if relative call fails
-        const backendCandidates = [
-          `${origin}/api/auth/linkedin/callback`,
-          '/api/auth/linkedin/callback',
-          'https://www.forenclue.in/api/auth/linkedin/callback',
-          'https://forenclue.in/api/auth/linkedin/callback'
-        ];
-
-        let response: Response | null = null;
-        let data: any = null;
-
-        for (const endpoint of backendCandidates) {
-          try {
-            const res = await fetch(endpoint, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-              },
-              body: JSON.stringify({
-                code,
-                state,
-                redirect_uri: redirectUri
-              })
-            });
-            const contentType = res.headers.get('content-type') || '';
-            if (contentType.includes('application/json')) {
-              const jsonData = await res.json().catch(() => null);
-              if (jsonData) {
-                response = res;
-                data = jsonData;
-                if (res.ok) break;
-              }
-            }
-          } catch (err) {
-            console.warn(`[LinkedIn Callback Client] Endpoint ${endpoint} failed:`, err);
-          }
-        }
+        const redirectUri = `${callbackOrigin}/api/auth/linkedin/callback`;
+        const response = await fetch('/api/auth/linkedin/callback', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({ code, state, redirect_uri: redirectUri })
+        });
+        const contentType = response.headers.get('content-type') || '';
+        const data = contentType.includes('application/json')
+          ? await response.json().catch(() => null)
+          : null;
 
         if (response && response.ok && data && (data.type === 'LINKEDIN_AUTH_SUCCESS' || data.user || data.customToken)) {
           setStatus('success');
@@ -85,10 +58,11 @@ export default function LinkedInCallback() {
             customToken: data.customToken,
             tempPassword: data.tempPassword,
             email: data.email,
-            user: data.user
+            user: data.user,
+            state
           };
           if (window.opener) {
-            window.opener.postMessage(payload, '*');
+            window.opener.postMessage(payload, callbackOrigin);
             setTimeout(() => window.close(), 1000);
           } else {
             try {
@@ -103,7 +77,7 @@ export default function LinkedInCallback() {
           setStatus('error');
           setErrorMessage(errText);
           if (window.opener) {
-            window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: errText }, '*');
+            window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: errText, state }, callbackOrigin);
             setTimeout(() => window.close(), 3000);
           }
         }
@@ -113,7 +87,7 @@ export default function LinkedInCallback() {
         setStatus('error');
         setErrorMessage(msg);
         if (window.opener) {
-          window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: msg }, '*');
+          window.opener.postMessage({ type: 'LINKEDIN_AUTH_ERROR', error: msg, state }, callbackOrigin);
           setTimeout(() => window.close(), 3000);
         }
       }

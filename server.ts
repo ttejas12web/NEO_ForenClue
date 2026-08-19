@@ -351,7 +351,10 @@ async function startServer() {
 
     try {
       const clientId = process.env.LINKEDIN_CLIENT_ID || process.env.VITE_LINKEDIN_CLIENT_ID || "86fnkfb4khjr8g";
-      const clientSecret = process.env.LINKEDIN_CLIENT_SECRET || ['WPL_AP1', 'RNPYrFPdKMe2yBQV', 'YdOGCA=='].join('.');
+      const clientSecret = process.env.LINKEDIN_CLIENT_SECRET;
+      if (!clientSecret) {
+        throw new Error('LinkedIn authentication is not configured on the server.');
+      }
       
       // Extract exact redirectUri if provided in query, body, or state parameter
       let exactRedirectUri = (req.query.redirect_uri || req.body?.redirect_uri) as string;

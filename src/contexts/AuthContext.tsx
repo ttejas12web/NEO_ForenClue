@@ -261,13 +261,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signInWithLinkedIn = async () => {
     return new Promise<void>((resolve, reject) => {
       const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID || '86fnkfb4khjr8g';
-      const protocol = window.location.protocol;
-      const host = window.location.host;
-      let origin = `${protocol}//${host}`;
-      if (!host.includes('localhost') && !host.includes('127.0.0.1')) {
-        origin = `https://${host}`;
-      }
-      
+      const origin = window.location.origin;
       const redirectUri = `${origin}/api/auth/linkedin/callback`;
       const randomState = Array.from(window.crypto.getRandomValues(new Uint8Array(16)))
         .map(b => b.toString(16).padStart(2, '0')).join('');
@@ -293,21 +287,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       let isSettled = false;
+      let pollTimer: number | undefined;
+      let timeoutTimer: number | undefined;
 
       const cleanup = () => {
-        clearInterval(timer);
+        if (pollTimer !== undefined) window.clearInterval(pollTimer);
+        if (timeoutTimer !== undefined) window.clearTimeout(timeoutTimer);
         window.removeEventListener('message', handleMessage);
       };
 
-      const timer = setInterval(() => {
+      const fail = (message: string) => {
+        if (isSettled) return;
+        isSettled = true;
+        cleanup();
+        reject(new Error(message));
+      };
+
+      pollTimer = window.setInterval(() => {
         if (popup.closed && !isSettled) {
-          cleanup();
-          isSettled = true;
-          resolve();
+          fail('LinkedIn sign-in was closed before authentication finished.');
         }
-      }, 1000);
+      }, 500);
+
+      timeoutTimer = window.setTimeout(() => {
+        if (!popup.closed) popup.close();
+        fail('LinkedIn sign-in timed out. Please try again.');
+      }, 5 * 60 * 1000);
 
       const handleMessage = async (event: MessageEvent) => {
+        if (event.origin !== origin || event.source !== popup || event.data?.state !== state) return;
+
         if (event.data?.type === 'LINKEDIN_AUTH_SUCCESS') {
           if (isSettled) return;
           isSettled = true;
@@ -362,10 +371,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             reject(err);
           }
         } else if (event.data?.type === 'LINKEDIN_AUTH_ERROR') {
-          if (isSettled) return;
-          isSettled = true;
-          cleanup();
-          reject(new Error(event.data.error || 'LinkedIn authentication failed'));
+          fail(event.data.error || 'LinkedIn authentication failed');
         }
       };
 

@@ -1,14 +1,12 @@
-name = "new-forenclue"
-compatibility_date = "2026-08-13"
-pages_build_output_dir = "dist"
+name = "neo-forenclue"
+main = "worker.ts"
+compatibility_date = "2026-08-19"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+run_worker_first = ["/api/*"]
 
 [vars]
-NODE_VERSION = "25"
-R2_CUSTOM_DOMAIN = "https://www.forenclue.in"
-R2_PUBLIC_DOMAIN = "https://www.forenclue.in"
-R2_BUCKET_NAME = "neo-forenclue"
-
-[[r2_buckets]]
-binding = "R2_BUCKET"
-bucket_name = "neo-forenclue"
-
+LINKEDIN_CLIENT_ID = "86fnkfb4khjr8g"
