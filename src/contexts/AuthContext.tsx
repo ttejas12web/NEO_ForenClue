@@ -260,6 +260,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signInWithLinkedIn = async () => {
     return new Promise<void>((resolve, reject) => {
+      const storageKey = 'forenclue:linkedin-auth-result';
       const clientId = import.meta.env.VITE_LINKEDIN_CLIENT_ID || '86fnkfb4khjr8g';
       const origin = window.location.origin;
       const redirectUri = `${origin}/api/auth/linkedin/callback`;
@@ -287,13 +288,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       let isSettled = false;
-      let pollTimer: number | undefined;
       let timeoutTimer: number | undefined;
 
       const cleanup = () => {
-        if (pollTimer !== undefined) window.clearInterval(pollTimer);
         if (timeoutTimer !== undefined) window.clearTimeout(timeoutTimer);
         window.removeEventListener('message', handleMessage);
+        window.removeEventListener('storage', handleStorage);
       };
 
       const fail = (message: string) => {
@@ -303,25 +303,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         reject(new Error(message));
       };
 
-      pollTimer = window.setInterval(() => {
-        if (popup.closed && !isSettled) {
-          fail('LinkedIn sign-in was closed before authentication finished.');
-        }
-      }, 500);
-
       timeoutTimer = window.setTimeout(() => {
-        if (!popup.closed) popup.close();
+        try {
+          popup.close();
+        } catch (_) {}
         fail('LinkedIn sign-in timed out. Please try again.');
       }, 5 * 60 * 1000);
 
-      const handleMessage = async (event: MessageEvent) => {
-        if (event.origin !== origin || event.source !== popup || event.data?.state !== state) return;
+      const handleAuthResult = async (data: any) => {
+        if (data?.state !== state) return;
 
-        if (event.data?.type === 'LINKEDIN_AUTH_SUCCESS') {
+        try {
+          window.localStorage.removeItem(storageKey);
+        } catch (_) {}
+
+        if (data?.type === 'LINKEDIN_AUTH_SUCCESS') {
           if (isSettled) return;
           isSettled = true;
           cleanup();
-          const { customToken, user: authUser, email } = event.data;
+          const { customToken, user: authUser, email } = data;
           try {
             if (customToken) {
               await signInWithCustomToken(auth, customToken);
@@ -370,12 +370,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error("Firebase custom auth error with LinkedIn:", err);
             reject(err);
           }
-        } else if (event.data?.type === 'LINKEDIN_AUTH_ERROR') {
-          fail(event.data.error || 'LinkedIn authentication failed');
+        } else if (data?.type === 'LINKEDIN_AUTH_ERROR') {
+          fail(data.error || 'LinkedIn authentication failed');
         }
       };
 
+      const handleMessage = (event: MessageEvent) => {
+        if (event.origin !== origin || event.data?.state !== state) return;
+        void handleAuthResult(event.data);
+      };
+
+      const handleStorage = (event: StorageEvent) => {
+        if (event.key !== storageKey || !event.newValue) return;
+
+        try {
+          const stored = JSON.parse(event.newValue);
+          const createdAt = Number(stored?.createdAt || 0);
+          if (!createdAt || Date.now() - createdAt > 5 * 60 * 1000) return;
+          void handleAuthResult(stored.payload);
+        } catch (_) {
+          // Ignore malformed or unrelated local storage values.
+        }
+      };
+
+      try {
+        window.localStorage.removeItem(storageKey);
+      } catch (_) {}
       window.addEventListener('message', handleMessage);
+      window.addEventListener('storage', handleStorage);
     });
   };
 

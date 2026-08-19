@@ -18,6 +18,7 @@ type LinkedInUserInfo = {
 };
 
 const CALLBACK_PATH = '/api/auth/linkedin/callback';
+const AUTH_RESULT_STORAGE_KEY = 'forenclue:linkedin-auth-result';
 const HTML_HEADERS = {
   'Cache-Control': 'no-store',
   'Content-Type': 'text/html; charset=utf-8',
@@ -68,6 +69,7 @@ function serializeForScript(value: unknown): string {
 function popupHtml(payload: Record<string, unknown>, targetOrigin: string, success: boolean): Response {
   const safePayload = serializeForScript(payload);
   const safeOrigin = serializeForScript(targetOrigin);
+  const safeStorageKey = serializeForScript(AUTH_RESULT_STORAGE_KEY);
   const heading = success ? 'LinkedIn sign-in successful' : 'LinkedIn sign-in failed';
   const detail = success ? 'Completing sign-in with ForenClue…' : 'Return to ForenClue and try again.';
 
@@ -81,14 +83,18 @@ function popupHtml(payload: Record<string, unknown>, targetOrigin: string, succe
   <script>
     const payload = ${safePayload};
     const targetOrigin = ${safeOrigin};
+    const storageKey = ${safeStorageKey};
+    try {
+      localStorage.setItem(storageKey, JSON.stringify({ payload, createdAt: Date.now() }));
+    } catch (_) {}
     if (window.opener) {
-      window.opener.postMessage(payload, targetOrigin);
-      setTimeout(() => window.close(), ${success ? 700 : 2500});
-    } else if (payload.type === 'LINKEDIN_AUTH_SUCCESS' && payload.user) {
-      try { localStorage.setItem('manualUser', JSON.stringify(payload.user)); } catch (_) {}
-      window.location.replace('/');
+      try { window.opener.postMessage(payload, targetOrigin); } catch (_) {}
+      setTimeout(() => window.close(), ${success ? 900 : 2500});
     } else {
-      setTimeout(() => window.location.replace('/login'), 2500);
+      setTimeout(() => {
+        window.close();
+        setTimeout(() => window.location.replace('/login?linkedin=complete'), 300);
+      }, ${success ? 900 : 2500});
     }
   </script>
 </body>
