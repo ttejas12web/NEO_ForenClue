@@ -40,8 +40,7 @@ export default function Login() {
     sendVerificationEmail, 
     sendPasswordReset, 
     reloadUser,
-    loading, 
-    adminLogin 
+    loading
   } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -76,8 +75,8 @@ export default function Login() {
   const [resetSuccessMsg, setResetSuccessMsg] = useState('');
   const [resetErrorMsg, setResetErrorMsg] = useState('');
 
-  // Tabs for interactive Sign In vs Create Account vs Admin Portal
-  const [activeTab, setActiveTab] = useState<'signin' | 'signup' | 'admin'>('signin');
+  // Tabs for interactive Sign In vs Create Account
+  const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   
   // Traditional inputs
   const [displayName, setDisplayName] = useState('');
@@ -205,15 +204,6 @@ export default function Login() {
         setTimeout(() => {
           navigate(from, { replace: true });
         }, 1200);
-      } else if (activeTab === 'admin') {
-        if (!adminLogin) {
-          throw new Error('Admin authentication service unavailable.');
-        }
-        await adminLogin(simulatedEmail, simulatedPassword);
-        setAuthSuccess('Administrator authenticated successfully! Redirecting to command console...');
-        setTimeout(() => {
-          navigate('/admin', { replace: true });
-        }, 800);
       } else {
         await signInWithEmail(simulatedEmail, simulatedPassword);
         setAuthSuccess('Sign in successful! Directing to portal...');
@@ -354,7 +344,7 @@ export default function Login() {
               </div>
             )}
 
-            {/* Tab switch mechanism: Sign In vs Create Account vs Admin */}
+            {/* Tab switch mechanism: Sign In vs Create Account */}
             <div className="flex border-b border-black/10 dark:border-white/5 mb-8">
               <button 
                 onClick={() => {
@@ -383,21 +373,6 @@ export default function Login() {
               >
                 Create Account
                 {activeTab === 'signup' && (
-                  <motion.div layoutId="authTabUnderline" className="absolute bottom-0 left-0 right-0 h-[2px] bg-warning" />
-                )}
-              </button>
-              <button 
-                onClick={() => {
-                  setActiveTab('admin');
-                  setAuthError('');
-                  setAuthSuccess('');
-                }}
-                className={`flex-1 pb-4 text-xs sm:text-sm font-heading font-black uppercase tracking-widest transition-all relative ${
-                  activeTab === 'admin' ? 'text-warning' : 'text-text-muted/60 hover:text-text-main'
-                }`}
-              >
-                Admin
-                {activeTab === 'admin' && (
                   <motion.div layoutId="authTabUnderline" className="absolute bottom-0 left-0 right-0 h-[2px] bg-warning" />
                 )}
               </button>
@@ -475,7 +450,7 @@ export default function Login() {
 
               <div>
                 <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">
-                  {activeTab === 'admin' ? 'Administrator Email' : 'Email Address'}
+                  Email Address
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
@@ -486,7 +461,7 @@ export default function Login() {
                     required
                     value={simulatedEmail}
                     onChange={(e) => setSimulatedEmail(e.target.value)}
-                    placeholder={activeTab === 'admin' ? 'forenclue@gmail.com' : 'investigator@forenclue.in'}
+                    placeholder="investigator@forenclue.in"
                     className="w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border border-black/15 dark:border-white/5 pl-10 pr-4 h-11 focus:outline-none focus:border-warning/50 transition-all font-mono"
                   />
                 </div>
@@ -600,7 +575,7 @@ export default function Login() {
                   <div className="w-5 h-5 border-2 border-crust border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <>
-                    {activeTab === 'signin' ? 'Verify Credentials' : activeTab === 'admin' ? 'Authorize Admin Portal' : 'Create Protected Account'}
+                    {activeTab === 'signin' ? 'Verify Credentials' : 'Create Protected Account'}
                     <ArrowRight size={14} />
                   </>
                 )}
@@ -608,8 +583,7 @@ export default function Login() {
             </form>
 
             {/* Split lines/Or */}
-            {activeTab !== 'admin' && (
-              <>
+            <>
                 <div className="relative flex items-center justify-center mb-8">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-black/10 dark:border-white/5" />
@@ -644,8 +618,7 @@ export default function Login() {
                     )}
                   </motion.button>
                 </div>
-              </>
-            )}
+            </>
           </div>
 
         </motion.div>

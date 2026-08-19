@@ -289,9 +289,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       let isSettled = false;
       let timeoutTimer: number | undefined;
+      let storagePollTimer: number | undefined;
 
       const cleanup = () => {
         if (timeoutTimer !== undefined) window.clearTimeout(timeoutTimer);
+        if (storagePollTimer !== undefined) window.clearInterval(storagePollTimer);
         window.removeEventListener('message', handleMessage);
         window.removeEventListener('storage', handleStorage);
       };
@@ -391,10 +393,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const handleStorage = (event: StorageEvent) => {
         if (event.key !== storageKey || !event.newValue) return;
 
+        consumeStoredResult(event.newValue);
+      };
+
+      const consumeStoredResult = (rawValue: string | null) => {
+        if (!rawValue || isSettled) return;
+
         try {
-          const stored = JSON.parse(event.newValue);
+          const stored = JSON.parse(rawValue);
           const createdAt = Number(stored?.createdAt || 0);
-          if (!createdAt || Date.now() - createdAt > 5 * 60 * 1000) return;
+          if (!createdAt || Date.now() - createdAt > 5 * 60 * 1000) {
+            window.localStorage.removeItem(storageKey);
+            return;
+          }
           void handleAuthResult(stored.payload);
         } catch (_) {
           // Ignore malformed or unrelated local storage values.
@@ -406,6 +417,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (_) {}
       window.addEventListener('message', handleMessage);
       window.addEventListener('storage', handleStorage);
+      // Safari can suppress the storage event after a cross-origin OAuth popup
+      // severs its opener. Polling the same-origin handoff makes completion reliable.
+      storagePollTimer = window.setInterval(() => {
+        try {
+          consumeStoredResult(window.localStorage.getItem(storageKey));
+        } catch (_) {}
+      }, 350);
     });
   };
 
