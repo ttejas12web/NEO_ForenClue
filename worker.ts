@@ -10,6 +10,8 @@ interface Env {
   };
   LINKEDIN_CLIENT_ID?: string;
   LINKEDIN_CLIENT_SECRET?: string;
+  LINKEDIN_FIREBASE_SESSION_SECRET?: string;
+  FIREBASE_API_KEY?: string;
 }
 
 const jsonError = (message: string, status: number): Response =>

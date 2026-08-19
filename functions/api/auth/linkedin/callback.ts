@@ -1,6 +1,8 @@
 export interface LinkedInEnv {
   LINKEDIN_CLIENT_ID?: string;
   LINKEDIN_CLIENT_SECRET?: string;
+  LINKEDIN_FIREBASE_SESSION_SECRET?: string;
+  FIREBASE_API_KEY?: string;
 }
 
 type RequestContext = {
@@ -86,6 +88,7 @@ function popupHtml(payload: Record<string, unknown>, targetOrigin: string, succe
     const storageKey = ${safeStorageKey};
     try {
       localStorage.setItem(storageKey, JSON.stringify({ payload, createdAt: Date.now() }));
+      setTimeout(() => localStorage.removeItem(storageKey), 10000);
     } catch (_) {}
     if (window.opener) {
       try { window.opener.postMessage(payload, targetOrigin); } catch (_) {}
@@ -106,6 +109,64 @@ function credentials(env: LinkedInEnv): { clientId: string; clientSecret: string
     throw new Error('LinkedIn authentication is not configured on the server.');
   }
   return { clientId: env.LINKEDIN_CLIENT_ID, clientSecret: env.LINKEDIN_CLIENT_SECRET };
+}
+
+function toHex(bytes: ArrayBuffer): string {
+  return Array.from(new Uint8Array(bytes), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+function toBase64Url(bytes: ArrayBuffer): string {
+  let binary = '';
+  for (const byte of new Uint8Array(bytes)) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+}
+
+async function firebaseIdentityFor(linkedInSub: string, env: LinkedInEnv) {
+  if (!env.FIREBASE_API_KEY || !env.LINKEDIN_FIREBASE_SESSION_SECRET) {
+    throw new Error('LinkedIn Firebase session creation is not configured on the server.');
+  }
+
+  const encoder = new TextEncoder();
+  const subjectHash = await crypto.subtle.digest('SHA-256', encoder.encode(linkedInSub));
+  const authEmail = `linkedin.${toHex(subjectHash).slice(0, 40)}@auth.forenclue.invalid`;
+  const hmacKey = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(env.LINKEDIN_FIREBASE_SESSION_SECRET),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const signature = await crypto.subtle.sign('HMAC', hmacKey, encoder.encode(`linkedin:${linkedInSub}`));
+  const tempPassword = `${toBase64Url(signature)}Aa1!`;
+
+  const callFirebase = async (action: 'signUp' | 'signInWithPassword') => {
+    const response = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:${action}?key=${encodeURIComponent(env.FIREBASE_API_KEY!)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authEmail, password: tempPassword, returnSecureToken: true }),
+      },
+    );
+    const body = await response.json().catch(() => ({})) as {
+      localId?: string;
+      error?: { message?: string };
+    };
+    return { response, body };
+  };
+
+  let { response, body } = await callFirebase('signUp');
+  const errorCode = body.error?.message?.split(' : ')[0];
+  if (!response.ok && errorCode === 'EMAIL_EXISTS') {
+    ({ response, body } = await callFirebase('signInWithPassword'));
+  }
+
+  if (!response.ok || !body.localId) {
+    const reason = body.error?.message || 'Firebase rejected the LinkedIn session.';
+    throw new Error(`Could not create the ForenClue session: ${reason}`);
+  }
+
+  return { authEmail, tempPassword, firebaseUid: body.localId };
 }
 
 async function exchangeCode(code: string, redirectUri: string, env: LinkedInEnv) {
@@ -138,12 +199,16 @@ async function exchangeCode(code: string, redirectUri: string, env: LinkedInEnv)
     throw new Error('LinkedIn did not return a valid user profile.');
   }
 
+  const firebaseIdentity = await firebaseIdentityFor(userInfo.sub, env);
   const displayName = userInfo.name || `${userInfo.given_name || ''} ${userInfo.family_name || ''}`.trim() || 'LinkedIn User';
   const email = userInfo.email || `${userInfo.sub}@linkedin.user`;
   return {
     email,
+    authEmail: firebaseIdentity.authEmail,
+    tempPassword: firebaseIdentity.tempPassword,
     user: {
-      uid: `linkedin:${userInfo.sub}`,
+      uid: firebaseIdentity.firebaseUid,
+      linkedinUid: `linkedin:${userInfo.sub}`,
       email,
       displayName,
       photoURL: userInfo.picture || '',

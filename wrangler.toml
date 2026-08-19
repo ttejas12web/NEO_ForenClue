@@ -10,6 +10,7 @@ run_worker_first = ["/api/*"]
 
 [vars]
 LINKEDIN_CLIENT_ID = "86fnkfb4khjr8g"
+FIREBASE_API_KEY = "AIzaSyA8uz8BkLv1ZLyTI7oUKmw2Dy7mX0QcjX0"
 
 [secrets]
-required = ["LINKEDIN_CLIENT_SECRET"]
+required = ["LINKEDIN_CLIENT_SECRET", "LINKEDIN_FIREBASE_SESSION_SECRET"]

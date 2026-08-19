@@ -321,14 +321,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isSettled) return;
           isSettled = true;
           cleanup();
-          const { customToken, user: authUser, email } = data;
+          const { customToken, tempPassword, authEmail, user: authUser, email } = data;
           try {
             if (customToken) {
               await signInWithCustomToken(auth, customToken);
               recordSuccessfulLogin('linkedin_oauth');
             } else if (authUser) {
-              // Edge / serverless fallback without Admin customToken
+              // Establish a real Firebase session for the LinkedIn identity.
               let activeFirebaseUser = auth.currentUser;
+              if (!activeFirebaseUser && authEmail && tempPassword) {
+                const linkedInCredential = await signInWithEmailAndPassword(auth, authEmail, tempPassword);
+                activeFirebaseUser = linkedInCredential.user;
+              }
+
+              // Retained only for deployments that still have anonymous auth enabled.
               if (!activeFirebaseUser) {
                 try {
                   const anonCred = await signInAnonymously(auth);
@@ -338,30 +344,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 }
               }
 
-              if (activeFirebaseUser) {
-                try {
-                  await updateProfile(activeFirebaseUser, {
-                    displayName: authUser.displayName || 'LinkedIn User',
-                    photoURL: authUser.photoURL || undefined
-                  });
-                } catch (profErr) {
-                  console.warn("Could not update auth profile:", profErr);
-                }
+              if (!activeFirebaseUser) {
+                throw new Error('ForenClue could not establish the Firebase session for this LinkedIn account.');
+              }
 
-                try {
-                  const userRef = doc(db, 'users', activeFirebaseUser.uid);
-                  await setDoc(userRef, {
-                    uid: activeFirebaseUser.uid,
-                    email: authUser.email || email || activeFirebaseUser.email || '',
-                    displayName: authUser.displayName || activeFirebaseUser.displayName || 'LinkedIn User',
-                    photoURL: authUser.photoURL || activeFirebaseUser.photoURL || '',
-                    provider: 'linkedin',
-                    linkedinUid: authUser.uid,
-                    updatedAt: serverTimestamp()
-                  }, { merge: true });
-                } catch (fsErr) {
-                  console.warn("Could not merge Firestore profile:", fsErr);
-                }
+              try {
+                await updateProfile(activeFirebaseUser, {
+                  displayName: authUser.displayName || 'LinkedIn User',
+                  photoURL: authUser.photoURL || undefined
+                });
+              } catch (profErr) {
+                console.warn("Could not update auth profile:", profErr);
+              }
+
+              try {
+                const userRef = doc(db, 'users', activeFirebaseUser.uid);
+                await setDoc(userRef, {
+                  uid: activeFirebaseUser.uid,
+                  email: authUser.email || email || activeFirebaseUser.email || '',
+                  displayName: authUser.displayName || activeFirebaseUser.displayName || 'LinkedIn User',
+                  photoURL: authUser.photoURL || activeFirebaseUser.photoURL || '',
+                  provider: 'linkedin',
+                  linkedinUid: authUser.linkedinUid || authUser.uid,
+                  updatedAt: serverTimestamp()
+                }, { merge: true });
+              } catch (fsErr) {
+                console.warn("Could not merge Firestore profile:", fsErr);
               }
               recordSuccessfulLogin('linkedin_oauth');
             }
