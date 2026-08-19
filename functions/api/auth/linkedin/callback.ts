@@ -86,18 +86,17 @@ function popupHtml(payload: Record<string, unknown>, targetOrigin: string, succe
     const payload = ${safePayload};
     const targetOrigin = ${safeOrigin};
     const storageKey = ${safeStorageKey};
+    const storedResult = JSON.stringify({ payload, createdAt: Date.now() });
     try {
-      localStorage.setItem(storageKey, JSON.stringify({ payload, createdAt: Date.now() }));
+      localStorage.setItem(storageKey, storedResult);
+      sessionStorage.setItem(storageKey, storedResult);
       setTimeout(() => localStorage.removeItem(storageKey), 10000);
     } catch (_) {}
     if (window.opener) {
       try { window.opener.postMessage(payload, targetOrigin); } catch (_) {}
       setTimeout(() => window.close(), ${success ? 900 : 2500});
     } else {
-      setTimeout(() => {
-        window.close();
-        setTimeout(() => window.location.replace('/login?linkedin=complete'), 300);
-      }, ${success ? 900 : 2500});
+      setTimeout(() => window.location.replace('/login?linkedin=complete'), ${success ? 600 : 2200});
     }
   </script>
 </body>

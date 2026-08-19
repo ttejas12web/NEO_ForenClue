@@ -258,6 +258,112 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => clearTimeout(timer);
   }, [loading]);
 
+  const completeLinkedInAuthentication = useCallback(async (data: any) => {
+    const { customToken, tempPassword, authEmail, user: authUser, email } = data || {};
+
+    if (customToken) {
+      await signInWithCustomToken(auth, customToken);
+      recordSuccessfulLogin('linkedin_oauth');
+      return;
+    }
+
+    if (!authUser) {
+      throw new Error('LinkedIn did not return a valid ForenClue identity.');
+    }
+
+    let activeFirebaseUser = auth.currentUser;
+    if (!activeFirebaseUser && authEmail && tempPassword) {
+      const linkedInCredential = await signInWithEmailAndPassword(auth, authEmail, tempPassword);
+      activeFirebaseUser = linkedInCredential.user;
+    }
+
+    // Retained only for deployments that still have anonymous auth enabled.
+    if (!activeFirebaseUser) {
+      try {
+        const anonCred = await signInAnonymously(auth);
+        activeFirebaseUser = anonCred.user;
+      } catch (anonErr) {
+        console.warn('Anonymous sign-in fallback for LinkedIn:', anonErr);
+      }
+    }
+
+    if (!activeFirebaseUser) {
+      throw new Error('ForenClue could not establish the Firebase session for this LinkedIn account.');
+    }
+
+    try {
+      await updateProfile(activeFirebaseUser, {
+        displayName: authUser.displayName || 'LinkedIn User',
+        photoURL: authUser.photoURL || undefined
+      });
+    } catch (profErr) {
+      console.warn('Could not update auth profile:', profErr);
+    }
+
+    try {
+      const userRef = doc(db, 'users', activeFirebaseUser.uid);
+      await setDoc(userRef, {
+        uid: activeFirebaseUser.uid,
+        email: authUser.email || email || activeFirebaseUser.email || '',
+        displayName: authUser.displayName || activeFirebaseUser.displayName || 'LinkedIn User',
+        photoURL: authUser.photoURL || activeFirebaseUser.photoURL || '',
+        provider: 'linkedin',
+        linkedinUid: authUser.linkedinUid || authUser.uid,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+    } catch (fsErr) {
+      console.warn('Could not merge Firestore profile:', fsErr);
+    }
+
+    recordSuccessfulLogin('linkedin_oauth');
+  }, []);
+
+  // Complete a same-tab LinkedIn redirect after the callback returns to /login.
+  useEffect(() => {
+    const storageKey = 'forenclue:linkedin-auth-result';
+    const stateKey = 'forenclue:linkedin-oauth-state';
+    let rawValue: string | null = null;
+
+    try {
+      rawValue = window.sessionStorage.getItem(storageKey) || window.localStorage.getItem(storageKey);
+    } catch (_) {}
+    if (!rawValue) return;
+
+    const completeStoredResult = async () => {
+      try {
+        const stored = JSON.parse(rawValue);
+        const createdAt = Number(stored?.createdAt || 0);
+        const payload = stored?.payload;
+        const expectedState = window.sessionStorage.getItem(stateKey);
+
+        if (!createdAt || Date.now() - createdAt > 5 * 60 * 1000) {
+          throw new Error('The LinkedIn sign-in response expired. Please try again.');
+        }
+        if (expectedState && payload?.state !== expectedState) {
+          throw new Error('LinkedIn sign-in state verification failed. Please try again.');
+        }
+        if (payload?.type !== 'LINKEDIN_AUTH_SUCCESS') {
+          throw new Error(payload?.error || 'LinkedIn authentication failed.');
+        }
+
+        await completeLinkedInAuthentication(payload);
+      } catch (error) {
+        console.error('LinkedIn redirect completion failed:', error);
+      } finally {
+        try {
+          window.sessionStorage.removeItem(storageKey);
+          window.sessionStorage.removeItem(stateKey);
+          window.localStorage.removeItem(storageKey);
+        } catch (_) {}
+        if (window.location.search.includes('linkedin=complete')) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+        }
+      }
+    };
+
+    void completeStoredResult();
+  }, [completeLinkedInAuthentication]);
+
   const signInWithLinkedIn = async () => {
     return new Promise<void>((resolve, reject) => {
       const storageKey = 'forenclue:linkedin-auth-result';
@@ -270,6 +376,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       const scope = encodeURIComponent("openid profile email");
       const linkedinAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&state=${state}&scope=${scope}`;
+
+      try {
+        window.localStorage.removeItem(storageKey);
+        window.sessionStorage.removeItem(storageKey);
+      } catch (_) {}
+
+      // LinkedIn can sever popup opener communication in Safari on custom domains.
+      // A same-tab round trip preserves the OAuth result and Firebase session setup.
+      if (window.location.hostname === 'forenclue.in' || window.location.hostname === 'www.forenclue.in') {
+        try {
+          window.sessionStorage.setItem('forenclue:linkedin-oauth-state', state);
+        } catch (_) {}
+        window.location.assign(linkedinAuthUrl);
+        return;
+      }
 
       const width = 600;
       const height = 700;
@@ -323,58 +444,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           if (isSettled) return;
           isSettled = true;
           cleanup();
-          const { customToken, tempPassword, authEmail, user: authUser, email } = data;
           try {
-            if (customToken) {
-              await signInWithCustomToken(auth, customToken);
-              recordSuccessfulLogin('linkedin_oauth');
-            } else if (authUser) {
-              // Establish a real Firebase session for the LinkedIn identity.
-              let activeFirebaseUser = auth.currentUser;
-              if (!activeFirebaseUser && authEmail && tempPassword) {
-                const linkedInCredential = await signInWithEmailAndPassword(auth, authEmail, tempPassword);
-                activeFirebaseUser = linkedInCredential.user;
-              }
-
-              // Retained only for deployments that still have anonymous auth enabled.
-              if (!activeFirebaseUser) {
-                try {
-                  const anonCred = await signInAnonymously(auth);
-                  activeFirebaseUser = anonCred.user;
-                } catch (anonErr) {
-                  console.warn("Anonymous sign-in fallback for LinkedIn:", anonErr);
-                }
-              }
-
-              if (!activeFirebaseUser) {
-                throw new Error('ForenClue could not establish the Firebase session for this LinkedIn account.');
-              }
-
-              try {
-                await updateProfile(activeFirebaseUser, {
-                  displayName: authUser.displayName || 'LinkedIn User',
-                  photoURL: authUser.photoURL || undefined
-                });
-              } catch (profErr) {
-                console.warn("Could not update auth profile:", profErr);
-              }
-
-              try {
-                const userRef = doc(db, 'users', activeFirebaseUser.uid);
-                await setDoc(userRef, {
-                  uid: activeFirebaseUser.uid,
-                  email: authUser.email || email || activeFirebaseUser.email || '',
-                  displayName: authUser.displayName || activeFirebaseUser.displayName || 'LinkedIn User',
-                  photoURL: authUser.photoURL || activeFirebaseUser.photoURL || '',
-                  provider: 'linkedin',
-                  linkedinUid: authUser.linkedinUid || authUser.uid,
-                  updatedAt: serverTimestamp()
-                }, { merge: true });
-              } catch (fsErr) {
-                console.warn("Could not merge Firestore profile:", fsErr);
-              }
-              recordSuccessfulLogin('linkedin_oauth');
-            }
+            await completeLinkedInAuthentication(data);
             resolve();
           } catch (err: any) {
             console.error("Firebase custom auth error with LinkedIn:", err);
