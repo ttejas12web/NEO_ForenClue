@@ -21,6 +21,7 @@ interface SocialMetadata {
   description: string;
   image: string;
   canonicalUrl: string;
+  ogUrl?: string;
   type: 'website' | 'article' | 'book' | 'profile';
   dynamic: boolean;
 }
@@ -187,6 +188,79 @@ function firstText(data: Record<string, unknown>, paths: string[]): string {
     if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   }
   return '';
+}
+
+function imageStrings(value: unknown): string[] {
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    return trimmed ? [trimmed] : [];
+  }
+  if (Array.isArray(value)) return value.flatMap(imageStrings);
+  if (!value || typeof value !== 'object') return [];
+
+  const record = value as Record<string, unknown>;
+  const imageKeys = [
+    'url',
+    'src',
+    'image',
+    'imageUrl',
+    'coverImage',
+    'coverUrl',
+    'thumbnail',
+    'thumbnailUrl',
+  ];
+  return imageKeys.flatMap((key) => imageStrings(record[key]));
+}
+
+function isGenericBrandImage(value: string): boolean {
+  const normalized = value.toLowerCase();
+  return (
+    value === DEFAULT_IMAGE ||
+    normalized.includes('/images/og/') ||
+    normalized.includes('/og/') ||
+    normalized.includes('forenclue_og_banner') ||
+    /(?:^|[\/_-])(logo|placeholder|fallback|default)(?:[\/.?_-]|$)/.test(normalized)
+  );
+}
+
+function firstPageImage(data: Record<string, unknown>, collection: string): string {
+  const directPaths = collection === 'ebooks'
+    ? [
+        'coverImage',
+        'coverUrl',
+        'thumbnailUrl',
+        'thumbnail',
+        'imageUrl',
+        'image',
+      ]
+    : [
+        'image',
+        'heroImage',
+        'featuredImage',
+        'coverImage',
+        'coverUrl',
+        'thumbnailUrl',
+        'thumbnail',
+        'poster',
+        'bannerImage',
+        'imageUrl',
+        'avatar',
+        'speaker.avatar',
+      ];
+  const galleryPaths = [
+    'contentImages',
+    'images',
+    'gallery',
+    'evidenceImages',
+    'media',
+    'sections',
+  ];
+  const candidates = [...directPaths, ...galleryPaths]
+    .flatMap((path) => imageStrings(valueAtPath(data, path)))
+    .filter((value, index, values) => values.indexOf(value) === index);
+
+  // Prefer the first real page/content image over a site logo or generic OG card.
+  return candidates.find((candidate) => !isGenericBrandImage(candidate)) || candidates[0] || '';
 }
 
 function truncate(value: string, maxLength: number): string {
@@ -511,18 +585,7 @@ function metadataFromDocument(
     'fullName',
   ]);
   const category = firstText(data, ['category', 'type', 'department', 'subject']);
-  const image = firstText(data, [
-    'image',
-    'coverImage',
-    'coverUrl',
-    'thumbnailUrl',
-    'thumbnail',
-    'poster',
-    'bannerImage',
-    'imageUrl',
-    'avatar',
-    'speaker.avatar',
-  ]);
+  const image = firstPageImage(data, target.collection);
 
   const contextualDescription = [rawDescription, author ? `By ${author}.` : '', category ? `${category}.` : '']
     .filter(Boolean)
@@ -536,6 +599,14 @@ function metadataFromDocument(
     description: truncate(contextualDescription || fallback.description, 220),
     image: socialImageUrl(image, fallback.image, url.origin),
     canonicalUrl: canonicalFor(url, target),
+    ogUrl: (() => {
+      const socialUrl = new URL(canonicalFor(url, target));
+      socialUrl.protocol = url.protocol;
+      socialUrl.host = url.host;
+      const revision = url.searchParams.get('v');
+      if (revision) socialUrl.searchParams.set('v', revision);
+      return socialUrl.toString();
+    })(),
     type: target.type,
     dynamic: true,
   };
@@ -564,6 +635,7 @@ function metadataMarkup(metadata: SocialMetadata): string {
   const description = escapeHtml(metadata.description);
   const image = escapeHtml(metadata.image);
   const canonicalUrl = escapeHtml(metadata.canonicalUrl);
+  const ogUrl = escapeHtml(metadata.ogUrl || metadata.canonicalUrl);
   const type = escapeHtml(metadata.type);
 
   return [
@@ -576,7 +648,7 @@ function metadataMarkup(metadata: SocialMetadata): string {
     `<meta property="og:description" content="${description}">`,
     `<meta property="og:image" content="${image}">`,
     `<meta property="og:image:alt" content="${title}">`,
-    `<meta property="og:url" content="${canonicalUrl}">`,
+    `<meta property="og:url" content="${ogUrl}">`,
     '<meta name="twitter:card" content="summary_large_image">',
     `<meta name="twitter:title" content="${title}">`,
     `<meta name="twitter:description" content="${description}">`,
