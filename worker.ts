@@ -204,13 +204,13 @@ function absoluteUrl(value: string, fallback: string): string {
   }
 }
 
-function socialImageUrl(value: string, fallback: string): string {
+function socialImageUrl(value: string, fallback: string, requestOrigin: string): string {
   if (!value) return fallback;
 
   if (value.startsWith('firestore-blob://')) {
     const blobId = value.slice('firestore-blob://'.length);
     if (/^[a-zA-Z0-9_-]{1,128}$/.test(blobId)) {
-      return `${SITE_ORIGIN}/api/social-image/${encodeURIComponent(blobId)}`;
+      return `${requestOrigin}/api/social-image/${encodeURIComponent(blobId)}`;
     }
     return fallback;
   }
@@ -534,7 +534,7 @@ function metadataFromDocument(
   return {
     title: `${truncate(rawTitle, 90)} | ${titleSuffix}`,
     description: truncate(contextualDescription || fallback.description, 220),
-    image: socialImageUrl(image, fallback.image),
+    image: socialImageUrl(image, fallback.image, url.origin),
     canonicalUrl: canonicalFor(url, target),
     type: target.type,
     dynamic: true,
