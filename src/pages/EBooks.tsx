@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   BookOpen, 
@@ -78,6 +78,8 @@ export default function EBooks() {
   const [dbEBooks, setDbEBooks] = useState<ForensicResource[]>([]);
   const [selectedResource, setSelectedResource] = useState<ForensicResource | null>(null);
   const [sharingResource, setSharingResource] = useState<ForensicResource | null>(null);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const sharedResourceId = searchParams.get('id');
 
   // Sync / Real-time fetch from Firestore
   useEffect(() => {
@@ -116,6 +118,32 @@ export default function EBooks() {
 
   // Merge database items with our standard fallback collection
   const combinedCatalog = [...dbEBooks, ...defaultResources];
+
+  // Open the exact shared resource after Firestore has loaded it. This makes
+  // /ebooks?id=<resourceId> a real deep link, not just a link to the catalog.
+  useEffect(() => {
+    if (!sharedResourceId || selectedResource?.id === sharedResourceId) return;
+
+    const resource = [...dbEBooks, ...defaultResources].find((item) => item.id === sharedResourceId);
+    if (resource) {
+      setSelectedResource(resource);
+      setActiveTab(resource.tabCategory);
+    }
+  }, [dbEBooks, sharedResourceId, selectedResource?.id]);
+
+  const openResource = (item: ForensicResource) => {
+    setSelectedResource(item);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.set('id', item.id);
+    setSearchParams(nextParams);
+  };
+
+  const closeResource = () => {
+    setSelectedResource(null);
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('id');
+    setSearchParams(nextParams, { replace: true });
+  };
 
   // Filters
   const filteredCatalog = combinedCatalog.filter((item) => {
@@ -292,7 +320,7 @@ export default function EBooks() {
                   <ResourceCard 
                     key={item.id} 
                     item={item} 
-                    onOpen={() => setSelectedResource(item)}
+                    onOpen={() => openResource(item)}
                     onDownload={() => handleDownload(item)}
                     onShare={() => setSharingResource(item)}
                   />
@@ -308,7 +336,7 @@ export default function EBooks() {
       {selectedResource && (
         <PdfViewerModal 
           isOpen={!!selectedResource}
-          onClose={() => setSelectedResource(null)}
+          onClose={closeResource}
           resource={selectedResource}
           startMaximized={true}
         />

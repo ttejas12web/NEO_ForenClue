@@ -6,11 +6,13 @@ compatibility_date = "2026-08-19"
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-run_worker_first = ["/api/*"]
+run_worker_first = ["/*", "!/assets/*", "!/images/*", "!/fonts/*", "!/favicon*", "!/robots.txt", "!/sitemap.xml"]
 
 [vars]
 LINKEDIN_CLIENT_ID = "86fnkfb4khjr8g"
 FIREBASE_API_KEY = "AIzaSyA8uz8BkLv1ZLyTI7oUKmw2Dy7mX0QcjX0"
+FIREBASE_PROJECT_ID = "gen-lang-client-0244976845"
+FIRESTORE_DATABASE_ID = "ai-studio-forenclue-b34a37b4-310e-4cb1-a96f-b72c4dfcd96e"
 
 [secrets]
 required = ["LINKEDIN_CLIENT_SECRET", "LINKEDIN_FIREBASE_SESSION_SECRET"]
