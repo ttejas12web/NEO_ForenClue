@@ -11,6 +11,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect, useMemo } from "react";
 import { Loader2, CheckCircle, X, BookOpen, User, Users, Clock, ShieldCheck, ChevronRight, Bell, Lock, Unlock, CreditCard, Share2, Heart, Instagram, MessageCircle, Copy, Play, Map, TrendingUp, Search } from "lucide-react";
 import { COURSES, Course } from "@/constants";
+import { buildSocialShareUrl } from '@/lib/socialShare';
 
 declare global {
   interface Window {
@@ -494,7 +495,11 @@ export default function Courses() {
 
   const handleSocialShare = (course: Course, platform: 'instagram' | 'whatsapp' | 'copy', e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = `${window.location.origin}/courses?id=${course.id}`;
+    const url = buildSocialShareUrl(
+      '/courses',
+      { id: course.id },
+      [course.id, course.thumbnail],
+    );
     const text = `Join the investigation: ${course.title} at Forensic Insights Lab!`;
     
     if (platform === 'instagram') {
@@ -1257,4 +1262,3 @@ export default function Courses() {
     </div>
   );
 }
-
