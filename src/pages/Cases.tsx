@@ -57,10 +57,15 @@ function caseShareUrl(caseItem: CaseFile): string {
 export default function Cases() {
   const { slug } = useParams<{ slug?: string }>();
   const { user, isAdmin } = useAuth();
+  const initialSharedCaseId = useMemo(
+    () => new URLSearchParams(window.location.search).get('case') || slug || '',
+    [slug],
+  );
   
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<string>('All');
   const [selectedCase, setSelectedCase] = useState<CaseFile | null>(null);
+  const [initialCaseResolved, setInitialCaseResolved] = useState(!initialSharedCaseId);
 
   const [dbCases, setDbCases] = useState<CaseFile[]>([]);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
@@ -222,34 +227,36 @@ export default function Cases() {
 
   // Sync URL query when selectedCase changes
   useEffect(() => {
+    // Preserve an incoming permalink until the asynchronous Firestore case
+    // collection has had a chance to resolve it.
+    if (!selectedCase && !initialCaseResolved) return;
+
     const searchParams = new URLSearchParams(window.location.search);
     if (selectedCase) {
       searchParams.set('case', selectedCase.id);
     } else {
       searchParams.delete('case');
+      searchParams.delete('v');
     }
     const paramStr = searchParams.toString();
     const newUrl = `${window.location.pathname}${paramStr ? '?' + paramStr : ''}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
-  }, [selectedCase]);
+  }, [initialCaseResolved, selectedCase]);
 
   // Support deep-linking to shared cases
   useEffect(() => {
-    if (dbCases.length > 0) {
-      const params = new URLSearchParams(window.location.search);
-      const sharedCaseId = params.get('case') || slug;
-      if (sharedCaseId) {
-        const found = dbCases.find(c => 
-          c.id === sharedCaseId || 
-          c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === sharedCaseId ||
-          c.tag?.toLowerCase() === sharedCaseId.toLowerCase()
-        );
-        if (found) {
-          setSelectedCase(found);
-        }
+    if (dbCases.length > 0 && !initialCaseResolved) {
+      const found = dbCases.find(c =>
+        c.id === initialSharedCaseId ||
+        c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === initialSharedCaseId ||
+        c.tag?.toLowerCase() === initialSharedCaseId.toLowerCase()
+      );
+      if (found) {
+        setSelectedCase(found);
       }
+      setInitialCaseResolved(true);
     }
-  }, [dbCases, slug]);
+  }, [dbCases, initialCaseResolved, initialSharedCaseId]);
 
   const handleOpenShare = (e: React.MouseEvent, caseItem: CaseFile) => {
     e.stopPropagation();
