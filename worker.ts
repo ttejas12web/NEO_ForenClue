@@ -66,6 +66,7 @@ declare const HTMLRewriter: {
 };
 
 const SITE_ORIGIN = 'https://www.forenclue.in';
+const MAX_SOCIAL_IMAGE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_IMAGE =
   'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
 
@@ -203,6 +204,141 @@ function absoluteUrl(value: string, fallback: string): string {
   }
 }
 
+function socialImageUrl(value: string, fallback: string): string {
+  if (!value) return fallback;
+
+  if (value.startsWith('firestore-blob://')) {
+    const blobId = value.slice('firestore-blob://'.length);
+    if (/^[a-zA-Z0-9_-]{1,128}$/.test(blobId)) {
+      return `${SITE_ORIGIN}/api/social-image/${encodeURIComponent(blobId)}`;
+    }
+    return fallback;
+  }
+
+  // Browser-local and inline URLs cannot be fetched by social crawlers.
+  if (value.startsWith('localdb://') || value.startsWith('blob:') || value.startsWith('data:')) {
+    return fallback;
+  }
+
+  return absoluteUrl(value, fallback);
+}
+
+function firestoreDocumentsUrl(env: Env, pathSegments: string[]): URL {
+  const projectId = env.FIREBASE_PROJECT_ID || 'gen-lang-client-0244976845';
+  const databaseId =
+    env.FIRESTORE_DATABASE_ID || 'ai-studio-forenclue-b34a37b4-310e-4cb1-a96f-b72c4dfcd96e';
+  const encodedPath = pathSegments.map(encodeURIComponent).join('/');
+  const endpoint = new URL(
+    `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/${encodeURIComponent(databaseId)}/documents/${encodedPath}`,
+  );
+  if (env.FIREBASE_API_KEY) endpoint.searchParams.set('key', env.FIREBASE_API_KEY);
+  return endpoint;
+}
+
+function decodeBase64DataUrl(value: string): Uint8Array | undefined {
+  const separator = value.indexOf(',');
+  const base64 = separator >= 0 ? value.slice(separator + 1) : value;
+  if (!base64) return undefined;
+
+  try {
+    const binary = atob(base64);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    return bytes;
+  } catch {
+    return undefined;
+  }
+}
+
+async function serveFirestoreSocialImage(
+  request: Request,
+  env: Env,
+  encodedBlobId: string,
+): Promise<Response> {
+  let blobId = '';
+  try {
+    blobId = decodeURIComponent(encodedBlobId);
+  } catch {
+    return new Response('Invalid image identifier.', { status: 400 });
+  }
+
+  if (!/^[a-zA-Z0-9_-]{1,128}$/.test(blobId)) {
+    return new Response('Invalid image identifier.', { status: 400 });
+  }
+
+  const metadataResponse = await fetch(firestoreDocumentsUrl(env, ['_cloud_blobs', blobId]), {
+    headers: { Accept: 'application/json' },
+  });
+  if (!metadataResponse.ok) return new Response('Image not found.', { status: 404 });
+
+  const metadataDocument = (await metadataResponse.json()) as FirestoreDocument;
+  const metadata = decodeFirestoreFields(metadataDocument.fields ?? {});
+  const mimeType = typeof metadata.mimeType === 'string' ? metadata.mimeType : '';
+  const size = typeof metadata.size === 'number' ? metadata.size : 0;
+  const totalChunks = typeof metadata.totalChunks === 'number' ? metadata.totalChunks : 0;
+
+  if (!mimeType.startsWith('image/')) return new Response('Unsupported image type.', { status: 415 });
+  if (!size || size > MAX_SOCIAL_IMAGE_BYTES || !totalChunks || totalChunks > 20) {
+    return new Response('Image is too large.', { status: 413 });
+  }
+
+  const headers = new Headers({
+    'Content-Type': mimeType,
+    'Content-Length': String(size),
+    'Cache-Control': 'public, max-age=86400, s-maxage=604800, immutable',
+    'Access-Control-Allow-Origin': '*',
+    'X-Content-Type-Options': 'nosniff',
+  });
+  if (request.method === 'HEAD') return new Response(null, { status: 200, headers });
+
+  // Fetch deterministic document IDs directly. Firestore can allow individual
+  // chunk reads while denying collection-list queries under stricter rules.
+  const chunkResponses = await Promise.all(
+    Array.from({ length: totalChunks }, (_, index) =>
+      fetch(firestoreDocumentsUrl(env, ['_cloud_blobs', blobId, 'chunks', `chunk_${index}`]), {
+        headers: { Accept: 'application/json' },
+      }),
+    ),
+  );
+  if (chunkResponses.some((response) => !response.ok)) {
+    return new Response('Image data unavailable.', { status: 502 });
+  }
+
+  const chunkDocuments = await Promise.all(
+    chunkResponses.map((response) => response.json() as Promise<FirestoreDocument>),
+  );
+  const chunks = chunkDocuments
+    .map((document) => decodeFirestoreFields(document.fields ?? {}))
+    .map((chunk) => ({
+      index: typeof chunk.chunkIndex === 'number' ? chunk.chunkIndex : -1,
+      bytes: typeof chunk.data === 'string' ? decodeBase64DataUrl(chunk.data) : undefined,
+    }))
+    .filter((chunk): chunk is { index: number; bytes: Uint8Array } =>
+      chunk.index >= 0 && Boolean(chunk.bytes),
+    )
+    .sort((left, right) => left.index - right.index);
+
+  if (chunks.length !== totalChunks || chunks.some((chunk, index) => chunk.index !== index)) {
+    return new Response('Image data is incomplete.', { status: 502 });
+  }
+
+  const assembledLength = chunks.reduce((total, chunk) => total + chunk.bytes.byteLength, 0);
+  if (assembledLength !== size || assembledLength > MAX_SOCIAL_IMAGE_BYTES) {
+    return new Response('Image data is invalid.', { status: 502 });
+  }
+
+  const assembled = new Uint8Array(assembledLength);
+  let offset = 0;
+  for (const chunk of chunks) {
+    assembled.set(chunk.bytes, offset);
+    offset += chunk.bytes.byteLength;
+  }
+
+  return new Response(assembled.buffer, { status: 200, headers });
+}
+
 function humanize(value: string): string {
   return decodeURIComponent(value)
     .replace(/[-_]+/g, ' ')
@@ -282,15 +418,9 @@ async function fetchFirestoreDocument(
   env: Env,
   target: DynamicTarget,
 ): Promise<Record<string, unknown> | undefined> {
-  const projectId = env.FIREBASE_PROJECT_ID || 'gen-lang-client-0244976845';
-  const databaseId =
-    env.FIRESTORE_DATABASE_ID || 'ai-studio-forenclue-b34a37b4-310e-4cb1-a96f-b72c4dfcd96e';
   if (!env.FIREBASE_API_KEY) return undefined;
 
-  const endpoint = new URL(
-    `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/databases/${encodeURIComponent(databaseId)}/documents/${encodeURIComponent(target.collection)}/${encodeURIComponent(target.documentId)}`,
-  );
-  endpoint.searchParams.set('key', env.FIREBASE_API_KEY);
+  const endpoint = firestoreDocumentsUrl(env, [target.collection, target.documentId]);
 
   try {
     const response = await fetch(endpoint, {
@@ -404,7 +534,7 @@ function metadataFromDocument(
   return {
     title: `${truncate(rawTitle, 90)} | ${titleSuffix}`,
     description: truncate(contextualDescription || fallback.description, 220),
-    image: absoluteUrl(image, fallback.image),
+    image: socialImageUrl(image, fallback.image),
     canonicalUrl: canonicalFor(url, target),
     type: target.type,
     dynamic: true,
@@ -502,6 +632,14 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const context = { request, env };
+
+    const socialImageMatch = url.pathname.match(/^\/api\/social-image\/([^/]+)$/);
+    if (socialImageMatch) {
+      if (request.method !== 'GET' && request.method !== 'HEAD') {
+        return new Response('Method not allowed.', { status: 405, headers: { Allow: 'GET, HEAD' } });
+      }
+      return serveFirestoreSocialImage(request, env, socialImageMatch[1]);
+    }
 
     if (url.pathname === '/api/auth/linkedin/init' || url.pathname === '/api/auth/linkedin/init/') {
       if (request.method !== 'GET') return jsonError('Method not allowed.', 405);
