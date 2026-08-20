@@ -6,6 +6,7 @@ import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { cn } from '@/lib/utils';
 import { uploadFileResilient } from '@/lib/localFileStore';
+import { createPdfFirstPageCover } from '@/lib/pdfCover';
 
 interface UploadResourceModalProps {
   isOpen: boolean;
@@ -103,16 +104,24 @@ export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProp
     try {
       let uploadedPdfUrl = '';
       let uploadedCoverUrl = '';
+      let effectiveCoverFile = coverFile;
+
+      // Social crawlers cannot render a PDF. Generate a real raster cover from
+      // page 1 whenever the contributor does not supply a separate cover.
+      if (!effectiveCoverFile) {
+        setStatusMessage('Creating a social cover from PDF page 1...');
+        effectiveCoverFile = await createPdfFirstPageCover(pdfFile);
+      }
 
       // 1. Upload PDF
       const cleanPdfName = `ebooks/pdfs/${Date.now()}_${pdfFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
       const pdfUpload = await uploadFileResilient(pdfFile, cleanPdfName, (msg) => setStatusMessage(`PDF: ${msg}`));
       uploadedPdfUrl = pdfUpload.url;
 
-      // 2. Upload Cover Image (Optional)
-      if (coverFile) {
-        const cleanCoverName = `ebooks/covers/${Date.now()}_${coverFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-        const coverUpload = await uploadFileResilient(coverFile, cleanCoverName, (msg) => setStatusMessage(`Cover: ${msg}`));
+      // 2. Upload the supplied or generated first-page cover image
+      if (effectiveCoverFile) {
+        const cleanCoverName = `ebooks/covers/${Date.now()}_${effectiveCoverFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        const coverUpload = await uploadFileResilient(effectiveCoverFile, cleanCoverName, (msg) => setStatusMessage(`Cover: ${msg}`));
         uploadedCoverUrl = coverUpload.url;
       }
 
