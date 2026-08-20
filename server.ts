@@ -257,6 +257,7 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+
   // Firebase Auth Handler Proxy for Custom Domains (forenclue.in)
   app.use("/__/auth", async (req, res) => {
     const targetUrl = `https://gen-lang-client-0244976845.firebaseapp.com/__/auth${req.url}`;

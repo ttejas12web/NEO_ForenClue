@@ -18,7 +18,8 @@ import {
   GraduationCap,
   Trophy,
   Microscope,
-  LogIn
+  LogIn,
+  AlertCircle
 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -55,6 +56,7 @@ export function Navbar() {
   const [isMobileResourcesOpen, setIsMobileResourcesOpen] = useState(false);
   const [isMobileVerifyOpen, setIsMobileVerifyOpen] = useState(false);
   const [isMobileTeamOpen, setIsMobileTeamOpen] = useState(false);
+  const [quotaError, setQuotaError] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -62,6 +64,17 @@ export function Navbar() {
     const saved = localStorage.getItem('theme');
     return saved ? saved !== 'light' : true;
   });
+
+  useEffect(() => {
+    const handleQuotaExceeded = (e: Event) => {
+      const customEvent = e as CustomEvent;
+      setQuotaError(customEvent.detail?.message || 'Firestore daily write quota exceeded.');
+    };
+    window.addEventListener('firestore-quota-exceeded', handleQuotaExceeded as EventListener);
+    return () => {
+      window.removeEventListener('firestore-quota-exceeded', handleQuotaExceeded as EventListener);
+    };
+  }, []);
 
   useEffect(() => {
     if (['/quizzes', '/ebooks', '/podcast', '/webinar', '/simulations'].includes(location.pathname)) {
@@ -119,6 +132,17 @@ export function Navbar() {
   
   return (
     <nav className="print:hidden fixed top-0 left-0 right-0 z-50 bg-crust/90 backdrop-blur-md border-b border-black/10 dark:border-white/10">
+      {quotaError && (
+        <div className="bg-amber-500/15 border-b border-amber-500/30 text-amber-300 px-4 py-2 text-xs flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 max-w-7xl mx-auto truncate">
+            <AlertCircle size={14} className="shrink-0 text-amber-400" />
+            <span className="truncate"><strong>Firestore Quota Notice:</strong> Free daily write limit reached. Database writes may be temporarily restricted. ({quotaError})</span>
+          </div>
+          <button onClick={() => setQuotaError(null)} className="text-amber-300 hover:text-white p-1 shrink-0">
+            <X size={14} />
+          </button>
+        </div>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center gap-2">

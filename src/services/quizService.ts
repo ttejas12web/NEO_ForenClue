@@ -214,94 +214,6 @@ export const SAMPLE_QUIZZES: Quiz[] = [
   }
 ];
 
-// Sample seed attempts for realistic Leaderboard showcase
-export const SAMPLE_LEADERBOARD_SEED: QuizAttempt[] = [
-  {
-    quizId: 'weekly-challenge-1',
-    userId: 'u101',
-    userName: 'Officer Sarah Jenkins',
-    userEmail: 's.jenkins@forensics.org',
-    userPhoto: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200',
-    score: 100,
-    totalPoints: 100,
-    timeTakenSeconds: 142, // ~2 mins 22 secs
-    completedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    answers: { q1: 1, q2: 1, q3: 2, q4: 1, q5: 1 }
-  },
-  {
-    quizId: 'weekly-challenge-1',
-    userId: 'u102',
-    userName: 'Dr. Rahul Sharma',
-    userEmail: 'r.sharma@forenclue.org',
-    userPhoto: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
-    score: 100,
-    totalPoints: 100,
-    timeTakenSeconds: 185, // ~3 mins 5 secs
-    completedAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    answers: { q1: 1, q2: 1, q3: 2, q4: 1, q5: 1 }
-  },
-  {
-    quizId: 'weekly-challenge-1',
-    userId: 'u103',
-    userName: 'Ananya Verma',
-    userEmail: 'ananya.v@university.edu',
-    userPhoto: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=200',
-    score: 100,
-    totalPoints: 100,
-    timeTakenSeconds: 210, // ~3 mins 30 secs
-    completedAt: new Date(Date.now() - 3600000 * 8).toISOString(),
-    answers: { q1: 1, q2: 1, q3: 2, q4: 1, q5: 1 }
-  },
-  {
-    quizId: 'weekly-challenge-1',
-    userId: 'u104',
-    userName: 'Karan Patel',
-    userEmail: 'karan.cyber@gmail.com',
-    userPhoto: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=200',
-    score: 80,
-    totalPoints: 100,
-    timeTakenSeconds: 160,
-    completedAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    answers: { q1: 1, q2: 1, q3: 2, q4: 0, q5: 1 }
-  },
-  {
-    quizId: 'weekly-challenge-1',
-    userId: 'u105',
-    userName: 'Meera Nair',
-    userEmail: 'mnair@crimelab.in',
-    userPhoto: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=200',
-    score: 80,
-    totalPoints: 100,
-    timeTakenSeconds: 198,
-    completedAt: new Date(Date.now() - 3600000 * 15).toISOString(),
-    answers: { q1: 1, q2: 1, q3: 1, q4: 1, q5: 1 }
-  },
-  {
-    quizId: 'weekly-challenge-1',
-    userId: 'u106',
-    userName: 'David Miller',
-    userEmail: 'david.m@cyberforensics.org',
-    userPhoto: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=200',
-    score: 80,
-    totalPoints: 100,
-    timeTakenSeconds: 245,
-    completedAt: new Date(Date.now() - 3600000 * 18).toISOString(),
-    answers: { q1: 1, q2: 0, q3: 2, q4: 1, q5: 1 }
-  },
-  {
-    quizId: 'weekly-challenge-1',
-    userId: 'u107',
-    userName: 'Priya Sundaram',
-    userEmail: 'p.sundaram@forenclue.com',
-    userPhoto: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200',
-    score: 60,
-    totalPoints: 100,
-    timeTakenSeconds: 175,
-    completedAt: new Date(Date.now() - 3600000 * 20).toISOString(),
-    answers: { q1: 1, q2: 1, q3: 0, q4: 0, q5: 1 }
-  }
-];
-
 // Helper to check if a weekly challenge has completed/passed its scheduled date and time
 export function isWeeklyChallengeExpired(quiz: Quiz): boolean {
   if (!quiz.isWeeklyChallenge) return false;
@@ -547,19 +459,6 @@ export async function fetchLeaderboard(quiz: Quiz): Promise<LeaderboardEntry[]> 
       attempts.push({ id: d.id, ...d.data() } as QuizAttempt);
     });
 
-    // Merge sample seeds if no attempts exist yet or to provide full podium
-    if (attempts.length === 0) {
-      attempts = SAMPLE_LEADERBOARD_SEED.filter(s => s.quizId === quiz.id);
-      if (attempts.length === 0) {
-        attempts = SAMPLE_LEADERBOARD_SEED.slice(0, 7);
-      }
-    } else {
-      // Merge sample seeds to ensure rich leaderboard if under 3 entries
-      const existingUserIds = new Set(attempts.map(a => a.userId));
-      const seeds = SAMPLE_LEADERBOARD_SEED.filter(s => !existingUserIds.has(s.userId));
-      attempts = [...attempts, ...seeds];
-    }
-
     // Filter attempts based on challenge timeframe & practice status
     if (quiz.isWeeklyChallenge) {
       let startTime = 0;
@@ -577,7 +476,7 @@ export async function fetchLeaderboard(quiz: Quiz): Promise<LeaderboardEntry[]> 
       // 1. Exclude practice attempts and attempts submitted outside official challenge window
       attempts = attempts.filter(a => {
         if (a.isPractice) return false;
-        if (!a.completedAt) return true; // keep sample seeds
+        if (!a.completedAt) return true; 
 
         const compTime = new Date(a.completedAt).getTime();
         if (startTime > 0 && compTime < startTime) return false;
@@ -647,17 +546,8 @@ export async function fetchLeaderboard(quiz: Quiz): Promise<LeaderboardEntry[]> 
 
     return top10;
   } catch (err) {
-    console.warn("Using sample leaderboard fallback:", err);
-    if (quiz.id === 'weekly-challenge-1') {
-      return [];
-    }
-    const seeds = SAMPLE_LEADERBOARD_SEED.filter(s => s.quizId === quiz.id);
-    seeds.sort((a, b) => b.score - a.score || a.timeTakenSeconds - b.timeTakenSeconds);
-    return seeds.slice(0, 10).map((att, idx) => ({
-      ...att,
-      rank: idx + 1,
-      accuracyPercentage: Math.round((att.score / (att.totalPoints || 100)) * 100)
-    }));
+    console.warn("Using leaderboard fallback/error state:", err);
+    return [];
   }
 }
 

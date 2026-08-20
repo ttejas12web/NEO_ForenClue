@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   BookOpen, 
   FileText, 
-  HelpCircle, 
+  GraduationCap, 
   Archive, 
   Search, 
   Download, 
@@ -68,7 +68,7 @@ const forensicCategories = [
   'Crime Scene Investigation',
   'Toxicology & Pharmacology',
   'Forensic Medicine & Pathology',
-  'Question Papers'
+  'Research Papers'
 ];
 
 export default function EBooks() {
@@ -152,7 +152,7 @@ export default function EBooks() {
   const tabs = [
     { id: 'books' as const, name: 'Reference Books', icon: BookOpen },
     { id: 'notes' as const, name: 'Notes', icon: FileText },
-    { id: 'papers' as const, name: 'Question Papers', icon: HelpCircle },
+    { id: 'papers' as const, name: 'Research Papers', icon: GraduationCap },
     { id: 'other' as const, name: 'Other Manuals', icon: Archive }
   ];
 
@@ -163,8 +163,8 @@ export default function EBooks() {
         docId={selectedResource?.id}
         initialData={selectedResource}
         fallbackTitle={selectedResource ? `${selectedResource.title} | ForenClue eLibrary` : "Academic eLibrary - Reference Textbook Vault"}
-        fallbackDescription={selectedResource ? (selectedResource.desc || "Academic eLibrary resource") : "Access standard academic forensic medicine textbooks, handwritten toxicology notes, national eligibility solved papers, and standard extraction protocols."}
-        keywords="forensic library, forenclue, forensic textbooks, toxicological revision keys, UGC NET papers"
+        fallbackDescription={selectedResource ? (selectedResource.desc || "Academic eLibrary resource") : "Access standard academic forensic medicine textbooks, handwritten toxicology notes, peer-reviewed research papers, and standard extraction protocols."}
+        keywords="forensic library, forenclue, forensic textbooks, toxicological revision keys, research papers"
         canonicalPath={selectedResource ? `/ebooks?id=${selectedResource.id}` : "/ebooks"}
         fallbackImage={selectedResource?.coverImage || selectedResource?.image || "/images/og/library.png"}
         type={selectedResource ? "book" : "website"}
@@ -174,8 +174,8 @@ export default function EBooks() {
           ...(selectedResource ? [{ name: selectedResource.title, path: `/ebooks?id=${selectedResource.id}` }] : [])
         ]}
         faqs={[
-          { question: "What resources are in the ForenClue eLibrary?", answer: "Our library hosts digital forensic medicine manuals, toxicological revision notes, previous UGC NET exam paper solutions, and active lab extraction protocols." },
-          { question: "Can I download these books and notes?", answer: "Yes, standard public reference books, revision notes, and past exams are fully available for on-demand study access on our learning portal." }
+          { question: "What resources are in the ForenClue eLibrary?", answer: "Our library hosts digital forensic medicine manuals, toxicological revision notes, peer-reviewed research papers, and active lab extraction protocols." },
+          { question: "Can I download these books and notes?", answer: "Yes, standard public reference books, revision notes, and research papers are fully available for on-demand study access on our learning portal." }
         ]}
       />
 
@@ -194,7 +194,7 @@ export default function EBooks() {
               Digital <span className="text-warning">eLibrary</span>
             </h1>
             <p className="text-sm text-text-muted max-w-xl">
-              Academic manuals, handwritten notes, previous exam keys, and toxicological analysis sheets organized dynamically under academic criteria.
+              Academic manuals, handwritten notes, peer-reviewed research papers, and toxicological analysis sheets organized dynamically under academic criteria.
             </p>
           </div>
         </div>

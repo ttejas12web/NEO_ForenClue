@@ -19,3 +19,10 @@ The admin database is highly sensitive and mission-critical to the application. 
 3. Always prioritize the security, stability, and integrity of the workspace station and its admin data.
 
 Follow these rules unconditionally to ensure the workspace remains powerful, dynamic, and secure.
+
+# Data Authenticity Rules
+
+**STRICT RULES FOR MOCK/DUMMY DATA:**
+1. You are **STRICTLY FORBIDDEN** from displaying mock, fake, or dummy data to the user on the frontend interface (e.g., in leaderboards, dashboards, or lists).
+2. If the real user database does not contain any records or data is unavailable, the UI **MUST** display an empty state or a "no data available" message.
+3. Do not hardcode "sample seeds" or inject fake user profiles into database queries to make the application look populated. Always rely strictly on the real Firestore database.

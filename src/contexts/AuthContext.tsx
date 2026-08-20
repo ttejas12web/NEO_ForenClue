@@ -56,6 +56,7 @@ interface AuthContextType {
   signInWithLinkedIn: () => Promise<void>;
   signUpWithEmail: (email: string, pass: string, name: string) => Promise<User>;
   signInWithEmail: (email: string, pass: string) => Promise<User>;
+  signInWithCustomFirebaseToken: (customToken: string) => Promise<User>;
   sendVerificationEmail: () => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
   reloadUser: () => Promise<void>;
@@ -588,6 +589,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signInWithCustomFirebaseToken = async (customToken: string) => {
+    try {
+      const result = await signInWithCustomToken(auth, customToken);
+      if (result.user.email) {
+        recordSuccessfulLogin(result.user.email);
+      }
+      lastActivityRef.current = Date.now();
+      return result.user;
+    } catch (error: any) {
+      console.error("Error signing in with custom token:", error);
+      throw error;
+    }
+  };
+
   const sendPasswordReset = async (email: string) => {
     const normalizedEmail = email.trim().toLowerCase();
     const rateCheck = checkPasswordResetRateLimit(normalizedEmail);
@@ -664,6 +679,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       signInWithLinkedIn, 
       signUpWithEmail, 
       signInWithEmail, 
+      signInWithCustomFirebaseToken,
       sendVerificationEmail, 
       sendPasswordReset, 
       reloadUser,

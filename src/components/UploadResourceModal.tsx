@@ -21,7 +21,7 @@ const forensicCategories = [
   'Crime Scene Investigation',
   'Toxicology & Pharmacology',
   'Forensic Medicine & Pathology',
-  'Question Papers'
+  'Research Papers'
 ];
 
 export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProps) {
@@ -292,7 +292,7 @@ export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProp
                     >
                       <option value="books">Reference Books</option>
                       <option value="notes">Lecture Notes</option>
-                      <option value="papers">Question Papers</option>
+                      <option value="papers">Research Papers</option>
                       <option value="other">Other Stuff / Manuals</option>
                     </select>
                   </div>

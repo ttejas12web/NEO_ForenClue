@@ -3134,7 +3134,7 @@ export default function Admin() {
                             >
                               <option value="books">Reference Books</option>
                               <option value="notes">Quick lecture Notes</option>
-                              <option value="papers"> PYQ Question Papers</option>
+                              <option value="papers">Research Papers</option>
                               <option value="other">Other Stuff Checklist</option>
                             </select>
                           </div>

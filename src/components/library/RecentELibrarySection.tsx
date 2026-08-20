@@ -162,7 +162,7 @@ export function RecentELibrarySection() {
             </h2>
             
             <p className="text-sm sm:text-base !text-white mt-2 max-w-2xl leading-relaxed font-normal" style={{ color: '#ffffff', opacity: 0.95 }}>
-              Explore recent forensic textbooks, reference keys, UGC NET papers, and laboratory manuals uploaded by admins and academic contributors.
+              Explore recent forensic textbooks, reference keys, research papers, and laboratory manuals uploaded by admins and academic contributors.
             </p>
           </div>
         </div>
@@ -173,7 +173,7 @@ export function RecentELibrarySection() {
             <div className="col-span-full text-center py-12 bg-[#121824] border border-dashed border-white/10 rounded-2xl p-6">
               <BookOpen size={36} className="text-warning/60 mx-auto mb-3" />
               <p className="text-sm font-black text-white uppercase tracking-wider">No E-Library Materials Uploaded Yet</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">Reference textbooks, notes, and solved question papers will appear here as admins and verified contributors upload them.</p>
+              <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">Reference textbooks, notes, and research papers will appear here as admins and verified contributors upload them.</p>
             </div>
           ) : (
             displayList.map((item) => {

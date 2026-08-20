@@ -37,6 +37,7 @@ export default function Login() {
     signInWithLinkedIn, 
     signUpWithEmail, 
     signInWithEmail, 
+    signInWithCustomFirebaseToken,
     sendVerificationEmail, 
     sendPasswordReset, 
     reloadUser,
@@ -82,7 +83,9 @@ export default function Login() {
   const [displayName, setDisplayName] = useState('');
   const [simulatedEmail, setSimulatedEmail] = useState('');
   const [simulatedPassword, setSimulatedPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [authSuccess, setAuthSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -192,18 +195,41 @@ export default function Login() {
     
     try {
       if (activeTab === 'signup') {
+        if (!displayName.trim()) {
+          setAuthError('Please enter your full name.');
+          setIsSubmitting(false);
+          return;
+        }
+
         if (!passwordStrength.isStrong) {
           setAuthError('Please ensure your password meets all security requirements before proceeding.');
           setIsSubmitting(false);
           return;
         }
-        const name = displayName.trim() || simulatedEmail.split('@')[0] || 'Investigator';
-        await signUpWithEmail(simulatedEmail, simulatedPassword, name);
-        setAuthSuccess('Account registered successfully! A verification email has been dispatched.');
-        setEmailVerificationSent(true);
+
+        if (simulatedPassword !== confirmPassword) {
+          setAuthError('Passwords do not match. Please verify your confirm password field.');
+          setIsSubmitting(false);
+          return;
+        }
+
+        const name = displayName.trim();
+        try {
+          await signUpWithEmail(simulatedEmail, simulatedPassword, name);
+          setAuthSuccess('Registration completed! Welcome to ForenClue.');
+        } catch (signupErr: any) {
+          if (signupErr?.code === 'auth/email-already-in-use') {
+            // Email exists, try to sign in instead
+            await signInWithEmail(simulatedEmail, simulatedPassword);
+            setAuthSuccess('Account found. Sign in successful! Directing to portal...');
+          } else {
+            throw signupErr;
+          }
+        }
+        
         setTimeout(() => {
           navigate(from, { replace: true });
-        }, 1200);
+        }, 800);
       } else {
         await signInWithEmail(simulatedEmail, simulatedPassword);
         setAuthSuccess('Sign in successful! Directing to portal...');
@@ -380,210 +406,256 @@ export default function Login() {
 
             {/* Error and Success alerts */}
             <AnimatePresence mode="wait">
-              {authError && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="bg-red-500/10 border border-red-500/30 text-red-500 dark:text-red-400 px-4 py-3 rounded-lg text-xs flex items-start gap-2.5 mb-6 leading-relaxed w-full"
-                >
-                  <AlertCircle size={16} className="shrink-0 mt-0.5 animate-pulse" />
-                  <div className="flex-1 min-w-0">
-                    <span className="font-bold uppercase tracking-wider block mb-1">
-                      {authError.includes('Lockout') 
-                        ? "Brute-Force Rate Limiting Activated"
-                        : authError === 'EMAIL_NOT_ENABLED' 
-                        ? "Email Sign-in Disabled" 
-                        : authError === 'UNAUTHORIZED_DOMAIN' 
-                        ? "Unauthorized Domain for Social Login" 
-                        : authError === 'LINKEDIN_NOT_ENABLED'
-                        ? "LinkedIn Authentication Disabled"
-                        : "Authentication Notice"}
-                    </span>
-                    <p>{authError}</p>
-                  </div>
-                </motion.div>
-              )}
-
-              {authSuccess && (
-                <motion.div 
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="bg-success/10 border border-success/30 text-success px-4 py-3 rounded-lg text-xs flex items-start gap-2.5 mb-6 leading-relaxed"
-                >
-                  <CheckCircle size={16} className="shrink-0 mt-0.5" />
-                  <div>
-                    <span className="font-bold uppercase tracking-wider block mb-0.5 font-heading">Identity Secured</span>
-                    {authSuccess}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Authentication Form */}
-            <form onSubmit={handleAuthSubmit} className="space-y-4 mb-8">
-              {activeTab === 'signup' && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                >
-                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">
-                    Profile Identifier (Full Name)
-                  </label>
-                  <div className="relative">
-                    <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
-                      <UserIcon size={16} />
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      value={displayName}
-                      onChange={(e) => setDisplayName(e.target.value)}
-                      placeholder="e.g. Dr. Aryan Roy"
-                      className="w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border border-black/15 dark:border-white/5 pl-10 pr-4 h-11 focus:outline-none focus:border-warning/50 transition-all font-mono"
-                    />
-                  </div>
-                </motion.div>
-              )}
-
-              <div>
-                <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
-                    <Mail size={16} />
-                  </span>
-                  <input
-                    type="email"
-                    required
-                    value={simulatedEmail}
-                    onChange={(e) => setSimulatedEmail(e.target.value)}
-                    placeholder="investigator@forenclue.in"
-                    className="w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border border-black/15 dark:border-white/5 pl-10 pr-4 h-11 focus:outline-none focus:border-warning/50 transition-all font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest">
-                    Password Key
-                  </label>
-                  {activeTab === 'signin' && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setResetEmail(simulatedEmail);
-                        setResetErrorMsg('');
-                        setResetSuccessMsg('');
-                        setShowForgotPasswordModal(true);
-                      }}
-                      className="text-[10px] font-bold uppercase tracking-wider text-warning hover:underline cursor-pointer"
+                  {authError && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="bg-red-500/10 border border-red-500/30 text-red-500 dark:text-red-400 px-4 py-3 rounded-lg text-xs flex items-start gap-2.5 mb-6 leading-relaxed w-full"
                     >
-                      Forgot Password?
-                    </button>
+                      <AlertCircle size={16} className="shrink-0 mt-0.5 animate-pulse" />
+                      <div className="flex-1 min-w-0">
+                        <span className="font-bold uppercase tracking-wider block mb-1">
+                          {authError.includes('Lockout') 
+                            ? "Brute-Force Rate Limiting Activated"
+                            : authError === 'EMAIL_NOT_ENABLED' 
+                            ? "Email Sign-in Disabled" 
+                            : authError === 'UNAUTHORIZED_DOMAIN' 
+                            ? "Unauthorized Domain for Social Login" 
+                            : authError === 'LINKEDIN_NOT_ENABLED'
+                            ? "LinkedIn Authentication Disabled"
+                            : "Authentication Notice"}
+                        </span>
+                        <p>{authError}</p>
+                      </div>
+                    </motion.div>
                   )}
-                </div>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
-                    <Lock size={16} />
-                  </span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={simulatedPassword}
-                    onChange={(e) => setSimulatedPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    className="w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border border-black/15 dark:border-white/5 pl-10 pr-10 h-11 focus:outline-none focus:border-warning/50 transition-all font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-main cursor-pointer"
-                    title={showPassword ? "Hide Password" : "Show Password"}
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
 
-                {/* Password Strength Meter for Registration */}
-                {activeTab === 'signup' && simulatedPassword.length > 0 && (
-                  <motion.div 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="mt-3 p-3 bg-base/80 rounded-xl border border-black/10 dark:border-white/5 space-y-2"
-                  >
-                    <div className="flex items-center justify-between text-[10px] font-mono">
-                      <span className="text-text-muted uppercase">Password Strength:</span>
-                      <span className={`font-bold ${
-                        passwordStrength.score >= 4 ? 'text-success' : passwordStrength.score >= 2 ? 'text-warning' : 'text-red-400'
-                      }`}>
-                        {passwordStrength.score >= 4 ? 'Strong (Approved)' : passwordStrength.score >= 2 ? 'Moderate' : 'Weak'}
-                      </span>
-                    </div>
+                  {authSuccess && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="bg-success/10 border border-success/30 text-success px-4 py-3 rounded-lg text-xs flex items-start gap-2.5 mb-6 leading-relaxed"
+                    >
+                      <CheckCircle size={16} className="shrink-0 mt-0.5" />
+                      <div>
+                        <span className="font-bold uppercase tracking-wider block mb-0.5 font-heading">Identity Secured</span>
+                        {authSuccess}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                    {/* Visual Progress Bar */}
-                    <div className="h-1.5 w-full bg-black/20 dark:bg-white/10 rounded-full overflow-hidden flex gap-1">
-                      {[1, 2, 3, 4].map((step) => (
-                        <div 
-                          key={step} 
-                          className={`flex-1 h-full rounded-full transition-all ${
-                            step <= passwordStrength.score 
-                              ? passwordStrength.score >= 4 
-                                ? 'bg-success' 
-                                : passwordStrength.score >= 2 
-                                ? 'bg-warning' 
-                                : 'bg-red-400' 
-                              : 'bg-transparent'
-                          }`} 
+                {/* Authentication Form */}
+                <form onSubmit={handleAuthSubmit} className="space-y-4 mb-8">
+                  {activeTab === 'signup' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">
+                        Full Name
+                      </label>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
+                          <UserIcon size={16} />
+                        </span>
+                        <input
+                          type="text"
+                          required
+                          value={displayName}
+                          onChange={(e) => setDisplayName(e.target.value)}
+                          placeholder="e.g. Dr. Aryan Roy"
+                          className="w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border border-black/15 dark:border-white/5 pl-10 pr-4 h-11 focus:outline-none focus:border-warning/50 transition-all font-mono"
                         />
-                      ))}
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <div>
+                    <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest mb-1.5">
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
+                        <Mail size={16} />
+                      </span>
+                      <input
+                        type="email"
+                        required
+                        value={simulatedEmail}
+                        onChange={(e) => setSimulatedEmail(e.target.value)}
+                        placeholder="investigator@forenclue.in"
+                        className="w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border border-black/15 dark:border-white/5 pl-10 pr-4 h-11 focus:outline-none focus:border-warning/50 transition-all font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                        Password Key
+                      </label>
+                      {activeTab === 'signin' && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setResetEmail(simulatedEmail);
+                            setResetErrorMsg('');
+                            setResetSuccessMsg('');
+                            setShowForgotPasswordModal(true);
+                          }}
+                          className="text-[10px] font-bold uppercase tracking-wider text-warning hover:underline cursor-pointer"
+                        >
+                          Forgot Password?
+                        </button>
+                      )}
+                    </div>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
+                        <Lock size={16} />
+                      </span>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={simulatedPassword}
+                        onChange={(e) => setSimulatedPassword(e.target.value)}
+                        placeholder="••••••••••••"
+                        className="w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border border-black/15 dark:border-white/5 pl-10 pr-10 h-11 focus:outline-none focus:border-warning/50 transition-all font-mono"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-main cursor-pointer"
+                        title={showPassword ? "Hide Password" : "Show Password"}
+                      >
+                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                      </button>
                     </div>
 
-                    {/* Requirements Checklist */}
-                    <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px]">
-                      <div className={`flex items-center gap-1.5 ${passwordStrength.hasMinLength ? 'text-success' : 'text-text-muted'}`}>
-                        <Check size={12} className={passwordStrength.hasMinLength ? 'text-success' : 'opacity-30'} />
-                        <span>8+ Characters</span>
-                      </div>
-                      <div className={`flex items-center gap-1.5 ${passwordStrength.hasUpper && passwordStrength.hasLower ? 'text-success' : 'text-text-muted'}`}>
-                        <Check size={12} className={passwordStrength.hasUpper && passwordStrength.hasLower ? 'text-success' : 'opacity-30'} />
-                        <span>Upper & Lower</span>
-                      </div>
-                      <div className={`flex items-center gap-1.5 ${passwordStrength.hasNumber ? 'text-success' : 'text-text-muted'}`}>
-                        <Check size={12} className={passwordStrength.hasNumber ? 'text-success' : 'opacity-30'} />
-                        <span>Numbers (0-9)</span>
-                      </div>
-                      <div className={`flex items-center gap-1.5 ${passwordStrength.hasSpecial ? 'text-success' : 'text-text-muted'}`}>
-                        <Check size={12} className={passwordStrength.hasSpecial ? 'text-success' : 'opacity-30'} />
-                        <span>Special Symbol (!@#$)</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </div>
+                    {/* Password Strength Meter for Registration */}
+                    {activeTab === 'signup' && simulatedPassword.length > 0 && (
+                      <motion.div 
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        className="mt-3 p-3 bg-base/80 rounded-xl border border-black/10 dark:border-white/5 space-y-2"
+                      >
+                        <div className="flex items-center justify-between text-[10px] font-mono">
+                          <span className="text-text-muted uppercase">Password Strength:</span>
+                          <span className={`font-bold ${
+                            passwordStrength.score >= 4 ? 'text-success' : passwordStrength.score >= 2 ? 'text-warning' : 'text-red-400'
+                          }`}>
+                            {passwordStrength.score >= 4 ? 'Strong (Approved)' : passwordStrength.score >= 2 ? 'Moderate' : 'Weak'}
+                          </span>
+                        </div>
 
-              <button 
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full h-11 bg-warning text-crust hover:bg-warning/90 font-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all text-center flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md shadow-warning/10"
-              >
-                {isSubmitting ? (
-                  <div className="w-5 h-5 border-2 border-crust border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <>
-                    {activeTab === 'signin' ? 'Verify Credentials' : 'Create Protected Account'}
-                    <ArrowRight size={14} />
-                  </>
-                )}
-              </button>
-            </form>
+                        {/* Visual Progress Bar */}
+                        <div className="h-1.5 w-full bg-black/20 dark:bg-white/10 rounded-full overflow-hidden flex gap-1">
+                          {[1, 2, 3, 4].map((step) => (
+                            <div 
+                              key={step} 
+                              className={`flex-1 h-full rounded-full transition-all ${
+                                step <= passwordStrength.score 
+                                  ? passwordStrength.score >= 4 
+                                    ? 'bg-success' 
+                                    : passwordStrength.score >= 2 
+                                    ? 'bg-warning' 
+                                    : 'bg-red-400' 
+                                  : 'bg-transparent'
+                              }`} 
+                            />
+                          ))}
+                        </div>
 
-            {/* Split lines/Or */}
-            <>
+                        {/* Requirements Checklist */}
+                        <div className="grid grid-cols-2 gap-1.5 pt-1 text-[10px]">
+                          <div className={`flex items-center gap-1.5 ${passwordStrength.hasMinLength ? 'text-success' : 'text-text-muted'}`}>
+                            <Check size={12} className={passwordStrength.hasMinLength ? 'text-success' : 'opacity-30'} />
+                            <span>8+ Characters</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${passwordStrength.hasUpper && passwordStrength.hasLower ? 'text-success' : 'text-text-muted'}`}>
+                            <Check size={12} className={passwordStrength.hasUpper && passwordStrength.hasLower ? 'text-success' : 'opacity-30'} />
+                            <span>Upper & Lower</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${passwordStrength.hasNumber ? 'text-success' : 'text-text-muted'}`}>
+                            <Check size={12} className={passwordStrength.hasNumber ? 'text-success' : 'opacity-30'} />
+                            <span>Numbers (0-9)</span>
+                          </div>
+                          <div className={`flex items-center gap-1.5 ${passwordStrength.hasSpecial ? 'text-success' : 'text-text-muted'}`}>
+                            <Check size={12} className={passwordStrength.hasSpecial ? 'text-success' : 'opacity-30'} />
+                            <span>Special Symbol (!@#$)</span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Confirm Password field for signup */}
+                  {activeTab === 'signup' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="block text-[10px] font-bold text-text-muted uppercase tracking-widest">
+                          Confirm Password Key
+                        </label>
+                        {confirmPassword.length > 0 && (
+                          <span className={`text-[10px] font-mono font-bold ${
+                            simulatedPassword === confirmPassword ? 'text-success' : 'text-red-400'
+                          }`}>
+                            {simulatedPassword === confirmPassword ? '✓ Passwords Match' : '✗ Passwords Differ'}
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-text-muted/50">
+                          <Lock size={16} />
+                        </span>
+                        <input
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          required
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          placeholder="Re-enter password key"
+                          className={`w-full bg-base/50 text-text-main placeholder-text-muted/40 text-xs rounded-xl border pl-10 pr-10 h-11 focus:outline-none transition-all font-mono ${
+                            confirmPassword.length > 0 && simulatedPassword !== confirmPassword
+                              ? 'border-red-500/50 focus:border-red-500'
+                              : 'border-black/15 dark:border-white/5 focus:border-warning/50'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-text-muted hover:text-text-main cursor-pointer"
+                          title={showConfirmPassword ? "Hide Password" : "Show Password"}
+                        >
+                          {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  <button 
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-11 bg-warning text-crust hover:bg-warning/90 font-heading font-black text-xs uppercase tracking-widest rounded-xl transition-all text-center flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-md shadow-warning/10"
+                  >
+                    {isSubmitting ? (
+                      <div className="w-5 h-5 border-2 border-crust border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        {activeTab === 'signin' ? 'Verify Credentials' : 'Create Account'}
+                        <ArrowRight size={14} />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {/* Split lines/Or */}
                 <div className="relative flex items-center justify-center mb-8">
                   <div className="absolute inset-0 flex items-center">
                     <div className="w-full border-t border-black/10 dark:border-white/5" />
@@ -618,7 +690,6 @@ export default function Login() {
                     )}
                   </motion.button>
                 </div>
-            </>
           </div>
 
         </motion.div>
