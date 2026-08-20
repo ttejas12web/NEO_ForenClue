@@ -1576,8 +1576,8 @@ export default function Admin() {
     setSuccessMsg('');
     setErrMsg('');
 
-    if (!newEbook.title || !newEbook.pdfUrl) {
-      setErrMsg('Please input eBook title and source PDF URL.');
+    if (!newEbook.title || !newEbook.pdfUrl || !newEbook.image) {
+      setErrMsg('Please input the eBook title, source PDF URL, and its real cover/first-page image.');
       return;
     }
 
@@ -1590,7 +1590,7 @@ export default function Admin() {
         tabCategory: newEbook.tabCategory,
         type: newEbook.type,
         size: newEbook.size,
-        image: newEbook.image || 'https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=300',
+        image: newEbook.image,
         pdfUrl: newEbook.pdfUrl,
         desc: newEbook.desc || 'Forensic reference files.',
         uploadedBy: newEbook.uploadedBy || newEbook.uploaderName || '',
@@ -5330,5 +5330,4 @@ export default function Admin() {
     </div>
   );
 }
-
 
