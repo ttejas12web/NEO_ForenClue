@@ -46,6 +46,7 @@ import {
   ChevronDown
 } from 'lucide-react';
 import { COURSES, Course, Lesson, Module } from '@/constants';
+import { buildSocialShareUrl } from '@/lib/socialShare';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, setDoc, updateDoc, serverTimestamp, onSnapshot, getDoc } from 'firebase/firestore';
@@ -867,7 +868,11 @@ export default function CoursePlayer() {
 
   const handleSocialShare = (platform: 'instagram' | 'whatsapp' | 'copy') => {
     if (!course) return;
-    const url = `${window.location.origin}/courses?id=${course.id}`;
+    const url = buildSocialShareUrl(
+      '/courses',
+      { id: course.id },
+      [course.id, course.thumbnail],
+    );
     const text = `I'm investigating ${course.title}! Join me at Forensic Insights Lab.`;
     
     if (platform === 'instagram') {

@@ -28,6 +28,7 @@ import { db } from '@/lib/firebase';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { PdfViewerModal } from '@/components/ui/PdfViewerModal';
 import { ResilientImage } from '@/lib/localFileStore';
+import { buildSocialShareUrl } from '@/lib/socialShare';
 
 // Static book cover asset (same as original/fallback)
 const bookCoverUrl = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png';
@@ -368,7 +369,11 @@ function ShareModal({ isOpen, onClose, item }: ShareModalProps) {
 
   if (!isOpen || !item) return null;
 
-  const shareUrl = `${window.location.origin}/ebooks?id=${encodeURIComponent(item.id)}`;
+  const shareUrl = buildSocialShareUrl(
+    '/ebooks',
+    { id: item.id },
+    [item.id, item.coverImage, item.image, item.pdfUrl],
+  );
   const shareText = `Check out "${item.title}" (${item.category || item.type}) by ${item.author} on ForenClue eLibrary!`;
 
   const handleCopyLink = async () => {
