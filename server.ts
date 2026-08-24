@@ -10,7 +10,7 @@ import fs from 'fs';
 import multer from 'multer';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
-import { COURSES } from './src/constants.js';
+import { COURSES } from './src/constants';
 
 const __filename = typeof process !== 'undefined' && process.argv[1] ? process.argv[1] : '';
 const currentDir = typeof __dirname !== 'undefined' ? __dirname : (typeof process !== 'undefined' ? process.cwd() : '');

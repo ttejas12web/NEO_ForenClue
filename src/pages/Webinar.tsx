@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   Clock, Sparkles, ArrowLeft, Calendar, User, 
   Linkedin, Play, ExternalLink, Star, MessageSquare, Send, Check,
-  ChevronLeft, ChevronRight, ThumbsUp
+  ChevronLeft, ChevronRight, ThumbsUp, Radio, Youtube
 } from 'lucide-react';
 import { SEO } from '@/components/layout/SEO';
 import { SEOManager } from '@/components/layout/SEOManager';
@@ -32,6 +32,7 @@ interface WebinarEvent {
   description: string;
   fullDetails: string;
   youtubeId?: string;
+  isUpcoming?: boolean;
   speaker: {
     name: string;
     role: string;
@@ -48,6 +49,27 @@ interface WebinarEvent {
 }
 
 const WEBINARS_DATA: WebinarEvent[] = [
+  {
+    id: "autopsy-the-silent-witness",
+    sequence: 3,
+    title: "Autopsy – The Silent Witness",
+    subtitle: "Discover the silent truths the body holds. A deep dive into the science, process, and medico-legal significance of autopsy.",
+    date: "August 25, 2026",
+    time: "07:00 PM IST",
+    description: "ForenClue Master Concept Series session on autopsy purpose, process, medico-legal importance, and postmortem documentation.",
+    fullDetails: "ForenClue Master Concept Series: Autopsy – The Silent Witness.\n\nDiscover the silent truths the body holds in this comprehensive deep dive into the science, process, and medico-legal significance of autopsy with speaker Sheenal Sharma.\n\nKey Highlights & What You Will Gain:\n• Autopsy – Purpose, Process & Types\n• Medico-Legal Importance & Judicial Relevance\n• Postmortem Findings & Documentation Protocols\n• Real-Life Case Insights\n• Interactive Q&A Session\n\nPlatform: Google Meet & YouTube Live (@forenclue)\nPerks: Free E-Certificate | Open For All",
+    isUpcoming: true,
+    speaker: {
+      name: "Sheenal Sharma",
+      role: "Forensic Sciences Enthusiast & Researcher",
+      avatar: "https://blogger.googleusercontent.com/img/a/AVvXsEiBKWNypvNgSN-Sf049jnxGMgJ3PFjJexB5xfMXeLs_Ck_Vrcg4s2exKP1jPYPc36Slmu93Vc-GwmG_AegwTVP44MMsIL_vsanEsrhk8CHPHBUpXJ3svgRRiKDmcNjGSQO92XETaIKyxDU6GGaRzodKZ4JP353wHel2hOjt1hsH-ATbqEpQ2ABX3xAOn4s",
+      linkedin: "https://www.linkedin.com/company/forenclue",
+      bio: "Forensic Sciences Enthusiast | Passionate Learner | Exploring the world of forensics with curiosity and dedication."
+    },
+    poster: "https://blogger.googleusercontent.com/img/a/AVvXsEiBKWNypvNgSN-Sf049jnxGMgJ3PFjJexB5xfMXeLs_Ck_Vrcg4s2exKP1jPYPc36Slmu93Vc-GwmG_AegwTVP44MMsIL_vsanEsrhk8CHPHBUpXJ3svgRRiKDmcNjGSQO92XETaIKyxDU6GGaRzodKZ4JP353wHel2hOjt1hsH-ATbqEpQ2ABX3xAOn4s",
+    tags: ["Autopsy", "Forensic Pathology", "Medico-Legal", "Master Concept Series", "Upcoming Event"],
+    feedbacks: []
+  },
   {
     id: "beyond-the-smiles",
     sequence: 2,
@@ -434,6 +456,50 @@ export default function Webinar() {
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
                       ></iframe>
+                    ) : currentEvent.isUpcoming ? (
+                      <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black">
+                        <img 
+                          src={currentEvent.poster} 
+                          alt={`Upcoming ForenClue Webinar: ${currentEvent.title}`} 
+                          className="w-full h-full object-cover opacity-35 filter blur-[2px] scale-105"
+                          referrerPolicy="no-referrer"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black via-black/85 to-black/70 flex flex-col items-center justify-center p-6 text-center space-y-4">
+                          <span className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-red-500/20 border border-red-500/40 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] text-red-400 font-black shadow-lg animate-pulse">
+                            <Radio size={13} className="text-red-400 animate-pulse" />
+                            Upcoming Live Session
+                          </span>
+
+                          <div className="space-y-1.5 max-w-lg">
+                            <h3 className="text-lg sm:text-2xl font-black text-white uppercase tracking-tight font-heading">
+                              {currentEvent.title}
+                            </h3>
+                            <p className="text-xs sm:text-sm text-warning font-mono font-semibold">
+                              {currentEvent.date} &bull; {currentEvent.time}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap items-center justify-center gap-3 pt-1">
+                            <a
+                              href="https://www.youtube.com/@forenclue"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-5 py-2.5 bg-red-600 hover:bg-red-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg shadow-red-600/30 transition-all hover:scale-105 active:scale-95 cursor-pointer font-sans"
+                            >
+                              <Play size={14} className="fill-white" />
+                              <span>YouTube Channel (@forenclue)</span>
+                              <ExternalLink size={12} />
+                            </a>
+                            <span className="text-[11px] font-mono text-zinc-300 bg-white/10 border border-white/15 px-3 py-2 rounded-xl">
+                              Google Meet & YouTube Live
+                            </span>
+                          </div>
+
+                          <p className="text-[10px] text-zinc-400 font-mono tracking-wide max-w-md">
+                            🔴 Live video stream & recording will be enabled right here upon session broadcast.
+                          </p>
+                        </div>
+                      </div>
                     ) : (
                       <>
                         <img 
@@ -453,9 +519,11 @@ export default function Webinar() {
 
                   {/* Operational strip banner */}
                   <div className="mt-3.5 flex items-center justify-between px-1 text-[9px] font-mono text-text-muted tracking-widest uppercase">
-                    <span className="flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                      Status: High Definition Playback Enabled
+                    <span className="flex items-center gap-1.5">
+                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${currentEvent.isUpcoming ? 'bg-amber-400' : 'bg-emerald-500'}`}></span>
+                      {currentEvent.isUpcoming 
+                        ? 'Status: Live Stream Scheduled • YouTube (@forenclue)' 
+                        : 'Status: High Definition Playback Enabled'}
                     </span>
                     <span>Session {currentEvent.sequence}</span>
                   </div>
@@ -474,7 +542,23 @@ export default function Webinar() {
                     </div>
                   </div>
 
-                  {currentEvent.isFeedbackClosed ? (
+                  {currentEvent.isUpcoming ? (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-6 bg-surface/80 border border-black/10 dark:border-white/10 rounded-2xl text-center space-y-3"
+                    >
+                      <div className="w-12 h-12 bg-warning/15 text-warning rounded-full flex items-center justify-center mx-auto shadow-inner">
+                        <Clock size={24} />
+                      </div>
+                      <h4 className="font-black text-base text-text-main uppercase tracking-wider">
+                        Feedback Form Opens After Live Session
+                      </h4>
+                      <p className="text-xs text-text-muted max-w-md mx-auto leading-relaxed">
+                        Feedback submissions and certificate verification for "{currentEvent.title}" (Session {currentEvent.sequence}) will open immediately following the live broadcast on {currentEvent.date}.
+                      </p>
+                    </motion.div>
+                  ) : currentEvent.isFeedbackClosed ? (
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -955,11 +1039,17 @@ export default function Webinar() {
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
-                        {/* Webinar Sequence Number Overlay */}
+                        {/* Webinar Sequence Number Overlay & Upcoming Badge */}
                         <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
                           <span className="text-[9px] font-mono font-black uppercase bg-warning text-crust px-2.5 py-1 rounded-md shadow">
                             WEBINAR {item.sequence}
                           </span>
+                          {item.isUpcoming && (
+                            <span className="text-[9px] font-mono font-black uppercase bg-red-600 text-white px-2 py-0.5 rounded-md shadow flex items-center gap-1 animate-pulse">
+                              <span className="w-1.5 h-1.5 bg-white rounded-full"></span>
+                              UPCOMING LIVE
+                            </span>
+                          )}
                         </div>
                       </div>
 

@@ -254,7 +254,7 @@ The ForenClue Curriculum Board
               <div className="flex justify-center">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-warning/15 border border-warning/30 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] text-warning font-black shadow-sm">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                  Exclusive Live Session
+                  Upcoming Live Session
                 </span>
               </div>
 
@@ -264,8 +264,8 @@ The ForenClue Curriculum Board
                 className="relative rounded-2xl overflow-hidden border border-black/15 dark:border-white/10 shadow-lg bg-black/50 w-full cursor-zoom-in group transition-all duration-300 hover:border-warning/50 hover:shadow-warning/10"
               >
                 <img 
-                  src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjC8OssiOJ4AHrnFMj8XrEz4-2WzvQqBvhsg4ztM5HnSlunwKoH6ZIAnDh8eL9wCjiWXy5tT7CwKs9HSrZUzE2l9ph6oefi97nIraWGguJ5L-aMsDEmadDi3LpiBiUir1xgBr8xyrrAGQrElx1Szy-x7Ob4NO_iEiWmFpuAJFBb5ihvG0_HRXC58Gujzzo/s1524/Forensic%20Odontologist%20%20Dental%20Surgeon%20%20Certified%20Professional%20in%20Criminal%20Profiling,%20Forensic%20&%20Investigative%20Psychology%20%20Gold%20Medalist%20(2022-2024)%20%20Member%20-%20IDA%20Fellow-Pierre%20Fauchard%20Academy,%20US.png"
-                  alt="Official Webinar Event Poster - Beyond The Smiles"
+                  src="https://blogger.googleusercontent.com/img/a/AVvXsEiBKWNypvNgSN-Sf049jnxGMgJ3PFjJexB5xfMXeLs_Ck_Vrcg4s2exKP1jPYPc36Slmu93Vc-GwmG_AegwTVP44MMsIL_vsanEsrhk8CHPHBUpXJ3svgRRiKDmcNjGSQO92XETaIKyxDU6GGaRzodKZ4JP353wHel2hOjt1hsH-ATbqEpQ2ABX3xAOn4s"
+                  alt="Official Upcoming Webinar Event Poster"
                   className="w-full h-auto block"
                   referrerPolicy="no-referrer"
                   loading="lazy"
@@ -284,13 +284,13 @@ The ForenClue Curriculum Board
               </div>
 
               <div className="space-y-4">
-                {/* 3D Touchable View Recent Event Button */}
+                {/* 3D Touchable View Upcoming Event Button */}
                 <Link 
-                  to="/webinar?event=beyond-the-smiles"
+                  to="/webinar?event=autopsy-the-silent-witness"
                   className="group relative w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-warning hover:bg-warning-dark text-crust font-black uppercase tracking-wider rounded-xl text-xs sm:text-sm shadow-[0_6px_0_0_#9a3412] hover:shadow-[0_4px_0_0_#9a3412] active:shadow-[0_0px_0_0_#9a3412] active:translate-y-[6px] border border-amber-500/20 transition-all text-center cursor-pointer font-sans"
                 >
                   <Video size={16} className="text-crust" />
-                  <span>View Recent Event</span>
+                  <span>View Upcoming Event</span>
                 </Link>
               </div>
 
@@ -452,8 +452,8 @@ The ForenClue Curriculum Board
             onClick={(e) => e.stopPropagation()}
           >
             <img 
-              src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjC8OssiOJ4AHrnFMj8XrEz4-2WzvQqBvhsg4ztM5HnSlunwKoH6ZIAnDh8eL9wCjiWXy5tT7CwKs9HSrZUzE2l9ph6oefi97nIraWGguJ5L-aMsDEmadDi3LpiBiUir1xgBr8xyrrAGQrElx1Szy-x7Ob4NO_iEiWmFpuAJFBb5ihvG0_HRXC58Gujzzo/s1524/Forensic%20Odontologist%20%20Dental%20Surgeon%20%20Certified%20Professional%20in%20Criminal%20Profiling,%20Forensic%20&%20Investigative%20Psychology%20%20Gold%20Medalist%20(2022-2024)%20%20Member%20-%20IDA%20Fellow-Pierre%20Fauchard%20Academy,%20US.png"
-              alt="Official Webinar Event Poster - Full Screen"
+              src="https://blogger.googleusercontent.com/img/a/AVvXsEiBKWNypvNgSN-Sf049jnxGMgJ3PFjJexB5xfMXeLs_Ck_Vrcg4s2exKP1jPYPc36Slmu93Vc-GwmG_AegwTVP44MMsIL_vsanEsrhk8CHPHBUpXJ3svgRRiKDmcNjGSQO92XETaIKyxDU6GGaRzodKZ4JP353wHel2hOjt1hsH-ATbqEpQ2ABX3xAOn4s"
+              alt="Official Upcoming Webinar Event Poster - Full Screen"
               className="max-w-full max-h-[90vh] md:max-h-[95vh] object-contain rounded-lg"
               referrerPolicy="no-referrer"
               loading="lazy"
