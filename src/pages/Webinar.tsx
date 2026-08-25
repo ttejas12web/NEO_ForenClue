@@ -59,6 +59,7 @@ const WEBINARS_DATA: WebinarEvent[] = [
     description: "ForenClue Master Concept Series session on autopsy purpose, process, medico-legal importance, and postmortem documentation.",
     fullDetails: "ForenClue Master Concept Series: Autopsy – The Silent Witness.\n\nDiscover the silent truths the body holds in this comprehensive deep dive into the science, process, and medico-legal significance of autopsy with speaker Sheenal Sharma.\n\nKey Highlights & What You Will Gain:\n• Autopsy – Purpose, Process & Types\n• Medico-Legal Importance & Judicial Relevance\n• Postmortem Findings & Documentation Protocols\n• Real-Life Case Insights\n• Interactive Q&A Session\n\nPlatform: Google Meet & YouTube Live (@forenclue)\nPerks: Free E-Certificate | Open For All",
     isUpcoming: true,
+    isFeedbackClosed: false,
     speaker: {
       name: "Sheenal Sharma",
       role: "Forensic Sciences Enthusiast & Researcher",
@@ -542,23 +543,7 @@ export default function Webinar() {
                     </div>
                   </div>
 
-                  {currentEvent.isUpcoming ? (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      className="p-6 bg-surface/80 border border-black/10 dark:border-white/10 rounded-2xl text-center space-y-3"
-                    >
-                      <div className="w-12 h-12 bg-warning/15 text-warning rounded-full flex items-center justify-center mx-auto shadow-inner">
-                        <Clock size={24} />
-                      </div>
-                      <h4 className="font-black text-base text-text-main uppercase tracking-wider">
-                        Feedback Form Opens After Live Session
-                      </h4>
-                      <p className="text-xs text-text-muted max-w-md mx-auto leading-relaxed">
-                        Feedback submissions and certificate verification for "{currentEvent.title}" (Session {currentEvent.sequence}) will open immediately following the live broadcast on {currentEvent.date}.
-                      </p>
-                    </motion.div>
-                  ) : currentEvent.isFeedbackClosed ? (
+                  {currentEvent.isFeedbackClosed ? (
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
@@ -665,7 +650,7 @@ export default function Webinar() {
                           rows={3}
                           value={newFeedback.text}
                           onChange={(e) => setNewFeedback({ ...newFeedback, text: e.target.value })}
-                          placeholder="Share your thoughts on speaker insights, key learnings, or feedback on Seminar 2 topics..."
+                          placeholder="Share your thoughts on speaker insights, key learnings, or feedback on this masterclass..."
                           className="w-full bg-surface border border-black/15 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs text-text-main focus:border-warning focus:outline-none transition-colors resize-none"
                         />
                       </div>
