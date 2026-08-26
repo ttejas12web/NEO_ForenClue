@@ -66,16 +66,26 @@ export default function Contact() {
               <div className="p-4 bg-warning/10 text-warning rounded-full"><Mail size={24} /></div>
               <div>
                 <p className="text-sm text-text-muted mb-1">Email Support</p>
-                <p className="font-medium text-lg">forenclue@gmail.com</p>
+                <div className="flex flex-col">
+                  <a href="mailto:support@forenclue.in" className="font-medium text-base hover:text-warning transition-colors">support@forenclue.in</a>
+                  <a href="mailto:forenclue@gmail.com" className="font-medium text-base hover:text-warning transition-colors">forenclue@gmail.com</a>
+                </div>
               </div>
             </div>
 
             <div className="flex items-center gap-4 bg-surface p-6 border border-black/10 dark:border-white/5">
               <div className="p-4 bg-warning/10 text-warning rounded-full"><MapPin size={24} /></div>
               <div>
-                <p className="text-sm text-text-muted mb-1">Location</p>
-                <p className="font-medium text-lg">Pune, Maharashtra, India</p>
+                <p className="text-sm text-text-muted mb-1">Registered Entity & Office</p>
+                <p className="font-medium text-lg">ForenClue Ventures</p>
+                <p className="text-xs text-text-muted">Pune, Maharashtra, India</p>
               </div>
+            </div>
+
+            <div className="p-4 bg-warning/5 border border-warning/20 rounded-xl text-xs text-text-muted space-y-1">
+              <p className="font-bold text-text-main">Operating / Support Hours:</p>
+              <p>Monday – Friday: 09:00 – 18:00 IST</p>
+              <p className="text-[11px] opacity-75">Requests submitted on weekends or public holidays will be attended on the next business day.</p>
             </div>
           </div>
         </div>

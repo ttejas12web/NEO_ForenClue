@@ -70,6 +70,8 @@ const CampusAmbassadors = lazyWithRetry(() => import('./pages/CampusAmbassadors'
 const GoogleForms = lazyWithRetry(() => import('./pages/GoogleForms'));
 const PrivacyPolicy = lazyWithRetry(() => import('./pages/PrivacyPolicy'));
 const TermsOfService = lazyWithRetry(() => import('./pages/TermsOfService'));
+const RefundPolicy = lazyWithRetry(() => import('./pages/RefundPolicy'));
+const ShippingPolicy = lazyWithRetry(() => import('./pages/ShippingPolicy'));
 const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 const Webinars = lazyWithRetry(() => import('./pages/Webinar'));
@@ -95,7 +97,7 @@ function RootShareResolver() {
   const { id } = useParams();
   const reserved = [
     'about', 'courses', 'cases', 'careers', 'services', 
-    'ebooks', 'files', 'contact', 'privacy', 'terms', 'profile', 'dashboard', 'login', 'admin', 'podcast', 'certificate', 'webinar', 'employees', 'volunteers', 'ambassadors', 'forms', 'simulations', 'colleges', 'college', 'api'
+    'ebooks', 'files', 'contact', 'privacy', 'terms', 'refund', 'refund-policy', 'cancellation-refund', 'return-policy', 'shipping', 'shipping-policy', 'profile', 'dashboard', 'login', 'admin', 'podcast', 'certificate', 'webinar', 'employees', 'volunteers', 'ambassadors', 'forms', 'simulations', 'colleges', 'college', 'api'
   ];
   if (id && reserved.includes(id.toLowerCase())) {
     return <Navigate to={`/${id}`} replace />;
@@ -126,6 +128,13 @@ function AppMain() {
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />
+            <Route path="/terms-and-conditions" element={<TermsOfService />} />
+            <Route path="/refund-policy" element={<RefundPolicy />} />
+            <Route path="/refund" element={<RefundPolicy />} />
+            <Route path="/return-policy" element={<RefundPolicy />} />
+            <Route path="/cancellation-refund" element={<RefundPolicy />} />
+            <Route path="/shipping-policy" element={<ShippingPolicy />} />
+            <Route path="/shipping" element={<ShippingPolicy />} />
             <Route path="/podcast" element={<Podcast />} />
             <Route path="/certificate" element={<CertificateVerification />} />
             <Route path="/webinar" element={<Webinar />} />

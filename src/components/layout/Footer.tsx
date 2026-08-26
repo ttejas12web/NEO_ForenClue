@@ -166,10 +166,12 @@ export function Footer() {
             </div>
           </div>
           
-          <div className="flex items-center gap-6">
-            <Link className="hover:text-text-main transition-colors font-medium" to="/privacy">Privacy Policy</Link>
-            <Link className="hover:text-text-main transition-colors font-medium" to="/terms">Terms of Service</Link>
-            <Link className="hover:text-text-main transition-colors font-medium" to="/contact">Contact Us</Link>
+          <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2">
+            <Link className="hover:text-warning transition-colors font-medium" to="/privacy">Privacy Policy</Link>
+            <Link className="hover:text-warning transition-colors font-medium" to="/terms">Terms & Conditions</Link>
+            <Link className="hover:text-warning transition-colors font-medium" to="/refund-policy">Refund & Return Policy</Link>
+            <Link className="hover:text-warning transition-colors font-medium" to="/shipping-policy">Shipping Policy</Link>
+            <Link className="hover:text-warning transition-colors font-medium" to="/contact">Contact Us</Link>
           </div>
         </div>
       </div>

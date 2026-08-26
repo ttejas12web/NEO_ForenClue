@@ -184,21 +184,48 @@ export const ROUTE_SEO_CONFIG: Record<string, RouteSEOConfig> = {
   },
   '/privacy': {
     title: 'Privacy Policy | ForenClue',
-    description: 'Understand how ForenClue collects, stores, and protects student data, examination records, and transaction security.',
-    keywords: 'privacy policy, forenclue data protection, student data privacy',
+    description: 'Learn how ForenClue Ventures collects, uses, protects, and handles personal data on https://forenclue.in under the laws of India.',
+    keywords: 'privacy policy, forenclue data protection, student data privacy, grievance officer',
     image: 'https://www.forenclue.in/og/privacy.png',
     type: 'website',
     badge: 'Data Protection & Security',
     tag: 'LEGAL & PRIVACY'
   },
   '/terms': {
-    title: 'Terms of Service | ForenClue',
-    description: 'Review user terms, educational guidelines, certificate code of conduct, and enrollment conditions for ForenClue.',
-    keywords: 'terms of service, forenclue user agreement, platform usage terms',
+    title: 'Terms & Conditions | ForenClue',
+    description: 'Review official Terms of Use, electronic record declarations under IT Act 2000, and user obligations for ForenClue Ventures.',
+    keywords: 'terms of service, terms and conditions, forenclue user agreement, electronic record it act',
     image: 'https://www.forenclue.in/og/terms.png',
     type: 'website',
     badge: 'Platform Usage Conditions',
     tag: 'LEGAL & TERMS'
+  },
+  '/refund-policy': {
+    title: 'Refund, Cancellation & Return Policy | ForenClue',
+    description: 'Review ForenClue Ventures cancellation windows, return criteria, and refund processing timelines for orders and services.',
+    keywords: 'refund policy, cancellation policy, return policy, forenclue purchases',
+    image: 'https://www.forenclue.in/og/refund.png',
+    type: 'website',
+    badge: 'Fair Trade & Customer Protection',
+    tag: 'REFUND & RETURNS'
+  },
+  '/return-policy': {
+    title: 'Return & Exchange Policy | ForenClue',
+    description: 'Detailed conditions for 2-day returns and exchanges of forensic study material and products purchased from ForenClue.',
+    keywords: 'return policy, exchange policy, forensic books return',
+    image: 'https://www.forenclue.in/og/return.png',
+    type: 'website',
+    badge: 'Returns & Exchanges',
+    tag: 'RETURN POLICY'
+  },
+  '/shipping-policy': {
+    title: 'Shipping & Delivery Policy | ForenClue',
+    description: 'Read ForenClue Ventures shipping guidelines, dispatch schedules, delivery courier policies, and tracking information.',
+    keywords: 'shipping policy, delivery timeline, order dispatch, courier norms',
+    image: 'https://www.forenclue.in/og/shipping.png',
+    type: 'website',
+    badge: 'Dispatch & Delivery Norms',
+    tag: 'SHIPPING POLICY'
   },
   '/login': {
     title: 'Secure Student & Specialist Login | ForenClue',
