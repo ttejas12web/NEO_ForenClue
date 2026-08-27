@@ -17,6 +17,11 @@ import { DesktopOnly } from './components/layout/DesktopOnly';
 import { cn } from './lib/utils';
 
 import { Loader2, WifiOff } from 'lucide-react';
+import { 
+  getCachedMaintenanceConfig, 
+  subscribeMaintenanceConfig, 
+  MaintenanceConfig 
+} from './services/maintenanceService';
 
 function GlobalSEO() {
   const location = useLocation();
@@ -76,6 +81,7 @@ const NotFound = lazyWithRetry(() => import('./pages/NotFound'));
 
 const Webinars = lazyWithRetry(() => import('./pages/Webinar'));
 const Simulations = lazyWithRetry(() => import('./pages/Simulations'));
+const StereoMicroscopeLab = lazyWithRetry(() => import('./pages/StereoMicroscopeLab'));
 const MicroscopeLab = lazyWithRetry(() => import('./pages/MicroscopeLab'));
 const ComparisonMicroscopeLab = lazyWithRetry(() => import('./pages/ComparisonMicroscopeLab'));
 const SpectrophotometerLab = lazyWithRetry(() => import('./pages/SpectrophotometerLab'));
@@ -84,6 +90,7 @@ const QuizPlayer = lazyWithRetry(() => import('./pages/QuizPlayer'));
 const QuizLeaderboard = lazyWithRetry(() => import('./pages/QuizLeaderboard'));
 const Colleges = lazyWithRetry(() => import('./pages/Colleges'));
 const LinkedInCallback = lazyWithRetry(() => import('./pages/LinkedInCallback'));
+const Maintenance = lazyWithRetry(() => import('./pages/Maintenance'));
 
 function PageLoader() {
   return (
@@ -143,6 +150,7 @@ function AppMain() {
             <Route path="/ambassadors" element={<CampusAmbassadors />} />
             <Route path="/forms" element={<GoogleForms />} />
             <Route path="/simulations" element={<DesktopOnly><Simulations /></DesktopOnly>} />
+            <Route path="/simulations/stereo-microscope" element={<DesktopOnly><StereoMicroscopeLab /></DesktopOnly>} />
             <Route path="/simulations/microscope" element={<DesktopOnly><MicroscopeLab /></DesktopOnly>} />
             <Route path="/simulations/comparison-microscope" element={<DesktopOnly><ComparisonMicroscopeLab /></DesktopOnly>} />
             <Route path="/simulations/spectrophotometer" element={<DesktopOnly><SpectrophotometerLab /></DesktopOnly>} />
@@ -172,6 +180,26 @@ function AppMain() {
 
 export default function App() {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(getCachedMaintenanceConfig());
+  const [isMaintenanceActive, setIsMaintenanceActive] = useState<boolean>(() => getCachedMaintenanceConfig().isActive);
+  const [isBypassed, setIsBypassed] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hasParamBypass = params.get('bypass') === 'true' || params.get('preview') === 'true' || params.get('bypass') === 'maintenance';
+    const hasStoredBypass = sessionStorage.getItem('forenclue_maintenance_bypass') === 'true';
+    if (hasParamBypass) {
+      sessionStorage.setItem('forenclue_maintenance_bypass', 'true');
+    }
+    return hasParamBypass || hasStoredBypass;
+  });
+
+  // Subscribe to real-time maintenance state from Firestore
+  useEffect(() => {
+    const unsub = subscribeMaintenanceConfig((config) => {
+      setMaintenanceConfig(config);
+      setIsMaintenanceActive(config.isActive);
+    });
+    return () => unsub();
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -186,9 +214,43 @@ export default function App() {
     };
   }, []);
 
+  const handleRevokeBypass = () => {
+    sessionStorage.removeItem('forenclue_maintenance_bypass');
+    setIsBypassed(false);
+  };
+
+  // If website is in maintenance mode and user hasn't authenticated bypass
+  if (isMaintenanceActive && !isBypassed) {
+    return (
+      <div className="min-h-screen bg-[#040814] flex flex-col">
+        <GlobalSEO />
+        <Suspense fallback={<PageLoader />}>
+          <Maintenance onBypass={() => setIsBypassed(true)} />
+        </Suspense>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-base flex flex-col">
       <GlobalSEO />
+
+      {/* Staff Preview Bar when bypassing active maintenance */}
+      {isMaintenanceActive && isBypassed && (
+        <div className="bg-amber-500/90 text-black px-4 py-1.5 text-xs font-mono font-bold flex items-center justify-between z-[9999] shadow-md">
+          <span className="flex items-center gap-2">
+            <span className="inline-block w-2 h-2 rounded-full bg-black animate-pulse" />
+            STAFF PREVIEW MODE: Public visitors see Maintenance Screen
+          </span>
+          <button
+            onClick={handleRevokeBypass}
+            className="px-2.5 py-0.5 rounded bg-black/80 hover:bg-black text-white text-[11px] font-mono cursor-pointer transition-colors"
+          >
+            Re-engage Maintenance View
+          </button>
+        </div>
+      )}
+
       <AnimatePresence>
         {isOffline && (
           <motion.div 
@@ -207,6 +269,7 @@ export default function App() {
 
       <Suspense fallback={<PageLoader />}>
         <Routes>
+          <Route path="/maintenance" element={<Maintenance onBypass={() => setIsBypassed(true)} />} />
           <Route path="/player/:courseId" element={<CoursePlayer />} />
           <Route path="*" element={<AppMain />} />
         </Routes>

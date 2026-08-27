@@ -400,6 +400,12 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // System Settings & Maintenance Mode Rule
+    match /system_settings/{settingId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // Cloud Blobs & PDF Storage Collection (Cross-device cloud binary synchronization)
     match /_cloud_blobs/{blobId} {
       allow read: if true;

@@ -288,9 +288,27 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "fileName", "mimeType", "totalChunks"]
+    },
+    "SystemSetting": {
+      "title": "System Setting",
+      "description": "Global application configuration including maintenance mode and countdown timer",
+      "type": "object",
+      "properties": {
+        "isActive": { "type": "boolean" },
+        "title": { "type": "string" },
+        "notice": { "type": "string" },
+        "targetEndTime": { "type": "string" },
+        "durationMinutes": { "type": "integer" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "updatedBy": { "type": "string" }
+      }
     }
   },
   "firestore": {
+    "/system_settings/{settingId}": {
+      "schema": "SystemSetting",
+      "description": "Global system configurations including maintenance mode and scheduled downtime"
+    },
     "/_cloud_blobs/{blobId}": {
       "schema": "CloudBlob",
       "description": "Resilient cross-device cloud binary storage for PDFs and eBooks"

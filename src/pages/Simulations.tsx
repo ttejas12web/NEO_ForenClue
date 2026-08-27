@@ -1,14 +1,23 @@
 import { Link } from 'react-router-dom';
-import { Microscope, Columns3, Beaker, ArrowRight } from 'lucide-react';
+import { Microscope, Columns3, Beaker, ArrowRight, Eye } from 'lucide-react';
 
 const SIMULATIONS = [
+  {
+    id: 'stereo_microscope',
+    title: 'Forensic Stereo Zoom Microscope',
+    description: 'Examine surface topology and forensic trace evidence under continuous 3D stereoscopic zoom magnification (0.7x to 4.5x) with dual incident and transmitted illumination.',
+    icon: Eye,
+    color: 'text-amber-400',
+    bg: 'bg-amber-500/10',
+    path: '/simulations/stereo-microscope'
+  },
   {
     id: 'comparison_microscope',
     title: 'Forensic Comparison Microscope',
     description: 'Perform split-screen side-by-side microscopic comparison of evidence vs control samples including fired bullet striations, cartridge breechface marks, and textile fibers.',
     icon: Columns3,
-    color: 'text-amber-400',
-    bg: 'bg-amber-500/10',
+    color: 'text-emerald-400',
+    bg: 'bg-emerald-500/10',
     path: '/simulations/comparison-microscope'
   },
   {
@@ -43,22 +52,22 @@ export default function Simulations() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {SIMULATIONS.map((sim) => {
           const Icon = sim.icon;
           return (
             <Link 
               key={sim.id}
               to={sim.path}
-              className="bg-surface border border-white/10 rounded-2xl p-8 hover:bg-surface-hover transition-all group flex flex-col items-start"
+              className="bg-surface border border-white/10 rounded-2xl p-8 hover:bg-surface-hover hover:border-white/20 transition-all group flex flex-col items-start shadow-lg"
             >
               <div className={`p-4 rounded-2xl ${sim.bg} ${sim.color} mb-6 group-hover:scale-110 transition-transform`}>
-                <Icon size={40} strokeWidth={1.5} />
+                <Icon size={36} strokeWidth={1.75} />
               </div>
-              <h2 className="text-2xl font-black tracking-wider text-text-main mb-3 uppercase">
+              <h2 className="text-xl md:text-2xl font-black tracking-wider text-text-main mb-3 uppercase">
                 {sim.title}
               </h2>
-              <p className="text-text-muted leading-relaxed mb-8 flex-1">
+              <p className="text-text-muted leading-relaxed mb-8 flex-1 text-sm md:text-base">
                 {sim.description}
               </p>
               <div className={`flex items-center gap-2 font-bold uppercase tracking-widest text-sm ${sim.color} group-hover:gap-4 transition-all`}>

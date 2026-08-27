@@ -58,17 +58,18 @@ const WEBINARS_DATA: WebinarEvent[] = [
     time: "07:00 PM IST",
     description: "ForenClue Master Concept Series session on autopsy purpose, process, medico-legal importance, and postmortem documentation.",
     fullDetails: "ForenClue Master Concept Series: Autopsy – The Silent Witness.\n\nDiscover the silent truths the body holds in this comprehensive deep dive into the science, process, and medico-legal significance of autopsy with speaker Sheenal Sharma.\n\nKey Highlights & What You Will Gain:\n• Autopsy – Purpose, Process & Types\n• Medico-Legal Importance & Judicial Relevance\n• Postmortem Findings & Documentation Protocols\n• Real-Life Case Insights\n• Interactive Q&A Session\n\nPlatform: Google Meet & YouTube Live (@forenclue)\nPerks: Free E-Certificate | Open For All",
-    isUpcoming: true,
+    youtubeId: "knZ3cFEJExI",
+    isUpcoming: false,
     isFeedbackClosed: false,
     speaker: {
       name: "Sheenal Sharma",
       role: "Forensic Sciences Enthusiast & Researcher",
       avatar: "https://blogger.googleusercontent.com/img/a/AVvXsEidAAeAg6jc08x9t83IfZ2oSvO-7cRgvZDN2wwC1zXXSNX0VzHRvyZnszcuc0z8TXnVGPDQbsOkXAm4daUgNvNjoiiODnVPTnM11LDaGZ2l-4jH51Ph415zlMpB_a6dPaVHXApbe78UiSTEg2q4whJ2XPMb8ABm9TqoseJRZxqQSd5luqJUteIqNDOO0Uw",
-      linkedin: "https://www.linkedin.com/company/forenclue",
+      linkedin: "https://www.linkedin.com/in/sheenal-sharma-4171a3356/",
       bio: "Forensic Sciences Enthusiast | Passionate Learner | Exploring the world of forensics with curiosity and dedication."
     },
     poster: "https://blogger.googleusercontent.com/img/a/AVvXsEiBKWNypvNgSN-Sf049jnxGMgJ3PFjJexB5xfMXeLs_Ck_Vrcg4s2exKP1jPYPc36Slmu93Vc-GwmG_AegwTVP44MMsIL_vsanEsrhk8CHPHBUpXJ3svgRRiKDmcNjGSQO92XETaIKyxDU6GGaRzodKZ4JP353wHel2hOjt1hsH-ATbqEpQ2ABX3xAOn4s",
-    tags: ["Autopsy", "Forensic Pathology", "Medico-Legal", "Master Concept Series", "Upcoming Event"],
+    tags: ["Autopsy", "Forensic Pathology", "Medico-Legal", "Master Concept Series", "Recent Event"],
     feedbacks: []
   },
   {

@@ -128,6 +128,15 @@ export const ROUTE_SEO_CONFIG: Record<string, RouteSEOConfig> = {
     badge: 'Interactive Virtual Workstations',
     tag: '3D VIRTUAL LABS'
   },
+  '/simulations/stereo-microscope': {
+    title: 'Forensic Stereo Zoom Microscope Simulator | ForenClue',
+    description: 'Interactive 3D stereoscopic zoom microscope simulator for forensic trace evidence, hair morphology, diatoms, and botanical specimen analysis.',
+    keywords: 'stereo microscope simulator, stereomicroscope 3d, forensic stereo zoom, forensic trichology slide examination, virtual dissecting microscope',
+    image: 'https://www.forenclue.in/og/microscope.png',
+    type: 'website',
+    badge: '3D Stereoscopic Zoom Optics',
+    tag: 'VIRTUAL LAB SIMULATION'
+  },
   '/simulations/microscope': {
     title: 'Virtual Compound Microscope Simulator | ForenClue',
     description: 'Interactive virtual microscope simulator for forensic specimen examination, magnification tuning, focal adjustment, and slide analysis.',

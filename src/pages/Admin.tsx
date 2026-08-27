@@ -8,7 +8,7 @@ import {
   ExternalLink, LogOut, Loader2, Sparkles, HelpCircle, 
   Globe, Edit3, MessageSquare, Radio, Award,
   Users, RefreshCw, ShieldCheck, Database, Fingerprint, ClipboardList,
-  Star, Building2, MapPin, Eye, EyeOff
+  Star, Building2, MapPin, Eye, EyeOff, Wrench, Power, Clock, ShieldAlert, AlertTriangle
 } from 'lucide-react';
 import { db, storage, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
@@ -19,6 +19,15 @@ import { Quiz, QuizQuestion } from '@/types/quiz';
 import { fetchQuizzes as fetchAdminQuizzes, saveQuiz, deleteQuiz } from '@/services/quizService';
 import { College, CollegeCourse } from '@/types/college';
 import { fetchColleges as fetchAdminColleges, saveCollege as saveAdminCollege, deleteCollege as deleteAdminCollege } from '@/services/collegeService';
+import { 
+  MaintenanceConfig, 
+  getDefaultIst1230Target, 
+  saveMaintenanceConfig, 
+  subscribeMaintenanceConfig, 
+  calculateRemainingTime, 
+  formatIstDisplay, 
+  getCachedMaintenanceConfig 
+} from '@/services/maintenanceService';
 
 
 const getLocalDatetimeString = (dateObj: Date | string | number) => {
@@ -39,8 +48,92 @@ export default function Admin() {
   const [btnLoading, setBtnLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
-  // Active Tab: 'overview' | 'courses' | 'ebooks' | 'texts' | 'doubts' | 'podcast' | 'certificates' | 'employees' | 'quizzes' | 'colleges' | 'inbox' | 'feedbacks'
-  const [activeTab, setActiveTab] = useState<'overview' | 'courses' | 'ebooks' | 'texts' | 'doubts' | 'podcast' | 'certificates' | 'employees' | 'quizzes' | 'colleges' | 'inbox' | 'feedbacks'>('overview');
+  // Active Tab: 'overview' | 'courses' | 'ebooks' | 'texts' | 'doubts' | 'podcast' | 'certificates' | 'employees' | 'quizzes' | 'colleges' | 'inbox' | 'feedbacks' | 'maintenance'
+  const [activeTab, setActiveTab] = useState<'overview' | 'courses' | 'ebooks' | 'texts' | 'doubts' | 'podcast' | 'certificates' | 'employees' | 'quizzes' | 'colleges' | 'inbox' | 'feedbacks' | 'maintenance'>('overview');
+
+  // Maintenance Controls State
+  const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(getCachedMaintenanceConfig());
+  const [isSavingMaintenance, setIsSavingMaintenance] = useState(false);
+  const [maintenanceFeedback, setMaintenanceFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [maintenanceTitleInput, setMaintenanceTitleInput] = useState(() => getCachedMaintenanceConfig().title);
+  const [maintenanceNoticeInput, setMaintenanceNoticeInput] = useState(() => getCachedMaintenanceConfig().notice);
+  const [maintenanceTargetInput, setMaintenanceTargetInput] = useState(() => getLocalDatetimeString(getCachedMaintenanceConfig().targetEndTime));
+
+  // Subscribe to real-time maintenance config updates in Admin
+  useEffect(() => {
+    const unsub = subscribeMaintenanceConfig((cfg) => {
+      setMaintenanceConfig(cfg);
+      setMaintenanceTitleInput(cfg.title);
+      setMaintenanceNoticeInput(cfg.notice);
+      setMaintenanceTargetInput(getLocalDatetimeString(cfg.targetEndTime));
+    });
+    return () => unsub();
+  }, []);
+
+  const handleToggleMaintenance = async (desiredState: boolean) => {
+    setIsSavingMaintenance(true);
+    setMaintenanceFeedback(null);
+    try {
+      await saveMaintenanceConfig({
+        ...maintenanceConfig,
+        isActive: desiredState
+      }, user?.email || 'Admin');
+      setMaintenanceFeedback({
+        type: 'success',
+        text: desiredState 
+          ? 'Maintenance Mode has been engaged. Public users will now see the countdown page.' 
+          : 'Maintenance Mode has been turned OFF. The website is now live for all visitors.'
+      });
+      setTimeout(() => setMaintenanceFeedback(null), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setMaintenanceFeedback({
+        type: 'error',
+        text: `Failed to update maintenance state: ${err.message || err}`
+      });
+    } finally {
+      setIsSavingMaintenance(false);
+    }
+  };
+
+  const handleSaveMaintenanceSettings = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsSavingMaintenance(true);
+    setMaintenanceFeedback(null);
+    try {
+      const targetDate = maintenanceTargetInput ? new Date(maintenanceTargetInput).toISOString() : getDefaultIst1230Target();
+      await saveMaintenanceConfig({
+        ...maintenanceConfig,
+        title: maintenanceTitleInput.trim() || 'Platform Maintenance in Progress',
+        notice: maintenanceNoticeInput.trim() || 'We are performing scheduled improvements. ForenClue will be back online shortly.',
+        targetEndTime: targetDate
+      }, user?.email || 'Admin');
+
+      setMaintenanceFeedback({
+        type: 'success',
+        text: 'Maintenance settings and countdown timer updated successfully across all servers!'
+      });
+      setTimeout(() => setMaintenanceFeedback(null), 5000);
+    } catch (err: any) {
+      console.error(err);
+      setMaintenanceFeedback({
+        type: 'error',
+        text: `Failed to save maintenance settings: ${err.message || err}`
+      });
+    } finally {
+      setIsSavingMaintenance(false);
+    }
+  };
+
+  const handlePresetIst1230 = () => {
+    const ist1230 = getDefaultIst1230Target();
+    setMaintenanceTargetInput(getLocalDatetimeString(ist1230));
+  };
+
+  const handlePresetMinutes = (minutes: number) => {
+    const target = new Date(Date.now() + minutes * 60 * 1000);
+    setMaintenanceTargetInput(getLocalDatetimeString(target));
+  };
 
   useEffect(() => {
     if (isQuizOnlyAdmin) {
@@ -2363,6 +2456,17 @@ export default function Admin() {
                     >
                       <Building2 size={16} /> Colleges Directory
                     </button>
+                    <button 
+                      onClick={() => setActiveTab('maintenance')}
+                      className={`w-full text-left px-4 py-3 rounded-lg text-xs font-black uppercase tracking-wider flex items-center justify-between transition-colors ${activeTab === 'maintenance' ? 'bg-warning text-crust' : 'bg-surface hover:bg-surface/80 text-text-muted hover:text-text-main border border-black/5 dark:border-white/5'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Wrench size={16} className={maintenanceConfig.isActive ? "text-amber-500" : ""} /> Maintenance Mode
+                      </div>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${maintenanceConfig.isActive ? 'bg-amber-500 text-black animate-pulse' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                        {maintenanceConfig.isActive ? 'ACTIVE' : 'OFF'}
+                      </span>
+                    </button>
                     <Link 
                       to="/forms"
                       className="w-full text-left px-4 py-3 rounded-lg text-xs font-black uppercase tracking-wider flex items-center gap-3 transition-colors bg-surface hover:bg-surface/80 text-text-muted hover:text-warning border border-black/5 dark:border-white/5 cursor-pointer"
@@ -2712,6 +2816,65 @@ export default function Admin() {
                               <span className="text-sm font-bold text-text-main block">Publish Podcast</span>
                               <span className="text-[10px] text-text-muted uppercase tracking-widest">Release Episode</span>
                             </div>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* MAINTENANCE MODE QUICK CONTROLS CARD */}
+                    <div className={cn(
+                      "border rounded-2xl p-6 mb-6 transition-all",
+                      maintenanceConfig.isActive 
+                        ? "bg-amber-500/10 border-amber-500/30 shadow-lg shadow-amber-500/5" 
+                        : "bg-surface border-black/10 dark:border-white/5"
+                    )}>
+                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <span className={cn(
+                              "text-[10px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full flex items-center gap-1.5",
+                              maintenanceConfig.isActive 
+                                ? "bg-amber-500 text-black animate-pulse" 
+                                : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                            )}>
+                              <span className={cn("w-1.5 h-1.5 rounded-full", maintenanceConfig.isActive ? "bg-black" : "bg-emerald-400")} />
+                              {maintenanceConfig.isActive ? "MAINTENANCE MODE IS ON" : "WEBSITE IS LIVE"}
+                            </span>
+                            <span className="text-xs text-text-muted font-mono">
+                              Target: <strong className="text-warning">{formatIstDisplay(maintenanceConfig.targetEndTime)}</strong>
+                            </span>
+                          </div>
+
+                          <h3 className="text-base font-heading font-black text-text-main">
+                            Global Platform Maintenance Switch
+                          </h3>
+                          <p className="text-xs text-text-muted max-w-xl">
+                            {maintenanceConfig.isActive 
+                              ? "Public visitors are currently seeing the minimalist countdown screen. You are logged in with staff bypass." 
+                              : "The website is operating normally for all visitors worldwide."}
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-3 w-full md:w-auto">
+                          <button
+                            onClick={() => handleToggleMaintenance(!maintenanceConfig.isActive)}
+                            disabled={isSavingMaintenance}
+                            className={cn(
+                              "flex-1 md:flex-initial px-5 py-2.5 rounded-xl font-mono text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50",
+                              maintenanceConfig.isActive
+                                ? "bg-emerald-500 hover:bg-emerald-400 text-black"
+                                : "bg-amber-500 hover:bg-amber-400 text-black"
+                            )}
+                          >
+                            <Power size={14} />
+                            <span>{maintenanceConfig.isActive ? "Turn OFF Maintenance" : "Turn ON Maintenance"}</span>
+                          </button>
+
+                          <button
+                            onClick={() => setActiveTab('maintenance')}
+                            className="px-4 py-2.5 rounded-xl border border-black/10 dark:border-white/10 hover:bg-surface text-text-muted hover:text-text-main text-xs font-mono font-bold transition-all"
+                          >
+                            Configure Timer →
                           </button>
                         </div>
                       </div>
@@ -5270,6 +5433,262 @@ export default function Admin() {
                           ))}
                         </div>
                       )}
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* MAINTENANCE CONTROLS SECTION */}
+                {activeTab === 'maintenance' && (
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                    <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/10 dark:border-white/10">
+                        <div>
+                          <h2 className="text-xl font-heading font-black uppercase tracking-tight flex items-center gap-2 text-text-main">
+                            <Wrench size={20} className="text-warning" /> Maintenance Mode & Countdown Manager
+                          </h2>
+                          <p className="text-sm text-text-muted mt-1">
+                            Switch the platform into maintenance mode, configure the countdown target time (e.g. 12:30 PM IST), and broadcast custom notices.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <a
+                            href="/maintenance"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-2 bg-base hover:bg-surface border border-black/10 dark:border-white/10 rounded-xl text-xs font-mono font-bold text-text-muted hover:text-text-main transition-colors flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <ExternalLink size={13} className="text-cyan-400" />
+                            <span>Preview Notice Screen</span>
+                          </a>
+                        </div>
+                      </div>
+
+                      {/* Status Feedback Toast */}
+                      {maintenanceFeedback && (
+                        <div className={cn(
+                          "p-4 rounded-xl mb-6 text-xs font-mono flex items-center gap-2 border",
+                          maintenanceFeedback.type === 'success'
+                            ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                            : "bg-red-500/10 border-red-500/30 text-red-400"
+                        )}>
+                          {maintenanceFeedback.type === 'success' ? (
+                            <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
+                          ) : (
+                            <AlertTriangle size={16} className="text-red-400 shrink-0" />
+                          )}
+                          <span>{maintenanceFeedback.text}</span>
+                        </div>
+                      )}
+
+                      {/* MASTER TOGGLE CARD */}
+                      <div className={cn(
+                        "p-6 rounded-2xl border mb-6 transition-all",
+                        maintenanceConfig.isActive
+                          ? "bg-amber-500/10 border-amber-500/40 shadow-xl shadow-amber-500/5"
+                          : "bg-base border-black/10 dark:border-white/10"
+                      )}>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <span className={cn(
+                                "text-xs font-mono font-black uppercase px-3 py-1 rounded-full flex items-center gap-2",
+                                maintenanceConfig.isActive
+                                  ? "bg-amber-500 text-black animate-pulse"
+                                  : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                              )}>
+                                <span className={cn("w-2 h-2 rounded-full", maintenanceConfig.isActive ? "bg-black" : "bg-emerald-400")} />
+                                {maintenanceConfig.isActive ? "MAINTENANCE MODE IS ACTIVE" : "PLATFORM IS LIVE"}
+                              </span>
+                            </div>
+                            <h3 className="text-lg font-heading font-black text-text-main">
+                              Master Availability Switch
+                            </h3>
+                            <p className="text-xs text-text-muted max-w-lg leading-relaxed">
+                              {maintenanceConfig.isActive
+                                ? "Visitors to all forenclue.com routes are being redirected to the minimalist countdown maintenance screen. Authenticated staff can still access internal modules."
+                                : "The website is completely public and live. Students and visitors can access courses, simulations, cases, and webinars freely."}
+                            </p>
+                          </div>
+
+                          <div className="shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleToggleMaintenance(!maintenanceConfig.isActive)}
+                              disabled={isSavingMaintenance}
+                              className={cn(
+                                "px-6 py-3.5 rounded-xl font-mono text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2.5 shadow-lg active:scale-95 cursor-pointer disabled:opacity-50",
+                                maintenanceConfig.isActive
+                                  ? "bg-emerald-500 hover:bg-emerald-400 text-black shadow-emerald-500/10"
+                                  : "bg-amber-500 hover:bg-amber-400 text-black shadow-amber-500/10"
+                              )}
+                            >
+                              <Power size={16} />
+                              <span>{isSavingMaintenance ? "Updating..." : maintenanceConfig.isActive ? "Turn OFF Maintenance" : "Turn ON Maintenance"}</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* COUNTDOWN TIMER & DURATION CONFIGURATION */}
+                      <form onSubmit={handleSaveMaintenanceSettings} className="space-y-6">
+                        <div className="bg-base border border-black/10 dark:border-white/10 rounded-2xl p-6 space-y-6">
+                          <div className="flex items-center justify-between border-b border-black/5 dark:border-white/5 pb-4">
+                            <h3 className="text-sm font-heading font-black uppercase tracking-wider text-text-main flex items-center gap-2">
+                              <Clock size={16} className="text-cyan-400" /> Countdown Timer & Target Time
+                            </h3>
+                            <span className="text-[11px] font-mono text-text-muted">
+                              Current Display: <strong className="text-warning">{formatIstDisplay(maintenanceTargetInput || maintenanceConfig.targetEndTime)}</strong>
+                            </span>
+                          </div>
+
+                          {/* Quick Presets */}
+                          <div>
+                            <label className="block text-[11px] font-mono uppercase text-text-muted mb-2 font-bold">
+                              Quick Presets:
+                            </label>
+                            <div className="flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={handlePresetIst1230}
+                                className="px-3 py-1.5 rounded-lg bg-warning/15 hover:bg-warning/25 text-warning border border-warning/30 text-xs font-mono font-bold transition-all cursor-pointer flex items-center gap-1.5"
+                              >
+                                <Clock size={12} />
+                                <span>12:30 PM IST (Today/Tomorrow)</span>
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handlePresetMinutes(30)}
+                                className="px-3 py-1.5 rounded-lg bg-surface hover:bg-black/10 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main text-xs font-mono transition-all cursor-pointer"
+                              >
+                                +30 Mins
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handlePresetMinutes(60)}
+                                className="px-3 py-1.5 rounded-lg bg-surface hover:bg-black/10 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main text-xs font-mono transition-all cursor-pointer"
+                              >
+                                +1 Hour
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handlePresetMinutes(120)}
+                                className="px-3 py-1.5 rounded-lg bg-surface hover:bg-black/10 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main text-xs font-mono transition-all cursor-pointer"
+                              >
+                                +2 Hours
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handlePresetMinutes(360)}
+                                className="px-3 py-1.5 rounded-lg bg-surface hover:bg-black/10 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main text-xs font-mono transition-all cursor-pointer"
+                              >
+                                +6 Hours
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => handlePresetMinutes(1440)}
+                                className="px-3 py-1.5 rounded-lg bg-surface hover:bg-black/10 dark:hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main text-xs font-mono transition-all cursor-pointer"
+                              >
+                                +24 Hours (1 Day)
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Target Datetime Input */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-xs font-mono text-text-muted uppercase mb-2 font-bold">
+                                Target End Date & Time (Your Local Timezone)
+                              </label>
+                              <input
+                                type="datetime-local"
+                                value={maintenanceTargetInput}
+                                onChange={(e) => setMaintenanceTargetInput(e.target.value)}
+                                className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs font-mono font-bold text-text-main focus:outline-none focus:border-warning"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-mono text-text-muted uppercase mb-2 font-bold">
+                                Live Remaining Preview
+                              </label>
+                              <div className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs font-mono text-text-main flex items-center justify-between">
+                                {(() => {
+                                  const rem = calculateRemainingTime(maintenanceTargetInput ? new Date(maintenanceTargetInput).toISOString() : maintenanceConfig.targetEndTime);
+                                  if (rem.isExpired) {
+                                    return <span className="text-amber-400 font-bold">Target time reached (Finalizing status)</span>;
+                                  }
+                                  return (
+                                    <span className="font-bold text-cyan-400">
+                                      {rem.days > 0 ? `${rem.days}d ` : ''}{rem.hours}h {rem.minutes}m remaining
+                                    </span>
+                                  );
+                                })()}
+                                <span className="text-[10px] text-text-muted uppercase">IST: {formatIstDisplay(maintenanceTargetInput ? new Date(maintenanceTargetInput).toISOString() : maintenanceConfig.targetEndTime)}</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* NOTICE CUSTOMIZATION */}
+                          <div className="space-y-4 pt-4 border-t border-black/5 dark:border-white/5">
+                            <div>
+                              <label className="block text-xs font-mono text-text-muted uppercase mb-2 font-bold">
+                                Maintenance Screen Headline
+                              </label>
+                              <input
+                                type="text"
+                                value={maintenanceTitleInput}
+                                onChange={(e) => setMaintenanceTitleInput(e.target.value)}
+                                placeholder="e.g. We'll Be Back Soon / Platform Upgrade in Progress"
+                                className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl px-4 py-2.5 text-xs font-bold text-text-main focus:outline-none focus:border-warning"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-mono text-text-muted uppercase mb-2 font-bold">
+                                Public Notice Description
+                              </label>
+                              <textarea
+                                value={maintenanceNoticeInput}
+                                onChange={(e) => setMaintenanceNoticeInput(e.target.value)}
+                                rows={3}
+                                placeholder="e.g. We are performing scheduled improvements to laboratory simulations and performance tuning. ForenClue will be back online shortly."
+                                className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-4 text-xs text-text-main focus:outline-none focus:border-warning leading-relaxed"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Save Button */}
+                          <div className="flex items-center justify-between pt-2">
+                            <span className="text-[11px] text-text-muted font-mono">
+                              Changes sync in real-time across all active user sessions via Firestore.
+                            </span>
+
+                            <button
+                              type="submit"
+                              disabled={isSavingMaintenance}
+                              className="px-6 py-2.5 bg-warning hover:bg-warning/90 text-crust font-black font-mono text-xs uppercase tracking-wider rounded-xl transition-all shadow-md active:scale-95 cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                            >
+                              {isSavingMaintenance ? (
+                                <>
+                                  <Loader2 size={14} className="animate-spin" />
+                                  <span>Saving Settings...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <CheckCircle2 size={14} />
+                                  <span>Save & Broadcast Settings</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </form>
                     </div>
                   </motion.div>
                 )}
