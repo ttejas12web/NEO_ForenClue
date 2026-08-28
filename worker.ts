@@ -20,6 +20,9 @@ interface SocialMetadata {
   title: string;
   description: string;
   image: string;
+  imageType?: string;
+  imageWidth?: number;
+  imageHeight?: number;
   canonicalUrl: string;
   ogUrl?: string;
   type: 'website' | 'article' | 'book' | 'profile';
@@ -190,6 +193,18 @@ function firstText(data: Record<string, unknown>, paths: string[]): string {
   return '';
 }
 
+function firstNumber(data: Record<string, unknown>, paths: string[]): number | undefined {
+  for (const path of paths) {
+    const value = valueAtPath(data, path);
+    if (typeof value === 'number' && Number.isFinite(value) && value > 0) return value;
+    if (typeof value === 'string') {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+  }
+  return undefined;
+}
+
 function imageStrings(value: unknown): string[] {
   if (typeof value === 'string') {
     const trimmed = value.trim();
@@ -278,13 +293,20 @@ function absoluteUrl(value: string, fallback: string): string {
   }
 }
 
-function socialImageUrl(value: string, fallback: string, requestOrigin: string): string {
+function socialImageUrl(
+  value: string,
+  fallback: string,
+  requestOrigin: string,
+  revision?: string | null,
+): string {
   if (!value) return fallback;
 
   if (value.startsWith('firestore-blob://')) {
     const blobId = value.slice('firestore-blob://'.length);
     if (/^[a-zA-Z0-9_-]{1,128}$/.test(blobId)) {
-      return `${requestOrigin}/api/social-image/${encodeURIComponent(blobId)}`;
+      const imageUrl = new URL(`/api/social-image/${encodeURIComponent(blobId)}`, requestOrigin);
+      if (revision) imageUrl.searchParams.set('v', revision);
+      return imageUrl.toString();
     }
     return fallback;
   }
@@ -585,7 +607,12 @@ function metadataFromDocument(
     'fullName',
   ]);
   const category = firstText(data, ['category', 'type', 'department', 'subject']);
-  const image = firstPageImage(data, target.collection);
+  const explicitSocialImage = firstText(data, ['socialImage', 'ogImage', 'shareImage']);
+  const image = explicitSocialImage || firstPageImage(data, target.collection);
+  const imageType = firstText(data, ['socialImageType', 'ogImageType']);
+  const imageWidth = firstNumber(data, ['socialImageWidth', 'ogImageWidth']);
+  const imageHeight = firstNumber(data, ['socialImageHeight', 'ogImageHeight']);
+  const revision = url.searchParams.get('v');
 
   const contextualDescription = [rawDescription, author ? `By ${author}.` : '', category ? `${category}.` : '']
     .filter(Boolean)
@@ -597,7 +624,10 @@ function metadataFromDocument(
   return {
     title: `${truncate(rawTitle, 90)} | ${titleSuffix}`,
     description: truncate(contextualDescription || fallback.description, 220),
-    image: socialImageUrl(image, fallback.image, url.origin),
+    image: socialImageUrl(image, fallback.image, url.origin, revision),
+    imageType: imageType || undefined,
+    imageWidth,
+    imageHeight,
     canonicalUrl: canonicalFor(url, target),
     ogUrl: (() => {
       const socialUrl = new URL(canonicalFor(url, target));
@@ -618,7 +648,47 @@ async function resolveMetadata(url: URL, env: Env): Promise<SocialMetadata> {
   if (!target) return fallback;
 
   const document = await fetchFirestoreDocument(env, target);
-  return document ? metadataFromDocument(url, target, document, fallback) : fallback;
+  const metadata = document ? metadataFromDocument(url, target, document, fallback) : fallback;
+  if (target.collection !== 'cases') return metadata;
+  const hasExplicitSocialImage = Boolean(
+    document && firstText(document, ['socialImage', 'ogImage', 'shareImage']),
+  );
+  if (hasExplicitSocialImage) return metadata;
+
+  // Existing case studies can ship an optimized, crawler-safe preview as a
+  // static asset. Probe it through the assets binding so missing files still
+  // fall back to the document's own main image.
+  const staticImageUrl = new URL(
+    `/social/cases/${encodeURIComponent(target.documentId)}.jpg`,
+    url.origin,
+  );
+  try {
+    const assetResponse = await env.ASSETS.fetch(
+      new Request(staticImageUrl, { method: 'HEAD' }),
+    );
+    const contentType = assetResponse.headers.get('content-type') || '';
+    if (assetResponse.ok && contentType.startsWith('image/')) {
+      const revision = url.searchParams.get('v');
+      if (revision) staticImageUrl.searchParams.set('v', revision);
+      return {
+        ...metadata,
+        image: staticImageUrl.toString(),
+        imageType: contentType.split(';')[0],
+        imageWidth: 1200,
+        imageHeight: 630,
+      };
+    }
+  } catch (error) {
+    console.warn(
+      JSON.stringify({
+        event: 'static_case_social_image_probe_failed',
+        documentId: target.documentId,
+        message: error instanceof Error ? error.message : 'Unknown error',
+      }),
+    );
+  }
+
+  return metadata;
 }
 
 function escapeHtml(value: string): string {
@@ -637,8 +707,11 @@ function metadataMarkup(metadata: SocialMetadata): string {
   const canonicalUrl = escapeHtml(metadata.canonicalUrl);
   const ogUrl = escapeHtml(metadata.ogUrl || metadata.canonicalUrl);
   const type = escapeHtml(metadata.type);
+  const imageType = metadata.imageType ? escapeHtml(metadata.imageType) : '';
+  const imageWidth = metadata.imageWidth ? String(Math.round(metadata.imageWidth)) : '';
+  const imageHeight = metadata.imageHeight ? String(Math.round(metadata.imageHeight)) : '';
 
-  return [
+  const tags = [
     `<title>${title}</title>`,
     `<meta name="description" content="${description}">`,
     `<link rel="canonical" href="${canonicalUrl}">`,
@@ -647,13 +720,19 @@ function metadataMarkup(metadata: SocialMetadata): string {
     `<meta property="og:title" content="${title}">`,
     `<meta property="og:description" content="${description}">`,
     `<meta property="og:image" content="${image}">`,
+    `<meta property="og:image:secure_url" content="${image}">`,
+    ...(imageType ? [`<meta property="og:image:type" content="${imageType}">`] : []),
+    ...(imageWidth ? [`<meta property="og:image:width" content="${imageWidth}">`] : []),
+    ...(imageHeight ? [`<meta property="og:image:height" content="${imageHeight}">`] : []),
     `<meta property="og:image:alt" content="${title}">`,
     `<meta property="og:url" content="${ogUrl}">`,
     '<meta name="twitter:card" content="summary_large_image">',
     `<meta name="twitter:title" content="${title}">`,
     `<meta name="twitter:description" content="${description}">`,
     `<meta name="twitter:image" content="${image}">`,
-  ].join('');
+    `<meta name="twitter:image:alt" content="${title}">`,
+  ];
+  return tags.join('');
 }
 
 function rewriteHtml(response: Response, metadata: SocialMetadata): Response {

@@ -5,6 +5,7 @@ import { db, storage } from '@/lib/firebase';
 import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { uploadFileResilient } from '@/lib/localFileStore';
+import { createSocialPreviewImage } from '@/lib/image-utils';
 
 // Converts a single Google Drive sharing URL to a direct viewable image link
 export function convertGDriveUrl(url: string | null | undefined): string {
@@ -159,9 +160,23 @@ export function CaseEditorModal({ onClose, caseToEdit, userEmail }: CaseEditorMo
 
     try {
       let mainImageUrl = convertGDriveUrl(existingImage);
+      const previousMainImageUrl = convertGDriveUrl(caseToEdit?.image || '');
+      let socialImageUrl = mainImageUrl === previousMainImageUrl ? caseToEdit?.socialImage || '' : '';
       if (imageFile) {
         setStatusMessage(`Main Image: Uploading "${imageFile.name}"...`);
         mainImageUrl = await uploadFile(imageFile, `cases/${Date.now()}_${imageFile.name}`);
+
+        setStatusMessage('Main Image: Preparing WhatsApp link preview...');
+        const socialPreview = await createSocialPreviewImage(imageFile);
+        const previewFile = new File(
+          [socialPreview],
+          `${imageFile.name.replace(/\.[^.]+$/, '')}_social-preview.jpg`,
+          { type: 'image/jpeg' },
+        );
+        socialImageUrl = await uploadFile(
+          previewFile,
+          `cases/social/${Date.now()}_${previewFile.name}`,
+        );
       }
 
       let uploadedContentImages = contentImages.map(img => ({
@@ -192,6 +207,10 @@ export function CaseEditorModal({ onClose, caseToEdit, userEmail }: CaseEditorMo
         evidenceLabels: formData.evidenceLabels.split(',').map((s: string) => s.trim()).filter(Boolean),
         forensicTechniques: formData.forensicTechniques.split(',').map((s: string) => s.trim()).filter(Boolean),
         image: mainImageUrl || 'https://images.unsplash.com/photo-1542382257-80dedb725088?auto=format&fit=crop&q=80&w=1000',
+        socialImage: socialImageUrl || mainImageUrl,
+        socialImageType: socialImageUrl ? 'image/jpeg' : '',
+        socialImageWidth: socialImageUrl ? 1200 : 0,
+        socialImageHeight: socialImageUrl ? 630 : 0,
         contentImages: uploadedContentImages,
         attachments: uploadedAttachments,
         createdBy: userEmail,

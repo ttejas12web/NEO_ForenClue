@@ -33,6 +33,7 @@ interface CaseFile {
   difficulty: "Beginner" | "Advanced" | "Expert" | "Scientific" | "Historical";
   type: "Homicide" | "Cyber" | "Theft" | "Forgery" | "Cold Case";
   image: string;
+  socialImage?: string;
   summary: string;
   details: string;
   status?: string;
@@ -44,13 +45,15 @@ interface CaseFile {
   forensicTechniques?: string[];
 }
 
+const CASE_SHARE_PREVIEW_VERSION = 'case-main-image-v2';
+
 function caseShareUrl(caseItem: CaseFile): string {
   const firstGalleryImage = caseItem.contentImages?.[0];
   const galleryUrl = typeof firstGalleryImage === 'string' ? firstGalleryImage : firstGalleryImage?.url;
   return buildSocialShareUrl(
     '/cases',
     { case: caseItem.id },
-    [caseItem.id, caseItem.image, galleryUrl],
+    [CASE_SHARE_PREVIEW_VERSION, caseItem.id, caseItem.image, caseItem.socialImage, galleryUrl],
   );
 }
 
