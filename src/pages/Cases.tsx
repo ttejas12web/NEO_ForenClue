@@ -46,6 +46,13 @@ interface CaseFile {
 }
 
 const CASE_SHARE_PREVIEW_VERSION = 'case-main-image-v2';
+const UNPUBLISHED_DEMO_CASE_TITLES = new Set([
+  'the phantom breach: apt-33 ransomware attack',
+  'the forged stamp of the royal land registry',
+  'the museum heist: trace glass & soil analysis',
+  'the bones of crimson creek: facial reconstruction',
+  'the rg kar medical college tragedy: a forensic investigation',
+]);
 
 function caseShareUrl(caseItem: CaseFile): string {
   const firstGalleryImage = caseItem.contentImages?.[0];
@@ -282,6 +289,9 @@ export default function Cases() {
 
   const filteredArchive = useMemo(() => {
     const allCases = [...dbCases].filter(c => {
+       // Legacy demonstration records were fictional training seeds and must
+       // never be presented or indexed as documented real-world cases.
+       if (UNPUBLISHED_DEMO_CASE_TITLES.has(c.title.trim().toLowerCase())) return false;
        // Only keep files published by admins
        if (!c.createdBy || (!adminEmails.some(e => e.toLowerCase() === c.createdBy!.toLowerCase()) && !adminUids.includes(c.createdBy))) return false;
        // user can see published, or admin can see all
@@ -340,15 +350,15 @@ export default function Cases() {
         canonicalPath={selectedCase ? `/cases?case=${selectedCase.id}` : slug ? `/case-studies/${slug}` : "/cases"}
         fallbackImage={selectedCase?.image || "/images/og/case-studies.png"}
         type={selectedCase ? "article" : "website"}
-        authorName={selectedCase?.createdBy || "ForenClue Forensic Expert"}
+        authorName="ForenClue Editorial Team"
         breadcrumbs={[
           { name: 'Home', path: '/' },
           { name: 'Case Archive', path: '/cases' },
           ...(selectedCase ? [{ name: selectedCase.title, path: `/cases?case=${selectedCase.id}` }] : [])
         ]}
         faqs={[
-          { question: "Are these real forensic cases?", answer: "Yes, these are documented real-world criminal case studies re-examined from a scientific, investigative, and procedural standpoint." },
-          { question: "Who prepares these forensic investigations?", answer: "Our case archives are researched and written by forensic professionals, criminologists, and cyber investigators." }
+          { question: "Are these official investigation records?", answer: "No. Published case files are educational summaries of documented events. Readers should consult the linked sources, judgments, and official records for authoritative facts." },
+          { question: "Who prepares these case studies?", answer: "ForenClue editorial contributors compile the educational summaries. Source links are shown in the case file when available, and readers can report corrections to ForenClue support." }
         ]}
       />
 

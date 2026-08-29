@@ -7,6 +7,18 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const UNPUBLISHED_DEMO_CASE_TITLES = new Set([
+  'the phantom breach: apt-33 ransomware attack',
+  'the forged stamp of the royal land registry',
+  'the museum heist: trace glass & soil analysis',
+  'the bones of crimson creek: facial reconstruction',
+  'the rg kar medical college tragedy: a forensic investigation',
+]);
+
+function normalizePublicUrl(value) {
+  return String(value || '').replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
+}
+
 async function generateSitemap() {
   console.log('Generating dynamic case sitemap.xml...');
 
@@ -24,7 +36,7 @@ async function generateSitemap() {
     const app = initializeApp(config);
     const db = getFirestore(app, config.firestoreDatabaseId);
 
-    const baseUrl = 'https://www.forenclue.in';
+    const baseUrl = 'https://forenclue.in';
     const currentIsoDate = new Date().toISOString();
 
     let xml = `<?xml version="1.0" encoding="UTF-8"?>\n`;
@@ -38,7 +50,6 @@ async function generateSitemap() {
       { path: '/courses', priority: '0.9', changefreq: 'daily' },
       { path: '/cases', priority: '0.9', changefreq: 'daily' },
       { path: '/careers', priority: '0.7', changefreq: 'weekly' },
-      { path: '/community', priority: '0.8', changefreq: 'daily' },
       { path: '/services', priority: '0.8', changefreq: 'weekly' },
       { path: '/ebooks', priority: '0.9', changefreq: 'daily' },
       { path: '/contact', priority: '0.8', changefreq: 'monthly' },
@@ -71,6 +82,7 @@ async function generateSitemap() {
       querySnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.status === 'draft') return;
+        if (UNPUBLISHED_DEMO_CASE_TITLES.has(String(data.title || '').trim().toLowerCase())) return;
         casesFound++;
 
         xml += `  <url>\n`;
@@ -82,7 +94,7 @@ async function generateSitemap() {
         // Main image
         if (data.image) {
           xml += `    <image:image>\n`;
-          const safeUrl = data.image.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeUrl = normalizePublicUrl(data.image).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           xml += `      <image:loc>${safeUrl}</image:loc>\n`;
           if (data.title) {
               const safeTitle = data.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -105,7 +117,7 @@ async function generateSitemap() {
 
             if (url) {
               xml += `    <image:image>\n`;
-              const safeUrl = url.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+              const safeUrl = normalizePublicUrl(url).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
               xml += `      <image:loc>${safeUrl}</image:loc>\n`;
               if (caption) {
                   const safeCaption = caption.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -141,7 +153,7 @@ async function generateSitemap() {
         const courseImg = data.thumbnail || data.image;
         if (courseImg) {
           xml += `    <image:image>\n`;
-          const safeUrl = courseImg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeUrl = normalizePublicUrl(courseImg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           xml += `      <image:loc>${safeUrl}</image:loc>\n`;
           if (data.title) {
             const safeTitle = data.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -172,7 +184,7 @@ async function generateSitemap() {
         const ebookImg = data.image || data.coverImage;
         if (ebookImg) {
           xml += `    <image:image>\n`;
-          const safeUrl = ebookImg.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeUrl = normalizePublicUrl(ebookImg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           xml += `      <image:loc>${safeUrl}</image:loc>\n`;
           if (data.title) {
             const safeTitle = data.title.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

@@ -1669,15 +1669,15 @@ export default function Admin() {
     setSuccessMsg('');
     setErrMsg('');
 
-    if (!newEbook.title || !newEbook.pdfUrl || !newEbook.image) {
-      setErrMsg('Please input the eBook title, source PDF URL, and its real cover/first-page image.');
+    if (!newEbook.title || !newEbook.author.trim() || !newEbook.desc.trim() || !newEbook.pdfUrl || !newEbook.image) {
+      setErrMsg('Please input the eBook title, real author, description, source PDF URL, and its real cover/first-page image.');
       return;
     }
 
     try {
       const ebookPayload = {
         title: newEbook.title,
-        author: newEbook.author || 'Forensic Expert',
+        author: newEbook.author.trim(),
         year: Number(newEbook.year),
         category: newEbook.category,
         tabCategory: newEbook.tabCategory,
@@ -1685,7 +1685,7 @@ export default function Admin() {
         size: newEbook.size,
         image: newEbook.image,
         pdfUrl: newEbook.pdfUrl,
-        desc: newEbook.desc || 'Forensic reference files.',
+        desc: newEbook.desc.trim(),
         uploadedBy: newEbook.uploadedBy || newEbook.uploaderName || '',
         uploaderName: newEbook.uploaderName || newEbook.uploadedBy || '',
         uploaderRole: newEbook.uploaderRole || 'Volunteer Contributor',
@@ -4390,7 +4390,7 @@ export default function Admin() {
                                     type="text" 
                                     value={employeeFormData.imageUrl} 
                                     onChange={e => setEmployeeFormData({...employeeFormData, imageUrl: e.target.value})} 
-                                    placeholder="e.g. https://www.forenclue.in/uploads/photo.jpg or upload from local device" 
+                                    placeholder="e.g. https://forenclue.in/uploads/photo.jpg or upload from local device"
                                     className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl py-2 px-3 text-xs font-bold outline-none text-text-main focus:border-warning/50 transition-colors"
                                   />
                                   <label className={`cursor-pointer px-4 py-2 rounded-xl bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning text-xs font-bold uppercase tracking-wider flex items-center gap-2 shrink-0 transition-colors ${isUploadingEmpPhoto ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -5749,4 +5749,3 @@ export default function Admin() {
     </div>
   );
 }
-

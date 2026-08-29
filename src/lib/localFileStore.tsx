@@ -283,7 +283,7 @@ function getApiCandidates(apiPath: string): string[] {
   // Include official production domain endpoints as fallback routes
   const prodEndpoints = [
     `https://forenclue.in${cleanPath}`,
-    `https://www.forenclue.in${cleanPath}`
+    `https://forenclue.in${cleanPath}`
   ];
 
   for (const ep of prodEndpoints) {

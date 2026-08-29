@@ -7,7 +7,6 @@ Allow: /about
 Allow: /courses
 Allow: /cases
 Allow: /careers
-Allow: /community
 Allow: /services
 Allow: /ebooks
 Allow: /contact

@@ -113,7 +113,7 @@ async function uploadToR2(buffer: Buffer, objectKey: string, contentType?: strin
   }
 
   const cleanKey = objectKey.replace(/^\/+/, "");
-  let domain = process.env.R2_CUSTOM_DOMAIN || "https://www.forenclue.in";
+  let domain = process.env.R2_CUSTOM_DOMAIN || "https://forenclue.in";
   if (!domain.startsWith("http://") && !domain.startsWith("https://")) {
     domain = `https://${domain}`;
   }
@@ -299,7 +299,7 @@ async function startServer() {
     const clientId = process.env.LINKEDIN_CLIENT_ID || process.env.VITE_LINKEDIN_CLIENT_ID || "86fnkfb4khjr8g";
     let protocol = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
     if (Array.isArray(protocol)) protocol = protocol[0];
-    let host = (req.headers['x-forwarded-host'] || req.get('host') || 'www.forenclue.in') as string;
+    let host = (req.headers['x-forwarded-host'] || req.get('host') || 'forenclue.in') as string;
     if (Array.isArray(host)) host = host[0];
     if (!host.includes('localhost') && !host.includes('127.0.0.1')) {
       protocol = 'https';
@@ -372,7 +372,7 @@ async function startServer() {
 
       let protocol = (req.headers['x-forwarded-proto'] as string) || req.protocol || 'https';
       if (Array.isArray(protocol)) protocol = protocol[0];
-      let host = (req.headers['x-forwarded-host'] || req.get('host') || 'www.forenclue.in') as string;
+      let host = (req.headers['x-forwarded-host'] || req.get('host') || 'forenclue.in') as string;
       if (Array.isArray(host)) host = host[0];
       if (!host.includes('localhost') && !host.includes('127.0.0.1')) {
         protocol = 'https';

@@ -7,9 +7,21 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const UNPUBLISHED_DEMO_CASE_TITLES = new Set([
+  'the phantom breach: apt-33 ransomware attack',
+  'the forged stamp of the royal land registry',
+  'the museum heist: trace glass & soil analysis',
+  'the bones of crimson creek: facial reconstruction',
+  'the rg kar medical college tragedy: a forensic investigation',
+]);
+
+function normalizePublicUrl(value) {
+  return String(value || '').replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
+}
+
 function escapeCdata(text) {
   if (!text) return '';
-  return String(text).replace(/\]\]>/g, ']]&gt;');
+  return String(text).replace(/\s+/g, ' ').trim().replace(/\]\]>/g, ']]&gt;');
 }
 
 function formatDate(dateInput) {
@@ -21,7 +33,7 @@ function formatDate(dateInput) {
 async function generateRssFeed() {
   console.log('Generating RSS 2.0 Feed (/rss.xml)...');
 
-  const baseUrl = 'https://www.forenclue.in';
+  const baseUrl = 'https://forenclue.in';
   const nowUtc = new Date().toUTCString();
 
   let itemsXml = '';
@@ -43,6 +55,7 @@ async function generateRssFeed() {
         casesSnap.forEach((doc) => {
           const data = doc.data();
           if (data.status === 'draft') return;
+          if (UNPUBLISHED_DEMO_CASE_TITLES.has(String(data.title || '').trim().toLowerCase())) return;
           totalItems++;
           const title = data.title || 'Forensic Case Analysis';
           const link = `${baseUrl}/cases?case=${doc.id}`;
@@ -59,7 +72,7 @@ async function generateRssFeed() {
           itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
           itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
           if (imageUrl) {
-            itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
+            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
           }
           itemsXml += `    </item>\n`;
         });
@@ -90,7 +103,7 @@ async function generateRssFeed() {
           itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
           itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
           if (imageUrl) {
-            itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
+            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
           }
           itemsXml += `    </item>\n`;
         });
@@ -121,7 +134,7 @@ async function generateRssFeed() {
           itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
           itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
           if (imageUrl) {
-            itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
+            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
           }
           itemsXml += `    </item>\n`;
         });
@@ -152,7 +165,7 @@ async function generateRssFeed() {
           itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
           itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
           if (imageUrl) {
-            itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
+            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
           }
           itemsXml += `    </item>\n`;
         });

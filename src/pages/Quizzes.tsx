@@ -71,6 +71,12 @@ export default function Quizzes() {
   // Practice Quizzes includes standard practice quizzes + concluded weekly challenges whose date and time has passed
   const practiceQuizzes = quizzes.filter(q => !q.isWeeklyChallenge || isWeeklyChallengeExpired(q));
 
+  useEffect(() => {
+    if (!loading && activeWeeklyChallenges.length === 0 && practiceQuizzes.length > 0) {
+      setActiveTab('practice');
+    }
+  }, [loading, activeWeeklyChallenges.length, practiceQuizzes.length]);
+
   const filteredQuizzes = activeTab === 'weekly' ? activeWeeklyChallenges : practiceQuizzes;
 
   return (

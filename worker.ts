@@ -54,6 +54,7 @@ interface FirestoreDocument {
 interface HtmlRewriterElement {
   remove(): void;
   prepend(content: string, options?: { html?: boolean }): void;
+  append(content: string, options?: { html?: boolean }): void;
 }
 
 interface HtmlRewriterHandler {
@@ -69,7 +70,7 @@ declare const HTMLRewriter: {
   new (): HtmlRewriterInstance;
 };
 
-const SITE_ORIGIN = 'https://www.forenclue.in';
+const SITE_ORIGIN = 'https://forenclue.in';
 const MAX_SOCIAL_IMAGE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_IMAGE =
   'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
@@ -287,7 +288,9 @@ function truncate(value: string, maxLength: number): string {
 function absoluteUrl(value: string, fallback: string): string {
   if (!value) return fallback;
   try {
-    return new URL(value, SITE_ORIGIN).toString();
+    const resolved = new URL(value, SITE_ORIGIN);
+    if (resolved.hostname === 'www.forenclue.in') resolved.hostname = 'forenclue.in';
+    return resolved.toString();
   } catch {
     return fallback;
   }
@@ -735,6 +738,39 @@ function metadataMarkup(metadata: SocialMetadata): string {
   return tags.join('');
 }
 
+const PUBLIC_ROUTE_CONTEXT: Record<string, string> = {
+  '/': 'ForenClue is a forensic science learning platform for students, educators, and professionals. Explore evidence-led case studies, practical learning paths, interactive quizzes, virtual laboratory simulations, webinars, and academic resources. Public learning pages are available without an account.',
+  '/about': 'Learn about ForenClue Ventures, its forensic education mission, leadership team, and focus on connecting academic concepts with practical investigation methods. The platform serves learners who want structured exposure to forensic science and cybersecurity.',
+  '/cases': 'The case archive explains how crime-scene documentation, pathology, DNA profiling, fingerprints, digital evidence, ballistics, and trace evidence contribute to investigations. Each published case is presented for education and should be read alongside the sources and official records listed in the case file.',
+  '/courses': 'Browse structured forensic science learning paths. Course pages explain the topic, intended level, estimated duration, instructor, availability, and curriculum before enrollment. Courses that are not yet available are clearly marked as coming soon.',
+  '/ebooks': 'The digital eLibrary organizes forensic science reference material, laboratory manuals, research papers, and study notes by discipline. Resource pages identify the title, category, year, format, and contributor so learners can evaluate a document before opening it.',
+  '/quizzes': 'Practice forensic science concepts through published quizzes and completed weekly challenges. Available assessments cover evidence handling, crime-scene procedure, laboratory methods, and related disciplines, with clear empty states when no live challenge is running.',
+  '/services': 'ForenClue provides educational workshops and webinars, ForenClue-issued completion credentials, and academic collaboration programs. Service pages explain the format, audience, scope, and next step before a visitor contacts the team.',
+  '/podcast': 'Listen to forensic science discussions and interviews about investigation practice, laboratory methods, digital evidence, education, and professional development.',
+  '/webinar': 'Review upcoming and recorded forensic science learning sessions, including the topic, speaker information, schedule, and registration or playback details when available.',
+  '/contact': 'Contact ForenClue Ventures for learner support, content corrections, workshop questions, institutional collaboration, privacy requests, and general enquiries.',
+  '/privacy': 'Read how ForenClue Ventures collects, uses, protects, and retains personal information, including disclosures about analytics, advertising cookies, user choices, and contact details for privacy requests.',
+  '/terms': 'Review the terms that govern accounts, educational resources, purchases, acceptable use, intellectual property, limitations, and support on the ForenClue platform.',
+};
+
+function progressiveContentMarkup(metadata: SocialMetadata): string {
+  const path = new URL(metadata.canonicalUrl).pathname.replace(/\/$/, '') || '/';
+  const context = PUBLIC_ROUTE_CONTEXT[path] || PUBLIC_ROUTE_CONTEXT[routeRoot(path)] || metadata.description;
+  const title = escapeHtml(metadata.title.replace(/\s*\|\s*ForenClue.*$/i, ''));
+  const description = escapeHtml(metadata.description);
+  const body = escapeHtml(context);
+
+  return [
+    '<div data-progressive-content="true">',
+    '<header><a href="/">ForenClue — Your Partner in Forensic Precision</a></header>',
+    `<main><h1>${title}</h1><p>${description}</p><p>${body}</p></main>`,
+    '<nav aria-label="Public learning sections">',
+    '<a href="/cases">Case Studies</a> · <a href="/courses">Courses</a> · <a href="/ebooks">E-Library</a> · <a href="/quizzes">Quizzes</a> · <a href="/about">About</a> · <a href="/contact">Contact</a>',
+    '</nav>',
+    '</div>',
+  ].join('');
+}
+
 function rewriteHtml(response: Response, metadata: SocialMetadata): Response {
   const removeHandler = {
     element(element: HtmlRewriterElement): void {
@@ -755,6 +791,14 @@ function rewriteHtml(response: Response, metadata: SocialMetadata): Response {
   rewriter = rewriter.on('head', {
     element(element: HtmlRewriterElement) {
       element.prepend(metadataMarkup(metadata), { html: true });
+    },
+  });
+  rewriter = rewriter.on('#root', {
+    element(element: HtmlRewriterElement) {
+      // Same progressive content is sent to every visitor. React replaces it
+      // after startup, while no-JS clients and early crawler snapshots still
+      // receive meaningful, route-specific text and navigation.
+      element.append(progressiveContentMarkup(metadata), { html: true });
     },
   });
 

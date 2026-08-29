@@ -133,3 +133,8 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-
     transform: translateX(100%);
   }
 }
+/* Visual marquee copies use generated content so crawlers and assistive
+   technology encounter the crime-tape label once instead of twenty times. */
+.crime-tape-visual-copy::before {
+  content: attr(data-text);
+}

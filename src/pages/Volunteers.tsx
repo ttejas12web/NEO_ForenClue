@@ -178,12 +178,12 @@ const activeVolunteers = [
 export default function Volunteers() {
   const volunteerSchemas = activeVolunteers.map(vol => ({
     '@type': 'Person',
-    '@id': `https://www.forenclue.in/volunteers#${vol.id}`,
+    '@id': `https://forenclue.in/volunteers#${vol.id}`,
     'name': vol.name,
     'jobTitle': vol.role,
     'memberOf': {
       '@type': 'Organization',
-      '@id': 'https://www.forenclue.in/#organization',
+      '@id': 'https://forenclue.in/#organization',
       'name': 'ForenClue'
     },
     'image': vol.image,

@@ -372,7 +372,7 @@ The ForenClue Curriculum Board
         </div>
       </motion.section>
 
-      {/* Social Proof */}
+      {/* Transparent learning outcomes (no anonymous or unverifiable testimonials) */}
       <motion.section 
         initial={{ opacity: 0, y: 30 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -383,48 +383,43 @@ The ForenClue Curriculum Board
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
            <div className="text-center mb-12">
              <h2 className="font-heading font-black text-3xl md:text-5xl uppercase tracking-tight">
-               Trusted by 100+ Learners
+               Built for serious forensic learning
              </h2>
+             <p className="mt-4 max-w-3xl mx-auto text-sm md:text-base font-medium text-crust/80 leading-relaxed">
+               Use the platform to connect scientific principles with documented investigative practice. Every section has a clear learning purpose and links to the relevant public resource.
+             </p>
            </div>
            
-           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
              {[
                {
-                 quote: "The Forensic Careers Handbook and Pathfinder Engine charted my entire career path, helping me structure my electives perfectly.",
-                 author: "Forensic Student"
+                 title: "Read evidence-led cases",
+                 description: "Follow the role of pathology, DNA, fingerprints, digital evidence, ballistics, and trace evidence in published case studies.",
+                 path: "/cases"
                },
                {
-                 quote: "Working through the reference Case Studies felt like actual investigative work. The depth of evidence review is unmatched.",
-                 author: "Forensic Student"
+                 title: "Test core concepts",
+                 description: "Use practice quizzes and completed weekly challenges to check understanding and identify subjects that need revision.",
+                 path: "/quizzes"
                },
                {
-                 quote: "The real-time Case Analyzer combined with the Community doubts hub let me resolve complex toxicological case queries instantly.",
-                 author: "Forensic Student"
+                 title: "Explore laboratory context",
+                 description: "Work with virtual instruments and simulations that introduce observation, comparison, calibration, and documentation workflows.",
+                 path: "/simulations"
                },
                {
-                 quote: "As an active investigator, using the high-fidelity case blueprints and expert podcast streams keeps my investigative skills incredibly sharp.",
-                 author: "Forensic Professional"
-               },
-               {
-                 quote: "The combination of interactive case files, structured career handbooks, and community peer support has been vital for my lab placement prep.",
-                 author: "Forensic Student"
+                 title: "Plan a learning pathway",
+                 description: "Compare available courses, academic resources, webinars, and career guidance before choosing your next area of study.",
+                 path: "/courses"
                }
-             ].map((testimonial, i) => (
-               <div key={i} className="bg-crust/5 p-6 rounded-lg flex flex-col justify-between">
+             ].map((item, i) => (
+               <Link key={i} to={item.path} className="bg-crust/5 hover:bg-crust/10 p-6 rounded-lg flex flex-col justify-between transition-colors border border-crust/10">
                  <div>
-                   <div className="flex text-crust mb-3">
-                     {[...Array(5)].map((_, j) => (
-                       <svg key={j} className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                       </svg>
-                     ))}
-                   </div>
-                   <p className="font-medium text-base leading-snug font-serif italic mb-4">
-                     "{testimonial.quote}"
-                   </p>
+                   <p className="font-heading font-black text-xl uppercase tracking-tight mb-3">{item.title}</p>
+                   <p className="font-medium text-sm leading-relaxed text-crust/80">{item.description}</p>
                  </div>
-                 <p className="font-bold text-xs uppercase tracking-wider">- {testimonial.author}</p>
-               </div>
+                 <span className="mt-6 text-xs font-black uppercase tracking-wider inline-flex items-center gap-2">Explore section <ArrowRight size={14} /></span>
+               </Link>
              ))}
            </div>
         </div>

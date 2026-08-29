@@ -23,6 +23,11 @@ export class ErrorBoundary extends Component<Props, State> {
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught application error:", error, errorInfo);
 
+    // Do not let a transient deployment/chunk screen replace a real content
+    // page in search results. The next successful render restores route SEO.
+    const robotsMeta = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    if (robotsMeta) robotsMeta.content = 'noindex, nofollow';
+
     const errorStr = error?.toString() || '';
     const isChunkOrMimeError = 
       errorStr.includes('valid JavaScript MIME type') ||

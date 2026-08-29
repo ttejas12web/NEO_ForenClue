@@ -40,7 +40,9 @@ export function getDefaultIst1230Target(): string {
 }
 
 export const DEFAULT_MAINTENANCE_CONFIG: MaintenanceConfig = {
-  isActive: true,
+  // Fail open for visitors and crawlers when Firestore is slow or unavailable.
+  // An explicit Firestore setting can still activate maintenance mode.
+  isActive: false,
   title: 'Platform Maintenance in Progress',
   notice: 'We are performing scheduled infrastructure and laboratory engine upgrades. ForenClue will be back online shortly.',
   targetEndTime: getDefaultIst1230Target(),
@@ -79,7 +81,7 @@ export function subscribeMaintenanceConfig(
       if (snap.exists()) {
         const data = snap.data() as Partial<MaintenanceConfig>;
         const merged: MaintenanceConfig = {
-          isActive: typeof data.isActive === 'boolean' ? data.isActive : true,
+          isActive: typeof data.isActive === 'boolean' ? data.isActive : false,
           title: data.title || DEFAULT_MAINTENANCE_CONFIG.title,
           notice: data.notice || DEFAULT_MAINTENANCE_CONFIG.notice,
           targetEndTime: data.targetEndTime || DEFAULT_MAINTENANCE_CONFIG.targetEndTime,
@@ -113,7 +115,7 @@ export function subscribeMaintenanceConfig(
 export async function saveMaintenanceConfig(config: Partial<MaintenanceConfig>, adminEmail?: string): Promise<void> {
   const docRef = doc(db, 'system_settings', 'maintenance');
   const payload: MaintenanceConfig = {
-    isActive: typeof config.isActive === 'boolean' ? config.isActive : true,
+    isActive: typeof config.isActive === 'boolean' ? config.isActive : false,
     title: config.title || DEFAULT_MAINTENANCE_CONFIG.title,
     notice: config.notice || DEFAULT_MAINTENANCE_CONFIG.notice,
     targetEndTime: config.targetEndTime || DEFAULT_MAINTENANCE_CONFIG.targetEndTime,

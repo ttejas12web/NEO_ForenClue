@@ -15,7 +15,7 @@ import {
 import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { motion, AnimatePresence } from 'motion/react';
-import { Fingerprint, Search, ShieldAlert, Clock, X } from 'lucide-react';
+import { Clock, X } from 'lucide-react';
 import { 
   checkLoginRateLimit, 
   recordFailedLogin, 
@@ -713,102 +713,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         )}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
-        {loading ? (
-          <motion.div 
-            key="loader"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="min-h-screen bg-crust flex flex-col items-center justify-center relative overflow-hidden"
-          >
-            {/* Background Grid Pattern */}
-            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #00f0ff 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
-            
-            <div className="relative w-40 h-40 md:w-64 md:h-64 flex items-center justify-center">
-              {/* Spinning Hexagon Ring */}
-              <motion.div 
-                animate={{ rotate: 360 }}
-                transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-0 border-[1px] border-warning/20 rounded-full"
-              />
-              <motion.div 
-                animate={{ rotate: -360 }}
-                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                className="absolute inset-4 border-[1px] border-warning/10 rounded-full"
-              />
-
-              {/* Forensic Icons Staggered */}
-              <div className="relative">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0.5 }}
-                  animate={{ 
-                    scale: [0.8, 1.1, 0.8],
-                    opacity: [0.5, 1, 0.5],
-                  }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="bg-warning/10 p-4 md:p-6 rounded-2xl border border-warning/30 backdrop-blur-sm relative z-10"
-                >
-                  <Fingerprint size={32} className="text-warning md:hidden" />
-                  <Fingerprint size={48} className="text-warning hidden md:block" />
-                </motion.div>
-
-                {/* Scanning Bar Animation */}
-                <motion.div 
-                  animate={{ top: ['0%', '100%', '0%'] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="absolute left-[-10%] right-[-10%] h-[2px] bg-warning shadow-[0_0_15px_#00f0ff] z-20 opacity-50"
-                />
-              </div>
-
-              {/* Orbiting Elements */}
-              {[...Array(4)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{ 
-                    rotate: 360,
-                  }}
-                  transition={{ 
-                    duration: 4 + i, 
-                    repeat: Infinity, 
-                    ease: "linear" 
-                  }}
-                  className="absolute inset-0 flex items-start justify-center"
-                >
-                  <motion.div 
-                    animate={{ scale: [1, 1.5, 1] }}
-                    transition={{ duration: 1, repeat: Infinity, delay: i * 0.2 }}
-                    className="w-1 md:w-1.5 h-1 md:h-1.5 bg-warning rounded-full shadow-[0_0_8px_#00f0ff]"
-                  />
-                </motion.div>
-              ))}
-            </div>
-
-            <div className="mt-8 md:mt-12 flex flex-col items-center gap-4">
-              <div className="flex items-center gap-3">
-                <Search size={18} className="text-warning animate-pulse md:size-5" />
-                <motion.p 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-text-main font-heading font-black text-xl md:text-2xl uppercase tracking-[0.3em]"
-                >
-                  Investigating<span className="animate-pulse">...</span>
-                </motion.p>
-              </div>
-            </div>
-
-          </motion.div>
-        ) : (
-          <motion.div 
-            key="content"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col min-h-screen"
-          >
-            {children}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/*
+        Authentication initializes in the background. Public content must not be
+        hidden behind Firebase because search and AdSense crawlers may snapshot
+        the page before the auth request finishes (or when that request fails).
+        Protected components can continue to use the exposed `loading` state.
+      */}
+      <div className="flex flex-col min-h-screen">
+        {children}
+      </div>
     </AuthContext.Provider>
   );
 }

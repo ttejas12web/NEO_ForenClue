@@ -215,6 +215,22 @@ export default function PrivacyPolicy() {
           </div>
         </section>
 
+        {/* 10. Advertising Cookies */}
+        <section className="bg-surface p-8 border border-black/10 dark:border-white/10 rounded-xl space-y-4">
+          <h2 className="text-2xl font-heading font-bold text-text-main uppercase tracking-wide">
+            10. Advertising Cookies and User Choices
+          </h2>
+          <p className="text-sm">
+            Third-party vendors, including Google, may use cookies to serve advertising based on a visitor&apos;s previous visits to this Platform or to other websites. Google&apos;s use of advertising cookies enables Google and its partners to show ads that may be relevant to a visitor based on those visits.
+          </p>
+          <p className="text-sm">
+            Visitors can manage or opt out of personalized advertising through <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer" className="text-warning hover:underline">Google Ads Settings</a>. Where required by applicable law, we will request consent before using non-essential advertising or measurement cookies. Other advertising partners may use their own cookies subject to their respective privacy policies and opt-out mechanisms.
+          </p>
+          <p className="text-sm">
+            Advertising cookies are separate from information received through Google APIs. As stated above, Google API user data is not used by ForenClue for advertising.
+          </p>
+        </section>
+
       </div>
     </div>
   );

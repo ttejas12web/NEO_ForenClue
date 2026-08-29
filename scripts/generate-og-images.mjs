@@ -498,7 +498,7 @@ function generateSVG(config) {
       <!-- Domain Name Pill -->
       <rect x="0" y="0" width="210" height="38" rx="10" fill="#0f172a" stroke="#334155" stroke-width="1" />
       <text x="105" y="24" font-family="monospace, sans-serif" font-weight="700" font-size="14" fill="#f8fafc" text-anchor="middle">
-        www.forenclue.in
+        forenclue.in
       </text>
 
       <!-- Verified Hub Pill -->

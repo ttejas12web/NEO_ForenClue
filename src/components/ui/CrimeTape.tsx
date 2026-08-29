@@ -21,7 +21,15 @@ export function CrimeTape({ text = "CRIME SCENE DO NOT CROSS", className, angle 
         {/* Render multiple text blocks to ensure it fills the screen */}
         {[...Array(20)].map((_, i) => (
           <div key={i} className="flex items-center">
-            <span className="mx-4">{text}</span>
+            {i === 0 ? (
+              <span className="mx-4">{text}</span>
+            ) : (
+              <span
+                aria-hidden="true"
+                className="crime-tape-visual-copy mx-4"
+                data-text={text}
+              />
+            )}
             <div className="h-6 w-3 bg-crust transform -skew-x-12 mx-4" />
           </div>
         ))}

@@ -142,15 +142,16 @@ export function SEOManager({
 
   let resolvedImage = rawImage;
   if (resolvedImage) {
+    resolvedImage = resolvedImage.replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
     if (!resolvedImage.startsWith('http://') && !resolvedImage.startsWith('https://')) {
       const clean = resolvedImage.startsWith('/') ? resolvedImage : `/${resolvedImage}`;
-      resolvedImage = `https://www.forenclue.in${clean}`;
+      resolvedImage = `https://forenclue.in${clean}`;
     }
   } else {
     resolvedImage = 'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
   }
 
-  const resolvedAuthor = data.createdBy || data.author || authorName || 'ForenClue Forensic Experts';
+  const resolvedAuthor = authorName || data.author || data.createdBy || 'ForenClue Editorial Team';
 
   // Force DOM updates on route load / data change
   useEffect(() => {

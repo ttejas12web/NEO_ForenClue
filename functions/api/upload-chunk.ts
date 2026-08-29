@@ -42,7 +42,7 @@ function getR2Domain(env: Env, requestUrl: string): string {
     const url = new URL(requestUrl);
     return `${url.protocol}//${url.host}`;
   } catch {
-    return 'https://www.forenclue.in';
+    return 'https://forenclue.in';
   }
 }
 

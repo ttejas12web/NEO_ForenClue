@@ -33,6 +33,7 @@ export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProp
   const [tabCategory, setTabCategory] = useState('books');
   const [desc, setDesc] = useState('');
   const [type, setType] = useState('PDF');
+  const [rightsConfirmed, setRightsConfirmed] = useState(false);
   
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [coverFile, setCoverFile] = useState<File | null>(null);
@@ -92,6 +93,11 @@ export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProp
       return;
     }
 
+    if (!rightsConfirmed) {
+      setError('Confirm that you have the right to upload and share this document.');
+      return;
+    }
+
     const currentUser = auth.currentUser;
     if (!currentUser) {
       setError('Must be signed in to contribute resources to the Academic Library.');
@@ -140,7 +146,8 @@ export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProp
         coverImage: uploadedCoverUrl || null,
         createdAt: serverTimestamp(),
         userId: currentUser.uid,
-        uploaded: 'Just now'
+        uploaded: 'Just now',
+        rightsConfirmed: true,
       };
 
       await addDoc(collection(db, 'ebooks'), resourceMetadata);
@@ -156,6 +163,7 @@ export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProp
       setDesc('');
       setPdfFile(null);
       setCoverFile(null);
+      setRightsConfirmed(false);
 
       setTimeout(() => {
         onClose();
@@ -383,6 +391,17 @@ export function UploadResourceModal({ isOpen, onClose }: UploadResourceModalProp
                     )}
                   </div>
                 </div>
+
+                <label className="flex items-start gap-3 rounded-xl border border-warning/20 bg-warning/5 p-4 text-xs text-text-muted leading-relaxed cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={rightsConfirmed}
+                    onChange={(event) => setRightsConfirmed(event.target.checked)}
+                    disabled={uploading}
+                    className="mt-0.5 h-4 w-4 accent-amber-500"
+                  />
+                  <span>I confirm that I own this document, have permission to redistribute it, or that it is licensed/public-domain material that may lawfully be shared. I understand that naming an author is not the same as having distribution rights.</span>
+                </label>
               </form>
             )}
           </div>

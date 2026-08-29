@@ -91,20 +91,20 @@ export default function EBooks() {
         list.push({
           id: docSnap.id,
           title: d.title || 'Untitled Reference',
-          author: d.author || 'Forensic Expert',
-          year: d.year || 2024,
+          author: d.author || 'Author not provided',
+          year: d.year || 'Year not provided',
           category: d.category || 'General',
           tabCategory: (d.tabCategory as any) || 'books',
           type: d.type || 'PDF',
-          size: d.size || '5MB',
-          desc: d.desc || 'Forensic reference documentation.',
+          size: d.size || 'Size not provided',
+          desc: d.desc || 'Description not provided.',
           pdfUrl: d.pdfUrl || '',
           image: d.image || d.coverImage || d.coverUrl || d.thumbnailUrl || d.thumbnail || '',
-          rating: d.rating || 4.5,
-          downloads: d.downloads || 0,
+          rating: typeof d.rating === 'number' ? d.rating : undefined,
+          downloads: typeof d.downloads === 'number' ? d.downloads : undefined,
           uploadedBy: d.uploadedBy || d.uploaderName || '',
           uploaderName: d.uploaderName || d.uploadedBy || '',
-          uploaderRole: d.uploaderRole || 'Volunteer Contributor',
+          uploaderRole: d.uploaderRole || 'Contributor',
           uploaderPhoto: d.uploaderPhoto || '',
           volunteerId: d.volunteerId || ''
         });
@@ -227,6 +227,11 @@ export default function EBooks() {
             </p>
           </div>
         </div>
+
+        <aside className="mb-8 rounded-2xl border border-warning/20 bg-warning/5 p-5 text-sm text-text-muted leading-relaxed">
+          <p className="font-bold text-text-main mb-1">Copyright and access notice</p>
+          <p>Resources must be uploaded by the rights holder, used with permission, licensed for redistribution, or lawfully available for public access. Attribution does not itself grant redistribution rights. If you own rights to a listed work or believe a resource is shared incorrectly, contact <a href="mailto:support@forenclue.in" className="text-warning hover:underline">support@forenclue.in</a> for review and removal.</p>
+        </aside>
 
         {/* --- FILTER CONTROL BAR --- */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 bg-surface border border-black/10 dark:border-white/5 rounded-2xl mb-8">
