@@ -72,7 +72,7 @@ export default function Files() {
   return (
     <div className="pt-8 pb-20 min-h-screen bg-base relative overflow-hidden text-text-main font-sans">
       <SEO 
-        title="Careers Handbook - Forensic Publications | ForenClue"
+        title="Careers Handbook - Forensic Publications"
         description="Access Mrunmayee Bodhe's standard academic Careers Handbook for Forensic Science. Explore admission guidelines, UGC NET and FACT entrance examinations, and career options."
         keywords="forensic careers handbook, forensic science book, forensic exam guide, UGC NET forensic science, FACT forensic science study guide"
         canonicalPath="/files"

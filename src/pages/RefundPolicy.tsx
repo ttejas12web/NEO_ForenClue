@@ -6,7 +6,7 @@ export default function RefundPolicy() {
   return (
     <div className="py-20 px-4 max-w-4xl mx-auto">
       <SEO 
-        title="Refund, Cancellation & Return Policy | ForenClue"
+        title="Refund, Cancellation & Return Policy"
         description="Review ForenClue Ventures' official Refund, Cancellation, and Return policies regarding study materials, books, forensic kits, and learning services."
         keywords="forenclue refund policy, return policy, cancellation terms, forensic study material refund"
         canonicalPath="/refund-policy"

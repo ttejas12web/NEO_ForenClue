@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
   return (
     <div className="py-20 px-4 max-w-4xl mx-auto">
       <SEO 
-        title="Privacy Policy | ForenClue"
+        title="Privacy Policy"
         description="ForenClue Ventures Privacy Policy. Learn how we collect, use, share, protect, and process your personal data under the laws of India on https://forenclue.in."
         keywords="forenclue privacy policy, forenclue ventures data protection, grievance officer, data retention, indian privacy laws"
         canonicalPath="/privacy"

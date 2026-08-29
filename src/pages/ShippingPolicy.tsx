@@ -6,7 +6,7 @@ export default function ShippingPolicy() {
   return (
     <div className="py-20 px-4 max-w-4xl mx-auto">
       <SEO 
-        title="Shipping & Delivery Policy | ForenClue"
+        title="Shipping & Delivery Policy"
         description="ForenClue Ventures Shipping Policy. Details regarding order dispatch timelines, courier partners, delivery addresses, and shipment confirmations."
         keywords="forenclue shipping policy, delivery timeline, forensic book delivery, order dispatch terms"
         canonicalPath="/shipping-policy"

@@ -6,7 +6,7 @@ export default function TermsOfService() {
   return (
     <div className="py-20 px-4 max-w-4xl mx-auto">
       <SEO 
-        title="Terms & Conditions | ForenClue"
+        title="Terms & Conditions"
         description="ForenClue Terms & Conditions. Review official terms of use, legal notices under Information Technology Act 2000, and user obligations for https://forenclue.in."
         keywords="forenclue terms and conditions, terms of use, forenclue ventures legal, electronic record it act"
         canonicalPath="/terms"
