@@ -157,15 +157,6 @@ export default function About() {
       points: [
         "Forensic Science Student"
       ]
-    },
-    {
-      name: "Purva Bhawsar",
-      role: "Managing Director (MD)",
-      image: "https://blogger.googleusercontent.com/img/a/AVvXsEiM1O7O22rSrLMRZ_SXD3_qK-OSm8SbNdLWS2cf_PyLenPdBtSLAxZlIrhYMTaD9S_LicuKBSMooFcTDSa4PKMXqTkJdA2wNxa0alWSTxLi339qyvbe5qJSsmzg__tvm2bgkg4I6ZMstLztbi4aAqp7BX6Ul2TDabYYbVSfq9VPqVcVstaWDXFxoByip9A",
-      linkedin: "https://www.linkedin.com/in/purva-bhawsar-289495323/",
-      points: [
-        "Managing Director at ForenClue"
-      ]
     }
   ];
 

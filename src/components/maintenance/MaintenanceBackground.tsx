@@ -9,21 +9,21 @@ export function MaintenanceBackground() {
         className="absolute inset-0 opacity-[0.035]"
         style={{
           backgroundImage: `
-            linear-gradient(to right, #06b6d4 1px, transparent 1px),
-            linear-gradient(to bottom, #06b6d4 1px, transparent 1px)
+            linear-gradient(to right, #0891b2 1px, transparent 1px),
+            linear-gradient(to bottom, #0891b2 1px, transparent 1px)
           `,
           backgroundSize: '48px 48px'
         }}
       />
 
       {/* Radial vignette mask over grid */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#040814_80%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,#ffffff_85%)]" />
 
       {/* 2. Ambient Colorful Glow Spheres */}
       <motion.div
         animate={{
           scale: [1, 1.15, 1],
-          opacity: [0.08, 0.14, 0.08],
+          opacity: [0.04, 0.08, 0.04],
           x: [-20, 20, -20],
           y: [-10, 15, -10]
         }}
@@ -32,13 +32,13 @@ export function MaintenanceBackground() {
           repeat: Infinity,
           ease: "easeInOut"
         }}
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-cyan-500 rounded-full blur-[140px]"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-cyan-400 rounded-full blur-[140px]"
       />
 
       <motion.div
         animate={{
           scale: [1, 1.2, 1],
-          opacity: [0.05, 0.09, 0.05],
+          opacity: [0.03, 0.06, 0.03],
           x: [15, -15, 15],
           y: [10, -10, 10]
         }}
@@ -48,11 +48,11 @@ export function MaintenanceBackground() {
           ease: "easeInOut",
           delay: 2
         }}
-        className="absolute bottom-10 right-1/4 w-[450px] h-[350px] bg-amber-500 rounded-full blur-[130px]"
+        className="absolute bottom-10 right-1/4 w-[450px] h-[350px] bg-amber-300 rounded-full blur-[130px]"
       />
 
       {/* 3. Top-Right Planetary Mechanical Gear / Tech Cog */}
-      <div className="absolute -top-24 -right-24 md:-top-16 md:-right-16 w-96 h-96 opacity-[0.06] text-cyan-400">
+      <div className="absolute -top-24 -right-24 md:-top-16 md:-right-16 w-96 h-96 opacity-[0.04] text-cyan-700">
         <motion.svg
           viewBox="0 0 200 200"
           className="w-full h-full"
@@ -88,7 +88,7 @@ export function MaintenanceBackground() {
       </div>
 
       {/* Interlocking Secondary Counter-Rotating Cog */}
-      <div className="absolute top-48 -right-12 md:top-56 md:right-32 w-56 h-56 opacity-[0.04] text-amber-400">
+      <div className="absolute top-48 -right-12 md:top-56 md:right-32 w-56 h-56 opacity-[0.03] text-amber-600">
         <motion.svg
           viewBox="0 0 200 200"
           className="w-full h-full"
@@ -114,7 +114,7 @@ export function MaintenanceBackground() {
       </div>
 
       {/* 4. Bottom-Left Precision Maintenance Dial & Circuit Gear */}
-      <div className="absolute -bottom-28 -left-28 md:-bottom-20 md:-left-20 w-[420px] h-[420px] opacity-[0.05] text-cyan-400">
+      <div className="absolute -bottom-28 -left-28 md:-bottom-20 md:-left-20 w-[420px] h-[420px] opacity-[0.035] text-cyan-700">
         <motion.svg
           viewBox="0 0 240 240"
           className="w-full h-full"
@@ -145,7 +145,7 @@ export function MaintenanceBackground() {
       </div>
 
       {/* Small tertiary gear at bottom-left */}
-      <div className="absolute bottom-40 left-32 hidden sm:block w-40 h-40 opacity-[0.035] text-amber-300">
+      <div className="absolute bottom-40 left-32 hidden sm:block w-40 h-40 opacity-[0.025] text-amber-700">
         <motion.svg
           viewBox="0 0 100 100"
           className="w-full h-full"
@@ -171,10 +171,10 @@ export function MaintenanceBackground() {
 
       {/* 5. Animated Laser Maintenance Scanning Beam */}
       <motion.div
-        className="absolute left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent"
+        className="absolute left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-cyan-500/20 to-transparent"
         animate={{
           top: ['0%', '100%'],
-          opacity: [0, 0.7, 0]
+          opacity: [0, 0.6, 0]
         }}
         transition={{
           duration: 9,
@@ -197,11 +197,11 @@ export function MaintenanceBackground() {
       ].map((p, idx) => (
         <motion.div
           key={idx}
-          className="absolute w-1 h-1 rounded-full bg-cyan-400/40 shadow-[0_0_8px_rgba(6,182,212,0.8)]"
+          className="absolute w-1.5 h-1.5 rounded-full bg-cyan-500/20 shadow-[0_0_6px_rgba(6,182,212,0.3)]"
           style={{ left: p.left, bottom: '-10px' }}
           animate={{
             y: ['0vh', '-105vh'],
-            opacity: [0, 0.8, 0],
+            opacity: [0, 0.7, 0],
             scale: [0.8, 1.4, 0.5]
           }}
           transition={{
@@ -214,29 +214,29 @@ export function MaintenanceBackground() {
       ))}
 
       {/* 7. Subtle Forensic / Maintenance System Calibration Labels in Background */}
-      <div className="absolute top-20 left-6 hidden lg:block opacity-20 font-mono text-[9px] text-cyan-400 tracking-widest leading-loose select-none">
+      <div className="absolute top-20 left-6 hidden lg:block opacity-25 font-mono text-[9px] text-cyan-900 tracking-widest leading-loose select-none">
         <div>[SYSTEM_ENGINE: RUNNING_UPGRADE]</div>
         <div>[CORE_CALIBRATION: ACTIVE]</div>
         <div>[SCHEDULED_TARGET: 12:30_IST]</div>
       </div>
 
-      <div className="absolute bottom-20 right-6 hidden lg:block opacity-20 font-mono text-[9px] text-amber-400 tracking-widest leading-loose text-right select-none">
+      <div className="absolute bottom-20 right-6 hidden lg:block opacity-25 font-mono text-[9px] text-amber-900 tracking-widest leading-loose text-right select-none">
         <div>[FORENSIC_INTEGRITY: 100%]</div>
         <div>[DIAGNOSTICS_CYCLE: SYNCED]</div>
         <div>[LATENCY_CHECK: STABLE]</div>
       </div>
 
       {/* 8. Micro Reticles & Precision Crosshairs in Corners */}
-      <div className="absolute top-1/3 left-12 hidden md:block opacity-20 text-cyan-400 font-mono text-xs select-none">
+      <div className="absolute top-1/3 left-12 hidden md:block opacity-25 text-cyan-800 font-mono text-xs select-none">
         +
       </div>
-      <div className="absolute top-2/3 right-16 hidden md:block opacity-20 text-cyan-400 font-mono text-xs select-none">
+      <div className="absolute top-2/3 right-16 hidden md:block opacity-25 text-cyan-800 font-mono text-xs select-none">
         +
       </div>
-      <div className="absolute bottom-1/4 left-1/4 hidden md:block opacity-15 text-amber-400 font-mono text-xs select-none">
+      <div className="absolute bottom-1/4 left-1/4 hidden md:block opacity-20 text-amber-800 font-mono text-xs select-none">
         +
       </div>
-      <div className="absolute top-1/5 right-1/3 hidden md:block opacity-15 text-cyan-400 font-mono text-xs select-none">
+      <div className="absolute top-1/5 right-1/3 hidden md:block opacity-20 text-cyan-800 font-mono text-xs select-none">
         +
       </div>
     </div>

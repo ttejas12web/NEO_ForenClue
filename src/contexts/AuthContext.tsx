@@ -176,14 +176,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const initProfile = async () => {
       const userRef = doc(db, 'users', user.uid);
       
+      const fallbackProfile: UserProfile = {
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || 'Investigator',
+        photoURL: user.photoURL || '',
+        purchasedCourses: [],
+        bookmarks: [],
+        achievementTags: isAdmin ? ['Forenclue Administrator'] : ['Forensic Novice'],
+        progress: {},
+        doubtsCount: 0,
+        commentsCount: 0
+      };
+
       try {
         let exists = true;
         try {
           const userSnap = await getDoc(userRef);
           exists = userSnap.exists();
         } catch (e: any) {
-          console.warn("Could not fetch initial profile, proceeding to listener:", e);
-          exists = false;
+          console.warn("Could not fetch initial profile, proceeding with fallback:", e?.message || e);
+          exists = true; // Avoid unnecessary setDoc write attempt on quota failure
+          setUserProfile(fallbackProfile);
+          setLoading(false);
         }
           
         if (!exists) {
@@ -214,28 +229,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               ...data,
               purchasedCourses: data.purchasedCourses || []
             } as UserProfile);
+          } else {
+            setUserProfile(fallbackProfile);
           }
           setLoading(false);
         }, (error) => {
-          console.error("Profile sync error:", error);
-          if (!userProfile) {
-            setUserProfile({
-              uid: user.uid,
-              email: user.email,
-              displayName: user.displayName,
-              photoURL: user.photoURL,
-              purchasedCourses: [],
-              bookmarks: [],
-              achievementTags: isAdmin ? ['Forenclue Administrator'] : ['Forensic Novice'],
-              progress: {},
-              doubtsCount: 0,
-              commentsCount: 0
-            });
-          }
+          console.warn("Profile sync error (e.g. quota limit):", error?.message || error);
+          setUserProfile(prev => prev || fallbackProfile);
           setLoading(false);
         });
       } catch (error) {
-        console.error("Profile init error:", error);
+        console.warn("Profile init error:", error);
+        setUserProfile(prev => prev || fallbackProfile);
         setLoading(false);
       }
     };

@@ -222,7 +222,7 @@ export default function App() {
   // If website is in maintenance mode and user hasn't authenticated bypass
   if (isMaintenanceActive && !isBypassed) {
     return (
-      <div className="min-h-screen bg-[#040814] flex flex-col">
+      <div className="min-h-screen bg-[#ffffff] flex flex-col">
         <GlobalSEO />
         <Suspense fallback={<PageLoader />}>
           <Maintenance onBypass={() => setIsBypassed(true)} />
