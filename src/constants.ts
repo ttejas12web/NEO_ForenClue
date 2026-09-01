@@ -25,6 +25,7 @@ export interface Course {
   curriculum: string[];
   instructorBio: string;
   thumbnail: string;
+  publicationStatus: 'published' | 'coming-soon' | 'draft';
   notices: { id: number; date: string; content: string }[];
   modules: Module[];
 }
@@ -50,6 +51,7 @@ export const COURSES: Course[] = [
     ],
     instructorBio: "Mrunmayee Bodhe is the CEO Of ForenClue Ventures, a passionate forensic enthusiast, and dedicated to making learning stress-free.",
     thumbnail: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgmKqsV247zENKr8rUZCgF2dR_u91jYMEP6mJaWF010Jgsdi-zMXXcbXRbWUfD-JZ2vfri_NLWtBPVFTNI8CphwPqMb8eofX8sT75dRzOhR_z4KecBMMSMPrynFsztPmNbZBppXGQn3lAAJERzwyeMdc9gAyxFV9sgHtptG4yOMtNQznPolTH3tORuRPBI/s1534/B45FFD8B-3B72-4FAB-B779-F5DFE99BC86F.jpeg",
+    publicationStatus: "published",
     notices: [
       { id: 1, date: "2024-03-20", content: "New module on 'Forensic Entomology' added. Check it out in the curriculum!" },
       { id: 2, date: "2024-03-15", content: "Live Q&A session scheduled for next Friday at 6 PM IST." }
@@ -95,6 +97,7 @@ export const COURSES: Course[] = [
     ],
     instructorBio: "Tejas Tapse specializes in cyber security and digital forensic investigations, helping organizations respond to complex breaches.",
     thumbnail: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=800&auto=format&fit=crop",
+    publicationStatus: "coming-soon",
     notices: [
       { id: 1, date: "2024-03-18", content: "Updated lab environments are now live. Please re-download the VM image." },
       { id: 2, date: "2024-03-10", content: "Special webinar on 'Ransomware Investigation' next Monday." }
@@ -130,6 +133,7 @@ export const COURSES: Course[] = [
     ],
     instructorBio: "With a background in molecular biology, Tejas Tapse provides expert insights into the science of biological evidence.",
     thumbnail: "https://images.unsplash.com/photo-1530210124550-912dc1381cb8?q=80&w=800&auto=format&fit=crop",
+    publicationStatus: "coming-soon",
     notices: [
       { id: 1, date: "2024-03-22", content: "New research paper on 'Rapid DNA Profiling' added to the reading material." }
     ],
@@ -163,6 +167,7 @@ export const COURSES: Course[] = [
     ],
     instructorBio: "Tejas Tapse combines investigative experience with technical photography skills to teach precise scene documentation.",
     thumbnail: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop",
+    publicationStatus: "coming-soon",
     notices: [
       { id: 1, date: "2024-03-15", content: "Submit your 'Lighting Practice' assignment by this Sunday." }
     ],
@@ -195,7 +200,8 @@ export const COURSES: Course[] = [
       "Counterfeit Detection Techniques"
     ],
     instructorBio: "Tejas Tapse is an expert in document authentication, helping prove the validity of critical evidence in court.",
-    thumbnail: "/src/assets/images/regenerated_image_1777824343256.png",
+    thumbnail: "/images/og/courses.png",
+    publicationStatus: "coming-soon",
     notices: [
       { id: 1, date: "2024-03-21", content: "New high-resolution forgery samples uploaded to the asset gallery." }
     ],
@@ -229,6 +235,7 @@ export const COURSES: Course[] = [
     ],
     instructorBio: "Tejas Tapse brings deep anatomical knowledge to identifying human remains and reconstructing life histories from bone.",
     thumbnail: "https://images.unsplash.com/photo-1559757175-5700dde675bc?q=80&w=800&auto=format&fit=crop",
+    publicationStatus: "coming-soon",
     notices: [
       { id: 1, date: "2024-03-19", content: "Advanced skeletal reconstruction tool link sent to all enrolled students." }
     ],

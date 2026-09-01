@@ -54,6 +54,34 @@ interface ForensicResource {
   uploaderRole?: string;
   uploaderPhoto?: string;
   volunteerId?: string;
+  rightsConfirmed: true;
+  rightsBasis: 'owned' | 'licensed' | 'public-domain' | 'authorized';
+  rightsEvidenceUrl: string;
+}
+
+const ALLOWED_RIGHTS_BASES = new Set<ForensicResource['rightsBasis']>([
+  'owned',
+  'licensed',
+  'public-domain',
+  'authorized',
+]);
+
+function verifiedRightsData(value: Record<string, unknown>): {
+  rightsBasis: ForensicResource['rightsBasis'];
+  rightsEvidenceUrl: string;
+} | null {
+  const rightsBasis = String(value.rightsBasis || '').trim().toLowerCase() as ForensicResource['rightsBasis'];
+  const rightsEvidenceUrl = String(value.rightsEvidenceUrl || value.licenseUrl || value.sourceUrl || '').trim();
+  const pdfUrl = String(value.pdfUrl || '').trim();
+  if (value.rightsConfirmed !== true || !ALLOWED_RIGHTS_BASES.has(rightsBasis) || !pdfUrl) return null;
+
+  try {
+    if (new URL(rightsEvidenceUrl).protocol !== 'https:') return null;
+  } catch {
+    return null;
+  }
+
+  return { rightsBasis, rightsEvidenceUrl };
 }
 
 // Premium forensic academic collection (fallback & defaults)
@@ -77,6 +105,7 @@ export default function EBooks() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [dbEBooks, setDbEBooks] = useState<ForensicResource[]>([]);
+  const [catalogLoaded, setCatalogLoaded] = useState(false);
   const [selectedResource, setSelectedResource] = useState<ForensicResource | null>(null);
   const [sharingResource, setSharingResource] = useState<ForensicResource | null>(null);
   const [searchParams, setSearchParams] = useSearchParams();
@@ -88,6 +117,8 @@ export default function EBooks() {
       const list: ForensicResource[] = [];
       snapshot.forEach((docSnap) => {
         const d = docSnap.data();
+        const rights = verifiedRightsData(d);
+        if (!rights) return;
         list.push({
           id: docSnap.id,
           title: d.title || 'Untitled Reference',
@@ -106,12 +137,17 @@ export default function EBooks() {
           uploaderName: d.uploaderName || d.uploadedBy || '',
           uploaderRole: d.uploaderRole || 'Contributor',
           uploaderPhoto: d.uploaderPhoto || '',
-          volunteerId: d.volunteerId || ''
+          volunteerId: d.volunteerId || '',
+          rightsConfirmed: true,
+          rightsBasis: rights.rightsBasis,
+          rightsEvidenceUrl: rights.rightsEvidenceUrl,
         });
       });
       setDbEBooks(list);
+      setCatalogLoaded(true);
     }, (error) => {
-      console.warn("Could not retrieve real-time eBooks from Firestore, using static repository:", error);
+      console.warn("Could not retrieve rights-verified eBooks from Firestore:", error);
+      setCatalogLoaded(true);
     });
 
     return () => unsubscribe();
@@ -192,7 +228,7 @@ export default function EBooks() {
         docId={selectedResource?.id}
         initialData={selectedResource}
         fallbackTitle={selectedResource ? `${selectedResource.title} | ForenClue eLibrary` : "Academic eLibrary - Reference Textbook Vault"}
-        fallbackDescription={selectedResource ? (selectedResource.desc || "Academic eLibrary resource") : "Access standard academic forensic medicine textbooks, handwritten toxicology notes, peer-reviewed research papers, and standard extraction protocols."}
+        fallbackDescription={selectedResource ? (selectedResource.desc || "Academic eLibrary resource") : "Browse forensic learning resources that have passed ForenClue's redistribution-rights review."}
         keywords="forensic library, forenclue, forensic textbooks, toxicological revision keys, research papers"
         canonicalPath={selectedResource ? `/ebooks?id=${selectedResource.id}` : "/ebooks"}
         fallbackImage={selectedResource?.coverImage || selectedResource?.image || "/images/og/library.png"}
@@ -203,8 +239,8 @@ export default function EBooks() {
           ...(selectedResource ? [{ name: selectedResource.title, path: `/ebooks?id=${selectedResource.id}` }] : [])
         ]}
         faqs={[
-          { question: "What resources are in the ForenClue eLibrary?", answer: "Our library hosts digital forensic medicine manuals, toxicological revision notes, peer-reviewed research papers, and active lab extraction protocols." },
-          { question: "Can I download these books and notes?", answer: "Yes, standard public reference books, revision notes, and research papers are fully available for on-demand study access on our learning portal." }
+          { question: "What resources are in the ForenClue eLibrary?", answer: "The library publishes forensic learning material only after ownership, licence, public-domain status, or redistribution permission has been documented." },
+          { question: "Can I download these books and notes?", answer: "Download access is offered only for resources whose redistribution rights have been verified. Unverified documents remain unpublished." }
         ]}
       />
 
@@ -223,14 +259,14 @@ export default function EBooks() {
               Digital <span className="text-warning">eLibrary</span>
             </h1>
             <p className="text-sm text-text-muted max-w-xl">
-              Academic manuals, handwritten notes, peer-reviewed research papers, and toxicological analysis sheets organized dynamically under academic criteria.
+              Rights-reviewed forensic learning resources, organized by academic discipline.
             </p>
           </div>
         </div>
 
         <aside className="mb-8 rounded-2xl border border-warning/20 bg-warning/5 p-5 text-sm text-text-muted leading-relaxed">
           <p className="font-bold text-text-main mb-1">Copyright and access notice</p>
-          <p>Resources must be uploaded by the rights holder, used with permission, licensed for redistribution, or lawfully available for public access. Attribution does not itself grant redistribution rights. If you own rights to a listed work or believe a resource is shared incorrectly, contact <a href="mailto:support@forenclue.in" className="text-warning hover:underline">support@forenclue.in</a> for review and removal.</p>
+          <p>Only resources with recorded ownership, licence, public-domain status, or written redistribution permission are published. Attribution alone is not accepted as permission. If you own rights to a listed work or believe a resource is shared incorrectly, contact <a href="mailto:support@forenclue.in" className="text-warning hover:underline">support@forenclue.in</a> for review and removal.</p>
         </aside>
 
         {/* --- FILTER CONTROL BAR --- */}
@@ -306,19 +342,25 @@ export default function EBooks() {
             {filteredCatalog.length === 0 ? (
               <div className="text-center py-16 bg-surface/50 border border-dashed border-black/10 dark:border-white/5 rounded-2xl">
                 <BookOpen size={40} className="text-text-muted/40 mx-auto mb-3" />
-                <h3 className="text-sm font-bold uppercase tracking-wider mb-1">No Library Records</h3>
+                <h3 className="text-sm font-bold uppercase tracking-wider mb-1">
+                  {catalogLoaded && combinedCatalog.length === 0 ? 'No Verified Resources Published' : 'No Library Records'}
+                </h3>
                 <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
-                  We found no documents matching your search or category parameter in this section. Try clearing filters.
+                  {catalogLoaded && combinedCatalog.length === 0
+                    ? 'Library documents remain private until their redistribution rights and evidence source have been verified.'
+                    : 'We found no documents matching your search or category in this section. Try clearing the filters.'}
                 </p>
-                <button
-                  onClick={() => {
-                    setSearchQuery('');
-                    setSelectedCategory('All');
-                  }}
-                  className="mt-4 text-xs font-bold text-warning uppercase hover:underline"
-                >
-                  Clear All Filters
-                </button>
+                {combinedCatalog.length > 0 && (
+                  <button
+                    onClick={() => {
+                      setSearchQuery('');
+                      setSelectedCategory('All');
+                    }}
+                    className="mt-4 text-xs font-bold text-warning uppercase hover:underline"
+                  >
+                    Clear All Filters
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

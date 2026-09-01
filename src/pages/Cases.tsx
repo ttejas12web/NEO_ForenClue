@@ -22,6 +22,7 @@ import { PdfViewerModal } from '@/components/ui/PdfViewerModal';
 import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 import { ResilientImage } from '@/lib/localFileStore';
 import { buildSocialShareUrl } from '@/lib/socialShare';
+import { getCuratedCaseSources, hasValidCaseSources } from '@/data/caseSources';
 
 // --- Types ---
 interface CaseFile {
@@ -257,9 +258,11 @@ export default function Cases() {
   useEffect(() => {
     if (dbCases.length > 0 && !initialCaseResolved) {
       const found = dbCases.find(c =>
-        c.id === initialSharedCaseId ||
-        c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === initialSharedCaseId ||
-        c.tag?.toLowerCase() === initialSharedCaseId.toLowerCase()
+        hasValidCaseSources(c.sources) && (
+          c.id === initialSharedCaseId ||
+          c.title.toLowerCase().replace(/[^a-z0-9]+/g, '-') === initialSharedCaseId ||
+          c.tag?.toLowerCase() === initialSharedCaseId.toLowerCase()
+        )
       );
       if (found) {
         setSelectedCase(found);
@@ -278,7 +281,10 @@ export default function Cases() {
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const casesData: CaseFile[] = [];
       snapshot.forEach((doc) => {
-        casesData.push({ id: doc.id, ...doc.data() } as CaseFile);
+        const data = doc.data();
+        const explicitSources = hasValidCaseSources(data.sources) ? data.sources : [];
+        const sources = explicitSources.length > 0 ? explicitSources : getCuratedCaseSources(data.title);
+        casesData.push({ id: doc.id, ...data, sources } as CaseFile);
       });
       setDbCases(casesData);
     }, (error) => {
@@ -292,6 +298,8 @@ export default function Cases() {
        // Legacy demonstration records were fictional training seeds and must
        // never be presented or indexed as documented real-world cases.
        if (UNPUBLISHED_DEMO_CASE_TITLES.has(c.title.trim().toLowerCase())) return false;
+       // Every public educational case must include traceable references.
+       if (!hasValidCaseSources(c.sources)) return false;
        // Only keep files published by admins
        if (!c.createdBy || (!adminEmails.some(e => e.toLowerCase() === c.createdBy!.toLowerCase()) && !adminUids.includes(c.createdBy))) return false;
        // user can see published, or admin can see all

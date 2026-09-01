@@ -68,7 +68,7 @@ export default function Courses() {
     dbCourses.forEach(c => {
       const parsedId = typeof c.id === 'string' ? parseInt(c.id, 10) : c.id;
       if (!isNaN(parsedId)) {
-        dict[parsedId] = { ...c, id: parsedId };
+        dict[parsedId] = { ...dict[parsedId], ...c, id: parsedId };
       }
     });
     return Object.values(dict).sort((a, b) => {
@@ -81,28 +81,35 @@ export default function Courses() {
     });
   }, [dbCourses]);
 
+  // Publication is explicit. Price is a commercial attribute and must never
+  // make an unfinished course public or indexable by itself.
+  const publishedCourses = useMemo(
+    () => allMergedCourses.filter(course => course.publicationStatus === 'published'),
+    [allMergedCourses],
+  );
+
   const categories = useMemo(() => {
-    return ['All', ...Array.from(new Set(allMergedCourses.map(c => c.category)))];
-  }, [allMergedCourses]);
+    return ['All', ...Array.from(new Set(publishedCourses.map(c => c.category)))];
+  }, [publishedCourses]);
 
   const featuredCourse = useMemo(() => {
-    return allMergedCourses.find(c => c.price === 0) || allMergedCourses[0];
-  }, [allMergedCourses]);
+    return publishedCourses.find(c => c.price === 0) || publishedCourses[0];
+  }, [publishedCourses]);
 
   const filteredCourses = useMemo(() => {
-    return allMergedCourses.filter(course => {
+    return publishedCourses.filter(course => {
       const matchesSearch = (course.title || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                            (course.instructor || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                            (course.description || '').toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'All' || course.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [allMergedCourses, searchTerm, selectedCategory]);
+  }, [publishedCourses, searchTerm, selectedCategory]);
 
   const [runningCourseAspectRatio, setRunningCourseAspectRatio] = useState<number | null>(null);
 
   useEffect(() => {
-    const runningC = allMergedCourses.find(c => c.id === 1) || allMergedCourses[0];
+    const runningC = publishedCourses.find(c => c.id === 1) || publishedCourses[0];
     if (runningC?.thumbnail) {
       const img = new Image();
       img.src = runningC.thumbnail;
@@ -112,7 +119,7 @@ export default function Courses() {
         }
       };
     }
-  }, [allMergedCourses]);
+  }, [publishedCourses]);
 
   useEffect(() => {
     const unsub = onSnapshot(collection(db, 'courseStats'), (snapshot) => {
@@ -130,7 +137,7 @@ export default function Courses() {
   useEffect(() => {
     const courseId = searchParams.get('id');
     if (courseId && userProfile) {
-      const course = allMergedCourses.find(c => c.id === parseInt(courseId));
+      const course = publishedCourses.find(c => c.id === parseInt(courseId));
       if (course) {
         const isEnrolled = userProfile.purchasedCourses?.some(id => {
           const parsedId = typeof id === 'string' ? parseInt(id, 10) : id;
@@ -143,10 +150,10 @@ export default function Courses() {
         }
       }
     } else if (courseId && !loading && !user) {
-      const course = allMergedCourses.find(c => c.id === parseInt(courseId));
+      const course = publishedCourses.find(c => c.id === parseInt(courseId));
       if (course) setSelectedCourse(course);
     }
-  }, [searchParams, userProfile, loading, user, navigate, allMergedCourses]);
+  }, [searchParams, userProfile, loading, user, navigate, publishedCourses]);
 
   useEffect(() => {
     if (selectedCourse) {
@@ -206,7 +213,7 @@ export default function Courses() {
     if (e) e.stopPropagation();
     if (purchasing !== null || success !== null) return;
     
-    const course = allMergedCourses.find(c => c.id === courseId);
+    const course = publishedCourses.find(c => c.id === courseId);
     if (!course) return;
 
     let activeUser = user;
@@ -456,7 +463,7 @@ export default function Courses() {
     if (!userProfile?.progress?.courses?.[courseId]) return 0;
     const completed = userProfile.progress.courses[courseId].completedLessons?.length || 0;
     // For simplicity, assume average of 10 lessons per course if not detailed
-    const course = allMergedCourses.find(c => c.id === courseId);
+    const course = publishedCourses.find(c => c.id === courseId);
     if (!course) return 0;
     const totalLessons = course.modules.reduce((acc, m) => acc + m.lessons.length, 0);
     return Math.min(Math.round((completed / totalLessons) * 100), 100);
@@ -700,7 +707,7 @@ export default function Courses() {
                 </div>
                 
                 <div className="space-y-6 md:space-y-0 relative">
-                  {allMergedCourses.filter(c => c.level === level).map((course, idx) => {
+                  {publishedCourses.filter(c => c.level === level).map((course, idx) => {
                     const isComingSoon = course.price > 0;
                     return (
                       <div key={`course-list-${course.id}-${idx}`} className={`flex flex-col md:flex-row items-center gap-8 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''} mb-8`}>
@@ -769,7 +776,7 @@ export default function Courses() {
                            ) : (
                              <Lock size={20} className="text-text-muted" />
                            )}
-                           {idx < allMergedCourses.filter(c => c.level === level).length - 1 && (
+                           {idx < publishedCourses.filter(c => c.level === level).length - 1 && (
                              <div className="absolute top-full w-1 h-12 bg-black/10 dark:bg-white/10"></div>
                            )}
                         </div>
@@ -1162,7 +1169,7 @@ export default function Courses() {
               </button>
 
               {(() => {
-                const instructorCourses = allMergedCourses.filter(c => c.instructor === selectedInstructor);
+                const instructorCourses = publishedCourses.filter(c => c.instructor === selectedInstructor);
                 const firstCourse = instructorCourses[0];
                 return (
                   <>

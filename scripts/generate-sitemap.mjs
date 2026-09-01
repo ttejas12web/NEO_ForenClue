@@ -3,6 +3,7 @@ import { getFirestore, getDocs, collection } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getCuratedCaseSources, hasValidCaseSources } from '../src/data/caseSources.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -17,6 +18,30 @@ const UNPUBLISHED_DEMO_CASE_TITLES = new Set([
 
 function normalizePublicUrl(value) {
   return String(value || '').replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
+}
+
+function isPublishedCourse(data, documentId) {
+  const status = String(data.publicationStatus || data.status || '').trim().toLowerCase();
+  if (data.published === true || ['published', 'active', 'live'].includes(status)) return true;
+
+  const numericId = Number(data.id ?? documentId);
+  return numericId === 1 && String(data.title || '').trim().toLowerCase() === 'introduction to forensic science';
+}
+
+function hasVerifiedRedistributionRights(data) {
+  const rightsBasis = String(data.rightsBasis || '').trim().toLowerCase();
+  const evidenceUrl = String(data.rightsEvidenceUrl || data.licenseUrl || data.sourceUrl || '').trim();
+  if (
+    data.rightsConfirmed !== true ||
+    !['owned', 'licensed', 'public-domain', 'authorized'].includes(rightsBasis) ||
+    !String(data.pdfUrl || '').trim()
+  ) return false;
+
+  try {
+    return new URL(evidenceUrl).protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 async function generateSitemap() {
@@ -83,6 +108,10 @@ async function generateSitemap() {
         const data = doc.data();
         if (data.status === 'draft') return;
         if (UNPUBLISHED_DEMO_CASE_TITLES.has(String(data.title || '').trim().toLowerCase())) return;
+        const caseSources = hasValidCaseSources(data.sources)
+          ? data.sources
+          : getCuratedCaseSources(data.title);
+        if (!hasValidCaseSources(caseSources)) return;
         casesFound++;
 
         xml += `  <url>\n`;
@@ -143,6 +172,7 @@ async function generateSitemap() {
       const querySnapshot = await getDocs(collection(db, "courses"));
       querySnapshot.forEach((doc) => {
         const data = doc.data();
+        if (!isPublishedCourse(data, doc.id)) return;
         coursesFound++;
         xml += `  <url>\n`;
         xml += `    <loc>${baseUrl}/courses?id=${doc.id}</loc>\n`;
@@ -174,6 +204,7 @@ async function generateSitemap() {
       const querySnapshot = await getDocs(collection(db, "ebooks"));
       querySnapshot.forEach((doc) => {
         const data = doc.data();
+        if (!hasVerifiedRedistributionRights(data)) return;
         ebooksFound++;
         xml += `  <url>\n`;
         xml += `    <loc>${baseUrl}/ebooks?id=${doc.id}</loc>\n`;

@@ -3,6 +3,7 @@ import {
   onRequestGet as completeLinkedInGet,
   onRequestPost as completeLinkedInPost,
 } from './functions/api/auth/linkedin/callback';
+import { getCuratedCaseSources, hasValidCaseSources } from './src/data/caseSources';
 
 interface Env {
   ASSETS: {
@@ -86,7 +87,7 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
   '/ebooks': {
     title: 'Academic eLibrary - Reference Textbook Vault | ForenClue',
     description:
-      'Access forensic textbooks, research papers, academic notes, laboratory manuals, and reference resources in the ForenClue eLibrary.',
+      'Browse forensic learning resources that have passed ForenClue redistribution-rights review.',
     image: `${SITE_ORIGIN}/images/og/library.png`,
     type: 'website',
   },
@@ -551,6 +552,52 @@ async function fetchFirestoreDocument(
   }
 }
 
+function isPublishedCaseDocument(data: Record<string, unknown> | undefined): boolean {
+  if (!data || String(data.status || '').trim().toLowerCase() === 'draft') return false;
+  const sources = hasValidCaseSources(data.sources)
+    ? data.sources
+    : getCuratedCaseSources(data.title);
+  return hasValidCaseSources(sources);
+}
+
+function isPublishedCourseDocument(
+  data: Record<string, unknown> | undefined,
+  documentId: string,
+): boolean {
+  // Course 1 is the existing, completed public course in the static catalog.
+  if (documentId === '1') return true;
+  if (!data) return false;
+  const status = String(data.publicationStatus || data.status || '').trim().toLowerCase();
+  return data.published === true || ['published', 'active', 'live'].includes(status);
+}
+
+function hasVerifiedRedistributionRights(data: Record<string, unknown> | undefined): boolean {
+  if (!data || data.rightsConfirmed !== true || !firstText(data, ['pdfUrl'])) return false;
+  const rightsBasis = firstText(data, ['rightsBasis']).toLowerCase();
+  if (!['owned', 'licensed', 'public-domain', 'authorized'].includes(rightsBasis)) return false;
+  const evidenceUrl = firstText(data, ['rightsEvidenceUrl', 'licenseUrl', 'sourceUrl']);
+  try {
+    return new URL(evidenceUrl).protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+function unavailablePublicationResponse(request: Request, label: string): Response {
+  const headers = new Headers({
+    'Cache-Control': 'public, max-age=0, s-maxage=300',
+    'Content-Type': 'text/html; charset=UTF-8',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Robots-Tag': 'noindex, nofollow, noarchive',
+  });
+  if (request.method === 'HEAD') return new Response(null, { status: 404, headers });
+  const safeLabel = escapeHtml(label);
+  return new Response(
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><title>${safeLabel} unavailable | ForenClue</title></head><body><main><h1>${safeLabel} unavailable</h1><p>This item is not publicly available.</p><p><a href="/">Return to ForenClue</a></p></main></body></html>`,
+    { status: 404, headers },
+  );
+}
+
 function baseMetadata(url: URL): SocialMetadata {
   const path = url.pathname.replace(/\/$/, '') || '/';
   const defaults = ROUTE_DEFAULTS[path] || ROUTE_DEFAULTS[routeRoot(path)] || ROUTE_DEFAULTS['/'];
@@ -645,12 +692,18 @@ function metadataFromDocument(
   };
 }
 
-async function resolveMetadata(url: URL, env: Env): Promise<SocialMetadata> {
+async function resolveMetadata(
+  url: URL,
+  env: Env,
+  prefetchedDocument?: Record<string, unknown> | null,
+): Promise<SocialMetadata> {
   const fallback = baseMetadata(url);
   const target = getDynamicTarget(url);
   if (!target) return fallback;
 
-  const document = await fetchFirestoreDocument(env, target);
+  const document = prefetchedDocument === undefined
+    ? await fetchFirestoreDocument(env, target)
+    : prefetchedDocument || undefined;
   const metadata = document ? metadataFromDocument(url, target, document, fallback) : fallback;
   if (target.collection !== 'cases') return metadata;
   const hasExplicitSocialImage = Boolean(
@@ -742,8 +795,8 @@ const PUBLIC_ROUTE_CONTEXT: Record<string, string> = {
   '/': 'ForenClue is a forensic science learning platform for students, educators, and professionals. Explore evidence-led case studies, practical learning paths, interactive quizzes, virtual laboratory simulations, webinars, and academic resources. Public learning pages are available without an account.',
   '/about': 'Learn about ForenClue Ventures, its forensic education mission, leadership team, and focus on connecting academic concepts with practical investigation methods. The platform serves learners who want structured exposure to forensic science and cybersecurity.',
   '/cases': 'The case archive explains how crime-scene documentation, pathology, DNA profiling, fingerprints, digital evidence, ballistics, and trace evidence contribute to investigations. Each published case is presented for education and should be read alongside the sources and official records listed in the case file.',
-  '/courses': 'Browse structured forensic science learning paths. Course pages explain the topic, intended level, estimated duration, instructor, availability, and curriculum before enrollment. Courses that are not yet available are clearly marked as coming soon.',
-  '/ebooks': 'The digital eLibrary organizes forensic science reference material, laboratory manuals, research papers, and study notes by discipline. Resource pages identify the title, category, year, format, and contributor so learners can evaluate a document before opening it.',
+  '/courses': 'Browse currently published forensic science learning paths. Course pages explain the topic, intended level, estimated duration, instructor, and curriculum before enrollment. Unfinished courses remain private until they are ready.',
+  '/ebooks': 'The digital eLibrary publishes forensic science material only after ownership, licence, public-domain status, or written redistribution permission has been documented. Unverified documents remain private.',
   '/quizzes': 'Practice forensic science concepts through published quizzes and completed weekly challenges. Available assessments cover evidence handling, crime-scene procedure, laboratory methods, and related disciplines, with clear empty states when no live challenge is running.',
   '/services': 'ForenClue provides educational workshops and webinars, ForenClue-issued completion credentials, and academic collaboration programs. Service pages explain the format, audience, scope, and next step before a visitor contacts the team.',
   '/podcast': 'Listen to forensic science discussions and interviews about investigation practice, laboratory methods, digital evidence, education, and professional development.',
@@ -850,6 +903,24 @@ export default {
       return jsonError('Method not allowed.', 405);
     }
 
+    const dynamicTarget = getDynamicTarget(url);
+    let publicationDocument: Record<string, unknown> | undefined;
+    let publicationChecked = false;
+    if (
+      (request.method === 'GET' || request.method === 'HEAD') &&
+      dynamicTarget &&
+      ['cases', 'courses', 'ebooks'].includes(dynamicTarget.collection)
+    ) {
+      publicationChecked = true;
+      publicationDocument = await fetchFirestoreDocument(env, dynamicTarget);
+      const isPublished = dynamicTarget.collection === 'cases'
+        ? isPublishedCaseDocument(publicationDocument)
+        : dynamicTarget.collection === 'courses'
+          ? isPublishedCourseDocument(publicationDocument, dynamicTarget.documentId)
+          : hasVerifiedRedistributionRights(publicationDocument);
+      if (!isPublished) return unavailablePublicationResponse(request, dynamicTarget.label);
+    }
+
     if (request.method !== 'GET' || isFileRequest(url.pathname)) {
       return env.ASSETS.fetch(request);
     }
@@ -858,7 +929,11 @@ export default {
     const contentType = assetResponse.headers.get('content-type') || '';
     if (!assetResponse.ok || !contentType.includes('text/html')) return assetResponse;
 
-    const metadata = await resolveMetadata(url, env);
+    const metadata = await resolveMetadata(
+      url,
+      env,
+      publicationChecked ? publicationDocument || null : undefined,
+    );
     return rewriteHtml(assetResponse, metadata);
   },
 };
