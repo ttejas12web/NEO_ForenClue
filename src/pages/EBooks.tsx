@@ -54,34 +54,6 @@ interface ForensicResource {
   uploaderRole?: string;
   uploaderPhoto?: string;
   volunteerId?: string;
-  rightsConfirmed: true;
-  rightsBasis: 'owned' | 'licensed' | 'public-domain' | 'authorized';
-  rightsEvidenceUrl: string;
-}
-
-const ALLOWED_RIGHTS_BASES = new Set<ForensicResource['rightsBasis']>([
-  'owned',
-  'licensed',
-  'public-domain',
-  'authorized',
-]);
-
-function verifiedRightsData(value: Record<string, unknown>): {
-  rightsBasis: ForensicResource['rightsBasis'];
-  rightsEvidenceUrl: string;
-} | null {
-  const rightsBasis = String(value.rightsBasis || '').trim().toLowerCase() as ForensicResource['rightsBasis'];
-  const rightsEvidenceUrl = String(value.rightsEvidenceUrl || value.licenseUrl || value.sourceUrl || '').trim();
-  const pdfUrl = String(value.pdfUrl || '').trim();
-  if (value.rightsConfirmed !== true || !ALLOWED_RIGHTS_BASES.has(rightsBasis) || !pdfUrl) return null;
-
-  try {
-    if (new URL(rightsEvidenceUrl).protocol !== 'https:') return null;
-  } catch {
-    return null;
-  }
-
-  return { rightsBasis, rightsEvidenceUrl };
 }
 
 // Premium forensic academic collection (fallback & defaults)
@@ -117,8 +89,6 @@ export default function EBooks() {
       const list: ForensicResource[] = [];
       snapshot.forEach((docSnap) => {
         const d = docSnap.data();
-        const rights = verifiedRightsData(d);
-        if (!rights) return;
         list.push({
           id: docSnap.id,
           title: d.title || 'Untitled Reference',
@@ -138,15 +108,12 @@ export default function EBooks() {
           uploaderRole: d.uploaderRole || 'Contributor',
           uploaderPhoto: d.uploaderPhoto || '',
           volunteerId: d.volunteerId || '',
-          rightsConfirmed: true,
-          rightsBasis: rights.rightsBasis,
-          rightsEvidenceUrl: rights.rightsEvidenceUrl,
         });
       });
       setDbEBooks(list);
       setCatalogLoaded(true);
     }, (error) => {
-      console.warn("Could not retrieve rights-verified eBooks from Firestore:", error);
+      console.warn("Could not retrieve eBooks from Firestore:", error);
       setCatalogLoaded(true);
     });
 
@@ -228,7 +195,7 @@ export default function EBooks() {
         docId={selectedResource?.id}
         initialData={selectedResource}
         fallbackTitle={selectedResource ? `${selectedResource.title} | ForenClue eLibrary` : "Academic eLibrary - Reference Textbook Vault"}
-        fallbackDescription={selectedResource ? (selectedResource.desc || "Academic eLibrary resource") : "Browse forensic learning resources that have passed ForenClue's redistribution-rights review."}
+        fallbackDescription={selectedResource ? (selectedResource.desc || "Academic eLibrary resource") : "Browse forensic science books, academic notes, research papers, and learning resources in the ForenClue eLibrary."}
         keywords="forensic library, forenclue, forensic textbooks, toxicological revision keys, research papers"
         canonicalPath={selectedResource ? `/ebooks?id=${selectedResource.id}` : "/ebooks"}
         fallbackImage={selectedResource?.coverImage || selectedResource?.image || "/images/og/library.png"}
@@ -239,8 +206,8 @@ export default function EBooks() {
           ...(selectedResource ? [{ name: selectedResource.title, path: `/ebooks?id=${selectedResource.id}` }] : [])
         ]}
         faqs={[
-          { question: "What resources are in the ForenClue eLibrary?", answer: "The library publishes forensic learning material only after ownership, licence, public-domain status, or redistribution permission has been documented." },
-          { question: "Can I download these books and notes?", answer: "Download access is offered only for resources whose redistribution rights have been verified. Unverified documents remain unpublished." }
+          { question: "What resources are in the ForenClue eLibrary?", answer: "Browse forensic science reference books, academic notes, research papers, and other learning manuals by subject or resource type." },
+          { question: "Can I download these books and notes?", answer: "Where a resource provides a PDF, use Read PDF to open it or Download to save it. Use remains subject to the work's applicable licence and copyright." }
         ]}
       />
 
@@ -259,14 +226,14 @@ export default function EBooks() {
               Digital <span className="text-warning">eLibrary</span>
             </h1>
             <p className="text-sm text-text-muted max-w-xl">
-              Rights-reviewed forensic learning resources, organized by academic discipline.
+              Forensic science books, notes, and research resources, organized by academic discipline.
             </p>
           </div>
         </div>
 
         <aside className="mb-8 rounded-2xl border border-warning/20 bg-warning/5 p-5 text-sm text-text-muted leading-relaxed">
           <p className="font-bold text-text-main mb-1">Copyright and access notice</p>
-          <p>Only resources with recorded ownership, licence, public-domain status, or written redistribution permission are published. Attribution alone is not accepted as permission. If you own rights to a listed work or believe a resource is shared incorrectly, contact <a href="mailto:support@forenclue.in" className="text-warning hover:underline">support@forenclue.in</a> for review and removal.</p>
+          <p>Resources must be owned by the uploader, licensed for redistribution, in the public domain, or shared with the rights holder's permission. Attribution alone does not grant redistribution rights. If you own rights to a listed work or believe a resource is shared incorrectly, contact <a href="mailto:support@forenclue.in" className="text-warning hover:underline">support@forenclue.in</a> for review and removal.</p>
         </aside>
 
         {/* --- FILTER CONTROL BAR --- */}
@@ -343,11 +310,11 @@ export default function EBooks() {
               <div className="text-center py-16 bg-surface/50 border border-dashed border-black/10 dark:border-white/5 rounded-2xl">
                 <BookOpen size={40} className="text-text-muted/40 mx-auto mb-3" />
                 <h3 className="text-sm font-bold uppercase tracking-wider mb-1">
-                  {catalogLoaded && combinedCatalog.length === 0 ? 'No Verified Resources Published' : 'No Library Records'}
+                  {catalogLoaded ? 'No Library Records' : 'Loading Library Resources'}
                 </h3>
                 <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed">
-                  {catalogLoaded && combinedCatalog.length === 0
-                    ? 'Library documents remain private until their redistribution rights and evidence source have been verified.'
+                  {!catalogLoaded
+                    ? 'Loading the latest resources from the library.'
                     : 'We found no documents matching your search or category in this section. Try clearing the filters.'}
                 </p>
                 {combinedCatalog.length > 0 && (

@@ -87,7 +87,7 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
   '/ebooks': {
     title: 'Academic eLibrary - Reference Textbook Vault | ForenClue',
     description:
-      'Browse forensic learning resources that have passed ForenClue redistribution-rights review.',
+      'Browse forensic science books, academic notes, research papers, and learning resources in the ForenClue eLibrary.',
     image: `${SITE_ORIGIN}/images/og/library.png`,
     type: 'website',
   },
@@ -571,18 +571,6 @@ function isPublishedCourseDocument(
   return data.published === true || ['published', 'active', 'live'].includes(status);
 }
 
-function hasVerifiedRedistributionRights(data: Record<string, unknown> | undefined): boolean {
-  if (!data || data.rightsConfirmed !== true || !firstText(data, ['pdfUrl'])) return false;
-  const rightsBasis = firstText(data, ['rightsBasis']).toLowerCase();
-  if (!['owned', 'licensed', 'public-domain', 'authorized'].includes(rightsBasis)) return false;
-  const evidenceUrl = firstText(data, ['rightsEvidenceUrl', 'licenseUrl', 'sourceUrl']);
-  try {
-    return new URL(evidenceUrl).protocol === 'https:';
-  } catch {
-    return false;
-  }
-}
-
 function unavailablePublicationResponse(request: Request, label: string): Response {
   const headers = new Headers({
     'Cache-Control': 'public, max-age=0, s-maxage=300',
@@ -796,7 +784,7 @@ const PUBLIC_ROUTE_CONTEXT: Record<string, string> = {
   '/about': 'Learn about ForenClue Ventures, its forensic education mission, leadership team, and focus on connecting academic concepts with practical investigation methods. The platform serves learners who want structured exposure to forensic science and cybersecurity.',
   '/cases': 'The case archive explains how crime-scene documentation, pathology, DNA profiling, fingerprints, digital evidence, ballistics, and trace evidence contribute to investigations. Each published case is presented for education and should be read alongside the sources and official records listed in the case file.',
   '/courses': 'Browse currently published forensic science learning paths. Course pages explain the topic, intended level, estimated duration, instructor, and curriculum before enrollment. Unfinished courses remain private until they are ready.',
-  '/ebooks': 'The digital eLibrary publishes forensic science material only after ownership, licence, public-domain status, or written redistribution permission has been documented. Unverified documents remain private.',
+  '/ebooks': 'The digital eLibrary organizes forensic science reference books, academic notes, research papers, and learning manuals by subject. Browse the catalog, open individual resources, and read the copyright and access notice for information about permitted use and reporting concerns.',
   '/quizzes': 'Practice forensic science concepts through published quizzes and completed weekly challenges. Available assessments cover evidence handling, crime-scene procedure, laboratory methods, and related disciplines, with clear empty states when no live challenge is running.',
   '/services': 'ForenClue provides educational workshops and webinars, ForenClue-issued completion credentials, and academic collaboration programs. Service pages explain the format, audience, scope, and next step before a visitor contacts the team.',
   '/podcast': 'Listen to forensic science discussions and interviews about investigation practice, laboratory methods, digital evidence, education, and professional development.',
@@ -909,15 +897,13 @@ export default {
     if (
       (request.method === 'GET' || request.method === 'HEAD') &&
       dynamicTarget &&
-      ['cases', 'courses', 'ebooks'].includes(dynamicTarget.collection)
+      ['cases', 'courses'].includes(dynamicTarget.collection)
     ) {
       publicationChecked = true;
       publicationDocument = await fetchFirestoreDocument(env, dynamicTarget);
       const isPublished = dynamicTarget.collection === 'cases'
         ? isPublishedCaseDocument(publicationDocument)
-        : dynamicTarget.collection === 'courses'
-          ? isPublishedCourseDocument(publicationDocument, dynamicTarget.documentId)
-          : hasVerifiedRedistributionRights(publicationDocument);
+        : isPublishedCourseDocument(publicationDocument, dynamicTarget.documentId);
       if (!isPublished) return unavailablePublicationResponse(request, dynamicTarget.label);
     }
 

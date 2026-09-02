@@ -20,28 +20,30 @@ function normalizePublicUrl(value) {
   return String(value || '').replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
 }
 
+function ebookSitemapImageUrl(value, baseUrl) {
+  const source = String(value || '').trim();
+  if (!source) return '';
+  if (source.startsWith('firestore-blob://')) {
+    const blobId = source.slice('firestore-blob://'.length);
+    return /^[a-zA-Z0-9_-]{1,128}$/.test(blobId)
+      ? `${baseUrl}/api/social-image/${encodeURIComponent(blobId)}`
+      : '';
+  }
+  try {
+    const url = new URL(normalizePublicUrl(source), baseUrl);
+    // Inline data and browser-local URLs cannot be crawled as sitemap images.
+    return ['http:', 'https:'].includes(url.protocol) ? url.toString() : '';
+  } catch {
+    return '';
+  }
+}
+
 function isPublishedCourse(data, documentId) {
   const status = String(data.publicationStatus || data.status || '').trim().toLowerCase();
   if (data.published === true || ['published', 'active', 'live'].includes(status)) return true;
 
   const numericId = Number(data.id ?? documentId);
   return numericId === 1 && String(data.title || '').trim().toLowerCase() === 'introduction to forensic science';
-}
-
-function hasVerifiedRedistributionRights(data) {
-  const rightsBasis = String(data.rightsBasis || '').trim().toLowerCase();
-  const evidenceUrl = String(data.rightsEvidenceUrl || data.licenseUrl || data.sourceUrl || '').trim();
-  if (
-    data.rightsConfirmed !== true ||
-    !['owned', 'licensed', 'public-domain', 'authorized'].includes(rightsBasis) ||
-    !String(data.pdfUrl || '').trim()
-  ) return false;
-
-  try {
-    return new URL(evidenceUrl).protocol === 'https:';
-  } catch {
-    return false;
-  }
 }
 
 async function generateSitemap() {
@@ -204,7 +206,6 @@ async function generateSitemap() {
       const querySnapshot = await getDocs(collection(db, "ebooks"));
       querySnapshot.forEach((doc) => {
         const data = doc.data();
-        if (!hasVerifiedRedistributionRights(data)) return;
         ebooksFound++;
         xml += `  <url>\n`;
         xml += `    <loc>${baseUrl}/ebooks?id=${doc.id}</loc>\n`;
@@ -212,7 +213,7 @@ async function generateSitemap() {
         xml += `    <changefreq>weekly</changefreq>\n`;
         xml += `    <priority>0.8</priority>\n`;
 
-        const ebookImg = data.image || data.coverImage;
+        const ebookImg = ebookSitemapImageUrl(data.image || data.coverImage, baseUrl);
         if (ebookImg) {
           xml += `    <image:image>\n`;
           const safeUrl = normalizePublicUrl(ebookImg).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
