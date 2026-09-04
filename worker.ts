@@ -845,12 +845,11 @@ function rewriteHtml(response: Response, metadata: SocialMetadata): Response {
 
   const transformed = rewriter.transform(response);
   const headers = new Headers(transformed.headers);
-  headers.set(
-    'Cache-Control',
-    metadata.dynamic
-      ? 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400'
-      : 'public, max-age=0, s-maxage=3600, stale-while-revalidate=86400',
-  );
+  // HTML contains content-hashed JavaScript and CSS URLs. Keeping an older
+  // document in Safari or at an intermediary after a deployment can point the
+  // browser at files that no longer exist, leaving only the progressive HTML
+  // fallback visible. Always fetch the current application shell.
+  headers.set('Cache-Control', 'no-store');
   headers.set('X-Content-Type-Options', 'nosniff');
 
   return new Response(transformed.body, {
@@ -862,6 +861,18 @@ function rewriteHtml(response: Response, metadata: SocialMetadata): Response {
 
 function isFileRequest(pathname: string): boolean {
   return /\.[a-zA-Z0-9]{1,8}$/.test(pathname) && !pathname.endsWith('.html');
+}
+
+function missingAssetResponse(request: Request): Response {
+  const headers = new Headers({
+    'Cache-Control': 'no-store',
+    'Content-Type': 'text/plain; charset=UTF-8',
+    'X-Content-Type-Options': 'nosniff',
+  });
+  return new Response(request.method === 'HEAD' ? null : 'Asset not found.', {
+    status: 404,
+    headers,
+  });
 }
 
 export default {
@@ -908,7 +919,19 @@ export default {
     }
 
     if (request.method !== 'GET' || isFileRequest(url.pathname)) {
-      return env.ASSETS.fetch(request);
+      const assetResponse = await env.ASSETS.fetch(request);
+
+      // SPA fallback mode returns index.html for an unknown hashed asset. A
+      // module request must never receive that HTML with a 200 response.
+      if (
+        (request.method === 'GET' || request.method === 'HEAD') &&
+        isFileRequest(url.pathname) &&
+        (assetResponse.headers.get('content-type') || '').includes('text/html')
+      ) {
+        return missingAssetResponse(request);
+      }
+
+      return assetResponse;
     }
 
     const assetResponse = await env.ASSETS.fetch(request);

@@ -16,6 +16,113 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <meta name="theme-color" content="#111111" />
+    <script>
+      (function () {
+        document.documentElement.classList.add('js');
+
+        var retryKey = 'forenclue:boot-retry';
+        var retryWindowMs = 30000;
+
+        function showBootFailure() {
+          document.documentElement.classList.add('app-boot-failed');
+        }
+
+        function retryApp() {
+          if (document.documentElement.dataset.appMounted === 'true') return;
+
+          try {
+            var lastRetry = Number(sessionStorage.getItem(retryKey) || 0);
+            if (lastRetry && Date.now() - lastRetry < retryWindowMs) {
+              showBootFailure();
+              return;
+            }
+            sessionStorage.setItem(retryKey, String(Date.now()));
+          } catch (_) { }
+
+          var retryUrl = new URL(window.location.href);
+          retryUrl.searchParams.set('_app_retry', String(Date.now()));
+          window.location.replace(retryUrl.toString());
+        }
+
+        function isApplicationAsset(target) {
+          if (!target || (target.tagName !== 'SCRIPT' && target.tagName !== 'LINK')) return false;
+          var source = target.src || target.href;
+          if (!source) return false;
+
+          try {
+            var assetUrl = new URL(source, window.location.href);
+            return assetUrl.origin === window.location.origin && assetUrl.pathname.indexOf('/assets/') === 0;
+          } catch (_) {
+            return false;
+          }
+        }
+
+        window.addEventListener('error', function (event) {
+          if (isApplicationAsset(event.target)) retryApp();
+        }, true);
+
+        window.__forenclueBootRetryTimer = window.setTimeout(retryApp, 12000);
+      })();
+    </script>
+    <style>
+      html.js [data-progressive-content="true"] {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background: #07090d;
+        color: #f8fafc;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      html.js [data-progressive-content="true"] > * {
+        display: none;
+      }
+
+      html.js [data-progressive-content="true"]::before {
+        width: 38px;
+        height: 38px;
+        content: "";
+        border: 3px solid rgba(245, 158, 11, 0.2);
+        border-top-color: #f59e0b;
+        border-radius: 999px;
+        animation: forenclue-boot-spin 0.8s linear infinite;
+      }
+
+      html.js [data-progressive-content="true"]::after {
+        position: absolute;
+        margin-top: 84px;
+        content: "Loading ForenClue\2026";
+        color: #94a3b8;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+      }
+
+      html.js.app-boot-failed [data-progressive-content="true"]::before {
+        width: 12px;
+        height: 12px;
+        border: 0;
+        background: #f59e0b;
+        animation: none;
+      }
+
+      html.js.app-boot-failed [data-progressive-content="true"]::after {
+        max-width: 320px;
+        content: "ForenClue could not start. Please refresh this page.";
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      @keyframes forenclue-boot-spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
@@ -57,7 +164,7 @@
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7640121183781874" crossorigin="anonymous"></script>
     <!-- Razorpay Checkout Script -->
-    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script async src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <!-- Global Structured Data / Schema Markup -->
     <script type="application/ld+json">
       {

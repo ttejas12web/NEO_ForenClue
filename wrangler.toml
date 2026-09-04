@@ -6,7 +6,7 @@ compatibility_date = "2026-08-19"
 directory = "./dist"
 binding = "ASSETS"
 not_found_handling = "single-page-application"
-run_worker_first = ["/*", "!/assets/*", "!/images/*", "!/fonts/*", "!/favicon*", "!/robots.txt", "!/sitemap.xml"]
+run_worker_first = ["/*", "!/images/*", "!/fonts/*", "!/favicon*", "!/robots.txt", "!/sitemap.xml"]
 
 [vars]
 LINKEDIN_CLIENT_ID = "86fnkfb4khjr8g"
