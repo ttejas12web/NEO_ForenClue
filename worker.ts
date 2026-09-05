@@ -151,6 +151,55 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
   },
 };
 
+const STATIC_PAGE_PATHS = new Set([
+  '/',
+  '/about',
+  '/courses',
+  '/cases',
+  '/careers',
+  '/services',
+  '/ebooks',
+  '/files',
+  '/contact',
+  '/privacy',
+  '/terms',
+  '/terms-and-conditions',
+  '/refund-policy',
+  '/refund',
+  '/return-policy',
+  '/cancellation-refund',
+  '/shipping-policy',
+  '/shipping',
+  '/podcast',
+  '/certificate',
+  '/webinar',
+  '/employees',
+  '/volunteers',
+  '/ambassadors',
+  '/forms',
+  '/simulations',
+  '/simulations/stereo-microscope',
+  '/simulations/microscope',
+  '/simulations/comparison-microscope',
+  '/simulations/spectrophotometer',
+  '/quizzes',
+  '/colleges',
+  '/college',
+  '/profile',
+  '/dashboard',
+  '/login',
+  '/admin',
+  '/maintenance',
+]);
+
+const DYNAMIC_PAGE_PATTERNS = [
+  /^\/(?:cases|case-studies)\/[^/]+$/,
+  /^\/player\/[^/]+$/,
+  /^\/quizzes\/[^/]+(?:\/leaderboard)?$/,
+  /^\/(?:colleges|college)\/[^/]+$/,
+  /^\/profile\/[^/]+$/,
+];
+
 const jsonError = (message: string, status: number): Response =>
   Response.json(
     { type: 'LINKEDIN_AUTH_ERROR', error: message },
@@ -451,6 +500,35 @@ function routeRoot(pathname: string): string {
   return firstSegment ? `/${firstSegment}` : '/';
 }
 
+function normalizedPagePath(pathname: string): string {
+  return pathname.replace(/\/+$/, '') || '/';
+}
+
+function isKnownPagePath(pathname: string): boolean {
+  const path = normalizedPagePath(pathname);
+  return STATIC_PAGE_PATHS.has(path) || DYNAMIC_PAGE_PATTERNS.some((pattern) => pattern.test(path));
+}
+
+function getLegacyEbookTarget(pathname: string): DynamicTarget | undefined {
+  // Historical e-book links used Firestore's 20-character auto IDs at the
+  // site root. Keeping the shape strict avoids a database lookup for every
+  // typo, bot probe, or arbitrary one-segment URL.
+  const match = normalizedPagePath(pathname).match(/^\/([a-zA-Z0-9]{20})$/);
+  if (!match) return undefined;
+  return { collection: 'ebooks', documentId: match[1], type: 'book', label: 'eLibrary' };
+}
+
+function canonicalRedirect(url: URL): Response | undefined {
+  if (!['forenclue.in', 'www.forenclue.in'].includes(url.hostname)) return undefined;
+  if (url.protocol === 'https:' && url.hostname === 'forenclue.in') return undefined;
+
+  const canonical = new URL(url.toString());
+  canonical.protocol = 'https:';
+  canonical.hostname = 'forenclue.in';
+  canonical.port = '';
+  return Response.redirect(canonical.toString(), 301);
+}
+
 function canonicalFor(url: URL, target?: DynamicTarget): string {
   const canonical = new URL(url.pathname, SITE_ORIGIN);
   if (target) {
@@ -582,6 +660,21 @@ function unavailablePublicationResponse(request: Request, label: string): Respon
   const safeLabel = escapeHtml(label);
   return new Response(
     `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow,noarchive"><title>${safeLabel} unavailable | ForenClue</title></head><body><main><h1>${safeLabel} unavailable</h1><p>This item is not publicly available.</p><p><a href="/">Return to ForenClue</a></p></main></body></html>`,
+    { status: 404, headers },
+  );
+}
+
+function pageNotFoundResponse(request: Request): Response {
+  const headers = new Headers({
+    'Cache-Control': 'public, max-age=0, s-maxage=300',
+    'Content-Type': 'text/html; charset=UTF-8',
+    'X-Content-Type-Options': 'nosniff',
+    'X-Robots-Tag': 'noindex, nofollow, noarchive',
+  });
+  if (request.method === 'HEAD') return new Response(null, { status: 404, headers });
+
+  return new Response(
+    `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title>Page not found | ForenClue</title><style>body{margin:0;background:#08111f;color:#e5eefb;font:16px/1.6 system-ui,sans-serif}main{max-width:680px;margin:12vh auto;padding:32px}a{color:#f5b942}p{color:#b9c7da}strong{font-size:clamp(4rem,16vw,8rem);line-height:1;color:#f5b942}</style></head><body><main><strong>404</strong><h1>Page not found</h1><p>The page you requested does not exist or may have moved.</p><p><a href="/">Return to ForenClue</a></p></main></body></html>`,
     { status: 404, headers },
   );
 }
@@ -878,6 +971,9 @@ function missingAssetResponse(request: Request): Response {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const redirect = canonicalRedirect(url);
+    if (redirect) return redirect;
+
     const context = { request, env };
 
     const socialImageMatch = url.pathname.match(/^\/api\/social-image\/([^/]+)$/);
@@ -918,7 +1014,10 @@ export default {
       if (!isPublished) return unavailablePublicationResponse(request, dynamicTarget.label);
     }
 
-    if (request.method !== 'GET' || isFileRequest(url.pathname)) {
+    if (
+      (request.method !== 'GET' && request.method !== 'HEAD') ||
+      isFileRequest(url.pathname)
+    ) {
       const assetResponse = await env.ASSETS.fetch(request);
 
       // SPA fallback mode returns index.html for an unknown hashed asset. A
@@ -933,6 +1032,21 @@ export default {
 
       return assetResponse;
     }
+
+    if (!isKnownPagePath(url.pathname)) {
+      const legacyEbookTarget = getLegacyEbookTarget(url.pathname);
+      if (legacyEbookTarget) {
+        const legacyEbook = await fetchFirestoreDocument(env, legacyEbookTarget);
+        if (legacyEbook) {
+          const destination = new URL('/ebooks', SITE_ORIGIN);
+          destination.searchParams.set('id', legacyEbookTarget.documentId);
+          return Response.redirect(destination.toString(), 301);
+        }
+      }
+      return pageNotFoundResponse(request);
+    }
+
+    if (request.method === 'HEAD') return env.ASSETS.fetch(request);
 
     const assetResponse = await env.ASSETS.fetch(request);
     const contentType = assetResponse.headers.get('content-type') || '';
