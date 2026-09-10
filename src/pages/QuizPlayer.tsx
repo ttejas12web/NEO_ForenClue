@@ -7,7 +7,7 @@ import {
   Clock, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, 
   Trophy, ShieldCheck, HelpCircle, Lock, RefreshCw, Sparkles,
   Bookmark, EyeOff, LayoutGrid, Keyboard, RotateCcw, Share2, Filter,
-  X, Check, Flame, Award, Zap, Calendar
+  X, Check, Flame, Award, Zap, Calendar, Maximize2, ZoomIn
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
@@ -32,6 +32,7 @@ export default function QuizPlayer() {
   const [showQuestionsGrid, setShowQuestionsGrid] = useState(false);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [reviewFilter, setReviewFilter] = useState<'all' | 'incorrect' | 'flagged'>('all');
+  const [fullscreenImage, setFullscreenImage] = useState<{ src: string; caption?: string } | null>(null);
 
   // Timer & Session state
   const [timeRemainingSec, setTimeRemainingSec] = useState<number>(0);
@@ -846,13 +847,24 @@ export default function QuizPlayer() {
 
                         {/* Question Reference Diagram if available */}
                         {q.image && (
-                          <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden bg-surface p-2 sm:p-3 flex flex-col items-center justify-center max-w-lg mx-auto shadow-sm">
-                            <img 
-                              src={q.image} 
-                              alt={q.imageCaption || "Forensic Reference Diagram"} 
-                              className="max-h-60 sm:max-h-72 w-full object-contain rounded-lg" 
-                              loading="lazy"
-                            />
+                          <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden bg-surface p-2 sm:p-3 flex flex-col items-center justify-center max-w-lg mx-auto shadow-sm relative group">
+                            <div 
+                              onClick={() => setFullscreenImage({ src: q.image!, caption: q.imageCaption })}
+                              className="relative cursor-zoom-in w-full flex flex-col items-center group/img"
+                              title="Click to view diagram in full size"
+                            >
+                              <img 
+                                src={q.image} 
+                                alt={q.imageCaption || "Forensic Reference Diagram"} 
+                                className="max-h-60 sm:max-h-72 w-full object-contain rounded-lg transition-transform group-hover/img:scale-[1.01]" 
+                                loading="lazy"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity rounded-lg flex items-center justify-center backdrop-blur-[1px]">
+                                <span className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/20 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg">
+                                  <Maximize2 size={13} className="text-warning" /> Click to enlarge diagram
+                                </span>
+                              </div>
+                            </div>
                             {q.imageCaption && (
                               <span className="text-[10px] sm:text-[11px] font-mono text-text-muted mt-1.5 text-center italic">
                                 🔬 {q.imageCaption}
@@ -872,16 +884,16 @@ export default function QuizPlayer() {
                                 key={optIdx}
                                 className={cn(
                                   "p-2.5 sm:p-3 rounded-xl border font-semibold text-xs sm:text-sm flex items-center justify-between gap-2 min-w-0",
-                                  isOptionCorrect && "bg-emerald-500/15 border-emerald-500/50 text-emerald-400 font-bold",
-                                  isOptionSelected && !isOptionCorrect && "bg-red-500/15 border-red-500/50 text-red-400 line-through",
-                                  !isOptionCorrect && !isOptionSelected && "bg-surface border-black/5 dark:border-white/5 text-text-muted"
+                                  isOptionCorrect && "bg-emerald-500/20 border-emerald-500/60 !text-emerald-300 font-bold",
+                                  isOptionSelected && !isOptionCorrect && "bg-red-500/20 border-red-500/60 !text-red-300 line-through",
+                                  !isOptionCorrect && !isOptionSelected && "bg-white/5 border-white/10 !text-slate-200"
                                 )}
                               >
                                 <div className="flex items-center gap-2 min-w-0 flex-1">
                                   <span className="w-5 h-5 rounded-full border border-current text-[10px] flex items-center justify-center font-bold shrink-0">
                                     {String.fromCharCode(65 + optIdx)}
                                   </span>
-                                  <span className="break-words min-w-0 flex-1">{opt}</span>
+                                  <span className="break-words min-w-0 flex-1 !text-white">{opt}</span>
                                 </div>
                                 {isOptionCorrect && <CheckCircle2 size={15} className="text-emerald-400 shrink-0" />}
                               </div>
@@ -890,9 +902,9 @@ export default function QuizPlayer() {
                         </div>
 
                         {q.explanation && (
-                          <div className="p-4 rounded-xl bg-warning/10 border border-warning/20 text-text-main text-xs leading-relaxed space-y-1">
+                          <div className="p-4 rounded-xl bg-warning/10 border border-warning/20 !text-white text-xs leading-relaxed space-y-1">
                             <span className="font-mono font-black text-warning uppercase block">Explanation / Rationale:</span>
-                            <p className="text-text-muted">{q.explanation}</p>
+                            <p className="!text-slate-200 text-xs leading-relaxed">{q.explanation}</p>
                           </div>
                         )}
                       </div>
@@ -938,12 +950,12 @@ export default function QuizPlayer() {
                         <span className="text-[10px] font-black uppercase tracking-widest text-warning bg-warning/10 px-2 py-0.5 rounded-md border border-warning/20">
                           Question #{currentQuestionIdx + 1}
                         </span>
-                        <span className="text-[10px] font-mono text-text-muted bg-black/5 dark:bg-white/5 px-2 py-0.5 rounded-md">
+                        <span className="text-[10px] font-mono text-slate-300 bg-white/10 px-2 py-0.5 rounded-md border border-white/10">
                           {currentQ.points || 10} Points
                         </span>
                       </div>
                       
-                      <h2 className="text-lg sm:text-2xl md:text-3xl font-heading font-black text-text-main leading-snug sm:leading-tight break-words">
+                      <h2 className="text-lg sm:text-2xl md:text-3xl font-heading font-black text-white leading-snug sm:leading-tight break-words">
                         {currentQ.question}
                       </h2>
                     </div>
@@ -955,7 +967,7 @@ export default function QuizPlayer() {
                         "p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all flex flex-col items-center gap-1 text-[10px] uppercase font-black tracking-wider cursor-pointer shrink-0 shadow-sm",
                         flaggedQuestions[currentQ.id]
                           ? "bg-amber-500 text-black border-amber-400 shadow-amber-500/30"
-                          : "bg-surface border-black/10 dark:border-white/10 text-text-muted hover:text-warning hover:border-warning/40 hover:bg-black/5 dark:hover:bg-white/5"
+                          : "bg-white/10 border-white/15 text-slate-300 hover:text-warning hover:border-warning/40 hover:bg-white/15"
                       )}
                       title="Flag question to review before final submission"
                     >
@@ -968,16 +980,27 @@ export default function QuizPlayer() {
 
                   {/* Question Image / Reference Diagram if available */}
                   {currentQ.image && (
-                    <div className="rounded-2xl border border-black/10 dark:border-white/10 overflow-hidden bg-black/5 dark:bg-black/30 p-2 sm:p-4 flex flex-col items-center justify-center max-w-2xl mx-auto shadow-inner">
-                      <img 
-                        src={currentQ.image} 
-                        alt={currentQ.imageCaption || "Forensic Reference Diagram"} 
-                        className="max-h-72 sm:max-h-96 w-full object-contain rounded-xl shadow-sm hover:scale-[1.01] transition-transform" 
-                        loading="eager"
-                      />
+                    <div className="rounded-2xl border border-white/15 overflow-hidden bg-black/40 p-2 sm:p-4 flex flex-col items-center justify-center max-w-2xl mx-auto shadow-inner relative group">
+                      <div 
+                        onClick={() => setFullscreenImage({ src: currentQ.image!, caption: currentQ.imageCaption })}
+                        className="relative cursor-zoom-in w-full flex flex-col items-center group/activeImg"
+                        title="Click to view diagram in full size"
+                      >
+                        <img 
+                          src={currentQ.image} 
+                          alt={currentQ.imageCaption || "Forensic Reference Diagram"} 
+                          className="max-h-72 sm:max-h-96 w-full object-contain rounded-xl shadow-sm hover:scale-[1.01] transition-transform" 
+                          loading="eager"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/activeImg:opacity-100 transition-opacity rounded-xl flex items-center justify-center backdrop-blur-[1px]">
+                          <span className="px-3.5 py-2 rounded-xl bg-black/85 border border-white/25 text-white text-xs font-bold flex items-center gap-2 shadow-2xl tracking-wide">
+                            <Maximize2 size={15} className="text-warning" /> Click to view full size
+                          </span>
+                        </div>
+                      </div>
                       {currentQ.imageCaption && (
-                        <div className="mt-2.5 px-3 py-1 bg-surface/80 border border-black/5 dark:border-white/5 rounded-lg text-center">
-                          <span className="text-[11px] sm:text-xs font-mono text-text-muted italic flex items-center justify-center gap-1.5">
+                        <div className="mt-2.5 px-3 py-1 bg-white/10 border border-white/10 rounded-lg text-center">
+                          <span className="text-[11px] sm:text-xs font-mono text-slate-300 italic flex items-center justify-center gap-1.5">
                             🔬 {currentQ.imageCaption}
                           </span>
                         </div>
@@ -998,25 +1021,25 @@ export default function QuizPlayer() {
                           className={cn(
                             "group relative w-full text-left p-3.5 sm:p-5 rounded-2xl border font-semibold transition-all duration-200 flex items-center justify-between gap-3 cursor-pointer select-none shadow-sm",
                             isSelected 
-                              ? "bg-warning/10 border-warning text-text-main shadow-[0_4px_20px_rgba(252,211,77,0.15)] ring-1 ring-warning/50 z-10" 
+                              ? "bg-warning/20 border-warning !text-white shadow-[0_4px_24px_rgba(252,211,77,0.25)] ring-1 ring-warning/60 z-10" 
                               : isEliminated
-                                ? "bg-black/5 dark:bg-white/5 border-transparent text-text-muted/40 line-through opacity-50"
-                                : "bg-white dark:bg-white/10 border-black/10 dark:border-white/20 hover:border-warning/40 hover:bg-black/5 dark:hover:bg-white/20 text-text-main hover:shadow-md"
+                                ? "bg-white/[0.03] border-white/5 !text-slate-500 line-through opacity-50"
+                                : "bg-white/[0.07] hover:bg-white/[0.14] border-white/15 hover:border-warning/50 !text-white hover:shadow-md"
                           )}
                         >
                           <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1">
                             <span className={cn(
                               "w-8 h-8 sm:w-10 sm:h-10 rounded-xl border text-xs sm:text-sm flex items-center justify-center font-mono font-black transition-all shrink-0",
                               isSelected 
-                                ? "border-warning bg-warning text-crust shadow-md" 
-                                : "border-black/10 dark:border-white/20 text-text-muted bg-black/5 dark:bg-white/10 group-hover:border-warning/50 group-hover:bg-warning/10 group-hover:text-warning"
+                                ? "border-warning bg-warning text-black shadow-md font-black" 
+                                : "border-white/20 !text-slate-100 bg-white/10 group-hover:border-warning/50 group-hover:bg-warning/20 group-hover:!text-warning"
                             )}>
                               {String.fromCharCode(65 + optIdx)}
                             </span>
                             
                             <span className={cn(
-                              isEliminated ? "line-through text-text-muted/50" : "", 
-                              "leading-snug sm:leading-relaxed break-words min-w-0 flex-1 text-xs sm:text-base"
+                              isEliminated ? "line-through !text-slate-400/60" : "!text-white", 
+                              "leading-snug sm:leading-relaxed break-words min-w-0 flex-1 text-xs sm:text-base font-medium !text-white select-text"
                             )}>
                               {option}
                             </span>
@@ -1030,8 +1053,8 @@ export default function QuizPlayer() {
                               className={cn(
                                 "p-1.5 sm:p-2 rounded-xl border transition-all text-[10px] font-mono flex items-center gap-1 cursor-pointer backdrop-blur-sm",
                                 isEliminated 
-                                  ? "bg-red-500/10 text-red-500 border-red-500/20 hover:bg-red-500/20 opacity-100" 
-                                  : "opacity-70 sm:opacity-0 group-hover:opacity-100 bg-surface border-black/10 dark:border-white/10 text-text-muted hover:text-text-main hover:border-black/20 dark:hover:border-white/20"
+                                  ? "bg-red-500/20 text-red-400 border-red-500/30 hover:bg-red-500/30 opacity-100" 
+                                  : "opacity-70 sm:opacity-0 group-hover:opacity-100 bg-white/10 border-white/15 text-slate-300 hover:text-white hover:border-white/30"
                               )}
                               title={isEliminated ? "Restore Choice" : "Eliminate Choice"}
                             >
@@ -1284,6 +1307,62 @@ export default function QuizPlayer() {
               <AlertTriangle size={18} className="shrink-0 animate-bounce" />
               <span>Copy, cut, and paste actions are strictly disabled during quiz attempts.</span>
             </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Fullscreen Image Lightbox Modal */}
+        <AnimatePresence>
+          {fullscreenImage && (
+            <div 
+              className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+              onClick={() => setFullscreenImage(null)}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.92 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.92 }}
+                transition={{ duration: 0.2 }}
+                className="relative max-w-6xl w-full max-h-[95vh] flex flex-col items-center justify-center"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Header bar / Close button */}
+                <div className="w-full flex items-center justify-between gap-3 pb-3 text-white">
+                  <div className="flex items-center gap-2">
+                    <span className="p-1.5 rounded-lg bg-warning/20 text-warning border border-warning/30">
+                      <Maximize2 size={16} />
+                    </span>
+                    <span className="text-xs sm:text-sm font-mono font-bold text-slate-200">
+                      Full-Size Forensic Diagram View
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setFullscreenImage(null)}
+                    className="p-2 sm:px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer flex items-center gap-1.5 text-xs font-bold shadow-lg"
+                  >
+                    <X size={18} />
+                    <span className="hidden sm:inline">Close</span>
+                  </button>
+                </div>
+
+                {/* High-res Image Box */}
+                <div className="w-full overflow-auto max-h-[78vh] flex items-center justify-center p-3 rounded-2xl bg-black/80 border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
+                  <img
+                    src={fullscreenImage.src}
+                    alt={fullscreenImage.caption || "Full Size Forensic Reference"}
+                    className="max-h-[74vh] max-w-full object-contain rounded-xl shadow-2xl"
+                  />
+                </div>
+
+                {/* Caption Footer */}
+                {fullscreenImage.caption && (
+                  <div className="mt-3 px-4 py-2 bg-white/10 border border-white/15 rounded-xl text-center max-w-3xl">
+                    <p className="text-xs sm:text-sm font-mono text-slate-200">
+                      🔬 {fullscreenImage.caption}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            </div>
           )}
         </AnimatePresence>
       </div>
