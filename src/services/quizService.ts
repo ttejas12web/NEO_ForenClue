@@ -4,12 +4,34 @@ import {
   query, where, orderBy, limit, arrayUnion, setDoc 
 } from 'firebase/firestore';
 import { Quiz, QuizAttempt, LeaderboardEntry } from '@/types/quiz';
+import { CHEILOSCOPY_QUESTIONS } from '@/data/cheiloscopyQuestions';
 
 const QUIZZES_COLLECTION = 'quizzes';
 const ATTEMPTS_COLLECTION = 'quizAttempts';
 
 // Initial sample quizzes for seed fallback
 export const SAMPLE_QUIZZES: Quiz[] = [
+  {
+    id: 'weekly-challenge-cheiloscopy',
+    title: 'Weekly Challenge: Cheiloscopy & Forensic Lip Print Analysis',
+    description: 'Comprehensive 30-question forensic assessment on Cheiloscopy (lip print analysis) based on scientific classification systems (Suzuki & Tsuchihashi, Martin Santos, Renaud), anatomical morphology of sulci labiorum, latent print development with lysochrome dyes, identical twin studies, chemical lipstick chromatography, and judicial admissibility standards.',
+    category: 'Forensic Odontology & Biometrics',
+    isWeeklyChallenge: true,
+    scheduledStartTime: new Date(Date.now() - 3600000).toISOString(), // Started 1 hour ago (Live)
+    scheduledEndTime: new Date(Date.now() + 86400000 * 7).toISOString(), // Active for 7 days
+    durationMinutes: 25,
+    totalPoints: 300,
+    passingScore: 210,
+    enrolledUserIds: [],
+    isEnrollmentOpen: true,
+    createdBy: 'ForenClue Odontology Division',
+    createdAt: new Date().toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800',
+    coverImage: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=1200',
+    bannerImage: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=800',
+    questions: CHEILOSCOPY_QUESTIONS
+  },
   {
     id: 'weekly-challenge-1',
     title: 'Weekly Challenge #1: Fingerprint Analysis & Friction Ridge Patterns',
@@ -233,7 +255,14 @@ export function isWeeklyChallengeExpired(quiz: Quiz): boolean {
 
 // Helper to force sample challenges to have scheduled times if missing
 function applyQuizOverrides(quiz: Quiz): Quiz {
-  if (quiz.id === 'weekly-challenge-1') {
+  if (quiz.id === 'weekly-challenge-cheiloscopy') {
+    if (!quiz.scheduledStartTime || !quiz.scheduledEndTime) {
+      quiz.scheduledStartTime = new Date(Date.now() - 3600000).toISOString();
+      quiz.scheduledEndTime = new Date(Date.now() + 86400000 * 7).toISOString();
+    }
+    quiz.isEnrollmentOpen = true;
+    quiz.isWeeklyChallenge = true;
+  } else if (quiz.id === 'weekly-challenge-1') {
     if (!quiz.scheduledStartTime) {
       quiz.scheduledStartTime = new Date(Date.now() + 86400000 * 2).toISOString();
       quiz.scheduledEndTime = new Date(Date.now() + 86400000 * 5).toISOString();
@@ -268,9 +297,23 @@ export async function fetchQuizzes(): Promise<Quiz[]> {
       return SAMPLE_QUIZZES.map(applyQuizOverrides);
     }
     const quizzes: Quiz[] = [];
+    const dbQuizIds = new Set<string>();
     qSnap.forEach((docSnap) => {
+      dbQuizIds.add(docSnap.id);
       quizzes.push(applyQuizOverrides({ id: docSnap.id, ...docSnap.data() } as Quiz));
     });
+
+    // Ensure built-in challenges (like Cheiloscopy) are included if not yet in Firestore
+    for (const sample of SAMPLE_QUIZZES) {
+      if (!dbQuizIds.has(sample.id)) {
+        quizzes.unshift(applyQuizOverrides(sample));
+        // Non-blocking sync to Firestore
+        setDoc(doc(db, QUIZZES_COLLECTION, sample.id), sample).catch(e => {
+          console.warn("Could not sync sample quiz to Firestore:", e);
+        });
+      }
+    }
+
     return quizzes;
   } catch (err) {
     handleFirestoreError(err, OperationType.GET, QUIZZES_COLLECTION);
@@ -284,7 +327,15 @@ export async function fetchQuizById(quizId: string): Promise<Quiz | null> {
     const docRef = doc(db, QUIZZES_COLLECTION, quizId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
-      return applyQuizOverrides({ id: docSnap.id, ...docSnap.data() } as Quiz);
+      const data = docSnap.data() as Quiz;
+      // If questions are missing in Firestore for sample quiz, populate from SAMPLE_QUIZZES
+      if (!data.questions || data.questions.length === 0) {
+        const sample = SAMPLE_QUIZZES.find(q => q.id === quizId);
+        if (sample) {
+          data.questions = sample.questions;
+        }
+      }
+      return applyQuizOverrides({ id: docSnap.id, ...data });
     }
     // Fallback to sample array
     const sample = SAMPLE_QUIZZES.find(q => q.id === quizId);

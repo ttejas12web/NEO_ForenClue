@@ -5,6 +5,8 @@ export interface QuizQuestion {
   correctAnswerIndex: number;
   explanation?: string;
   points: number;
+  image?: string;
+  imageCaption?: string;
 }
 
 export interface Quiz {

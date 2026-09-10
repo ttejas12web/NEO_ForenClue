@@ -844,6 +844,23 @@ export default function QuizPlayer() {
                           )}
                         </div>
 
+                        {/* Question Reference Diagram if available */}
+                        {q.image && (
+                          <div className="rounded-xl border border-black/10 dark:border-white/10 overflow-hidden bg-surface p-2 sm:p-3 flex flex-col items-center justify-center max-w-lg mx-auto shadow-sm">
+                            <img 
+                              src={q.image} 
+                              alt={q.imageCaption || "Forensic Reference Diagram"} 
+                              className="max-h-60 sm:max-h-72 w-full object-contain rounded-lg" 
+                              loading="lazy"
+                            />
+                            {q.imageCaption && (
+                              <span className="text-[10px] sm:text-[11px] font-mono text-text-muted mt-1.5 text-center italic">
+                                🔬 {q.imageCaption}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
                         {/* Options breakdown */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs sm:text-sm">
                           {q.options.map((opt, optIdx) => {
@@ -948,6 +965,25 @@ export default function QuizPlayer() {
                       </span>
                     </button>
                   </div>
+
+                  {/* Question Image / Reference Diagram if available */}
+                  {currentQ.image && (
+                    <div className="rounded-2xl border border-black/10 dark:border-white/10 overflow-hidden bg-black/5 dark:bg-black/30 p-2 sm:p-4 flex flex-col items-center justify-center max-w-2xl mx-auto shadow-inner">
+                      <img 
+                        src={currentQ.image} 
+                        alt={currentQ.imageCaption || "Forensic Reference Diagram"} 
+                        className="max-h-72 sm:max-h-96 w-full object-contain rounded-xl shadow-sm hover:scale-[1.01] transition-transform" 
+                        loading="eager"
+                      />
+                      {currentQ.imageCaption && (
+                        <div className="mt-2.5 px-3 py-1 bg-surface/80 border border-black/5 dark:border-white/5 rounded-lg text-center">
+                          <span className="text-[11px] sm:text-xs font-mono text-text-muted italic flex items-center justify-center gap-1.5">
+                            🔬 {currentQ.imageCaption}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {/* Options List */}
                   <div className="space-y-2.5 sm:space-y-3.5">
