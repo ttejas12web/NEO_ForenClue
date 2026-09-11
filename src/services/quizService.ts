@@ -5,12 +5,31 @@ import {
 } from 'firebase/firestore';
 import { Quiz, QuizAttempt, LeaderboardEntry } from '@/types/quiz';
 import { CHEILOSCOPY_QUESTIONS } from '@/data/cheiloscopyQuestions';
+import { BLOOD_STAIN_QUESTIONS } from '@/data/bloodStainQuestions';
 
 const QUIZZES_COLLECTION = 'quizzes';
 const ATTEMPTS_COLLECTION = 'quizAttempts';
 
 // Initial sample quizzes for seed fallback
 export const SAMPLE_QUIZZES: Quiz[] = [
+  {
+    id: 'practice-bpa-1',
+    title: 'Practice Assessment: Bloodstain Pattern Analysis (BPA)',
+    description: 'Comprehensive 15-question laboratory assessment on Bloodstain Pattern Analysis (BPA) based on SWGSTAIN and OSAC forensic standards. Rigorously tests droplet in-flight fluid dynamics, Balthazard trigonometric impact angle calculations (W/L ratio), 2D area of convergence vs. 3D spatial area of origin, cast-off swing mechanics and minimum blow count (N+1 rule), arterial spurt hemodynamic waveforms, swipe vs. wipe contact transfer mechanisms, peripheral ring skeletonization chronology, substrate roughness and edge scalloping, gunshot forward spatter vs. backspatter mist, void pattern reconstruction, terminal velocity dynamics, and chemiluminescent luminol detection.',
+    category: 'Bloodstain Pattern Analysis (BPA)',
+    isWeeklyChallenge: false,
+    durationMinutes: 20,
+    totalPoints: 150,
+    passingScore: 105,
+    enrolledUserIds: [],
+    createdBy: 'ForenClue Serology & BPA Division',
+    createdAt: new Date().toISOString(),
+    thumbnail: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=800',
+    coverImage: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=1200',
+    bannerImage: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&q=80&w=800',
+    questions: BLOOD_STAIN_QUESTIONS
+  },
   {
     id: 'weekly-challenge-cheiloscopy',
     title: 'Weekly Challenge: Cheiloscopy & Forensic Lip Print Analysis',
@@ -280,6 +299,11 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
       quiz.scheduledEndTime = new Date(Date.now() - 86400000 * 3).toISOString();
     }
     quiz.isEnrollmentOpen = false;
+  } else if (quiz.id === 'practice-bpa-1') {
+    quiz.isWeeklyChallenge = false;
+    if (!quiz.questions || quiz.questions.length === 0) {
+      quiz.questions = BLOOD_STAIN_QUESTIONS;
+    }
   }
   return quiz;
 }
@@ -300,7 +324,14 @@ export async function fetchQuizzes(): Promise<Quiz[]> {
     const dbQuizIds = new Set<string>();
     qSnap.forEach((docSnap) => {
       dbQuizIds.add(docSnap.id);
-      quizzes.push(applyQuizOverrides({ id: docSnap.id, ...docSnap.data() } as Quiz));
+      const data = { id: docSnap.id, ...docSnap.data() } as Quiz;
+      if (!data.questions || data.questions.length === 0) {
+        const sample = SAMPLE_QUIZZES.find(q => q.id === docSnap.id);
+        if (sample?.questions) {
+          data.questions = sample.questions;
+        }
+      }
+      quizzes.push(applyQuizOverrides(data));
     });
 
     // Ensure built-in challenges (like Cheiloscopy) are included if not yet in Firestore
