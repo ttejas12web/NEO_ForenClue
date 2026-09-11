@@ -7,6 +7,7 @@ export interface QuizQuestion {
   points: number;
   image?: string;
   imageCaption?: string;
+  hint?: string;
 }
 
 export interface Quiz {

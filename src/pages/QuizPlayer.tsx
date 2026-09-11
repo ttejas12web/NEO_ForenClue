@@ -7,7 +7,7 @@ import {
   Clock, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, 
   Trophy, ShieldCheck, HelpCircle, Lock, RefreshCw, Sparkles,
   Bookmark, EyeOff, LayoutGrid, Keyboard, RotateCcw, Share2, Filter,
-  X, Check, Flame, Award, Zap, Calendar, Maximize2, ZoomIn
+  X, Check, Flame, Award, Zap, Calendar, Maximize2, ZoomIn, Lightbulb
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,7 @@ export default function QuizPlayer() {
   // Power User Features
   const [flaggedQuestions, setFlaggedQuestions] = useState<Record<string, boolean>>({});
   const [eliminatedOptions, setEliminatedOptions] = useState<Record<string, number[]>>({}); // questionId -> optionIndices
+  const [showHint, setShowHint] = useState<Record<string, boolean>>({});
   const [showQuestionsGrid, setShowQuestionsGrid] = useState(false);
   const [slideDirection, setSlideDirection] = useState<'left' | 'right'>('right');
   const [reviewFilter, setReviewFilter] = useState<'all' | 'incorrect' | 'flagged'>('all');
@@ -227,6 +228,29 @@ export default function QuizPlayer() {
         : [...currentList, optionIdx];
       return { ...prev, [questionId]: updated };
     });
+  };
+
+  const handle5050Lifeline = (q: QuizQuestion) => {
+    if (isSubmitted) return;
+    const currentElim = eliminatedOptions[q.id] || [];
+    if (currentElim.length >= 2) {
+      // Toggle off / restore all
+      setEliminatedOptions(prev => ({ ...prev, [q.id]: [] }));
+      return;
+    }
+    // Eliminate 2 wrong choices
+    const wrongIndices = q.options
+      .map((_, idx) => idx)
+      .filter(idx => idx !== q.correctAnswerIndex);
+    const toEliminate = wrongIndices.slice(0, 2);
+    setEliminatedOptions(prev => ({ ...prev, [q.id]: toEliminate }));
+  };
+
+  const toggleHint = (questionId: string) => {
+    setShowHint(prev => ({
+      ...prev,
+      [questionId]: !prev[questionId]
+    }));
   };
 
   const handlePrevQuestion = () => {
@@ -960,23 +984,85 @@ export default function QuizPlayer() {
                       </h2>
                     </div>
 
-                    {/* Bookmark / Flag Button */}
-                    <button
-                      onClick={() => toggleFlagQuestion(currentQ.id)}
-                      className={cn(
-                        "p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all flex flex-col items-center gap-1 text-[10px] uppercase font-black tracking-wider cursor-pointer shrink-0 shadow-sm",
-                        flaggedQuestions[currentQ.id]
-                          ? "bg-amber-500 text-black border-amber-400 shadow-amber-500/30"
-                          : "bg-white/10 border-white/15 text-slate-300 hover:text-warning hover:border-warning/40 hover:bg-white/15"
+                    {/* Action Buttons: 50:50 Lifeline, Clue Hint, Flag */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* 50:50 Lifeline Button */}
+                      <button
+                        type="button"
+                        onClick={() => handle5050Lifeline(currentQ)}
+                        className={cn(
+                          "p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all flex flex-col items-center gap-1 text-[10px] uppercase font-black tracking-wider cursor-pointer shadow-sm",
+                          (eliminatedOptions[currentQ.id] || []).length >= 2
+                            ? "bg-purple-600 text-white border-purple-400 shadow-purple-500/30"
+                            : "bg-white/10 border-white/15 text-slate-300 hover:text-purple-300 hover:border-purple-400/50 hover:bg-purple-950/30"
+                        )}
+                        title="50:50 Lifeline: Eliminate 2 wrong choices to make the question easier"
+                      >
+                        <Zap size={18} className={cn("sm:w-5 sm:h-5", (eliminatedOptions[currentQ.id] || []).length >= 2 ? "fill-white" : "")} />
+                        <span className="hidden sm:inline">50:50</span>
+                      </button>
+
+                      {/* Hint / Clue Button */}
+                      {(currentQ.hint || currentQ.explanation) && (
+                        <button
+                          type="button"
+                          onClick={() => toggleHint(currentQ.id)}
+                          className={cn(
+                            "p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all flex flex-col items-center gap-1 text-[10px] uppercase font-black tracking-wider cursor-pointer shadow-sm",
+                            showHint[currentQ.id]
+                              ? "bg-amber-400 text-black border-amber-300 shadow-amber-400/30"
+                              : "bg-white/10 border-white/15 text-slate-300 hover:text-amber-300 hover:border-amber-400/50 hover:bg-amber-950/30"
+                          )}
+                          title="View a helpful hint or clue"
+                        >
+                          <Lightbulb size={18} className={cn("sm:w-5 sm:h-5", showHint[currentQ.id] ? "fill-black text-black" : "")} />
+                          <span className="hidden sm:inline">{showHint[currentQ.id] ? 'Hide Clue' : 'Clue'}</span>
+                        </button>
                       )}
-                      title="Flag question to review before final submission"
-                    >
-                      <Bookmark size={18} className={cn("sm:w-5 sm:h-5", flaggedQuestions[currentQ.id] ? "fill-black" : "")} />
-                      <span className="hidden sm:inline">
-                        {flaggedQuestions[currentQ.id] ? 'Flagged' : 'Flag'}
-                      </span>
-                    </button>
+
+                      {/* Bookmark / Flag Button */}
+                      <button
+                        onClick={() => toggleFlagQuestion(currentQ.id)}
+                        className={cn(
+                          "p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all flex flex-col items-center gap-1 text-[10px] uppercase font-black tracking-wider cursor-pointer shadow-sm",
+                          flaggedQuestions[currentQ.id]
+                            ? "bg-amber-500 text-black border-amber-400 shadow-amber-500/30"
+                            : "bg-white/10 border-white/15 text-slate-300 hover:text-warning hover:border-warning/40 hover:bg-white/15"
+                        )}
+                        title="Flag question to review before final submission"
+                      >
+                        <Bookmark size={18} className={cn("sm:w-5 sm:h-5", flaggedQuestions[currentQ.id] ? "fill-black" : "")} />
+                        <span className="hidden sm:inline">
+                          {flaggedQuestions[currentQ.id] ? 'Flagged' : 'Flag'}
+                        </span>
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Gentle Study Hint / Clue Banner */}
+                  <AnimatePresence>
+                    {showHint[currentQ.id] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -8, scale: 0.98 }}
+                        transition={{ duration: 0.2 }}
+                        className="bg-amber-500/15 border border-amber-400/40 rounded-2xl p-4 text-amber-200 text-xs sm:text-sm flex items-start gap-3 shadow-lg backdrop-blur-sm"
+                      >
+                        <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                          <Lightbulb size={18} className="fill-amber-400/20 text-amber-300 animate-pulse" />
+                        </div>
+                        <div className="space-y-1 flex-1">
+                          <span className="text-amber-300 font-bold uppercase tracking-wider text-[10px] sm:text-xs block">
+                            💡 Helpful Guided Clue
+                          </span>
+                          <p className="text-amber-100 leading-relaxed">
+                            {currentQ.hint || "Review the reference diagram and look closely at the shape, formula, and labels provided."}
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
                   {/* Question Image / Reference Diagram if available */}
                   {currentQ.image && (

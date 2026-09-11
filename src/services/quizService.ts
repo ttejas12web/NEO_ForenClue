@@ -14,13 +14,13 @@ const ATTEMPTS_COLLECTION = 'quizAttempts';
 export const SAMPLE_QUIZZES: Quiz[] = [
   {
     id: 'practice-bpa-1',
-    title: 'Practice Assessment: Bloodstain Pattern Analysis (BPA)',
-    description: 'Comprehensive 15-question laboratory assessment on Bloodstain Pattern Analysis (BPA) based on SWGSTAIN and OSAC forensic standards. Rigorously tests droplet in-flight fluid dynamics, Balthazard trigonometric impact angle calculations (W/L ratio), 2D area of convergence vs. 3D spatial area of origin, cast-off swing mechanics and minimum blow count (N+1 rule), arterial spurt hemodynamic waveforms, swipe vs. wipe contact transfer mechanisms, peripheral ring skeletonization chronology, substrate roughness and edge scalloping, gunshot forward spatter vs. backspatter mist, void pattern reconstruction, terminal velocity dynamics, and chemiluminescent luminol detection.',
+    title: 'Bloodstain Pattern Identification: 15 Beginner Questions',
+    description: 'Identify bloodstains from 15 original teaching diagrams. Beginner questions on drips, pools, flow, transfer, swipe, wipe, cast-off, voids, direction and blood properties, including two short cases. 15 minutes, 150 points, with explanations and optional study clues.',
     category: 'Bloodstain Pattern Analysis (BPA)',
     isWeeklyChallenge: false,
-    durationMinutes: 20,
+    durationMinutes: 15,
     totalPoints: 150,
-    passingScore: 105,
+    passingScore: 90,
     enrolledUserIds: [],
     createdBy: 'ForenClue Serology & BPA Division',
     createdAt: new Date().toISOString(),
@@ -300,10 +300,16 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
     }
     quiz.isEnrollmentOpen = false;
   } else if (quiz.id === 'practice-bpa-1') {
+    // This authored practice bank is maintained in code. Do not serve stale database questions.
+    // No database records or previous attempts are changed here.
     quiz.isWeeklyChallenge = false;
-    if (!quiz.questions || quiz.questions.length === 0) {
-      quiz.questions = BLOOD_STAIN_QUESTIONS;
-    }
+    quiz.title = 'Bloodstain Pattern Identification: 15 Beginner Questions';
+    quiz.description = 'Identify bloodstains from 15 original teaching diagrams. Beginner questions on drips, pools, flow, transfer, swipe, wipe, cast-off, voids, direction and blood properties, including two short cases. 15 minutes, 150 points, with explanations and optional study clues.';
+    quiz.category = 'Bloodstain Pattern Analysis (BPA)';
+    quiz.durationMinutes = 15;
+    quiz.totalPoints = 150;
+    quiz.passingScore = 90;
+    quiz.questions = BLOOD_STAIN_QUESTIONS;
   }
   return quiz;
 }
@@ -596,7 +602,7 @@ export async function fetchLeaderboard(quiz: Quiz): Promise<LeaderboardEntry[]> 
     // Recalculate score from answers to fix legacy point calculation glitch
     attempts = attempts.map(att => {
       let trueScore = 0;
-      if (att.answers && quiz.questions) {
+      if (att.answers && quiz.questions && (quiz.id !== 'practice-bpa-1' || quiz.questions.some(q => Object.prototype.hasOwnProperty.call(att.answers, q.id)))) {
         quiz.questions.forEach(q => {
           if (att.answers[q.id] !== undefined && att.answers[q.id] === q.correctAnswerIndex) {
             trueScore += q.points || 10;

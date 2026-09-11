@@ -873,3 +873,475 @@ export const VOID_PATTERN_DIAGRAM = svgToDataUri(`
 </svg>
 `);
 
+// 13. Three Main Categories of Bloodstains (Passive, Spatter, Transfer)
+export const PASSIVE_SPATTER_TRANSFER_DIAGRAM = svgToDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%" style="background:#090d16; font-family:system-ui, -apple-system, sans-serif;">
+  <rect width="800" height="480" fill="#090d16" rx="16"/>
+  <rect x="15" y="15" width="770" height="450" fill="none" stroke="#1e293b" stroke-width="1.5" rx="12"/>
+
+  <text x="400" y="45" fill="#f8fafc" font-size="19" font-weight="800" text-anchor="middle" letter-spacing="1">THE 3 BASIC CATEGORIES OF BLOODSTAINS</text>
+  <text x="400" y="68" fill="#94a3b8" font-size="12" text-anchor="middle">Standard Forensic Classification for Beginners</text>
+
+  <!-- 1. Passive Stains (Gravity) -->
+  <g transform="translate(35, 95)">
+    <rect width="225" height="345" fill="#1e293b" rx="12" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect x="12" y="12" width="201" height="28" fill="#38bdf8" fill-opacity="0.2" rx="6"/>
+    <text x="112" y="31" fill="#38bdf8" font-size="12" font-weight="800" text-anchor="middle">1. PASSIVE STAINS</text>
+
+    <rect x="15" y="50" width="195" height="150" fill="#0f172a" rx="8"/>
+    <!-- Drops falling under gravity -->
+    <circle cx="112" cy="75" r="7" fill="#dc2626"/>
+    <path d="M 112,87 L 112,110" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3,2"/>
+    <polygon points="112,116 108,108 116,108" fill="#38bdf8"/>
+    <circle cx="112" cy="145" r="22" fill="#b91c1c" stroke="#ef4444" stroke-width="2"/>
+
+    <text x="112" y="225" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle">Formed by Gravity Alone</text>
+    <text x="112" y="248" fill="#cbd5e1" font-size="11" text-anchor="middle">• Passive Drips</text>
+    <text x="112" y="268" fill="#cbd5e1" font-size="11" text-anchor="middle">• Drip Trails</text>
+    <text x="112" y="288" fill="#cbd5e1" font-size="11" text-anchor="middle">• Blood Pools</text>
+    <text x="112" y="308" fill="#cbd5e1" font-size="11" text-anchor="middle">• Flow Patterns</text>
+    <text x="112" y="330" fill="#38bdf8" font-size="10" font-weight="700" text-anchor="middle">Force = Gravity</text>
+  </g>
+
+  <!-- 2. Spatter Stains (Force/Impact) -->
+  <g transform="translate(285, 95)">
+    <rect width="225" height="345" fill="#1e293b" rx="12" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="12" y="12" width="201" height="28" fill="#f59e0b" fill-opacity="0.2" rx="6"/>
+    <text x="112" y="31" fill="#f59e0b" font-size="12" font-weight="800" text-anchor="middle">2. SPATTER STAINS</text>
+
+    <rect x="15" y="50" width="195" height="150" fill="#0f172a" rx="8"/>
+    <!-- Radiating force spatters -->
+    <circle cx="112" cy="120" r="12" fill="#dc2626"/>
+    <circle cx="65" cy="80" r="5" fill="#ef4444"/>
+    <circle cx="160" cy="75" r="4" fill="#ef4444"/>
+    <circle cx="55" cy="155" r="4" fill="#ef4444"/>
+    <circle cx="165" cy="160" r="6" fill="#ef4444"/>
+    <circle cx="112" cy="65" r="3" fill="#ef4444"/>
+
+    <text x="112" y="225" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle">Formed by Energy / Force</text>
+    <text x="112" y="248" fill="#cbd5e1" font-size="11" text-anchor="middle">• Impact Spatters</text>
+    <text x="112" y="268" fill="#cbd5e1" font-size="11" text-anchor="middle">• Cast-off Arcs</text>
+    <text x="112" y="288" fill="#cbd5e1" font-size="11" text-anchor="middle">• Arterial Spurts</text>
+    <text x="112" y="308" fill="#cbd5e1" font-size="11" text-anchor="middle">• Gunshot Mist</text>
+    <text x="112" y="330" fill="#f59e0b" font-size="10" font-weight="700" text-anchor="middle">Force = Kinetic / Pressure</text>
+  </g>
+
+  <!-- 3. Transfer Stains (Contact) -->
+  <g transform="translate(535, 95)">
+    <rect width="225" height="345" fill="#1e293b" rx="12" stroke="#10b981" stroke-width="1.5"/>
+    <rect x="12" y="12" width="201" height="28" fill="#10b981" fill-opacity="0.2" rx="6"/>
+    <text x="112" y="31" fill="#10b981" font-size="12" font-weight="800" text-anchor="middle">3. TRANSFER STAINS</text>
+
+    <rect x="15" y="50" width="195" height="150" fill="#0f172a" rx="8"/>
+    <!-- Bloody shoe/hand impression -->
+    <path d="M 80,95 C 80,80 145,80 145,95 C 145,120 135,140 135,160 C 135,170 90,170 90,160 C 90,140 80,120 80,95 Z" fill="#991b1b" stroke="#ef4444" stroke-width="1.5"/>
+    <line x1="88" y1="105" x2="137" y2="105" stroke="#0f172a" stroke-width="2"/>
+    <line x1="88" y1="120" x2="137" y2="120" stroke="#0f172a" stroke-width="2"/>
+    <line x1="93" y1="135" x2="132" y2="135" stroke="#0f172a" stroke-width="2"/>
+
+    <text x="112" y="225" fill="#f8fafc" font-size="12" font-weight="700" text-anchor="middle">Physical Contact Surface</text>
+    <text x="112" y="248" fill="#cbd5e1" font-size="11" text-anchor="middle">• Shoe/Hand Prints</text>
+    <text x="112" y="268" fill="#cbd5e1" font-size="11" text-anchor="middle">• Swipe Patterns</text>
+    <text x="112" y="288" fill="#cbd5e1" font-size="11" text-anchor="middle">• Wipe Patterns</text>
+    <text x="112" y="308" fill="#cbd5e1" font-size="11" text-anchor="middle">• Fabric Impressions</text>
+    <text x="112" y="330" fill="#10b981" font-size="10" font-weight="700" text-anchor="middle">Force = Direct Contact</text>
+  </g>
+</svg>
+`);
+
+// 14. Anatomy of a Bloodstain: Parent Stain, Spines, and Satellite Spatter
+export const SATELLITE_AND_SPINE_DIAGRAM = svgToDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%" style="background:#090d16; font-family:system-ui, -apple-system, sans-serif;">
+  <rect width="800" height="480" fill="#090d16" rx="16"/>
+  <rect x="15" y="15" width="770" height="450" fill="none" stroke="#1e293b" stroke-width="1.5" rx="12"/>
+
+  <text x="400" y="45" fill="#f8fafc" font-size="19" font-weight="800" text-anchor="middle" letter-spacing="1">ANATOMY OF A BLOOD DROP IMPACT</text>
+  <text x="400" y="68" fill="#94a3b8" font-size="12" text-anchor="middle">Parent Stain, Spines, and Satellite Spatter</text>
+
+  <g transform="translate(50, 95)">
+    <rect width="700" height="345" fill="#1e293b" rx="12" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Central Drop Graphic -->
+    <g transform="translate(240, 40)">
+      <!-- Central Parent Drop with Spines -->
+      <path d="M 120,40 L 126,80 L 155,50 L 140,90 L 180,85 L 145,115 L 190,135 L 145,145 L 175,180 L 135,165 L 145,210 L 115,175 L 95,215 L 90,170 L 55,195 L 75,150 L 35,140 L 80,120 L 40,90 L 85,90 L 65,55 L 105,80 Z" fill="#991b1b" stroke="#dc2626" stroke-width="2"/>
+      <circle cx="115" cy="125" r="45" fill="#b91c1c"/>
+
+      <!-- Satellite Spatters (Small detached drops) -->
+      <circle cx="18" cy="45" r="5" fill="#ef4444"/>
+      <circle cx="215" cy="40" r="4" fill="#ef4444"/>
+      <circle cx="225" cy="190" r="6" fill="#ef4444"/>
+      <circle cx="195" cy="235" r="3.5" fill="#ef4444"/>
+      <circle cx="25" cy="220" r="5" fill="#ef4444"/>
+      <circle cx="5" cy="120" r="4" fill="#ef4444"/>
+
+      <!-- Callout Labels -->
+      <!-- 1. Parent Stain -->
+      <line x1="115" y1="125" x2="115" y2="280" stroke="#fcd34d" stroke-width="2"/>
+      <circle cx="115" cy="125" r="4" fill="#fcd34d"/>
+      <rect x="40" y="275" width="150" height="28" fill="#0f172a" rx="6" stroke="#fcd34d"/>
+      <text x="115" y="293" fill="#fcd34d" font-size="12" font-weight="800" text-anchor="middle">PARENT STAIN</text>
+
+      <!-- 2. Spine -->
+      <line x1="180" y1="85" x2="250" y2="85" stroke="#38bdf8" stroke-width="2"/>
+      <circle cx="180" cy="85" r="3" fill="#38bdf8"/>
+      <rect x="250" y="70" width="120" height="28" fill="#0f172a" rx="6" stroke="#38bdf8"/>
+      <text x="310" y="88" fill="#38bdf8" font-size="12" font-weight="800" text-anchor="middle">SPINE (Edge Spike)</text>
+
+      <!-- 3. Satellite Spatter -->
+      <line x1="225" y1="190" x2="250" y2="150" stroke="#34d399" stroke-width="2"/>
+      <circle cx="225" cy="190" r="3" fill="#34d399"/>
+      <rect x="250" y="135" width="150" height="28" fill="#0f172a" rx="6" stroke="#34d399"/>
+      <text x="325" y="153" fill="#34d399" font-size="12" font-weight="800" text-anchor="middle">SATELLITE SPATTER</text>
+    </g>
+
+    <!-- Side Explanation Box -->
+    <g transform="translate(25, 30)">
+      <rect width="190" height="285" fill="#0f172a" rx="8" stroke="#334155"/>
+      <text x="95" y="30" fill="#f8fafc" font-size="13" font-weight="800" text-anchor="middle">DEFINITIONS</text>
+      
+      <text x="15" y="65" fill="#fcd34d" font-size="11" font-weight="800">1. Parent Stain:</text>
+      <text x="15" y="85" fill="#cbd5e1" font-size="10">The main bloodstain</text>
+      <text x="15" y="100" fill="#cbd5e1" font-size="10">created by initial impact.</text>
+
+      <text x="15" y="135" fill="#38bdf8" font-size="11" font-weight="800">2. Spines:</text>
+      <text x="15" y="155" fill="#cbd5e1" font-size="10">Pointed edge rays that</text>
+      <text x="15" y="170" fill="#cbd5e1" font-size="10">remain ATTACHED to drop.</text>
+
+      <text x="15" y="205" fill="#34d399" font-size="11" font-weight="800">3. Satellite Spatter:</text>
+      <text x="15" y="225" fill="#cbd5e1" font-size="10">Small DETACHED droplets</text>
+      <text x="15" y="240" fill="#cbd5e1" font-size="10">thrown off upon impact.</text>
+    </g>
+  </g>
+</svg>
+`);
+
+// 15. Spatter Velocity Categories (Low, Medium, High)
+export const VELOCITY_SPATTER_DIAGRAM = svgToDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%" style="background:#090d16; font-family:system-ui, -apple-system, sans-serif;">
+  <rect width="800" height="480" fill="#090d16" rx="16"/>
+  <rect x="15" y="15" width="770" height="450" fill="none" stroke="#1e293b" stroke-width="1.5" rx="12"/>
+
+  <text x="400" y="45" fill="#f8fafc" font-size="19" font-weight="800" text-anchor="middle" letter-spacing="1">SPATTER VELOCITY CLASSIFICATION</text>
+  <text x="400" y="68" fill="#94a3b8" font-size="12" text-anchor="middle">Low vs. Medium vs. High Velocity Impact Spatter</text>
+
+  <!-- Low Velocity Card -->
+  <g transform="translate(35, 95)">
+    <rect width="225" height="345" fill="#1e293b" rx="12" stroke="#38bdf8" stroke-width="1.5"/>
+    <rect x="12" y="12" width="201" height="28" fill="#38bdf8" fill-opacity="0.2" rx="6"/>
+    <text x="112" y="31" fill="#38bdf8" font-size="12" font-weight="800" text-anchor="middle">LOW VELOCITY</text>
+
+    <rect x="15" y="50" width="195" height="130" fill="#0f172a" rx="8"/>
+    <!-- Large drops > 4mm -->
+    <circle cx="70" cy="115" r="24" fill="#b91c1c" stroke="#ef4444" stroke-width="2"/>
+    <circle cx="150" cy="115" r="20" fill="#b91c1c" stroke="#ef4444" stroke-width="2"/>
+
+    <text x="112" y="205" fill="#f8fafc" font-size="13" font-weight="800" text-anchor="middle">Large Size (> 4 mm)</text>
+    <text x="112" y="230" fill="#38bdf8" font-size="11" font-weight="700" text-anchor="middle">Speed: ~5 ft/sec</text>
+    <text x="112" y="260" fill="#cbd5e1" font-size="11" text-anchor="middle">Caused by:</text>
+    <text x="112" y="280" fill="#cbd5e1" font-size="11" text-anchor="middle">• Passive dripping</text>
+    <text x="112" y="300" fill="#cbd5e1" font-size="11" text-anchor="middle">• Gravitational fall</text>
+    <text x="112" y="325" fill="#94a3b8" font-size="10" text-anchor="middle">Minimal force</text>
+  </g>
+
+  <!-- Medium Velocity Card -->
+  <g transform="translate(285, 95)">
+    <rect width="225" height="345" fill="#1e293b" rx="12" stroke="#f59e0b" stroke-width="1.5"/>
+    <rect x="12" y="12" width="201" height="28" fill="#f59e0b" fill-opacity="0.2" rx="6"/>
+    <text x="112" y="31" fill="#f59e0b" font-size="12" font-weight="800" text-anchor="middle">MEDIUM VELOCITY</text>
+
+    <rect x="15" y="50" width="195" height="130" fill="#0f172a" rx="8"/>
+    <!-- Medium drops 1 to 4mm -->
+    <circle cx="60" cy="90" r="7" fill="#dc2626"/>
+    <circle cx="110" cy="80" r="9" fill="#dc2626"/>
+    <circle cx="160" cy="100" r="8" fill="#dc2626"/>
+    <circle cx="85" cy="140" r="6" fill="#dc2626"/>
+    <circle cx="140" cy="145" r="7" fill="#dc2626"/>
+
+    <text x="112" y="205" fill="#f8fafc" font-size="13" font-weight="800" text-anchor="middle">Medium (1 – 4 mm)</text>
+    <text x="112" y="230" fill="#f59e0b" font-size="11" font-weight="700" text-anchor="middle">Speed: 5 – 25 ft/sec</text>
+    <text x="112" y="260" fill="#cbd5e1" font-size="11" text-anchor="middle">Caused by:</text>
+    <text x="112" y="280" fill="#cbd5e1" font-size="11" text-anchor="middle">• Blunt force (bat, fist)</text>
+    <text x="112" y="300" fill="#cbd5e1" font-size="11" text-anchor="middle">• Stabbing impacts</text>
+    <text x="112" y="325" fill="#94a3b8" font-size="10" text-anchor="middle">Moderate mechanical force</text>
+  </g>
+
+  <!-- High Velocity Card -->
+  <g transform="translate(535, 95)">
+    <rect width="225" height="345" fill="#1e293b" rx="12" stroke="#ef4444" stroke-width="1.5"/>
+    <rect x="12" y="12" width="201" height="28" fill="#ef4444" fill-opacity="0.2" rx="6"/>
+    <text x="112" y="31" fill="#ef4444" font-size="12" font-weight="800" text-anchor="middle">HIGH VELOCITY</text>
+
+    <rect x="15" y="50" width="195" height="130" fill="#0f172a" rx="8"/>
+    <!-- Fine mist < 1mm -->
+    <g fill="#ef4444" opacity="0.9">
+      <circle cx="50" cy="80" r="1.5"/><circle cx="70" cy="75" r="1"/><circle cx="90" cy="90" r="1.5"/><circle cx="110" cy="70" r="2"/><circle cx="130" cy="85" r="1"/><circle cx="150" cy="75" r="1.5"/>
+      <circle cx="60" cy="110" r="1"/><circle cx="80" cy="120" r="2"/><circle cx="100" cy="105" r="1.5"/><circle cx="120" cy="125" r="1"/><circle cx="140" cy="110" r="2"/><circle cx="160" cy="120" r="1.5"/>
+      <circle cx="75" cy="145" r="1.5"/><circle cx="95" cy="140" r="1"/><circle cx="115" cy="150" r="2"/><circle cx="135" cy="145" r="1"/>
+    </g>
+
+    <text x="112" y="205" fill="#f8fafc" font-size="13" font-weight="800" text-anchor="middle">Fine Mist (< 1 mm)</text>
+    <text x="112" y="230" fill="#ef4444" font-size="11" font-weight="700" text-anchor="middle">Speed: > 100 ft/sec</text>
+    <text x="112" y="260" fill="#cbd5e1" font-size="11" text-anchor="middle">Caused by:</text>
+    <text x="112" y="280" fill="#cbd5e1" font-size="11" text-anchor="middle">• Gunshots</text>
+    <text x="112" y="300" fill="#cbd5e1" font-size="11" text-anchor="middle">• Explosions / High speed</text>
+    <text x="112" y="325" fill="#94a3b8" font-size="10" text-anchor="middle">High kinetic energy</text>
+  </g>
+</svg>
+`);
+
+// 16. Drip Trail Pattern
+export const DRIP_TRAIL_DIAGRAM = svgToDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%" style="background:#090d16; font-family:system-ui, -apple-system, sans-serif;">
+  <rect width="800" height="480" fill="#090d16" rx="16"/>
+  <rect x="15" y="15" width="770" height="450" fill="none" stroke="#1e293b" stroke-width="1.5" rx="12"/>
+
+  <text x="400" y="45" fill="#f8fafc" font-size="19" font-weight="800" text-anchor="middle" letter-spacing="1">DRIP TRAIL PATTERN &amp; DIRECTION OF MOVEMENT</text>
+  <text x="400" y="68" fill="#94a3b8" font-size="12" text-anchor="middle">Linear Series of Drops Deposited by a Moving Source</text>
+
+  <g transform="translate(50, 95)">
+    <rect width="700" height="345" fill="#1e293b" rx="12" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Floor walkway -->
+    <rect x="30" y="35" width="640" height="180" fill="#0f172a" rx="8" stroke="#334155"/>
+
+    <!-- Direction Arrow -->
+    <line x1="80" y1="70" x2="580" y2="70" stroke="#38bdf8" stroke-width="3" stroke-dasharray="6,4"/>
+    <polygon points="585,70 565,60 565,80" fill="#38bdf8"/>
+    <text x="330" y="60" fill="#38bdf8" font-size="12" font-weight="800" text-anchor="middle">DIRECTION OF PERSON MOVEMENT &rarr;</text>
+
+    <!-- Series of Drops getting faster / elongating slightly -->
+    <!-- Drop 1 (Standing / Slow) -->
+    <circle cx="100" cy="140" r="16" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="100" y="180" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">Drop 1 (Round)</text>
+
+    <!-- Drop 2 (Walking) -->
+    <path d="M 230,132 C 242,132 255,137 265,140 C 255,143 242,148 230,148 Z" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <circle cx="230" cy="140" r="14" fill="#b91c1c"/>
+    <text x="235" y="180" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">Drop 2</text>
+
+    <!-- Drop 3 (Walking faster) -->
+    <path d="M 370,132 C 385,132 405,138 418,140 C 405,142 385,148 370,148 Z" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <circle cx="370" cy="140" r="13" fill="#b91c1c"/>
+    <text x="380" y="180" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">Drop 3 (Oval + Tail)</text>
+
+    <!-- Drop 4 (Jogging) -->
+    <path d="M 520,132 C 540,132 565,138 580,140 C 565,142 540,148 520,148 Z" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <circle cx="520" cy="140" r="12" fill="#b91c1c"/>
+    <circle cx="592" cy="140" r="3" fill="#ef4444"/>
+    <text x="535" y="180" fill="#cbd5e1" font-size="10" font-weight="700" text-anchor="middle">Drop 4 (Elongated)</text>
+
+    <!-- Summary Box -->
+    <g transform="translate(30, 235)">
+      <rect width="640" height="85" fill="#0f172a" rx="8" stroke="#334155"/>
+      <text x="320" y="24" fill="#fbbf24" font-size="13" font-weight="800" text-anchor="middle">KEY FORENSIC TAKEAWAY FOR DRIP TRAILS</text>
+      <text x="320" y="48" fill="#cbd5e1" font-size="11" text-anchor="middle">• Tail points in the forward direction of the walking/running person</text>
+      <text x="320" y="68" fill="#cbd5e1" font-size="11" text-anchor="middle">• Wider distance between drops and greater elongation indicate faster movement</text>
+    </g>
+  </g>
+</svg>
+`);
+
+// 17. Blood Composition (Plasma, RBCs, WBCs, Platelets)
+export const BLOOD_COMPONENTS_DIAGRAM = svgToDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%" style="background:#090d16; font-family:system-ui, -apple-system, sans-serif;">
+  <rect width="800" height="480" fill="#090d16" rx="16"/>
+  <rect x="15" y="15" width="770" height="450" fill="none" stroke="#1e293b" stroke-width="1.5" rx="12"/>
+
+  <text x="400" y="45" fill="#f8fafc" font-size="19" font-weight="800" text-anchor="middle" letter-spacing="1">BASIC BIOLOGICAL COMPOSITION OF HUMAN BLOOD</text>
+  <text x="400" y="68" fill="#94a3b8" font-size="12" text-anchor="middle">The 4 Key Components Tested in Forensic Serology</text>
+
+  <g transform="translate(35, 95)">
+    <!-- 1. Plasma -->
+    <g transform="translate(0, 0)">
+      <rect width="170" height="345" fill="#1e293b" rx="10" stroke="#eab308" stroke-width="1.5"/>
+      <rect x="10" y="10" width="150" height="26" fill="#eab308" fill-opacity="0.2" rx="6"/>
+      <text x="85" y="28" fill="#fde047" font-size="12" font-weight="800" text-anchor="middle">1. PLASMA (55%)</text>
+      
+      <rect x="15" y="45" width="140" height="100" fill="#0f172a" rx="8"/>
+      <rect x="25" y="55" width="120" height="80" fill="#ca8a04" fill-opacity="0.3" rx="6"/>
+      <text x="85" y="100" fill="#fef08a" font-size="11" font-weight="700" text-anchor="middle">Liquid Portion</text>
+
+      <text x="85" y="170" fill="#f8fafc" font-size="11" font-weight="700" text-anchor="middle">Pale Yellow Fluid</text>
+      <text x="85" y="195" fill="#cbd5e1" font-size="10" text-anchor="middle">90% Water</text>
+      <text x="85" y="215" fill="#cbd5e1" font-size="10" text-anchor="middle">Proteins &amp; Salts</text>
+      <text x="85" y="235" fill="#cbd5e1" font-size="10" text-anchor="middle">Nutrients &amp; Hormones</text>
+      <text x="85" y="265" fill="#94a3b8" font-size="9" text-anchor="middle">Transports cells</text>
+    </g>
+
+    <!-- 2. Red Blood Cells -->
+    <g transform="translate(185, 0)">
+      <rect width="170" height="345" fill="#1e293b" rx="10" stroke="#ef4444" stroke-width="1.5"/>
+      <rect x="10" y="10" width="150" height="26" fill="#ef4444" fill-opacity="0.2" rx="6"/>
+      <text x="85" y="28" fill="#fca5a5" font-size="11" font-weight="800" text-anchor="middle">2. RED CELLS (44%)</text>
+
+      <rect x="15" y="45" width="140" height="100" fill="#0f172a" rx="8"/>
+      <circle cx="85" cy="95" r="28" fill="#dc2626" stroke="#f87171" stroke-width="2"/>
+      <ellipse cx="85" cy="95" rx="14" ry="10" fill="#991b1b"/>
+
+      <text x="85" y="170" fill="#f8fafc" font-size="11" font-weight="700" text-anchor="middle">Erythrocytes</text>
+      <text x="85" y="195" fill="#cbd5e1" font-size="10" text-anchor="middle">Contain Hemoglobin</text>
+      <text x="85" y="215" fill="#cbd5e1" font-size="10" text-anchor="middle">Iron (Fe) carries O₂</text>
+      <text x="85" y="235" fill="#f87171" font-size="10" font-weight="700" text-anchor="middle">Reacts with Luminol</text>
+      <text x="85" y="265" fill="#94a3b8" font-size="9" text-anchor="middle">No nucleus in mature cell</text>
+    </g>
+
+    <!-- 3. White Blood Cells -->
+    <g transform="translate(370, 0)">
+      <rect width="170" height="345" fill="#1e293b" rx="10" stroke="#38bdf8" stroke-width="1.5"/>
+      <rect x="10" y="10" width="150" height="26" fill="#38bdf8" fill-opacity="0.2" rx="6"/>
+      <text x="85" y="28" fill="#7dd3fc" font-size="11" font-weight="800" text-anchor="middle">3. WHITE CELLS (&lt;1%)</text>
+
+      <rect x="15" y="45" width="140" height="100" fill="#0f172a" rx="8"/>
+      <circle cx="85" cy="95" r="30" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <!-- Nucleus -->
+      <path d="M 75,85 C 70,95 85,105 95,95 C 100,85 85,75 75,85 Z" fill="#6366f1"/>
+
+      <text x="85" y="170" fill="#f8fafc" font-size="11" font-weight="700" text-anchor="middle">Leukocytes</text>
+      <text x="85" y="195" fill="#38bdf8" font-size="10" font-weight="700" text-anchor="middle">Contain Nuclear DNA</text>
+      <text x="85" y="215" fill="#cbd5e1" font-size="10" text-anchor="middle">Immune Defense</text>
+      <text x="85" y="235" fill="#38bdf8" font-size="10" text-anchor="middle">Used for DNA Profiling</text>
+      <text x="85" y="265" fill="#94a3b8" font-size="9" text-anchor="middle">Source of STR Profiles</text>
+    </g>
+
+    <!-- 4. Platelets -->
+    <g transform="translate(555, 0)">
+      <rect width="170" height="345" fill="#1e293b" rx="10" stroke="#a855f7" stroke-width="1.5"/>
+      <rect x="10" y="10" width="150" height="26" fill="#a855f7" fill-opacity="0.2" rx="6"/>
+      <text x="85" y="28" fill="#d8b4fe" font-size="11" font-weight="800" text-anchor="middle">4. PLATELETS (&lt;1%)</text>
+
+      <rect x="15" y="45" width="140" height="100" fill="#0f172a" rx="8"/>
+      <circle cx="65" cy="85" r="8" fill="#9333ea"/>
+      <circle cx="95" cy="90" r="10" fill="#9333ea"/>
+      <circle cx="80" cy="115" r="7" fill="#9333ea"/>
+      <circle cx="110" cy="110" r="9" fill="#9333ea"/>
+
+      <text x="85" y="170" fill="#f8fafc" font-size="11" font-weight="700" text-anchor="middle">Thrombocytes</text>
+      <text x="85" y="195" fill="#d8b4fe" font-size="10" font-weight="700" text-anchor="middle">Blood Clotting</text>
+      <text x="85" y="215" fill="#cbd5e1" font-size="10" text-anchor="middle">Forms Fibrin Clots</text>
+      <text x="85" y="235" fill="#cbd5e1" font-size="10" text-anchor="middle">Clots in 3 – 15 mins</text>
+      <text x="85" y="265" fill="#94a3b8" font-size="9" text-anchor="middle">Stops bleeding</text>
+    </g>
+  </g>
+</svg>
+`);
+
+// 18. Case Study 1: Living Room Void Pattern Investigation
+export const CASE_VOID_SCENARIO_DIAGRAM = svgToDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%" style="background:#090d16; font-family:system-ui, -apple-system, sans-serif;">
+  <rect width="800" height="480" fill="#090d16" rx="16"/>
+  <rect x="15" y="15" width="770" height="450" fill="none" stroke="#1e293b" stroke-width="1.5" rx="12"/>
+
+  <!-- Header -->
+  <text x="400" y="42" fill="#fcd34d" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="2">CASE STUDY SCENARIO 1: CRIME SCENE RECONSTRUCTION</text>
+  <text x="400" y="66" fill="#f8fafc" font-size="18" font-weight="800" text-anchor="middle">The Missing Living Room Object Investigation</text>
+
+  <g transform="translate(40, 85)">
+    <rect width="720" height="360" fill="#1e293b" rx="12" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Room Wall -->
+    <rect x="25" y="25" width="460" height="310" fill="#0f172a" rx="8" stroke="#475569"/>
+
+    <!-- Spatter on wall surrounding the void -->
+    <!-- Radiating spatters -->
+    <g fill="#dc2626" opacity="0.85">
+      <!-- Top and sides spatter -->
+      <circle cx="70" cy="60" r="6"/><circle cx="110" cy="50" r="4"/><circle cx="160" cy="70" r="5"/><circle cx="210" cy="45" r="7"/><circle cx="270" cy="55" r="4"/><circle cx="330" cy="45" r="6"/><circle cx="390" cy="65" r="5"/><circle cx="440" cy="55" r="7"/>
+      <circle cx="50" cy="110" r="8"/><circle cx="75" cy="150" r="5"/><circle cx="55" cy="200" r="7"/><circle cx="70" cy="260" r="6"/><circle cx="50" cy="300" r="5"/>
+      <circle cx="430" cy="120" r="6"/><circle cx="450" cy="180" r="7"/><circle cx="435" cy="230" r="5"/><circle cx="455" cy="280" r="8"/>
+      <circle cx="130" cy="310" r="7"/><circle cx="220" cy="315" r="5"/><circle cx="320" cy="310" r="6"/><circle cx="380" cy="315" r="8"/>
+    </g>
+
+    <!-- The Sharp Rectangular Blank Void -->
+    <rect x="110" y="90" width="290" height="190" fill="#090d16" stroke="#fbbf24" stroke-width="2" stroke-dasharray="6,4" rx="4"/>
+    <text x="255" y="175" fill="#fbbf24" font-size="15" font-weight="800" text-anchor="middle">CLEAN UNSTAINED VOID</text>
+    <text x="255" y="200" fill="#94a3b8" font-size="12" text-anchor="middle">(Missing TV / Object Silhouette)</text>
+
+    <!-- Observation Side Card -->
+    <g transform="translate(505, 25)">
+      <rect width="190" height="310" fill="#0f172a" rx="8" stroke="#334155"/>
+      <rect x="10" y="10" width="170" height="26" fill="#f59e0b" fill-opacity="0.2" rx="4"/>
+      <text x="95" y="28" fill="#fcd34d" font-size="11" font-weight="800" text-anchor="middle">INVESTIGATOR LOG</text>
+
+      <text x="12" y="60" fill="#f8fafc" font-size="11" font-weight="700">Scene Finding:</text>
+      <text x="12" y="80" fill="#cbd5e1" font-size="10">• Blood spatter on wall</text>
+      <text x="12" y="98" fill="#cbd5e1" font-size="10">• Sharp rectangular</text>
+      <text x="12" y="114" fill="#cbd5e1" font-size="10">  blank silhouette</text>
+      <text x="12" y="132" fill="#cbd5e1" font-size="10">• No TV found in room</text>
+
+      <line x1="10" y1="150" x2="180" y2="150" stroke="#334155"/>
+
+      <text x="12" y="175" fill="#38bdf8" font-size="11" font-weight="700">Forensic Deduction:</text>
+      <text x="12" y="195" fill="#cbd5e1" font-size="10">An object was mounted</text>
+      <text x="12" y="210" fill="#cbd5e1" font-size="10">here during the impact</text>
+      <text x="12" y="225" fill="#cbd5e1" font-size="10">blocking the blood, and</text>
+      <text x="12" y="240" fill="#cbd5e1" font-size="10">was removed afterward.</text>
+
+      <rect x="10" y="265" width="170" height="32" fill="#1e293b" rx="6" stroke="#fbbf24"/>
+      <text x="95" y="286" fill="#fbbf24" font-size="11" font-weight="800" text-anchor="middle">Pattern: VOID PATTERN</text>
+    </g>
+  </g>
+</svg>
+`);
+
+// 19. Case Study 2: Hallway Escape Drip Trail Investigation
+export const CASE_DRIP_TRAIL_SCENARIO_DIAGRAM = svgToDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 480" width="100%" height="100%" style="background:#090d16; font-family:system-ui, -apple-system, sans-serif;">
+  <rect width="800" height="480" fill="#090d16" rx="16"/>
+  <rect x="15" y="15" width="770" height="450" fill="none" stroke="#1e293b" stroke-width="1.5" rx="12"/>
+
+  <!-- Header -->
+  <text x="400" y="42" fill="#38bdf8" font-size="13" font-weight="800" text-anchor="middle" letter-spacing="2">CASE STUDY SCENARIO 2: CRIME SCENE RECONSTRUCTION</text>
+  <text x="400" y="66" fill="#f8fafc" font-size="18" font-weight="800" text-anchor="middle">Hallway Escape Route &amp; Droplet Directionality</text>
+
+  <g transform="translate(40, 85)">
+    <rect width="720" height="360" fill="#1e293b" rx="12" stroke="#334155" stroke-width="1.5"/>
+
+    <!-- Floor corridor -->
+    <rect x="25" y="25" width="670" height="200" fill="#0f172a" rx="8" stroke="#334155"/>
+
+    <!-- Corridor markers -->
+    <rect x="35" y="35" width="110" height="30" fill="#1e293b" rx="6" stroke="#64748b"/>
+    <text x="90" y="55" fill="#94a3b8" font-size="11" font-weight="700" text-anchor="middle">🚪 Bedroom Door</text>
+
+    <rect x="575" y="35" width="110" height="30" fill="#1e293b" rx="6" stroke="#38bdf8"/>
+    <text x="630" y="55" fill="#38bdf8" font-size="11" font-weight="700" text-anchor="middle">🚪 Backdoor Exit</text>
+
+    <!-- Direction Arrow -->
+    <line x1="170" y1="50" x2="550" y2="50" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6,4"/>
+    <polygon points="555,50 540,44 540,56" fill="#38bdf8"/>
+    <text x="360" y="42" fill="#38bdf8" font-size="11" font-weight="800" text-anchor="middle">ESCAPE DIRECTION &rarr;</text>
+
+    <!-- Droplet sequence along the hallway floor -->
+    <!-- Drop 1 -->
+    <circle cx="120" cy="140" r="15" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <text x="120" y="180" fill="#cbd5e1" font-size="10" text-anchor="middle">Drop 1 (Origin)</text>
+
+    <!-- Drop 2 -->
+    <path d="M 240,132 C 255,132 270,137 282,140 C 270,143 255,148 240,148 Z" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <circle cx="240" cy="140" r="14" fill="#b91c1c"/>
+    <text x="250" y="180" fill="#cbd5e1" font-size="10" text-anchor="middle">Drop 2 (Walking)</text>
+
+    <!-- Drop 3 -->
+    <path d="M 390,132 C 410,132 435,138 450,140 C 435,142 410,148 390,148 Z" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <circle cx="390" cy="140" r="13" fill="#b91c1c"/>
+    <text x="410" y="180" fill="#cbd5e1" font-size="10" text-anchor="middle">Drop 3 (Jogging)</text>
+
+    <!-- Drop 4 -->
+    <path d="M 540,132 C 565,132 595,138 615,140 C 595,142 565,148 540,148 Z" fill="#b91c1c" stroke="#ef4444" stroke-width="1.5"/>
+    <circle cx="540" cy="140" r="12" fill="#b91c1c"/>
+    <circle cx="625" cy="140" r="3" fill="#ef4444"/>
+    <text x="560" y="180" fill="#cbd5e1" font-size="10" text-anchor="middle">Drop 4 (Running)</text>
+
+    <!-- Analysis Card at Bottom -->
+    <g transform="translate(25, 240)">
+      <rect width="670" height="95" fill="#0f172a" rx="8" stroke="#334155"/>
+      <text x="335" y="26" fill="#38bdf8" font-size="12" font-weight="800" text-anchor="middle">CASE RECONSTRUCTION CONCLUSION</text>
+      <text x="335" y="52" fill="#f8fafc" font-size="11" text-anchor="middle">1. Pattern Identified: <tspan fill="#fcd34d" font-weight="bold">DRIP TRAIL (Passive Walking Drops)</tspan></text>
+      <text x="335" y="74" fill="#cbd5e1" font-size="11" text-anchor="middle">2. Direction: The pointed droplet tails point toward the <tspan fill="#34d399" font-weight="bold">Backdoor Exit</tspan>, proving the bleeding person fled outside.</text>
+    </g>
+  </g>
+</svg>
+`);
+
+
