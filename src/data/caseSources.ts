@@ -4,6 +4,16 @@ export interface CaseSource {
 }
 
 const CASE_SOURCES_BY_TITLE: Record<string, CaseSource[]> = {
+  'burari deaths (2018)': [
+  {
+    "title": "NDTV / PTI (14 September 2018): psychological autopsy findings",
+    "url": "https://www.ndtv.com/delhi-news/delhis-burari-deaths-not-suicide-but-an-accident-psychological-autopsy-report-1916739"
+  },
+  {
+    "title": "Times of India (21 October 2021): police closure report",
+    "url": "https://timesofindia.indiatimes.com/city/delhi/burari-deaths-police-closure-report-mentions-no-foul-play/articleshow/87169901.cms"
+  }
+],
   'priyadarshini mattoo case': [
     {
       title: 'Supreme Court judgment: Santosh Kumar Singh v. State through CBI',

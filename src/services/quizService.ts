@@ -36,9 +36,9 @@ export const SAMPLE_QUIZZES: Quiz[] = [
     description: 'Comprehensive 30-question forensic assessment on Cheiloscopy (lip print analysis) based on scientific classification systems (Suzuki & Tsuchihashi, Martin Santos, Renaud), anatomical morphology of sulci labiorum, latent print development with lysochrome dyes, identical twin studies, chemical lipstick chromatography, and judicial admissibility standards.',
     category: 'Forensic Odontology & Biometrics',
     isWeeklyChallenge: true,
-    scheduledStartTime: new Date(Date.now() - 3600000).toISOString(), // Started 1 hour ago (Live)
-    scheduledEndTime: new Date(Date.now() + 86400000 * 7).toISOString(), // Active for 7 days
-    durationMinutes: 25,
+    scheduledStartTime: new Date(Date.now() - 300000).toISOString(), // Started 5 minutes ago (Live)
+    scheduledEndTime: new Date(Date.now() + 30 * 60000).toISOString(), // 35 minutes total duration
+    durationMinutes: 35,
     totalPoints: 300,
     passingScore: 210,
     enrolledUserIds: [],
@@ -275,10 +275,12 @@ export function isWeeklyChallengeExpired(quiz: Quiz): boolean {
 // Helper to force sample challenges to have scheduled times if missing
 function applyQuizOverrides(quiz: Quiz): Quiz {
   if (quiz.id === 'weekly-challenge-cheiloscopy') {
-    if (!quiz.scheduledStartTime || !quiz.scheduledEndTime) {
-      quiz.scheduledStartTime = new Date(Date.now() - 3600000).toISOString();
-      quiz.scheduledEndTime = new Date(Date.now() + 86400000 * 7).toISOString();
+    quiz.durationMinutes = 35;
+    if (!quiz.scheduledStartTime) {
+      quiz.scheduledStartTime = new Date(Date.now() - 300000).toISOString();
     }
+    const startMs = new Date(quiz.scheduledStartTime).getTime();
+    quiz.scheduledEndTime = new Date(startMs + 35 * 60000).toISOString();
     quiz.isEnrollmentOpen = true;
     quiz.isWeeklyChallenge = true;
   } else if (quiz.id === 'weekly-challenge-1') {

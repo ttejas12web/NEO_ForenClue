@@ -32,7 +32,7 @@ interface CaseFile {
   year: string;
   location: string;
   difficulty: "Beginner" | "Advanced" | "Expert" | "Scientific" | "Historical";
-  type: "Homicide" | "Cyber" | "Theft" | "Forgery" | "Cold Case";
+  type: "Homicide" | "Cyber" | "Theft" | "Forgery" | "Cold Case" | "Death Investigation";
   image: string;
   socialImage?: string;
   summary: string;
@@ -402,7 +402,7 @@ export default function Cases() {
               </div>
               <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                 <Filter size={14} className="text-warning shrink-0" />
-                {['All', 'Homicide', 'Cold Case', 'Cyber'].map(t => (
+                {['All', 'Homicide', 'Cold Case', 'Cyber', 'Death Investigation'].map(t => (
                   <button 
                     key={t}
                     onClick={() => setFilterType(t)}
@@ -562,7 +562,7 @@ export default function Cases() {
               </div>
               <div className="p-3 sm:p-4 bg-black/5 dark:bg-white/5 rounded-xl sm:rounded-2xl text-center border border-black/10 dark:border-white/5">
                 <Target size={16} className="mx-auto text-warning mb-2" />
-                <span className="text-[10px] sm:text-[11px] font-black uppercase text-text-muted block mb-1">Verified</span>
+                <span className="text-[10px] sm:text-[11px] font-black uppercase text-text-muted block mb-1">Category</span>
                 <span className="text-xs sm:text-sm font-black uppercase block text-text-main">{selectedCase.type}</span>
               </div>
             </div>
@@ -575,7 +575,7 @@ export default function Cases() {
               <div className="bg-surface border border-black/10 dark:border-white/5 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8">
                 <div className="md:col-span-1">
                   <div className="aspect-video sm:aspect-square md:aspect-video rounded-2xl overflow-hidden border border-black/10 dark:border-white/10 bg-black bg-opacity-40 h-full">
-                    <ResilientImage src={selectedCase.image} className="w-full h-full object-cover grayscale opacity-85 hover:opacity-100 hover:grayscale-0 transition-all duration-500" alt={`Primary evidence for criminal case: ${selectedCase.title}`} />
+                    <ResilientImage src={selectedCase.image} className="w-full h-full object-cover grayscale opacity-85 hover:opacity-100 hover:grayscale-0 transition-all duration-500" alt={`Case study visual: ${selectedCase.title}`} />
                   </div>
                 </div>
 
@@ -763,7 +763,7 @@ export default function Cases() {
                     <div className="mt-16 pt-12 border-t border-black/10 dark:border-white/5">
                       <div className="mb-6">
                         <span className="text-[10px] font-black uppercase tracking-wider text-warning flex items-center gap-1.5 mb-1 bg-warning/5 px-2.5 py-1 rounded w-fit">
-                          <Box size={12} className="text-warning" /> Scientific Exhibits Locker
+                          <Box size={12} className="text-warning" /> {selectedCase.type === 'Death Investigation' ? 'Educational Illustrations' : 'Scientific Exhibits Locker'}
                         </span>
                         <h3 className={`text-xl font-black uppercase tracking-tight m-0 ${
                           readingTheme === 'slate' ? 'text-text-main' : readingTheme === 'sepia' ? 'text-[#2b190f]' : 'text-black'

@@ -6,6 +6,7 @@ import { doc, setDoc, addDoc, collection, serverTimestamp } from 'firebase/fires
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { uploadFileResilient } from '@/lib/localFileStore';
 import { createSocialPreviewImage } from '@/lib/image-utils';
+import { getCuratedCaseSources, hasValidCaseSources } from '@/data/caseSources';
 
 // Converts a single Google Drive sharing URL to a direct viewable image link
 export function convertGDriveUrl(url: string | null | undefined): string {
@@ -204,6 +205,7 @@ export function CaseEditorModal({ onClose, caseToEdit, userEmail }: CaseEditorMo
       const caseData = {
         ...formData,
         details: convertedDetails,
+        sources: hasValidCaseSources(caseToEdit?.sources) ? caseToEdit.sources : getCuratedCaseSources(formData.title),
         evidenceLabels: formData.evidenceLabels.split(',').map((s: string) => s.trim()).filter(Boolean),
         forensicTechniques: formData.forensicTechniques.split(',').map((s: string) => s.trim()).filter(Boolean),
         image: mainImageUrl || 'https://images.unsplash.com/photo-1542382257-80dedb725088?auto=format&fit=crop&q=80&w=1000',
@@ -290,6 +292,7 @@ export function CaseEditorModal({ onClose, caseToEdit, userEmail }: CaseEditorMo
                 <option>Theft</option>
                 <option>Forgery</option>
                 <option>Cold Case</option>
+                <option>Death Investigation</option>
               </select>
             </div>
             <div>

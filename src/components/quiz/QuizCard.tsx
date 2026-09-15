@@ -52,7 +52,11 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
         const hours = Math.floor(diff / (1000 * 60 * 60));
         const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const secs = Math.floor((diff % (1000 * 60)) / 1000);
-        setTimeLeft(`Ends in ${hours}h ${mins}m ${secs}s`);
+        if (hours > 0) {
+          setTimeLeft(`Ends in ${hours}h ${mins}m ${secs}s`);
+        } else {
+          setTimeLeft(`Ends in ${mins}m ${secs}s`);
+        }
       } else {
         setStatus('ENDED');
         setTimeLeft('Ended');
