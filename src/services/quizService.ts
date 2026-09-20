@@ -1,14 +1,15 @@
 import { db, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { 
   collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, 
-  query, where, orderBy, limit, arrayUnion, setDoc 
+  query, where, orderBy, limit, arrayUnion, arrayRemove, setDoc 
 } from 'firebase/firestore';
-import { Quiz, QuizAttempt, LeaderboardEntry } from '@/types/quiz';
+import { Quiz, QuizAttempt, LeaderboardEntry, QuizRegistration, EnrolledParticipant } from '@/types/quiz';
 import { CHEILOSCOPY_QUESTIONS } from '@/data/cheiloscopyQuestions';
 import { BLOOD_STAIN_QUESTIONS } from '@/data/bloodStainQuestions';
 
 const QUIZZES_COLLECTION = 'quizzes';
 const ATTEMPTS_COLLECTION = 'quizAttempts';
+const REGISTRATIONS_COLLECTION = 'quizRegistrations';
 
 // Initial sample quizzes for seed fallback
 export const SAMPLE_QUIZZES: Quiz[] = [
@@ -316,15 +317,26 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
   return quiz;
 }
 
-// Fetch all Quizzes
+// Fetch all Quizzes (Public - only published)
 export async function fetchQuizzes(): Promise<Quiz[]> {
+  try {
+    const all = await fetchAdminQuizzes();
+    return all.filter(q => q.status !== 'draft');
+  } catch (err) {
+    handleFirestoreError(err, OperationType.GET, QUIZZES_COLLECTION);
+    return SAMPLE_QUIZZES.map(applyQuizOverrides).filter(q => q.status !== 'draft');
+  }
+}
+
+// Fetch all Quizzes for Admin (includes both drafts and published)
+export async function fetchAdminQuizzes(): Promise<Quiz[]> {
   try {
     const qSnap = await getDocs(collection(db, QUIZZES_COLLECTION));
     if (qSnap.empty) {
       // Seed initial sample quizzes if DB is empty
       console.log("Seeding sample quizzes into Firestore...");
       for (const quiz of SAMPLE_QUIZZES) {
-        await setDoc(doc(db, QUIZZES_COLLECTION, quiz.id), quiz);
+        await setDoc(doc(db, QUIZZES_COLLECTION, quiz.id), { ...quiz, status: quiz.status || 'published' });
       }
       return SAMPLE_QUIZZES.map(applyQuizOverrides);
     }
@@ -345,9 +357,9 @@ export async function fetchQuizzes(): Promise<Quiz[]> {
     // Ensure built-in challenges (like Cheiloscopy) are included if not yet in Firestore
     for (const sample of SAMPLE_QUIZZES) {
       if (!dbQuizIds.has(sample.id)) {
-        quizzes.unshift(applyQuizOverrides(sample));
+        quizzes.unshift(applyQuizOverrides({ ...sample, status: sample.status || 'published' }));
         // Non-blocking sync to Firestore
-        setDoc(doc(db, QUIZZES_COLLECTION, sample.id), sample).catch(e => {
+        setDoc(doc(db, QUIZZES_COLLECTION, sample.id), { ...sample, status: sample.status || 'published' }).catch(e => {
           console.warn("Could not sync sample quiz to Firestore:", e);
         });
       }
@@ -479,6 +491,19 @@ export async function submitQuizAttempt(attempt: QuizAttempt): Promise<string> {
   // 3. Save to Firestore attempts collection
   try {
     const docRef = await addDoc(collection(db, ATTEMPTS_COLLECTION), attemptWithTime);
+
+    // Also auto-ensure user is in quiz.enrolledUserIds
+    if (attempt.quizId && attempt.userId) {
+      try {
+        const quizRef = doc(db, QUIZZES_COLLECTION, attempt.quizId);
+        await updateDoc(quizRef, {
+          enrolledUserIds: arrayUnion(attempt.userId)
+        });
+      } catch (e) {
+        // Non-blocking if sample quiz
+      }
+    }
+
     return docRef.id;
   } catch (err) {
     handleFirestoreError(err, OperationType.CREATE, ATTEMPTS_COLLECTION);
@@ -644,19 +669,37 @@ export async function fetchLeaderboard(quiz: Quiz): Promise<LeaderboardEntry[]> 
 // Admin API: Save or Update Quiz
 export async function saveQuiz(quiz: Partial<Quiz>): Promise<string> {
   try {
+    const dataToSave = {
+      ...quiz,
+      status: quiz.status || 'published'
+    };
     if (quiz.id) {
       const docRef = doc(db, QUIZZES_COLLECTION, quiz.id);
-      await setDoc(docRef, { ...quiz, updatedAt: new Date().toISOString() }, { merge: true });
+      await setDoc(docRef, { ...dataToSave, updatedAt: new Date().toISOString() }, { merge: true });
       return quiz.id;
     } else {
       const docRef = await addDoc(collection(db, QUIZZES_COLLECTION), {
-        ...quiz,
+        ...dataToSave,
         createdAt: new Date().toISOString()
       });
       return docRef.id;
     }
   } catch (err) {
     handleFirestoreError(err, OperationType.WRITE, QUIZZES_COLLECTION);
+    throw err;
+  }
+}
+
+// Admin API: Quick Update Quiz Status (draft <-> published)
+export async function updateQuizStatus(quizId: string, status: 'draft' | 'published'): Promise<void> {
+  try {
+    const docRef = doc(db, QUIZZES_COLLECTION, quizId);
+    await updateDoc(docRef, {
+      status,
+      updatedAt: new Date().toISOString()
+    });
+  } catch (err) {
+    handleFirestoreError(err, OperationType.UPDATE, `${QUIZZES_COLLECTION}/${quizId}`);
     throw err;
   }
 }
@@ -669,3 +712,282 @@ export async function deleteQuiz(quizId: string): Promise<void> {
     handleFirestoreError(err, OperationType.DELETE, `${QUIZZES_COLLECTION}/${quizId}`);
   }
 }
+
+// Submit Paid Quiz Registration with 12-digit UTR
+export async function submitQuizRegistration(registration: Omit<QuizRegistration, 'id' | 'createdAt' | 'status'>): Promise<string> {
+  try {
+    // 1. Check for duplicate UTR usage across all registrations
+    const utrTrimmed = registration.utrNumber.trim();
+    const duplicateQuery = query(
+      collection(db, REGISTRATIONS_COLLECTION),
+      where('utrNumber', '==', utrTrimmed)
+    );
+    const dupSnap = await getDocs(duplicateQuery);
+    if (!dupSnap.empty) {
+      // Check if it belongs to a different user
+      const existing = dupSnap.docs[0].data() as QuizRegistration;
+      if (existing.userId !== registration.userId) {
+        throw new Error('This UTR / Reference number has already been submitted by another user.');
+      }
+    }
+
+    // 2. Check if user already submitted for this specific quiz
+    const userRegQuery = query(
+      collection(db, REGISTRATIONS_COLLECTION),
+      where('quizId', '==', registration.quizId),
+      where('userId', '==', registration.userId)
+    );
+    const userRegSnap = await getDocs(userRegQuery);
+    if (!userRegSnap.empty) {
+      const existingDoc = userRegSnap.docs[0];
+      const existingData = existingDoc.data() as QuizRegistration;
+      if (existingData.status === 'approved') {
+        throw new Error('Your registration for this challenge has already been approved!');
+      }
+      // If previously rejected or pending, update with new UTR
+      await updateDoc(doc(db, REGISTRATIONS_COLLECTION, existingDoc.id), {
+        utrNumber: utrTrimmed,
+        senderName: registration.senderName || '',
+        status: 'pending',
+        amount: registration.amount,
+        createdAt: new Date().toISOString(),
+        rejectReason: ''
+      });
+      return existingDoc.id;
+    }
+
+    // 3. Create fresh registration document
+    const newDoc = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
+      ...registration,
+      utrNumber: utrTrimmed,
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    });
+    return newDoc.id;
+  } catch (err: any) {
+    console.error('Error submitting quiz registration:', err);
+    throw err;
+  }
+}
+
+// Fetch user registration for a quiz
+export async function getUserQuizRegistration(quizId: string, userId: string): Promise<QuizRegistration | null> {
+  try {
+    const q = query(
+      collection(db, REGISTRATIONS_COLLECTION),
+      where('quizId', '==', quizId),
+      where('userId', '==', userId)
+    );
+    const snap = await getDocs(q);
+    if (snap.empty) return null;
+    return { id: snap.docs[0].id, ...snap.docs[0].data() } as QuizRegistration;
+  } catch (err) {
+    console.warn('Could not fetch user quiz registration:', err);
+    return null;
+  }
+}
+
+// Fetch all registrations (Admin)
+export async function fetchQuizRegistrations(quizId?: string): Promise<QuizRegistration[]> {
+  try {
+    const regRef = collection(db, REGISTRATIONS_COLLECTION);
+    let q = query(regRef);
+    if (quizId) {
+      q = query(regRef, where('quizId', '==', quizId));
+    }
+    const snap = await getDocs(q);
+    const list: QuizRegistration[] = [];
+    snap.forEach(docSnap => {
+      list.push({ id: docSnap.id, ...docSnap.data() } as QuizRegistration);
+    });
+    list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return list;
+  } catch (err) {
+    console.warn('Could not fetch quiz registrations:', err);
+    return [];
+  }
+}
+
+// Admin: Approve Registration (Adds candidate to quiz.enrolledUserIds)
+export async function approveQuizRegistration(registrationId: string, quizId: string, userId: string, reviewerName: string = 'Admin'): Promise<void> {
+  try {
+    // 1. Mark registration approved
+    const regRef = doc(db, REGISTRATIONS_COLLECTION, registrationId);
+    await updateDoc(regRef, {
+      status: 'approved',
+      reviewedAt: new Date().toISOString(),
+      reviewedBy: reviewerName
+    });
+
+    // 2. Add user to quiz enrolledUserIds
+    const quizRef = doc(db, QUIZZES_COLLECTION, quizId);
+    await updateDoc(quizRef, {
+      enrolledUserIds: arrayUnion(userId)
+    });
+  } catch (err: any) {
+    handleFirestoreError(err, OperationType.UPDATE, `${REGISTRATIONS_COLLECTION}/${registrationId}`);
+    throw err;
+  }
+}
+
+// Admin: Reject Registration
+export async function rejectQuizRegistration(registrationId: string, reason: string = 'UTR verification failed', reviewerName: string = 'Admin'): Promise<void> {
+  try {
+    const regRef = doc(db, REGISTRATIONS_COLLECTION, registrationId);
+    await updateDoc(regRef, {
+      status: 'rejected',
+      rejectReason: reason,
+      reviewedAt: new Date().toISOString(),
+      reviewedBy: reviewerName
+    });
+  } catch (err: any) {
+    handleFirestoreError(err, OperationType.UPDATE, `${REGISTRATIONS_COLLECTION}/${registrationId}`);
+    throw err;
+  }
+}
+
+// Admin API: Unenroll a user from a quiz
+export async function unenrollUserFromQuiz(quizId: string, userId: string): Promise<boolean> {
+  try {
+    const quizRef = doc(db, QUIZZES_COLLECTION, quizId);
+    await updateDoc(quizRef, {
+      enrolledUserIds: arrayRemove(userId)
+    });
+    return true;
+  } catch (err) {
+    console.error("Error unenrolling user:", err);
+    return false;
+  }
+}
+
+// Admin API: Fetch all enrolled participants for a published quiz or quiz challenge
+export async function fetchEnrolledParticipantsForQuiz(quiz: Quiz): Promise<EnrolledParticipant[]> {
+  try {
+    const quizId = quiz.id;
+
+    // 1. Fetch Registrations for this quiz (paid challenges, UTR submissions)
+    let registrations: QuizRegistration[] = [];
+    try {
+      const regRef = collection(db, REGISTRATIONS_COLLECTION);
+      const regSnap = await getDocs(query(regRef, where('quizId', '==', quizId)));
+      regSnap.forEach(d => {
+        registrations.push({ id: d.id, ...d.data() } as QuizRegistration);
+      });
+    } catch (e) {
+      console.warn("Could not fetch quiz registrations:", e);
+    }
+
+    // 2. Fetch Attempts for this quiz (candidate scores, times, completions)
+    let attempts: QuizAttempt[] = [];
+    try {
+      const attemptsRef = collection(db, ATTEMPTS_COLLECTION);
+      const attSnap = await getDocs(query(attemptsRef, where('quizId', '==', quizId)));
+      attSnap.forEach(d => {
+        attempts.push({ id: d.id, ...d.data() } as QuizAttempt);
+      });
+    } catch (e) {
+      console.warn("Could not fetch quiz attempts:", e);
+    }
+
+    // Map registrations by userId
+    const regByUserId = new Map<string, QuizRegistration>();
+    registrations.forEach(r => {
+      const existing = regByUserId.get(r.userId);
+      if (!existing || (r.status === 'approved' && existing.status !== 'approved') || new Date(r.createdAt).getTime() > new Date(existing.createdAt).getTime()) {
+        regByUserId.set(r.userId, r);
+      }
+    });
+
+    // Map best attempts by userId
+    const attemptByUserId = new Map<string, QuizAttempt>();
+    attempts.forEach(a => {
+      const existing = attemptByUserId.get(a.userId);
+      if (!existing || a.score > existing.score || (a.score === existing.score && a.timeTakenSeconds < existing.timeTakenSeconds)) {
+        attemptByUserId.set(a.userId, a);
+      }
+    });
+
+    // Gather all candidate IDs from enrolledUserIds, registrations, and attempts
+    const allUserIds = new Set<string>();
+    (quiz.enrolledUserIds || []).forEach(uid => {
+      if (uid) allUserIds.add(uid);
+    });
+    registrations.forEach(r => {
+      if (r.userId) allUserIds.add(r.userId);
+    });
+    attempts.forEach(a => {
+      if (a.userId) allUserIds.add(a.userId);
+    });
+
+    if (allUserIds.size === 0) {
+      return [];
+    }
+
+    // Fetch user profiles for all candidate IDs
+    const userDocPromises = Array.from(allUserIds).map(async (uid) => {
+      let profile: any = null;
+      try {
+        const uSnap = await getDoc(doc(db, 'users', uid));
+        if (uSnap.exists()) {
+          profile = uSnap.data();
+        }
+      } catch (e) {
+        // user document may not exist or offline
+      }
+
+      const reg = regByUserId.get(uid);
+      const att = attemptByUserId.get(uid);
+
+      const name = profile?.displayName || profile?.name || att?.userName || reg?.userName || reg?.senderName || 'Candidate';
+      const email = profile?.email || att?.userEmail || reg?.userEmail || (uid.includes('@') ? uid : 'N/A');
+      const photo = profile?.photoURL || profile?.avatar || att?.userPhoto || '';
+      const college = profile?.college || profile?.university || 'Forensic Science Aspirant';
+
+      const isPaid = quiz.isPaid || Boolean(reg);
+      const regStatus = reg?.status || (quiz.enrolledUserIds?.includes(uid) ? 'approved' : 'approved');
+      const enrolledAt = reg?.createdAt || att?.completedAt || profile?.createdAt || quiz.createdAt || new Date().toISOString();
+
+      const participant: EnrolledParticipant = {
+        userId: uid,
+        userName: name,
+        userEmail: email,
+        userPhoto: photo,
+        college: college,
+        enrolledAt: enrolledAt,
+        enrollmentType: isPaid ? 'paid' : 'free',
+        registrationStatus: regStatus,
+        utrNumber: reg?.utrNumber,
+        amountPaid: reg?.amount || (isPaid ? (quiz.price || 49) : 0),
+        hasAttempted: Boolean(att),
+        score: att?.score,
+        totalPoints: att?.totalPoints || quiz.totalPoints,
+        timeTakenSeconds: att?.timeTakenSeconds,
+        completedAt: att?.completedAt,
+        isPractice: att?.isPractice,
+        accuracyPercentage: att ? Math.round((att.score / (att.totalPoints || quiz.totalPoints || 100)) * 100) : undefined
+      };
+
+      return participant;
+    });
+
+    const participants = await Promise.all(userDocPromises);
+
+    // Sort: Attempted candidates first (by score DESC), then by enrollment time DESC
+    participants.sort((a, b) => {
+      if (a.hasAttempted && !b.hasAttempted) return -1;
+      if (!a.hasAttempted && b.hasAttempted) return 1;
+      if (a.hasAttempted && b.hasAttempted) {
+        if ((b.score ?? 0) !== (a.score ?? 0)) return (b.score ?? 0) - (a.score ?? 0);
+        return (a.timeTakenSeconds ?? 0) - (b.timeTakenSeconds ?? 0);
+      }
+      return new Date(b.enrolledAt || 0).getTime() - new Date(a.enrolledAt || 0).getTime();
+    });
+
+    return participants;
+  } catch (err) {
+    console.error("Error fetching enrolled participants:", err);
+    return [];
+  }
+}
+
+

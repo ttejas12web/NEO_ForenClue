@@ -1,25 +1,28 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
-import { Quiz, QuizQuestion, QuizAttempt } from '@/types/quiz';
-import { fetchQuizById, submitQuizAttempt, enrollInQuiz } from '@/services/quizService';
+import { Quiz, QuizQuestion, QuizAttempt, QuizRegistration } from '@/types/quiz';
+import { fetchQuizById, submitQuizAttempt, enrollInQuiz, getUserQuizRegistration } from '@/services/quizService';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Clock, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, 
   Trophy, ShieldCheck, HelpCircle, Lock, RefreshCw, Sparkles,
   Bookmark, EyeOff, LayoutGrid, Keyboard, RotateCcw, Share2, Filter,
-  X, Check, Flame, Award, Zap, Calendar, Maximize2, ZoomIn, Lightbulb
+  X, Check, Flame, Award, Zap, Calendar, Maximize2, ZoomIn, Lightbulb,
+  CreditCard, AlertCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
 import { SEO } from '@/components/layout/SEO';
 import { SEOManager } from '@/components/layout/SEOManager';
 import { ConfettiAnimation } from '@/components/quiz/ConfettiAnimation';
+import { PaidChallengeRegistrationModal } from '@/components/quiz/PaidChallengeRegistrationModal';
+import { ResilientImage } from '@/lib/localFileStore';
 
 export default function QuizPlayer() {
   const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, isAdmin, isQuizOnlyAdmin } = useAuth();
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,6 +51,10 @@ export default function QuizPlayer() {
   const [showExitWarningModal, setShowExitWarningModal] = useState(false);
   const [showClipboardNotice, setShowClipboardNotice] = useState(false);
 
+  // Paid Challenge Registration State
+  const [userRegistration, setUserRegistration] = useState<QuizRegistration | null>(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+
   // Result state
   const [finalScore, setFinalScore] = useState(0);
   const [timeTakenSec, setTimeTakenSec] = useState(0);
@@ -65,9 +72,23 @@ export default function QuizPlayer() {
     const data = await fetchQuizById(id);
     setQuiz(data);
     if (data) {
+      const isUserEnrolled = user && data.enrolledUserIds?.includes(user.uid);
+      if (data.isPaid && user?.uid) {
+        try {
+          const reg = await getUserQuizRegistration(data.id, user.uid);
+          setUserRegistration(reg);
+        } catch (e) {
+          console.warn("Could not check registration", e);
+        }
+      }
+
       const totalSec = (data.durationMinutes || 10) * 60;
       setTimeRemainingSec(totalSec);
-      setQuizStartedAt(Date.now());
+
+      // Only start quiz timer if not blocked by payment enrollment
+      if (!data.isPaid || isUserEnrolled) {
+        setQuizStartedAt(Date.now());
+      }
     }
     setLoading(false);
   };
@@ -102,7 +123,10 @@ export default function QuizPlayer() {
       if (now < start) return;
     }
 
+    const shouldEnforceTabSwitch = quiz.enableTabSwitchDetection ?? (quiz.isWeeklyChallenge || quiz.isPaid || false);
+
     const handleViolation = () => {
+      if (!shouldEnforceTabSwitch) return;
       setTabSwitchWarnings(prev => {
         const newWarnings = prev + 1;
         if (newWarnings >= 3) {
@@ -344,6 +368,36 @@ export default function QuizPlayer() {
     );
   }
 
+  // Non-admin draft check
+  if (quiz.status === 'draft' && !isAdmin && !isQuizOnlyAdmin) {
+    return (
+      <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4 sm:p-6">
+        <div className="max-w-md w-full bg-surface border border-amber-500/30 rounded-3xl p-8 text-center space-y-5 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center mx-auto">
+            <Clock size={32} />
+          </div>
+          <div className="space-y-2">
+            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
+              Draft / Review In Progress
+            </span>
+            <h2 className="text-xl font-heading font-black text-white">{quiz.title}</h2>
+            <p className="text-xs text-text-muted leading-relaxed">
+              This quiz is currently in preparation by the admin team and has not yet been published. Please check back soon or explore other challenges.
+            </p>
+          </div>
+          <div className="pt-2">
+            <Link
+              to="/quizzes"
+              className="inline-flex items-center justify-center px-6 py-3 bg-warning text-crust font-black text-xs uppercase tracking-wider rounded-xl transition hover:bg-warning/90"
+            >
+              Explore Published Quizzes
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const formattedDate = quiz.scheduledStartTime
     ? (() => {
         try {
@@ -535,6 +589,119 @@ export default function QuizPlayer() {
         </div>
       );
     }
+  }
+
+  // Paid Challenge Registration Guard (Requires Admin-Approved UTR)
+  if (quiz.isPaid && !isEnrolled) {
+    const totalPrize = (quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100);
+    return (
+      <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <SEOManager 
+          collectionName="quizzes"
+          docId={quizId}
+          initialData={quiz}
+          fallbackTitle={`Register for ${quiz?.title || 'Paid Challenge'} | ForenClue`}
+          fallbackDescription={`Submit your payment registration for ${quiz?.title || 'this challenge'}.`}
+          fallbackImage={quiz?.thumbnail}
+        />
+
+        <div className="max-w-lg w-full bg-surface border border-amber-500/30 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative z-10">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/10">
+            <Trophy size={32} className="fill-amber-400" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black uppercase tracking-wider">
+              Paid Challenge • Registration Required
+            </div>
+            <h2 className="text-2xl font-black font-heading tracking-tight text-white uppercase">
+              {quiz.title}
+            </h2>
+            <p className="text-text-muted text-xs leading-relaxed">
+              This challenge requires advance registration, UPI fee payment, and admin verification of your 12-digit UTR before access is granted.
+            </p>
+          </div>
+
+          {/* Cash Prizes Summary */}
+          <div className="bg-black/40 border border-amber-500/20 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-text-muted uppercase font-mono">Entry Fee</span>
+              <span className="text-warning font-black font-mono text-sm">₹{quiz.price || 49}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-text-muted uppercase font-mono">Cash Prize Pool</span>
+              <span className="text-amber-400 font-black font-mono text-sm">₹{totalPrize}</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center font-mono">
+              <div className="bg-surface/80 p-2 rounded-xl">
+                <span className="text-[10px] text-amber-400 block font-bold">1st Rank</span>
+                <span className="text-xs font-black text-white">₹{quiz.prizes?.first ?? 300}</span>
+              </div>
+              <div className="bg-surface/80 p-2 rounded-xl">
+                <span className="text-[10px] text-amber-400 block font-bold">2nd Rank</span>
+                <span className="text-xs font-black text-white">₹{quiz.prizes?.second ?? 200}</span>
+              </div>
+              <div className="bg-surface/80 p-2 rounded-xl">
+                <span className="text-[10px] text-amber-400 block font-bold">3rd Rank</span>
+                <span className="text-xs font-black text-white">₹{quiz.prizes?.third ?? 100}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Display */}
+          {userRegistration?.status === 'pending' ? (
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs space-y-1">
+              <p className="font-bold flex items-center justify-center gap-1.5">
+                <Clock size={16} className="animate-pulse" /> Payment Verification Pending
+              </p>
+              <p className="text-text-muted text-[11px]">
+                Submitted UTR: <span className="font-mono font-bold text-text-main">{userRegistration.utrNumber}</span>. Our admin team will verify it with bank statements. Your challenge will unlock automatically upon approval.
+              </p>
+            </div>
+          ) : userRegistration?.status === 'rejected' ? (
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs space-y-1">
+              <p className="font-bold flex items-center justify-center gap-1.5">
+                <AlertCircle size={16} /> Verification Failed
+              </p>
+              <p className="text-text-muted text-[11px]">
+                {userRegistration.rejectReason || 'UTR not verified in bank records. Please re-submit your correct UTR.'}
+              </p>
+            </div>
+          ) : null}
+
+          <div className="space-y-3">
+            <button
+              onClick={() => setShowPaymentModal(true)}
+              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-black font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+            >
+              <CreditCard size={16} />
+              {userRegistration?.status === 'pending'
+                ? 'Check UTR Status / Update'
+                : userRegistration?.status === 'rejected'
+                ? 'Re-submit 12-Digit UTR'
+                : `Register & Pay ₹${quiz.price || 49}`}
+            </button>
+
+            <Link to="/quizzes" className="block text-xs font-bold text-text-muted hover:text-amber-400 transition-colors">
+              ← Back to Quizzes
+            </Link>
+          </div>
+
+          <PaidChallengeRegistrationModal
+            quiz={quiz}
+            isOpen={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            onRegistrationSubmitted={() => {
+              if (quizId && user?.uid) {
+                loadQuiz(quizId);
+              }
+            }}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -877,11 +1044,11 @@ export default function QuizPlayer() {
                               className="relative cursor-zoom-in w-full flex flex-col items-center group/img"
                               title="Click to view diagram in full size"
                             >
-                              <img 
+                              <ResilientImage 
                                 src={q.image} 
                                 alt={q.imageCaption || "Forensic Reference Diagram"} 
                                 className="max-h-60 sm:max-h-72 w-full object-contain rounded-lg transition-transform group-hover/img:scale-[1.01]" 
-                                loading="lazy"
+                                fallbackText="Diagram Load Error"
                               />
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity rounded-lg flex items-center justify-center backdrop-blur-[1px]">
                                 <span className="px-3 py-1.5 rounded-xl bg-black/80 border border-white/20 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg">
@@ -1072,11 +1239,11 @@ export default function QuizPlayer() {
                         className="relative cursor-zoom-in w-full flex flex-col items-center group/activeImg"
                         title="Click to view diagram in full size"
                       >
-                        <img 
+                        <ResilientImage 
                           src={currentQ.image} 
                           alt={currentQ.imageCaption || "Forensic Reference Diagram"} 
                           className="max-h-72 sm:max-h-96 w-full object-contain rounded-xl shadow-sm hover:scale-[1.01] transition-transform" 
-                          loading="eager"
+                          fallbackText="Diagram Load Error"
                         />
                         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/activeImg:opacity-100 transition-opacity rounded-xl flex items-center justify-center backdrop-blur-[1px]">
                           <span className="px-3.5 py-2 rounded-xl bg-black/85 border border-white/25 text-white text-xs font-bold flex items-center gap-2 shadow-2xl tracking-wide">
@@ -1432,10 +1599,11 @@ export default function QuizPlayer() {
 
                 {/* High-res Image Box */}
                 <div className="w-full overflow-auto max-h-[78vh] flex items-center justify-center p-3 rounded-2xl bg-black/80 border border-white/20 shadow-[0_0_50px_rgba(0,0,0,0.8)]">
-                  <img
+                  <ResilientImage
                     src={fullscreenImage.src}
                     alt={fullscreenImage.caption || "Full Size Forensic Reference"}
                     className="max-h-[74vh] max-w-full object-contain rounded-xl shadow-2xl"
+                    fallbackText="Failed to load full size diagram"
                   />
                 </div>
 

@@ -8,15 +8,29 @@ import {
   ExternalLink, LogOut, Loader2, Sparkles, HelpCircle, 
   Globe, Edit3, MessageSquare, Radio, Award,
   Users, RefreshCw, ShieldCheck, Database, Fingerprint, ClipboardList,
-  Star, Building2, MapPin, Eye, EyeOff, Wrench, Power, Clock, ShieldAlert, AlertTriangle
+  Star, Building2, MapPin, Eye, EyeOff, Wrench, Power, Clock, ShieldAlert, AlertTriangle,
+  Trophy, CreditCard, Copy, Check, Shuffle, Search, Filter, Zap,
+  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb
 } from 'lucide-react';
 import { db, storage, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { ResilientImage, uploadFileResilient, deleteFileResilient } from '@/lib/localFileStore';
+import { ResilientImage, uploadFileResilient, deleteFileResilient, resolveFileUrl } from '@/lib/localFileStore';
 import { cn } from '@/lib/utils';
-import { Quiz, QuizQuestion } from '@/types/quiz';
-import { fetchQuizzes as fetchAdminQuizzes, saveQuiz, deleteQuiz } from '@/services/quizService';
+import { Quiz, QuizQuestion, QuizRegistration, LeaderboardEntry, EnrolledParticipant } from '@/types/quiz';
+import { 
+  fetchAdminQuizzes, 
+  saveQuiz, 
+  deleteQuiz,
+  updateQuizStatus,
+  fetchQuizRegistrations,
+  approveQuizRegistration,
+  rejectQuizRegistration,
+  fetchLeaderboard,
+  fetchEnrolledParticipantsForQuiz,
+  unenrollUserFromQuiz
+} from '@/services/quizService';
+import { CRIME_SCENE_DOCUMENTATION_QUESTIONS } from '@/data/crimeSceneQuestions';
 import { College, CollegeCourse } from '@/types/college';
 import { fetchColleges as fetchAdminColleges, saveCollege as saveAdminCollege, deleteCollege as deleteAdminCollege } from '@/services/collegeService';
 import { 
@@ -282,70 +296,262 @@ export default function Admin() {
   const [quizLoading, setQuizLoading] = useState(false);
   const [editingQuizId, setEditingQuizId] = useState<string | null>(null);
 
-  const [enrolledUsersList, setEnrolledUsersList] = useState<{name: string, email: string}[]>([]);
+  const [selectedQuizForEnrollment, setSelectedQuizForEnrollment] = useState<Quiz | null>(null);
+  const [enrolledParticipants, setEnrolledParticipants] = useState<EnrolledParticipant[]>([]);
   const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
-  const [selectedQuizTitle, setSelectedQuizTitle] = useState('');
   const [fetchingUsers, setFetchingUsers] = useState(false);
+  const [enrolledSearchQuery, setEnrolledSearchQuery] = useState('');
+  const [enrolledFilterTab, setEnrolledFilterTab] = useState<'all' | 'attempted' | 'not_attempted' | 'approved' | 'pending'>('all');
+  const [copiedEmailsMsg, setCopiedEmailsMsg] = useState(false);
+  const [copiedUtrMap, setCopiedUtrMap] = useState<Record<string, boolean>>({});
+  const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
   const handleViewEnrolledUsers = async (q: Quiz) => {
-    setSelectedQuizTitle(q.title);
+    setSelectedQuizForEnrollment(q);
     setIsUsersModalOpen(true);
-    setEnrolledUsersList([]);
     setFetchingUsers(true);
-    if (!q.enrolledUserIds || q.enrolledUserIds.length === 0) {
-      setFetchingUsers(false);
-      return;
-    }
-    
+    setEnrolledSearchQuery('');
+    setEnrolledFilterTab('all');
     try {
-      const usersInfo = [];
-      for (const uid of q.enrolledUserIds) {
-        const userRef = doc(db, 'users', uid);
-        const userSnap = await getDoc(userRef);
-        if (userSnap.exists()) {
-          const data = userSnap.data();
-          usersInfo.push({ name: data.displayName || data.name || 'Unknown', email: data.email || 'N/A' });
-        } else {
-          usersInfo.push({ name: 'Unknown User', email: uid });
-        }
-      }
-      setEnrolledUsersList(usersInfo);
+      const list = await fetchEnrolledParticipantsForQuiz(q);
+      setEnrolledParticipants(list);
     } catch (err) {
-      console.error("Error fetching enrolled users:", err);
+      console.error("Error loading enrolled candidates:", err);
+      setEnrolledParticipants([]);
     } finally {
       setFetchingUsers(false);
     }
   };
 
+  const handleRefreshEnrolledUsers = async () => {
+    if (!selectedQuizForEnrollment) return;
+    setFetchingUsers(true);
+    try {
+      const list = await fetchEnrolledParticipantsForQuiz(selectedQuizForEnrollment);
+      setEnrolledParticipants(list);
+    } catch (err) {
+      console.error("Error refreshing enrolled candidates:", err);
+    } finally {
+      setFetchingUsers(false);
+    }
+  };
+
+  const handleUnenrollUser = async (participant: EnrolledParticipant) => {
+    if (!selectedQuizForEnrollment) return;
+    if (!window.confirm(`Unenroll candidate "${participant.userName}" (${participant.userEmail}) from "${selectedQuizForEnrollment.title}"?`)) return;
+    setRemovingUserId(participant.userId);
+    try {
+      const ok = await unenrollUserFromQuiz(selectedQuizForEnrollment.id, participant.userId);
+      if (ok) {
+        setEnrolledParticipants(prev => prev.filter(p => p.userId !== participant.userId));
+        setAdminQuizzes(prev => prev.map(q => {
+          if (q.id === selectedQuizForEnrollment.id) {
+            return {
+              ...q,
+              enrolledUserIds: (q.enrolledUserIds || []).filter(uid => uid !== participant.userId)
+            };
+          }
+          return q;
+        }));
+      }
+    } catch (e) {
+      console.error("Error unenrolling candidate:", e);
+    } finally {
+      setRemovingUserId(null);
+    }
+  };
+
+  const handleCopyEnrolledEmails = () => {
+    const emails = enrolledParticipants
+      .map(p => p.userEmail)
+      .filter(e => e && e !== 'N/A' && e.includes('@'))
+      .join(', ');
+    if (emails) {
+      navigator.clipboard.writeText(emails);
+      setCopiedEmailsMsg(true);
+      setTimeout(() => setCopiedEmailsMsg(false), 3000);
+    }
+  };
+
+  const handleCopySingleUtr = (utr: string) => {
+    navigator.clipboard.writeText(utr);
+    setCopiedUtrMap(prev => ({ ...prev, [utr]: true }));
+    setTimeout(() => {
+      setCopiedUtrMap(prev => ({ ...prev, [utr]: false }));
+    }, 2500);
+  };
+
+  const handleExportEnrolledCSV = () => {
+    if (!selectedQuizForEnrollment || enrolledParticipants.length === 0) return;
+    const headers = ['User ID', 'Candidate Name', 'Email', 'College/Institution', 'Enrollment Type', 'Status', 'UTR Number', 'Amount (INR)', 'Attempted', 'Score', 'Total Points', 'Accuracy %', 'Time Taken (s)', 'Completed At'];
+    const rows = enrolledParticipants.map(p => [
+      `"${p.userId}"`,
+      `"${(p.userName || '').replace(/"/g, '""')}"`,
+      `"${(p.userEmail || '').replace(/"/g, '""')}"`,
+      `"${(p.college || '').replace(/"/g, '""')}"`,
+      `"${p.enrollmentType === 'paid' ? 'Paid Challenge' : 'Free Enrollment'}"`,
+      `"${p.registrationStatus || 'Approved'}"`,
+      `"${p.utrNumber || 'N/A'}"`,
+      `"${p.amountPaid || 0}"`,
+      `"${p.hasAttempted ? 'YES' : 'NO'}"`,
+      `"${p.score !== undefined ? p.score : 'N/A'}"`,
+      `"${p.totalPoints || selectedQuizForEnrollment.totalPoints}"`,
+      `"${p.accuracyPercentage !== undefined ? p.accuracyPercentage + '%' : 'N/A'}"`,
+      `"${p.timeTakenSeconds !== undefined ? p.timeTakenSeconds : 'N/A'}"`,
+      `"${p.completedAt ? new Date(p.completedAt).toLocaleString() : 'N/A'}"`
+    ]);
+    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `Enrolled_${selectedQuizForEnrollment.title.replace(/[^a-zA-Z0-9]/g, '_')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const [newQuizForm, setNewQuizForm] = useState({
     title: '',
     description: '',
-    category: 'Forensic Identification',
-    isWeeklyChallenge: true,
-    scheduledStartTime: getLocalDatetimeString(Date.now() + 86400000),
-    durationMinutes: 10,
-    totalPoints: 100,
-    passingScore: 70
+    category: 'Crime Scene Documentation',
+    status: 'published' as 'draft' | 'published',
+    isWeeklyChallenge: false,
+    scheduledStartTime: '',
+    durationMinutes: 30,
+    totalPoints: 500,
+    passingScore: 350,
+    isPaid: false,
+    price: 0,
+    upiId: 'forenclue@okaxis',
+    payeeName: 'ForenClue Forensic Services',
+    upiQrUrl: '',
+    firstPrize: 300,
+    secondPrize: 200,
+    thirdPrize: 100,
+    registrationStartTime: '',
+    registrationEndTime: '',
+    shuffleQuestions: true,
+    shuffleOptions: true,
+    enableTabSwitchDetection: true
   });
 
-  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([
-    {
-      id: 'q1',
-      question: 'Which fingerprint pattern is most common in humans?',
-      options: ['Arches', 'Loops', 'Whorls', 'Accidental'],
-      correctAnswerIndex: 1,
-      explanation: 'Loops account for ~60-65% of human fingerprints.',
-      points: 50
-    },
-    {
-      id: 'q2',
-      question: 'What is AFIS?',
-      options: ['Automated Fingerprint Identification System', 'Advanced Forensic Image System', 'Automated Footwear System', 'None'],
-      correctAnswerIndex: 0,
-      explanation: 'AFIS stands for Automated Fingerprint Identification System.',
-      points: 50
+  const [quizSubTab, setQuizSubTab] = useState<'editor' | 'approvals' | 'audit' | 'list'>('editor');
+  const [quizRegistrations, setQuizRegistrations] = useState<QuizRegistration[]>([]);
+  const [loadingRegistrations, setLoadingRegistrations] = useState(false);
+  const [approvingRegId, setApprovingRegId] = useState<string | null>(null);
+  const [regFilterStatus, setRegFilterStatus] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [regSearchTerm, setRegSearchTerm] = useState('');
+  const [quizListFilter, setQuizListFilter] = useState<'all' | 'published' | 'drafts' | 'free' | 'paid'>('all');
+
+  // Prize & Winner Audit State
+  const [auditQuizId, setAuditQuizId] = useState<string>('');
+  const [auditLeaderboard, setAuditLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [loadingAudit, setLoadingAudit] = useState(false);
+
+  const fetchRegistrationsList = async (targetQuizId?: string) => {
+    setLoadingRegistrations(true);
+    try {
+      const data = await fetchQuizRegistrations(targetQuizId);
+      setQuizRegistrations(data);
+    } catch (e) {
+      console.error("Failed to fetch registrations:", e);
+    } finally {
+      setLoadingRegistrations(false);
     }
-  ]);
+  };
+
+  const handleAuditQuiz = async (quizIdToAudit: string) => {
+    setAuditQuizId(quizIdToAudit);
+    const targetQuiz = adminQuizzes.find(q => q.id === quizIdToAudit);
+    if (!targetQuiz) return;
+    setLoadingAudit(true);
+    try {
+      const lb = await fetchLeaderboard(targetQuiz);
+      setAuditLeaderboard(lb);
+    } catch (e) {
+      console.error("Failed to load leaderboard for audit:", e);
+    } finally {
+      setLoadingAudit(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'quizzes') {
+      if (quizSubTab === 'approvals') {
+        fetchRegistrationsList();
+      } else if (quizSubTab === 'audit') {
+        const firstPaidOrWeekly = adminQuizzes.find(q => q.isPaid || q.isWeeklyChallenge);
+        if (firstPaidOrWeekly && !auditQuizId) {
+          handleAuditQuiz(firstPaidOrWeekly.id);
+        }
+      }
+    }
+  }, [activeTab, quizSubTab, adminQuizzes]);
+
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>(CRIME_SCENE_DOCUMENTATION_QUESTIONS);
+  
+  // Quiz Question Diagram & Image Direct R2 Upload States
+  const [uploadingQuestionImages, setUploadingQuestionImages] = useState<Record<number, boolean>>({});
+  const [questionImageUploadMsgs, setQuestionImageUploadMsgs] = useState<Record<number, string>>({});
+  const [questionImageErrors, setQuestionImageErrors] = useState<Record<number, string>>({});
+
+  const handleQuestionImageUploadDirect = async (qIdx: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      setQuestionImageErrors(prev => ({ ...prev, [qIdx]: 'Please select a valid image or diagram file (PNG, JPG, WEBP, SVG).' }));
+      return;
+    }
+
+    setQuestionImageErrors(prev => ({ ...prev, [qIdx]: '' }));
+    setUploadingQuestionImages(prev => ({ ...prev, [qIdx]: true }));
+    setQuestionImageUploadMsgs(prev => ({ ...prev, [qIdx]: 'Connecting to Cloudflare R2 bucket...' }));
+
+    try {
+      const cleanName = `quiz-diagrams/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+      const uploadResult = await uploadFileResilient(file, cleanName, (msg) => {
+        setQuestionImageUploadMsgs(prev => ({ ...prev, [qIdx]: msg }));
+      });
+      const downloadUrl = uploadResult.url;
+
+      handleQuestionChange(qIdx, 'image', downloadUrl);
+      setQuestionImageUploadMsgs(prev => ({
+        ...prev,
+        [qIdx]: uploadResult.isFallback
+          ? '⚠️ Diagram stored locally in browser offline database (localdb).'
+          : downloadUrl.startsWith('firestore-blob://')
+            ? `✅ Diagram saved to Cloud Storage: ${file.name}`
+            : `✅ Diagram uploaded to Cloudflare R2: ${file.name}`
+      }));
+      setQuestionImageErrors(prev => ({ ...prev, [qIdx]: '' }));
+    } catch (err: any) {
+      console.error('Quiz question image upload error:', err);
+      setQuestionImageErrors(prev => ({ ...prev, [qIdx]: `Upload failed: ${err.message || err}` }));
+      setQuestionImageUploadMsgs(prev => ({ ...prev, [qIdx]: '' }));
+    } finally {
+      setUploadingQuestionImages(prev => ({ ...prev, [qIdx]: false }));
+      // Reset input element so re-uploading works smoothly
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveQuestionImage = async (qIdx: number) => {
+    const currentUrl = quizQuestions[qIdx]?.image;
+    if (!currentUrl) return;
+
+    if (window.confirm("Remove this diagram from the question? (Associated file in Cloudflare R2 will be deleted)")) {
+      try {
+        await deleteAttachedFilesFromR2([currentUrl]);
+      } catch (e) {
+        console.warn("Could not delete from R2:", e);
+      }
+      handleQuestionChange(qIdx, 'image', '');
+      handleQuestionChange(qIdx, 'imageCaption', '');
+      setQuestionImageUploadMsgs(prev => ({ ...prev, [qIdx]: '' }));
+      setQuestionImageErrors(prev => ({ ...prev, [qIdx]: '' }));
+    }
+  };
 
   const handleAddQuestion = () => {
     const newQ: QuizQuestion = {
@@ -354,9 +560,72 @@ export default function Admin() {
       options: ['', '', '', ''],
       correctAnswerIndex: 0,
       explanation: '',
-      points: 10
+      points: 20
     };
-    setQuizQuestions(prev => [...prev, newQ]);
+    setQuizQuestions(prev => {
+      const updated = [...prev, newQ];
+      const sumPoints = updated.reduce((acc, curr) => acc + (Number(curr.points) || 0), 0);
+      setNewQuizForm(f => ({ ...f, totalPoints: sumPoints }));
+      return updated;
+    });
+  };
+
+  const handleDuplicateQuestion = (index: number) => {
+    const target = quizQuestions[index];
+    if (!target) return;
+    const duplicated: QuizQuestion = {
+      ...target,
+      id: `q_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      question: `${target.question} (Copy)`
+    };
+    setQuizQuestions(prev => {
+      const updated = [...prev];
+      updated.splice(index + 1, 0, duplicated);
+      const sumPoints = updated.reduce((acc, curr) => acc + (Number(curr.points) || 0), 0);
+      setNewQuizForm(f => ({ ...f, totalPoints: sumPoints }));
+      return updated;
+    });
+    setSuccessMsg(`Question #${index + 1} duplicated successfully!`);
+  };
+
+  const handleSetAllPoints = (pts: number) => {
+    setQuizQuestions(prev => {
+      const updated = prev.map(q => ({ ...q, points: pts }));
+      const sumPoints = updated.length * pts;
+      setNewQuizForm(f => ({ ...f, totalPoints: sumPoints }));
+      return updated;
+    });
+    setSuccessMsg(`All ${quizQuestions.length} questions updated to ${pts} points each (Total: ${quizQuestions.length * pts} pts)`);
+  };
+
+  const handleApproveRegistrationAction = async (reg: QuizRegistration) => {
+    if (!window.confirm(`Approve UTR #${reg.utrNumber} for ${reg.userName} (${reg.userEmail})? This will immediately unlock the challenge for them.`)) return;
+    setApprovingRegId(reg.id);
+    try {
+      await approveQuizRegistration(reg.id, reg.quizId, reg.userId, user?.displayName || user?.email || 'Admin');
+      setSuccessMsg(`Approved payment for ${reg.userName}! Challenge is now unlocked for them.`);
+      fetchRegistrationsList();
+      fetchCollections(); // refresh quiz enrolled counts
+    } catch (e: any) {
+      setErrMsg(`Failed to approve registration: ${e.message}`);
+    } finally {
+      setApprovingRegId(null);
+    }
+  };
+
+  const handleRejectRegistrationAction = async (reg: QuizRegistration) => {
+    const reason = window.prompt(`Enter rejection reason for UTR #${reg.utrNumber}:`, "UTR number not found in bank statement / transaction not received");
+    if (reason === null) return;
+    setApprovingRegId(reg.id);
+    try {
+      await rejectQuizRegistration(reg.id, reason, user?.displayName || user?.email || 'Admin');
+      setSuccessMsg(`Rejected registration for ${reg.userName}. Reason recorded.`);
+      fetchRegistrationsList();
+    } catch (e: any) {
+      setErrMsg(`Failed to reject registration: ${e.message}`);
+    } finally {
+      setApprovingRegId(null);
+    }
   };
 
   const handleRemoveQuestion = (index: number) => {
@@ -364,13 +633,22 @@ export default function Admin() {
       alert("A quiz must have at least 1 question.");
       return;
     }
-    setQuizQuestions(prev => prev.filter((_, i) => i !== index));
+    setQuizQuestions(prev => {
+      const updated = prev.filter((_, i) => i !== index);
+      const sumPoints = updated.reduce((acc, curr) => acc + (Number(curr.points) || 0), 0);
+      setNewQuizForm(f => ({ ...f, totalPoints: sumPoints }));
+      return updated;
+    });
   };
 
   const handleQuestionChange = (index: number, field: keyof QuizQuestion, val: any) => {
     setQuizQuestions(prev => {
       const updated = [...prev];
       updated[index] = { ...updated[index], [field]: val };
+      if (field === 'points') {
+        const sumPoints = updated.reduce((acc, curr) => acc + (Number(curr.points) || 0), 0);
+        setNewQuizForm(f => ({ ...f, totalPoints: sumPoints }));
+      }
       return updated;
     });
   };
@@ -416,12 +694,26 @@ export default function Admin() {
     setNewQuizForm({
       title: q.title || '',
       description: q.description || '',
-      category: q.category || 'Forensic Identification',
+      category: q.category || 'Crime Scene Documentation',
+      status: q.status || 'published',
       isWeeklyChallenge: q.isWeeklyChallenge || false,
       scheduledStartTime: q.scheduledStartTime ? getLocalDatetimeString(q.scheduledStartTime) : '',
-      durationMinutes: q.durationMinutes || 10,
-      totalPoints: q.totalPoints || 100,
-      passingScore: q.passingScore || 70,
+      durationMinutes: q.durationMinutes || 30,
+      totalPoints: q.totalPoints || 500,
+      passingScore: q.passingScore || 350,
+      isPaid: q.isPaid || false,
+      price: q.price || 49,
+      upiId: q.upiId || 'forenclue@okaxis',
+      payeeName: q.payeeName || 'ForenClue Forensic Services',
+      upiQrUrl: q.upiQrUrl || '',
+      firstPrize: q.prizes?.first ?? 300,
+      secondPrize: q.prizes?.second ?? 200,
+      thirdPrize: q.prizes?.third ?? 100,
+      registrationStartTime: q.registrationStartTime ? getLocalDatetimeString(q.registrationStartTime) : '',
+      registrationEndTime: q.registrationEndTime ? getLocalDatetimeString(q.registrationEndTime) : '',
+      shuffleQuestions: q.shuffleQuestions !== undefined ? q.shuffleQuestions : true,
+      shuffleOptions: q.shuffleOptions !== undefined ? q.shuffleOptions : true,
+      enableTabSwitchDetection: q.enableTabSwitchDetection !== undefined ? q.enableTabSwitchDetection : true,
     });
     setQuizQuestions(q.questions && q.questions.length > 0 ? q.questions : [
       {
@@ -430,7 +722,7 @@ export default function Admin() {
         options: ['', ''],
         correctAnswerIndex: 0,
         explanation: '',
-        points: 10
+        points: 20
       }
     ]);
   };
@@ -440,31 +732,28 @@ export default function Admin() {
     setNewQuizForm({
       title: '',
       description: '',
-      category: 'Forensic Identification',
-      isWeeklyChallenge: true,
-      scheduledStartTime: getLocalDatetimeString(Date.now() + 86400000),
-      durationMinutes: 10,
-      totalPoints: 100,
-      passingScore: 70,
+      category: 'Crime Scene Documentation',
+      status: 'published',
+      isWeeklyChallenge: false,
+      scheduledStartTime: '',
+      durationMinutes: 30,
+      totalPoints: 500,
+      passingScore: 350,
+      isPaid: false,
+      price: 0,
+      upiId: 'forenclue@okaxis',
+      payeeName: 'ForenClue Forensic Services',
+      upiQrUrl: '',
+      firstPrize: 300,
+      secondPrize: 200,
+      thirdPrize: 100,
+      registrationStartTime: '',
+      registrationEndTime: '',
+      shuffleQuestions: true,
+      shuffleOptions: true,
+      enableTabSwitchDetection: true
     });
-    setQuizQuestions([
-      {
-        id: 'q1',
-        question: 'Which fingerprint pattern is most common in humans?',
-        options: ['Arches', 'Loops', 'Whorls', 'Accidental'],
-        correctAnswerIndex: 1,
-        explanation: 'Loops account for ~60-65% of human fingerprints.',
-        points: 50
-      },
-      {
-        id: 'q2',
-        question: 'What is AFIS?',
-        options: ['Automated Fingerprint Identification System', 'Advanced Forensic Image System', 'Automated Footwear System', 'None'],
-        correctAnswerIndex: 0,
-        explanation: 'AFIS stands for Automated Fingerprint Identification System.',
-        points: 50
-      }
-    ]);
+    setQuizQuestions(CRIME_SCENE_DOCUMENTATION_QUESTIONS);
   };
 
   // Certificate states
@@ -1373,36 +1662,45 @@ export default function Admin() {
     }
   };
 
-  const handleAdminSaveQuiz = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAdminSaveQuiz = async (e?: React.FormEvent, targetStatus: 'draft' | 'published' = 'published') => {
+    if (e) e.preventDefault();
     setSuccessMsg('');
     setErrMsg('');
 
-    if (!newQuizForm.title || !newQuizForm.description) {
-      setErrMsg("Please fill in Title and Description for the quiz.");
-      return;
-    }
-
-    if (!quizQuestions || quizQuestions.length === 0) {
-      setErrMsg("Please add at least one question to the quiz.");
-      return;
-    }
-
-    // Validate manual questions
-    for (let i = 0; i < quizQuestions.length; i++) {
-      const q = quizQuestions[i];
-      if (!q.question.trim()) {
-        setErrMsg(`Question #${i + 1} text cannot be empty.`);
+    if (targetStatus === 'draft') {
+      // Draft mode: minimal validation to allow admins to save in-progress draft work at any moment
+      if (!newQuizForm.title || !newQuizForm.title.trim()) {
+        setErrMsg("Please enter at least a Title for the quiz to save as draft.");
         return;
       }
-      if (!q.options || q.options.length < 2) {
-        setErrMsg(`Question #${i + 1} must have at least 2 options.`);
+    } else {
+      // Publish mode: strict validation before publishing to students
+      if (!newQuizForm.title || !newQuizForm.title.trim() || !newQuizForm.description || !newQuizForm.description.trim()) {
+        setErrMsg("Please fill in both Title and Description before publishing.");
         return;
       }
-      for (let j = 0; j < q.options.length; j++) {
-        if (!q.options[j].trim()) {
-          setErrMsg(`Option #${j + 1} in Question #${i + 1} cannot be empty.`);
+
+      if (!quizQuestions || quizQuestions.length === 0) {
+        setErrMsg("Please add at least one question before publishing the quiz.");
+        return;
+      }
+
+      // Validate manual questions
+      for (let i = 0; i < quizQuestions.length; i++) {
+        const q = quizQuestions[i];
+        if (!q.question.trim()) {
+          setErrMsg(`Question #${i + 1} text cannot be empty.`);
           return;
+        }
+        if (!q.options || q.options.length < 2) {
+          setErrMsg(`Question #${i + 1} must have at least 2 options.`);
+          return;
+        }
+        for (let j = 0; j < q.options.length; j++) {
+          if (!q.options[j].trim()) {
+            setErrMsg(`Option #${j + 1} in Question #${i + 1} cannot be empty.`);
+            return;
+          }
         }
       }
     }
@@ -1411,15 +1709,32 @@ export default function Admin() {
 
     try {
       const payload: Partial<Quiz> = {
-        title: newQuizForm.title,
-        description: newQuizForm.description,
+        title: newQuizForm.title.trim(),
+        description: newQuizForm.description?.trim() || (targetStatus === 'draft' ? 'Draft in progress...' : ''),
         category: newQuizForm.category,
+        status: targetStatus,
         isWeeklyChallenge: newQuizForm.isWeeklyChallenge,
         durationMinutes: Number(newQuizForm.durationMinutes),
         totalPoints: calculatedTotalPoints > 0 ? calculatedTotalPoints : Number(newQuizForm.totalPoints),
         passingScore: Number(newQuizForm.passingScore),
         questions: quizQuestions,
-        createdBy: user?.email || 'Admin'
+        createdBy: user?.email || 'Admin',
+        isPaid: Boolean(newQuizForm.isPaid),
+        price: Number(newQuizForm.price) || 0,
+        upiId: newQuizForm.upiId || '',
+        payeeName: newQuizForm.payeeName || '',
+        upiQrUrl: newQuizForm.upiQrUrl || '',
+        prizes: {
+          first: Number(newQuizForm.firstPrize) || 0,
+          second: Number(newQuizForm.secondPrize) || 0,
+          third: Number(newQuizForm.thirdPrize) || 0,
+          currency: '₹'
+        },
+        registrationStartTime: newQuizForm.registrationStartTime ? new Date(newQuizForm.registrationStartTime).toISOString() : '',
+        registrationEndTime: newQuizForm.registrationEndTime ? new Date(newQuizForm.registrationEndTime).toISOString() : '',
+        shuffleQuestions: Boolean(newQuizForm.shuffleQuestions),
+        shuffleOptions: Boolean(newQuizForm.shuffleOptions),
+        enableTabSwitchDetection: Boolean(newQuizForm.enableTabSwitchDetection)
       };
 
       if (newQuizForm.scheduledStartTime) {
@@ -1432,12 +1747,29 @@ export default function Admin() {
         payload.id = editingQuizId;
       }
 
-      await saveQuiz(payload);
-      setSuccessMsg(editingQuizId ? "Quiz updated successfully!" : "New Quiz / Weekly Challenge created!");
-      handleResetQuizForm();
+      const savedId = await saveQuiz(payload);
+      if (targetStatus === 'draft') {
+        setEditingQuizId(savedId);
+        setNewQuizForm(prev => ({ ...prev, status: 'draft' }));
+        setSuccessMsg(`Quiz progress saved as Draft ("${newQuizForm.title}")! You can safely continue editing or return later.`);
+      } else {
+        setSuccessMsg(editingQuizId ? "Quiz updated & published successfully to students!" : "New Quiz / Weekly Challenge published successfully!");
+        handleResetQuizForm();
+      }
       fetchCollections();
     } catch (err: any) {
       setErrMsg(`Error saving quiz: ${err.message}`);
+    }
+  };
+
+  const handleToggleQuizPublish = async (quiz: Quiz) => {
+    const nextStatus = quiz.status === 'draft' ? 'published' : 'draft';
+    try {
+      await updateQuizStatus(quiz.id, nextStatus);
+      setSuccessMsg(`Quiz "${quiz.title}" status updated to: ${nextStatus === 'published' ? '🚀 Published (Live for students)' : '📝 Draft (Unpublished)'}.`);
+      fetchCollections();
+    } catch (err: any) {
+      setErrMsg(`Failed to update status: ${err.message}`);
     }
   };
 
@@ -1445,10 +1777,17 @@ export default function Admin() {
     const quiz = adminQuizzes.find((q: any) => q.id === id || q.docId === id);
     const quizTitle = quiz?.title || id;
 
-    if (!window.confirm(`Are you sure you want to delete Quiz / Challenge "${quizTitle}"? Any attached images will also be permanently deleted from Cloudflare R2 storage. This action cannot be undone.`)) return;
+    if (!window.confirm(`Are you sure you want to delete Quiz / Challenge "${quizTitle}"? Any attached question diagrams or images will also be permanently deleted from Cloudflare R2 storage. This action cannot be undone.`)) return;
 
     try {
-      const fileUrls = [(quiz as any)?.bannerUrl, (quiz as any)?.imageUrl, (quiz as any)?.coverUrl];
+      const questionImageUrls = (quiz?.questions || []).map((q: any) => q.image).filter(Boolean);
+      const fileUrls = [
+        (quiz as any)?.bannerUrl, 
+        (quiz as any)?.imageUrl, 
+        (quiz as any)?.coverUrl, 
+        (quiz as any)?.thumbnail, 
+        ...questionImageUrls
+      ];
       const { count } = await deleteAttachedFilesFromR2(fileUrls);
 
       await deleteQuiz(id);
@@ -4557,381 +4896,1619 @@ export default function Admin() {
 
                 {/* 8. QUIZZES & WEEKLY CHALLENGES MANAGER */}
                 {activeTab === 'quizzes' && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                    {/* Header & Sub-Navigation */}
                     <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6">
-                      <h2 className="text-xl font-heading font-black uppercase tracking-tight mb-2">
-                        Create / Edit Quiz & Weekly Challenge
-                      </h2>
-                      <p className="text-xs text-text-muted mb-6">
-                        Admins can publish timed weekly quiz challenges or practice quizzes for students.
-                      </p>
-
-                      <form onSubmit={handleAdminSaveQuiz} className="space-y-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Quiz Title</label>
-                            <input
-                              type="text"
-                              value={newQuizForm.title}
-                              onChange={(e) => setNewQuizForm({ ...newQuizForm, title: e.target.value })}
-                              placeholder="Weekly Challenge #1: Fingerprint Analysis"
-                              className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
-                              required
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Category</label>
-                            <select
-                              value={newQuizForm.category}
-                              onChange={(e) => setNewQuizForm({ ...newQuizForm, category: e.target.value })}
-                              className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none"
-                            >
-                              <option value="Forensic Identification">Forensic Identification</option>
-                              <option value="Forensic Biology">Forensic Biology</option>
-                              <option value="Crime Scene Investigation">Crime Scene Investigation</option>
-                              <option value="Digital Forensics">Digital Forensics</option>
-                              <option value="Forensic Chemistry">Forensic Chemistry</option>
-                            </select>
-                          </div>
-                        </div>
-
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-black/5 dark:border-white/5 pb-5">
                         <div>
-                          <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Description</label>
-                          <textarea
-                            value={newQuizForm.description}
-                            onChange={(e) => setNewQuizForm({ ...newQuizForm, description: e.target.value })}
-                            rows={2}
-                            placeholder="Detailed description of the quiz..."
-                            className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs text-text-main outline-none"
-                            required
-                          />
+                          <h2 className="text-xl font-heading font-black uppercase tracking-tight flex items-center gap-2 text-text-main">
+                            <Trophy className="text-warning" size={24} /> Quizzes & Competitive Challenges Manager
+                          </h2>
+                          <p className="text-xs text-text-muted mt-1">
+                            Create competitive challenges, set ₹300/₹200/₹100 cash prizes, review 12-digit student UTR payments, and audit winners.
+                          </p>
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                          <div className="flex items-center gap-2 pt-6">
-                            <input
-                              type="checkbox"
-                              id="isWeeklyChallenge"
-                              checked={newQuizForm.isWeeklyChallenge}
-                              onChange={(e) => setNewQuizForm({ ...newQuizForm, isWeeklyChallenge: e.target.checked })}
-                              className="w-4 h-4 text-warning"
-                            />
-                            <label htmlFor="isWeeklyChallenge" className="text-xs font-bold uppercase text-text-main cursor-pointer">
-                              Weekly Challenge?
-                            </label>
+                        {/* Sub-Tab Switcher */}
+                        <div className="flex items-center gap-1.5 bg-base p-1.5 rounded-2xl border border-black/10 dark:border-white/10 flex-wrap">
+                          <button
+                            type="button"
+                            onClick={() => setQuizSubTab('editor')}
+                            className={cn(
+                              "px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+                              quizSubTab === 'editor'
+                                ? "bg-warning text-crust shadow-md font-black"
+                                : "text-text-muted hover:text-text-main"
+                            )}
+                          >
+                            <Edit3 size={14} /> Challenge Builder
+                            {editingQuizId && (
+                              <span className={cn(
+                                "px-1.5 py-0.2 text-[9px] font-black rounded uppercase ml-1",
+                                newQuizForm.status === 'draft' ? "bg-amber-500/30 text-amber-300" : "bg-emerald-500/30 text-emerald-300"
+                              )}>
+                                {newQuizForm.status === 'draft' ? 'Draft' : 'Editing'}
+                              </span>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setQuizSubTab('approvals')}
+                            className={cn(
+                              "px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer relative",
+                              quizSubTab === 'approvals'
+                                ? "bg-amber-500 text-black shadow-md font-black"
+                                : "text-text-muted hover:text-text-main"
+                            )}
+                          >
+                            <CreditCard size={14} /> UTR Approvals
+                            {quizRegistrations.filter(r => r.status === 'pending').length > 0 && (
+                              <span className="px-1.5 py-0.2 text-[10px] font-black rounded-full bg-rose-500 text-white animate-pulse">
+                                {quizRegistrations.filter(r => r.status === 'pending').length}
+                              </span>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setQuizSubTab('audit')}
+                            className={cn(
+                              "px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+                              quizSubTab === 'audit'
+                                ? "bg-emerald-500 text-crust shadow-md font-black"
+                                : "text-text-muted hover:text-text-main"
+                            )}
+                          >
+                            <Award size={14} /> Prize & Winner Audit
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setQuizSubTab('list')}
+                            className={cn(
+                              "px-3 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer",
+                              quizSubTab === 'list'
+                                ? "bg-surface border border-white/20 text-text-main shadow-md font-black"
+                                : "text-text-muted hover:text-text-main"
+                            )}
+                          >
+                            <ClipboardList size={14} /> Quizzes & Drafts ({adminQuizzes.length})
+                            {adminQuizzes.filter(q => q.status === 'draft').length > 0 && (
+                              <span className="px-1.5 py-0.2 text-[10px] font-black rounded-full bg-amber-500/30 text-amber-400 border border-amber-500/40">
+                                {adminQuizzes.filter(q => q.status === 'draft').length} Drafts
+                              </span>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* SUBTAB 1: CHALLENGE & QUESTION BUILDER */}
+                      {quizSubTab === 'editor' && (
+                        <div className="pt-6 space-y-6">
+                          {/* Draft / Publish Mode Banner */}
+                          {editingQuizId ? (
+                            newQuizForm.status === 'draft' ? (
+                              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4 flex-wrap">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+                                    <FileText size={20} />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-black uppercase tracking-wider text-amber-400">
+                                        Editing Draft Quiz
+                                      </span>
+                                      <span className="px-2 py-0.2 rounded text-[10px] font-mono font-bold bg-amber-500/20 text-amber-300">
+                                        Hidden from Students
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-text-muted mt-0.5">
+                                      This quiz is in draft state. Save your work as draft anytime, and click <strong>Publish</strong> whenever you are ready to make it live.
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAdminSaveQuiz(undefined, 'draft')}
+                                    className="px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer"
+                                  >
+                                    <FileText size={14} /> Quick Save Draft
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAdminSaveQuiz(undefined, 'published')}
+                                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-crust font-black rounded-xl text-xs uppercase tracking-wider flex items-center gap-1.5 transition cursor-pointer shadow-md"
+                                  >
+                                    <Award size={14} /> Publish Now
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between gap-4 flex-wrap">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 size={20} />
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs font-black uppercase tracking-wider text-emerald-400">
+                                        Editing Published Quiz
+                                      </span>
+                                      <span className="px-2 py-0.2 rounded text-[10px] font-mono font-bold bg-emerald-500/20 text-emerald-300">
+                                        Live for Students
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-text-muted mt-0.5">
+                                      This quiz is active. You can make revisions, save as draft to unpublish temporarily, or save updates to remain published.
+                                    </p>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdminSaveQuiz(undefined, 'draft')}
+                                  className="px-3.5 py-2 bg-base hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-amber-400 font-bold rounded-xl text-xs flex items-center gap-1.5 transition cursor-pointer"
+                                  title="Unpublish and revert this quiz back into Draft mode"
+                                >
+                                  <FileText size={14} /> Revert to Draft
+                                </button>
+                              </div>
+                            )
+                          ) : (
+                            <div className="p-3.5 rounded-2xl bg-base border border-black/5 dark:border-white/5 flex items-center justify-between gap-3 flex-wrap text-xs text-text-muted">
+                              <div className="flex items-center gap-2">
+                                <Sparkles size={16} className="text-warning shrink-0" />
+                                <span>
+                                  <strong>Draft & Publish:</strong> Click <strong>Save as Draft</strong> to safely preserve work in progress, or <strong>Publish</strong> when ready.
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          <form onSubmit={(e) => handleAdminSaveQuiz(e, 'published')} className="space-y-6">
+                            {/* Basic Info */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Quiz / Challenge Title *</label>
+                                <input
+                                  type="text"
+                                  value={newQuizForm.title}
+                                  onChange={(e) => setNewQuizForm({ ...newQuizForm, title: e.target.value })}
+                                  placeholder="Weekly Challenge: Crime Scene Documentation & Forensic Mapping"
+                                  className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
+                                  required
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Category *</label>
+                                <select
+                                  value={newQuizForm.category}
+                                  onChange={(e) => setNewQuizForm({ ...newQuizForm, category: e.target.value })}
+                                  className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none"
+                                >
+                                  <option value="Crime Scene Documentation">Crime Scene Documentation</option>
+                                  <option value="Crime Scene Investigation">Crime Scene Investigation</option>
+                                  <option value="Forensic Identification">Forensic Identification</option>
+                                  <option value="Forensic Biology">Forensic Biology</option>
+                                  <option value="Digital Forensics">Digital Forensics</option>
+                                  <option value="Forensic Chemistry">Forensic Chemistry</option>
+                                  <option value="Forensic Toxicology">Forensic Toxicology</option>
+                                  <option value="Forensic Ballistics">Forensic Ballistics</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Challenge Description *</label>
+                              <textarea
+                                value={newQuizForm.description}
+                                onChange={(e) => setNewQuizForm({ ...newQuizForm, description: e.target.value })}
+                                rows={2}
+                                placeholder="Describe syllabus, topics covered (e.g. photography, triangulation, ABFO #2 scale, sketches), and rules..."
+                                className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs text-text-main outline-none"
+                                required
+                              />
+                            </div>
+
+                            {/* Schedule & Timing Grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-base/50 p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                              <div className="flex items-center gap-2 pt-6">
+                                <input
+                                  type="checkbox"
+                                  id="isWeeklyChallenge"
+                                  checked={newQuizForm.isWeeklyChallenge}
+                                  onChange={(e) => setNewQuizForm({ ...newQuizForm, isWeeklyChallenge: e.target.checked })}
+                                  className="w-4 h-4 text-warning"
+                                />
+                                <label htmlFor="isWeeklyChallenge" className="text-xs font-bold uppercase text-text-main cursor-pointer">
+                                  Weekly Challenge?
+                                </label>
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Live Start Date & Time</label>
+                                <input
+                                  type="datetime-local"
+                                  value={newQuizForm.scheduledStartTime}
+                                  onChange={(e) => setNewQuizForm({ ...newQuizForm, scheduledStartTime: e.target.value })}
+                                  className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-main outline-none"
+                                />
+                                {newQuizForm.scheduledStartTime && (
+                                  <p className="text-[10px] text-amber-500 font-mono mt-1 font-bold">
+                                    IST: {(() => {
+                                      try {
+                                        return new Date(newQuizForm.scheduledStartTime).toLocaleString('en-IN', {
+                                          timeZone: 'Asia/Kolkata',
+                                          day: 'numeric',
+                                          month: 'short',
+                                          year: 'numeric',
+                                          hour: '2-digit',
+                                          minute: '2-digit',
+                                          hour12: true
+                                        }) + ' IST';
+                                      } catch (e) {
+                                        return '';
+                                      }
+                                    })()}
+                                  </p>
+                                )}
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Duration (Mins)</label>
+                                <input
+                                  type="number"
+                                  value={newQuizForm.durationMinutes}
+                                  onChange={(e) => setNewQuizForm({ ...newQuizForm, durationMinutes: Number(e.target.value) })}
+                                  className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold text-text-main outline-none"
+                                  required
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Total Points (Sum: {quizQuestions.reduce((acc, q) => acc + (Number(q.points) || 0), 0)})</label>
+                                <input
+                                  type="number"
+                                  value={newQuizForm.totalPoints}
+                                  onChange={(e) => setNewQuizForm({ ...newQuizForm, totalPoints: Number(e.target.value) })}
+                                  className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold text-warning font-mono outline-none"
+                                  required
+                                />
+                              </div>
+                            </div>
+
+                            {/* PRICING & ACCESS MODEL: TWO CLEAR OPTIONS (FREE VS PAID) */}
+                            <div className="space-y-4">
+                              <div className="flex items-center justify-between">
+                                <label className="text-xs font-mono uppercase tracking-wider text-text-muted flex items-center gap-1.5 font-bold">
+                                  <CreditCard size={14} className="text-warning" /> Quiz & Challenge Pricing Model (Select One) *
+                                </label>
+                                <span className={cn(
+                                  "text-[10px] font-mono px-2.5 py-0.5 rounded-full border font-black uppercase tracking-wider",
+                                  newQuizForm.isPaid 
+                                    ? "bg-amber-500/15 text-amber-400 border-amber-500/30" 
+                                    : "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                )}>
+                                  Mode: {newQuizForm.isPaid ? "Paid Challenge" : "100% Free Quiz"}
+                                </span>
+                              </div>
+
+                              {/* Two Distinct Clickable Option Cards for Admin */}
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Option 1: FREE QUIZ / CHALLENGE */}
+                                <div 
+                                  onClick={() => setNewQuizForm({ ...newQuizForm, isPaid: false, price: 0 })}
+                                  className={cn(
+                                    "p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 relative group select-none",
+                                    !newQuizForm.isPaid
+                                      ? "bg-emerald-500/10 border-emerald-500 shadow-lg shadow-emerald-500/10 ring-2 ring-emerald-500/30"
+                                      : "bg-surface hover:bg-surface/80 border-black/10 dark:border-white/10 hover:border-emerald-500/40 opacity-80 hover:opacity-100"
+                                  )}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className={cn(
+                                        "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0",
+                                        !newQuizForm.isPaid
+                                          ? "bg-emerald-500 text-black shadow-md"
+                                          : "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                      )}>
+                                        <Zap size={18} />
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-2">
+                                          <h4 className={cn(
+                                            "text-sm font-black uppercase tracking-tight",
+                                            !newQuizForm.isPaid ? "text-emerald-400" : "text-text-main"
+                                          )}>
+                                            Option 1: Free Quiz
+                                          </h4>
+                                          <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-black border border-emerald-500/30">
+                                            100% FREE
+                                          </span>
+                                        </div>
+                                        <p className="text-[11px] font-mono text-emerald-400/90 font-bold mt-0.5">
+                                          Open Access for All Students
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className={cn(
+                                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 mt-0.5",
+                                      !newQuizForm.isPaid
+                                        ? "border-emerald-400 bg-emerald-500"
+                                        : "border-black/30 dark:border-white/30"
+                                    )}>
+                                      {!newQuizForm.isPaid && <div className="w-2 h-2 rounded-full bg-black" />}
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs text-text-muted leading-relaxed">
+                                    Completely free for all students. No registration fee, UPI QR payment, or manual UTR approval required. Instant enrollment for practice or open challenge.
+                                  </p>
+
+                                  <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px] font-mono">
+                                    <span className="text-emerald-400 font-black">Entry Fee: ₹0 (Free)</span>
+                                    <span className="text-text-muted">No UTR Verification Required</span>
+                                  </div>
+                                </div>
+
+                                {/* Option 2: PAID CHALLENGE */}
+                                <div 
+                                  onClick={() => setNewQuizForm({ 
+                                    ...newQuizForm, 
+                                    isPaid: true, 
+                                    price: newQuizForm.price > 0 ? newQuizForm.price : 49,
+                                    upiId: newQuizForm.upiId || 'forenclue@okaxis',
+                                    payeeName: newQuizForm.payeeName || 'ForenClue Forensic Services'
+                                  })}
+                                  className={cn(
+                                    "p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 relative group select-none",
+                                    newQuizForm.isPaid
+                                      ? "bg-amber-500/10 border-amber-500 shadow-lg shadow-amber-500/10 ring-2 ring-amber-500/30"
+                                      : "bg-surface hover:bg-surface/80 border-black/10 dark:border-white/10 hover:border-amber-500/40 opacity-80 hover:opacity-100"
+                                  )}
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className={cn(
+                                        "w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm shrink-0",
+                                        newQuizForm.isPaid
+                                          ? "bg-amber-500 text-black shadow-md"
+                                          : "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                      )}>
+                                        <Trophy size={18} />
+                                      </div>
+                                      <div>
+                                        <div className="flex items-center gap-2">
+                                          <h4 className={cn(
+                                            "text-sm font-black uppercase tracking-tight",
+                                            newQuizForm.isPaid ? "text-amber-400" : "text-text-main"
+                                          )}>
+                                            Option 2: Paid Challenge
+                                          </h4>
+                                          <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-black border border-amber-500/30">
+                                            PAID & PRIZES
+                                          </span>
+                                        </div>
+                                        <p className="text-[11px] font-mono text-amber-400/90 font-bold mt-0.5">
+                                          Advance UPI Fee & UTR Approval
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className={cn(
+                                      "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0 mt-0.5",
+                                      newQuizForm.isPaid
+                                        ? "border-amber-400 bg-amber-500"
+                                        : "border-black/30 dark:border-white/30"
+                                    )}>
+                                      {newQuizForm.isPaid && <div className="w-2 h-2 rounded-full bg-black" />}
+                                    </div>
+                                  </div>
+
+                                  <p className="text-xs text-text-muted leading-relaxed">
+                                    Competitive challenge requiring advance candidate payment via dynamic UPI QR, 12-digit UTR submission, and admin approval with cash prize payouts.
+                                  </p>
+
+                                  <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px] font-mono">
+                                    <span className="text-amber-400 font-black">Entry Fee: ₹{newQuizForm.price || 49}</span>
+                                    <span className="text-amber-400/90 font-black">Top 3 Cash Prizes</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* FREE MODE CONFIRMATION BANNER */}
+                              {!newQuizForm.isPaid && (
+                                <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
+                                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                    <CheckCircle2 size={18} />
+                                  </div>
+                                  <div className="text-xs">
+                                    <p className="font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                      <span>✓ Free Quiz Access Active</span>
+                                      <span className="text-[10px] bg-emerald-500/15 px-2 py-0.2 rounded font-mono">No Fees</span>
+                                    </p>
+                                    <p className="text-text-muted mt-0.5 leading-relaxed">
+                                      All candidates can enroll and attempt this quiz freely without paying any fee or submitting a UTR transaction number.
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* PAID CHALLENGE CONFIGURATION PANEL */}
+                              {newQuizForm.isPaid && (
+                                <div className="bg-amber-500/5 border border-amber-500/30 rounded-2xl p-5 space-y-4">
+                                  <div className="flex items-center justify-between border-b border-amber-500/20 pb-3">
+                                    <div className="flex items-center gap-2">
+                                      <Trophy size={16} className="text-amber-400" />
+                                      <span className="text-xs font-black uppercase text-amber-400">
+                                        Paid Challenge Setup & UPI Payout Details
+                                      </span>
+                                    </div>
+                                    <span className="text-[10px] font-mono text-amber-400/80 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20 font-bold">
+                                      Admin UTR Review Enabled
+                                    </span>
+                                  </div>
+
+                                  <div className="space-y-4 pt-1">
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-amber-300 uppercase mb-1 font-bold">
+                                          Candidate Entry Fee (INR ₹) *
+                                        </label>
+                                        <input
+                                          type="number"
+                                          min={1}
+                                          value={newQuizForm.price}
+                                          onChange={(e) => setNewQuizForm({ ...newQuizForm, price: Number(e.target.value) })}
+                                          placeholder="49"
+                                          className="w-full bg-base border border-amber-500/30 rounded-xl p-2.5 text-xs font-bold text-amber-400 outline-none"
+                                          required={newQuizForm.isPaid}
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-amber-300 uppercase mb-1 font-bold">
+                                          UPI ID for Candidate Payment *
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={newQuizForm.upiId}
+                                          onChange={(e) => setNewQuizForm({ ...newQuizForm, upiId: e.target.value })}
+                                          placeholder="forenclue@okaxis"
+                                          className="w-full bg-base border border-amber-500/30 rounded-xl p-2.5 text-xs font-bold text-text-main outline-none"
+                                          required={newQuizForm.isPaid}
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-amber-300 uppercase mb-1 font-bold">
+                                          Payee Display Name *
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={newQuizForm.payeeName}
+                                          onChange={(e) => setNewQuizForm({ ...newQuizForm, payeeName: e.target.value })}
+                                          placeholder="ForenClue Forensic Services"
+                                          className="w-full bg-base border border-amber-500/30 rounded-xl p-2.5 text-xs font-bold text-text-main outline-none"
+                                          required={newQuizForm.isPaid}
+                                        />
+                                      </div>
+                                    </div>
+
+                                    {/* Cash Prize Pool Distribution */}
+                                    <div className="bg-black/30 border border-amber-500/20 rounded-xl p-4 space-y-3">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-xs font-black uppercase text-amber-400 flex items-center gap-1.5">
+                                          <Award size={14} /> Leaderboard Cash Prize Distribution
+                                        </span>
+                                        <span className="text-xs font-mono font-black text-warning">
+                                          Total Prize Pool: ₹{(Number(newQuizForm.firstPrize) || 0) + (Number(newQuizForm.secondPrize) || 0) + (Number(newQuizForm.thirdPrize) || 0)}
+                                        </span>
+                                      </div>
+
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                                        <div className="bg-surface/80 p-3 rounded-xl border border-amber-500/20">
+                                          <label className="block text-[10px] font-mono text-amber-400 uppercase font-bold mb-1">
+                                            🥇 1st Rank Prize (₹)
+                                          </label>
+                                          <input
+                                            type="number"
+                                            min={0}
+                                            value={newQuizForm.firstPrize}
+                                            onChange={(e) => setNewQuizForm({ ...newQuizForm, firstPrize: Number(e.target.value) })}
+                                            placeholder="300"
+                                            className="w-full bg-base border border-amber-500/30 rounded-lg p-2 text-xs font-black font-mono text-white outline-none"
+                                          />
+                                        </div>
+
+                                        <div className="bg-surface/80 p-3 rounded-xl border border-amber-500/20">
+                                          <label className="block text-[10px] font-mono text-slate-300 uppercase font-bold mb-1">
+                                            🥈 2nd Rank Prize (₹)
+                                          </label>
+                                          <input
+                                            type="number"
+                                            min={0}
+                                            value={newQuizForm.secondPrize}
+                                            onChange={(e) => setNewQuizForm({ ...newQuizForm, secondPrize: Number(e.target.value) })}
+                                            placeholder="200"
+                                            className="w-full bg-base border border-white/20 rounded-lg p-2 text-xs font-black font-mono text-white outline-none"
+                                          />
+                                        </div>
+
+                                        <div className="bg-surface/80 p-3 rounded-xl border border-amber-500/20">
+                                          <label className="block text-[10px] font-mono text-amber-600 uppercase font-bold mb-1">
+                                            🥉 3rd Rank Prize (₹)
+                                          </label>
+                                          <input
+                                            type="number"
+                                            min={0}
+                                            value={newQuizForm.thirdPrize}
+                                            onChange={(e) => setNewQuizForm({ ...newQuizForm, thirdPrize: Number(e.target.value) })}
+                                            placeholder="100"
+                                            className="w-full bg-base border border-amber-600/30 rounded-lg p-2 text-xs font-black font-mono text-white outline-none"
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Registration Window Timing */}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-text-muted uppercase mb-1 font-bold">
+                                          Registrations Open (e.g. 1 Week Advance)
+                                        </label>
+                                        <input
+                                          type="datetime-local"
+                                          value={newQuizForm.registrationStartTime}
+                                          onChange={(e) => setNewQuizForm({ ...newQuizForm, registrationStartTime: e.target.value })}
+                                          className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-main outline-none"
+                                        />
+                                      </div>
+
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-text-muted uppercase mb-1 font-bold">
+                                          Registrations Close (e.g. 2 Hours Before Start)
+                                        </label>
+                                        <input
+                                          type="datetime-local"
+                                          value={newQuizForm.registrationEndTime}
+                                          onChange={(e) => setNewQuizForm({ ...newQuizForm, registrationEndTime: e.target.value })}
+                                          className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-main outline-none"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* ANTI-CHEAT & INTEGRITY CONTROLS */}
+                            <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-5 space-y-3">
+                              <h3 className="text-xs font-black uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
+                                <ShieldCheck size={16} /> Anti-Cheat & Examination Integrity Settings
+                              </h3>
+                              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                                <label className="flex items-center gap-2 bg-surface/60 p-3 rounded-xl border border-white/5 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={newQuizForm.shuffleQuestions}
+                                    onChange={(e) => setNewQuizForm({ ...newQuizForm, shuffleQuestions: e.target.checked })}
+                                    className="w-4 h-4 text-blue-500"
+                                  />
+                                  <div>
+                                    <span className="text-xs font-bold text-text-main block">Shuffle Questions</span>
+                                    <span className="text-[10px] text-text-muted">Randomizes order for every candidate</span>
+                                  </div>
+                                </label>
+
+                                <label className="flex items-center gap-2 bg-surface/60 p-3 rounded-xl border border-white/5 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={newQuizForm.shuffleOptions}
+                                    onChange={(e) => setNewQuizForm({ ...newQuizForm, shuffleOptions: e.target.checked })}
+                                    className="w-4 h-4 text-blue-500"
+                                  />
+                                  <div>
+                                    <span className="text-xs font-bold text-text-main block">Shuffle Choices (A/B/C/D)</span>
+                                    <span className="text-[10px] text-text-muted">Prevents adjacent-device copy cheating</span>
+                                  </div>
+                                </label>
+
+                                <label className="flex items-center gap-2 bg-surface/60 p-3 rounded-xl border border-white/5 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={newQuizForm.enableTabSwitchDetection}
+                                    onChange={(e) => setNewQuizForm({ ...newQuizForm, enableTabSwitchDetection: e.target.checked })}
+                                    className="w-4 h-4 text-blue-500"
+                                  />
+                                  <div>
+                                    <span className="text-xs font-bold text-text-main block">Tab-Switch Detection</span>
+                                    <span className="text-[10px] text-text-muted">Auto-submits after 3 blur violations</span>
+                                  </div>
+                                </label>
+                              </div>
+                            </div>
+
+                            {/* MANUAL QUESTIONS BUILDER SECTION */}
+                            <div className="pt-4 border-t border-black/10 dark:border-white/10 space-y-6">
+                              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface/50 p-4 rounded-2xl border border-black/5 dark:border-white/5">
+                                <div>
+                                  <h3 className="text-sm font-heading font-black uppercase tracking-wider text-text-main flex items-center gap-2">
+                                    <HelpCircle size={16} className="text-warning" /> Challenge Questions ({quizQuestions.length})
+                                  </h3>
+                                  <p className="text-[11px] text-text-muted mt-0.5">
+                                    Total Points: <span className="font-mono font-bold text-warning">{quizQuestions.reduce((acc, q) => acc + (Number(q.points) || 0), 0)} pts</span>. Mark correct answers, attach crime scene diagrams, and provide rationales.
+                                  </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetAllPoints(20)}
+                                    className="px-3 py-1.5 bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning text-xs font-bold rounded-xl transition cursor-pointer"
+                                  >
+                                    Apply 20 Pts Each
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={handleAddQuestion}
+                                    className="px-3 py-1.5 bg-warning text-crust text-xs font-black uppercase tracking-wider rounded-xl transition flex items-center gap-1.5 cursor-pointer"
+                                  >
+                                    <Plus size={14} /> Add Question
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="space-y-6">
+                                {quizQuestions.map((q, qIdx) => (
+                                  <div key={q.id || qIdx} className="bg-base border border-black/10 dark:border-white/10 rounded-2xl p-5 relative shadow-sm">
+                                    <div className="flex items-center justify-between mb-4 border-b border-black/5 dark:border-white/5 pb-3">
+                                      <div className="flex items-center gap-2">
+                                        <span className="w-7 h-7 rounded-full bg-warning/20 text-warning text-xs font-mono font-bold flex items-center justify-center">
+                                          {qIdx + 1}
+                                        </span>
+                                        <span className="font-bold text-xs uppercase tracking-wider text-text-main">
+                                          Question #{qIdx + 1}
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1 bg-surface border border-black/10 dark:border-white/10 px-2.5 py-1 rounded-lg">
+                                          <span className="text-[10px] text-text-muted font-mono uppercase">Points:</span>
+                                          <input
+                                            type="number"
+                                            min={1}
+                                            value={q.points || 20}
+                                            onChange={(e) => handleQuestionChange(qIdx, 'points', Number(e.target.value))}
+                                            className="w-12 bg-transparent text-xs font-bold font-mono text-warning outline-none text-right"
+                                          />
+                                        </div>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDuplicateQuestion(qIdx)}
+                                          className="p-1.5 text-text-muted hover:text-warning hover:bg-warning/10 rounded-lg transition"
+                                          title="Duplicate this question"
+                                        >
+                                          <Copy size={14} />
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveQuestion(qIdx)}
+                                          className="p-1.5 text-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
+                                          title="Remove Question"
+                                        >
+                                          <Trash2 size={14} />
+                                        </button>
+                                      </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                      {/* Question Prompt */}
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
+                                          Question Scenario / Statement *
+                                        </label>
+                                        <textarea
+                                          value={q.question}
+                                          onChange={(e) => handleQuestionChange(qIdx, 'question', e.target.value)}
+                                          rows={2}
+                                          placeholder="e.g. In crime scene photography, why must a photograph be taken with an ABFO #2 scale perpendicular to the plane of a bite mark?"
+                                          className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
+                                          required
+                                        />
+                                      </div>
+
+                                      {/* Crime Scene Diagram / Question Image (Direct Cloudflare R2 Bucket Upload) */}
+                                      <div className="bg-surface/80 border border-black/10 dark:border-white/10 rounded-2xl p-4 space-y-3">
+                                        <div className="flex items-center justify-between">
+                                          <label className="text-[11px] font-mono font-bold text-text-main uppercase tracking-wider flex items-center gap-1.5">
+                                            <ImageIcon size={14} className="text-warning" /> Crime Scene Diagram / Forensic Image
+                                          </label>
+                                          <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md flex items-center gap-1">
+                                            <Sparkles size={10} /> R2 Bucket Storage
+                                          </span>
+                                        </div>
+
+                                        {q.image ? (
+                                          /* Attached Image Preview & Controls */
+                                          <div className="space-y-3">
+                                            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-base p-3 rounded-xl border border-black/10 dark:border-white/10">
+                                              <div className="relative group shrink-0 w-32 h-24 sm:w-40 sm:h-28 bg-black/60 rounded-lg overflow-hidden border border-black/10 dark:border-white/10 flex items-center justify-center">
+                                                <ResilientImage 
+                                                  src={q.image} 
+                                                  alt={q.imageCaption || "Question diagram"} 
+                                                  className="max-w-full max-h-full object-contain" 
+                                                  fallbackText="Diagram Error"
+                                                />
+                                                <button
+                                                  type="button"
+                                                  onClick={async () => {
+                                                    const resolved = await resolveFileUrl(q.image);
+                                                    if (resolved) {
+                                                      window.open(resolved, '_blank');
+                                                    }
+                                                  }}
+                                                  className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold gap-1 cursor-pointer backdrop-blur-[1px]"
+                                                >
+                                                  <Eye size={12} /> View Full
+                                                </button>
+                                              </div>
+
+                                              <div className="flex-1 min-w-0 space-y-2 w-full">
+                                                <div className="flex items-center justify-between gap-2">
+                                                  <span className="text-[11px] font-mono text-emerald-400 font-bold flex items-center gap-1 truncate">
+                                                    <CheckCircle2 size={13} className="shrink-0" />
+                                                    {q.image.startsWith('localdb://')
+                                                      ? 'Diagram Stored Locally'
+                                                      : q.image.startsWith('firestore-blob://')
+                                                        ? 'Diagram Stored in Cloud Storage'
+                                                        : 'Diagram Stored in R2'}
+                                                  </span>
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveQuestionImage(qIdx)}
+                                                    className="px-2.5 py-1 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 rounded-lg text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shrink-0"
+                                                    title="Remove Diagram"
+                                                  >
+                                                    <Trash2 size={11} /> Remove
+                                                  </button>
+                                                </div>
+
+                                                <div className="text-[10px] font-mono text-text-muted truncate bg-surface px-2.5 py-1.5 rounded-lg border border-black/5 dark:border-white/5 select-all">
+                                                  {q.image}
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+                                                  {/* Replace file directly */}
+                                                  <label className="cursor-pointer px-2.5 py-1 bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning rounded-lg text-[10px] font-bold transition flex items-center gap-1">
+                                                    <Upload size={11} /> Replace in R2
+                                                    <input
+                                                      type="file"
+                                                      accept="image/*"
+                                                      onChange={(e) => handleQuestionImageUploadDirect(qIdx, e)}
+                                                      disabled={uploadingQuestionImages[qIdx]}
+                                                      className="hidden"
+                                                    />
+                                                  </label>
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Diagram Caption */}
+                                            <div>
+                                              <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
+                                                Diagram Caption / Label (Optional - displayed under the image)
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={q.imageCaption || ''}
+                                                onChange={(e) => handleQuestionChange(qIdx, 'imageCaption', e.target.value)}
+                                                placeholder="e.g. Figure 1: 1:1 Scale comparison of fracture edges / friction ridges"
+                                                className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-main outline-none focus:border-warning"
+                                              />
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          /* Direct R2 Upload Box & URL Option */
+                                          <div className="space-y-3">
+                                            <div className="border-2 border-dashed border-warning/30 hover:border-warning/60 bg-base/60 hover:bg-base rounded-xl p-4 text-center transition">
+                                              <input
+                                                type="file"
+                                                id={`question-img-upload-${qIdx}`}
+                                                accept="image/*"
+                                                onChange={(e) => handleQuestionImageUploadDirect(qIdx, e)}
+                                                disabled={uploadingQuestionImages[qIdx]}
+                                                className="hidden"
+                                              />
+                                              <label 
+                                                htmlFor={`question-img-upload-${qIdx}`}
+                                                className="cursor-pointer flex flex-col items-center justify-center gap-2"
+                                              >
+                                                {uploadingQuestionImages[qIdx] ? (
+                                                  <div className="flex items-center gap-2 text-warning text-xs font-bold py-2">
+                                                    <Loader2 size={18} className="animate-spin" />
+                                                    <span>{questionImageUploadMsgs[qIdx] || 'Uploading diagram to Cloudflare R2 bucket...'}</span>
+                                                  </div>
+                                                ) : (
+                                                  <>
+                                                    <div className="w-10 h-10 rounded-full bg-warning/15 text-warning flex items-center justify-center shadow-inner">
+                                                      <Upload size={18} />
+                                                    </div>
+                                                    <div>
+                                                      <span className="text-xs font-bold text-text-main block">
+                                                        Upload Diagram / Photo to Cloudflare R2
+                                                      </span>
+                                                      <span className="text-[10px] text-text-muted">
+                                                        Supports PNG, JPG, WEBP, SVG diagrams, photomacrographs, and evidence sketches
+                                                      </span>
+                                                    </div>
+                                                  </>
+                                                )}
+                                              </label>
+                                            </div>
+
+                                            {questionImageUploadMsgs[qIdx] && !uploadingQuestionImages[qIdx] && (
+                                              <p className="text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-lg">
+                                                {questionImageUploadMsgs[qIdx]}
+                                              </p>
+                                            )}
+                                            {questionImageErrors[qIdx] && (
+                                              <p className="text-[11px] font-mono text-rose-400 bg-rose-500/10 border border-rose-500/20 p-2 rounded-lg flex items-center gap-1.5">
+                                                <AlertCircle size={13} /> {questionImageErrors[qIdx]}
+                                              </p>
+                                            )}
+
+                                            {/* Direct URL input as alternative */}
+                                            <div className="pt-1">
+                                              <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
+                                                Or Enter Direct Image / Diagram URL:
+                                              </label>
+                                              <input
+                                                type="url"
+                                                value={q.image || ''}
+                                                onChange={(e) => handleQuestionChange(qIdx, 'image', e.target.value)}
+                                                placeholder="https://pub-...r2.dev/quiz-diagrams/... or https://..."
+                                                className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-muted outline-none focus:text-text-main focus:border-warning"
+                                              />
+                                            </div>
+
+                                            <div>
+                                              <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
+                                                Diagram Caption / Label (Optional)
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={q.imageCaption || ''}
+                                                onChange={(e) => handleQuestionChange(qIdx, 'imageCaption', e.target.value)}
+                                                placeholder="e.g. Figure 1: ABFO Scale with bite mark indentation"
+                                                className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-main outline-none focus:border-warning"
+                                              />
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+
+                                      {/* Answer Choices */}
+                                      <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                          <label className="text-[10px] font-mono text-text-muted uppercase">
+                                            Answer Choices (Click letter icon to mark the scientifically correct answer)
+                                          </label>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAddOption(qIdx)}
+                                            className="text-[10px] font-bold text-warning hover:underline flex items-center gap-1 cursor-pointer"
+                                          >
+                                            <Plus size={12} /> Add Choice
+                                          </button>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                          {q.options.map((opt, optIdx) => {
+                                            const isCorrect = q.correctAnswerIndex === optIdx;
+                                            return (
+                                              <div
+                                                key={optIdx}
+                                                className={cn(
+                                                  "flex items-center gap-2 p-2 rounded-xl border transition-all",
+                                                  isCorrect
+                                                    ? "bg-emerald-500/10 border-emerald-500/40 text-text-main"
+                                                    : "bg-surface border-black/10 dark:border-white/10"
+                                                )}
+                                              >
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleQuestionChange(qIdx, 'correctAnswerIndex', optIdx)}
+                                                  className={cn(
+                                                    "w-7 h-7 rounded-lg flex items-center justify-center shrink-0 text-xs font-black transition-all cursor-pointer",
+                                                    isCorrect
+                                                      ? "bg-emerald-500 text-crust shadow-sm"
+                                                      : "border border-black/20 dark:border-white/20 text-text-muted hover:border-warning"
+                                                  )}
+                                                  title={isCorrect ? "Correct Answer" : "Click to set as Correct Answer"}
+                                                >
+                                                  {isCorrect ? <Check size={14} /> : String.fromCharCode(65 + optIdx)}
+                                                </button>
+
+                                                <input
+                                                  type="text"
+                                                  value={opt}
+                                                  onChange={(e) => handleOptionChange(qIdx, optIdx, e.target.value)}
+                                                  placeholder={`Option ${String.fromCharCode(65 + optIdx)}...`}
+                                                  className="w-full bg-transparent text-xs font-medium text-text-main outline-none"
+                                                  required
+                                                />
+
+                                                {isCorrect && (
+                                                  <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 shrink-0">
+                                                    Correct Answer
+                                                  </span>
+                                                )}
+
+                                                {q.options.length > 2 && (
+                                                  <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveOption(qIdx, optIdx)}
+                                                    className="p-1 text-text-muted hover:text-red-400 rounded transition shrink-0 cursor-pointer"
+                                                    title="Remove Choice"
+                                                  >
+                                                    <Trash2 size={12} />
+                                                  </button>
+                                                )}
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                      </div>
+
+                                      {/* Explanation / Rationale */}
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
+                                          Scientific Explanation / Forensic Rationale
+                                        </label>
+                                        <textarea
+                                          value={q.explanation || ''}
+                                          onChange={(e) => handleQuestionChange(qIdx, 'explanation', e.target.value)}
+                                          rows={2}
+                                          placeholder="e.g. Taking photos perpendicular to the scale prevents optical perspective distortion, enabling 1:1 forensic photomacrographic matching."
+                                          className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-muted outline-none focus:text-text-main focus:border-warning"
+                                        />
+                                      </div>
+
+                                      {/* Optional Guided Clue / Hint */}
+                                      <div>
+                                        <label className="block text-[10px] font-mono text-text-muted uppercase mb-1 flex items-center gap-1">
+                                          <Lightbulb size={12} className="text-amber-400" /> Helpful Guided Clue / Hint (Optional)
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={q.hint || ''}
+                                          onChange={(e) => handleQuestionChange(qIdx, 'hint', e.target.value)}
+                                          placeholder="e.g. Focus on the scale alignment relative to the camera lens sensor plane."
+                                          className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-muted outline-none focus:text-text-main focus:border-warning"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+
+                              <div className="flex items-center justify-center pt-2">
+                                <button
+                                  type="button"
+                                  onClick={handleAddQuestion}
+                                  className="w-full border-2 border-dashed border-warning/30 hover:border-warning/60 bg-warning/5 hover:bg-warning/10 p-3 rounded-2xl text-warning font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer"
+                                >
+                                  <Plus size={16} /> Add Another Question
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center justify-between gap-3 pt-5 border-t border-black/10 dark:border-white/10 flex-wrap">
+                              <div className="flex items-center gap-3 flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdminSaveQuiz(undefined, 'draft')}
+                                  className="px-5 py-3 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-400 font-bold rounded-xl text-xs uppercase tracking-wider flex items-center gap-2 transition cursor-pointer shadow-sm"
+                                  title="Save in progress without publishing to students"
+                                >
+                                  <FileText size={16} /> Save as Draft
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdminSaveQuiz(undefined, 'published')}
+                                  className="px-6 py-3 bg-warning text-crust hover:bg-warning/90 font-black rounded-xl text-xs uppercase tracking-widest transition flex items-center gap-2 cursor-pointer shadow-lg shadow-warning/10"
+                                >
+                                  <Award size={16} /> {editingQuizId && newQuizForm.status === 'published' ? "Update Published Challenge" : "Publish Quiz / Weekly Challenge"}
+                                </button>
+                              </div>
+
+                              {editingQuizId && (
+                                <button
+                                  type="button"
+                                  onClick={handleResetQuizForm}
+                                  className="px-4 py-3 bg-base hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main font-bold rounded-xl text-xs uppercase tracking-widest transition cursor-pointer"
+                                >
+                                  Cancel Edit
+                                </button>
+                              )}
+                            </div>
+                          </form>
+                        </div>
+                      )}
+
+                      {/* SUBTAB 2: UTR REGISTRATIONS & APPROVALS */}
+                      {quizSubTab === 'approvals' && (
+                        <div className="pt-6 space-y-6">
+                          {/* Top Controls & Metrics */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                            <div className="p-4 bg-base rounded-2xl border border-black/5 dark:border-white/5 text-center">
+                              <span className="text-[10px] font-mono uppercase text-text-muted block">Total Registrations</span>
+                              <span className="text-xl font-black text-text-main font-mono">{quizRegistrations.length}</span>
+                            </div>
+                            <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-500/30 text-center">
+                              <span className="text-[10px] font-mono uppercase text-amber-400 block font-bold">Pending Review</span>
+                              <span className="text-xl font-black text-amber-400 font-mono">
+                                {quizRegistrations.filter(r => r.status === 'pending').length}
+                              </span>
+                            </div>
+                            <div className="p-4 bg-emerald-500/10 rounded-2xl border border-emerald-500/30 text-center">
+                              <span className="text-[10px] font-mono uppercase text-emerald-400 block font-bold">Approved</span>
+                              <span className="text-xl font-black text-emerald-400 font-mono">
+                                {quizRegistrations.filter(r => r.status === 'approved').length}
+                              </span>
+                            </div>
+                            <div className="p-4 bg-rose-500/10 rounded-2xl border border-rose-500/30 text-center">
+                              <span className="text-[10px] font-mono uppercase text-rose-400 block font-bold">Rejected</span>
+                              <span className="text-xl font-black text-rose-400 font-mono">
+                                {quizRegistrations.filter(r => r.status === 'rejected').length}
+                              </span>
+                            </div>
                           </div>
 
-                          <div>
-                            <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Start Date & Time</label>
-                            <input
-                              type="datetime-local"
-                              value={newQuizForm.scheduledStartTime}
-                              onChange={(e) => setNewQuizForm({ ...newQuizForm, scheduledStartTime: e.target.value })}
-                              className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-main outline-none"
-                            />
-                            {newQuizForm.scheduledStartTime && (
-                              <p className="text-[10px] text-amber-500 font-mono mt-1 font-bold">
-                                Converted to IST: {(() => {
-                                  try {
-                                    return new Date(newQuizForm.scheduledStartTime).toLocaleString('en-IN', {
-                                      timeZone: 'Asia/Kolkata',
-                                      day: 'numeric',
-                                      month: 'short',
-                                      year: 'numeric',
-                                      hour: '2-digit',
-                                      minute: '2-digit',
-                                      hour12: true
-                                    }) + ' IST';
-                                  } catch (e) {
-                                    return '';
-                                  }
-                                })()}
-                              </p>
+                          {/* Filter & Search Bar */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-base p-3 rounded-2xl border border-black/5 dark:border-white/5">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              {(['all', 'pending', 'approved', 'rejected'] as const).map(st => (
+                                <button
+                                  key={st}
+                                  type="button"
+                                  onClick={() => setRegFilterStatus(st)}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-xl text-xs font-bold uppercase transition cursor-pointer",
+                                    regFilterStatus === st
+                                      ? "bg-warning text-crust font-black"
+                                      : "text-text-muted hover:text-text-main bg-surface/60"
+                                  )}
+                                >
+                                  {st}
+                                </button>
+                              ))}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <div className="relative flex-1 sm:w-64">
+                                <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                                <input
+                                  type="text"
+                                  value={regSearchTerm}
+                                  onChange={(e) => setRegSearchTerm(e.target.value)}
+                                  placeholder="Search UTR, student name, email..."
+                                  className="w-full pl-9 pr-3 py-2 bg-surface border border-black/10 dark:border-white/10 rounded-xl text-xs text-text-main outline-none focus:border-warning"
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => fetchRegistrationsList()}
+                                className="p-2 bg-surface hover:bg-surface/80 border border-black/10 dark:border-white/10 rounded-xl text-text-muted hover:text-text-main transition"
+                                title="Refresh registrations list"
+                              >
+                                <RefreshCw size={14} className={loadingRegistrations ? "animate-spin text-warning" : ""} />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Registrations List */}
+                          {loadingRegistrations ? (
+                            <div className="py-12 text-center text-xs text-text-muted">Loading registrations...</div>
+                          ) : (() => {
+                            const filtered = quizRegistrations.filter(r => {
+                              if (regFilterStatus !== 'all' && r.status !== regFilterStatus) return false;
+                              if (regSearchTerm.trim()) {
+                                const term = regSearchTerm.toLowerCase();
+                                const matchUtr = r.utrNumber?.toLowerCase().includes(term);
+                                const matchName = r.userName?.toLowerCase().includes(term);
+                                const matchEmail = r.userEmail?.toLowerCase().includes(term);
+                                const matchQuiz = r.quizTitle?.toLowerCase().includes(term);
+                                if (!matchUtr && !matchName && !matchEmail && !matchQuiz) return false;
+                              }
+                              return true;
+                            });
+
+                            if (filtered.length === 0) {
+                              return (
+                                <div className="py-12 text-center bg-base rounded-2xl border border-black/5 dark:border-white/5 space-y-2">
+                                  <CreditCard size={32} className="mx-auto text-text-muted/40" />
+                                  <p className="text-xs text-text-muted font-bold">No registrations matching this filter.</p>
+                                </div>
+                              );
+                            }
+
+                            return (
+                              <div className="space-y-3">
+                                {filtered.map((reg) => (
+                                  <div
+                                    key={reg.id}
+                                    className="bg-base border border-black/10 dark:border-white/10 rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-warning/30"
+                                  >
+                                    <div className="space-y-1.5 flex-1">
+                                      <div className="flex items-center gap-2 flex-wrap">
+                                        <span className="font-black text-sm text-text-main">{reg.userName}</span>
+                                        <span className="text-xs text-text-muted">({reg.userEmail})</span>
+                                        <span className={cn(
+                                          "text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded-full",
+                                          reg.status === 'approved'
+                                            ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                            : reg.status === 'rejected'
+                                            ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
+                                            : "bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse"
+                                        )}>
+                                          {reg.status}
+                                        </span>
+                                      </div>
+
+                                      <div className="flex items-center gap-3 text-xs text-text-muted flex-wrap">
+                                        <span className="font-bold text-text-main">{reg.quizTitle}</span>
+                                        <span>• Fee: <strong className="text-warning font-mono">₹{reg.amount}</strong></span>
+                                        {reg.senderName && <span>• Sender: <strong>{reg.senderName}</strong></span>}
+                                        <span>• Date: {new Date(reg.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                                      </div>
+
+                                      {/* UTR Pill with One-Click Copy */}
+                                      <div className="pt-1 flex items-center gap-2">
+                                        <span className="text-[10px] font-mono uppercase text-text-muted">12-Digit UTR:</span>
+                                        <span className="font-mono font-bold text-xs bg-surface px-2.5 py-1 rounded-lg border border-black/10 dark:border-white/10 text-amber-400 tracking-wider">
+                                          {reg.utrNumber}
+                                        </span>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            navigator.clipboard.writeText(reg.utrNumber);
+                                            setSuccessMsg(`Copied UTR: ${reg.utrNumber}`);
+                                          }}
+                                          className="p-1 hover:text-warning text-text-muted transition cursor-pointer"
+                                          title="Copy UTR Number"
+                                        >
+                                          <Copy size={13} />
+                                        </button>
+                                      </div>
+
+                                      {reg.rejectReason && (
+                                        <p className="text-[11px] text-rose-400 font-mono mt-1">
+                                          Rejection Reason: {reg.rejectReason}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    <div className="flex items-center gap-2 shrink-0">
+                                      {reg.status !== 'approved' && (
+                                        <button
+                                          type="button"
+                                          disabled={approvingRegId === reg.id}
+                                          onClick={() => handleApproveRegistrationAction(reg)}
+                                          className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-crust font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md shadow-emerald-500/10 flex items-center gap-1.5"
+                                        >
+                                          <CheckCircle2 size={14} /> Approve & Unlock
+                                        </button>
+                                      )}
+
+                                      {reg.status === 'pending' && (
+                                        <button
+                                          type="button"
+                                          disabled={approvingRegId === reg.id}
+                                          onClick={() => handleRejectRegistrationAction(reg)}
+                                          className="px-3 py-2 bg-surface hover:bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold text-xs uppercase tracking-wider rounded-xl transition cursor-pointer"
+                                        >
+                                          Reject
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            );
+                          })()}
+                        </div>
+                      )}
+
+                      {/* SUBTAB 3: PRIZE & WINNER AUDIT */}
+                      {quizSubTab === 'audit' && (
+                        <div className="pt-6 space-y-6">
+                          {/* Quiz Selector */}
+                          <div className="bg-base p-4 rounded-2xl border border-black/5 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                              <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
+                                Select Challenge to Audit for Cash Prizes
+                              </label>
+                              <select
+                                value={auditQuizId}
+                                onChange={(e) => handleAuditQuiz(e.target.value)}
+                                className="bg-surface border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold text-text-main outline-none min-w-[280px]"
+                              >
+                                <option value="">-- Choose Quiz / Challenge --</option>
+                                {adminQuizzes.map(q => (
+                                  <option key={q.id} value={q.id}>
+                                    {q.title} {q.isPaid ? '• [Paid]' : ''} ({q.questions?.length || 0} Qs)
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            {auditQuizId && (
+                              <button
+                                type="button"
+                                onClick={() => handleAuditQuiz(auditQuizId)}
+                                className="px-3 py-2 bg-surface hover:bg-surface/80 border border-black/10 dark:border-white/10 rounded-xl text-xs font-bold text-text-main transition flex items-center gap-1.5"
+                              >
+                                <RefreshCw size={14} className={loadingAudit ? "animate-spin text-warning" : ""} /> Refresh Audit
+                              </button>
                             )}
                           </div>
 
-                          <div>
-                            <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Duration (Mins)</label>
-                            <input
-                              type="number"
-                              value={newQuizForm.durationMinutes}
-                              onChange={(e) => setNewQuizForm({ ...newQuizForm, durationMinutes: Number(e.target.value) })}
-                              className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold text-text-main outline-none"
-                              required
-                            />
-                          </div>
+                          {/* Audit Leaderboard Display */}
+                          {loadingAudit ? (
+                            <div className="py-12 text-center text-xs text-text-muted">Loading candidate attempts & ranking for audit...</div>
+                          ) : !auditQuizId ? (
+                            <div className="py-12 text-center bg-base rounded-2xl border border-black/5 dark:border-white/5 space-y-2">
+                              <Trophy size={32} className="mx-auto text-amber-400/40" />
+                              <p className="text-xs text-text-muted font-bold">Select a challenge above to audit top 3 winners.</p>
+                            </div>
+                          ) : (
+                            <div className="space-y-6">
+                              {/* Top 3 Podium Winners Card */}
+                              {(() => {
+                                const selectedQuiz = adminQuizzes.find(q => q.id === auditQuizId);
+                                const firstPrize = selectedQuiz?.prizes?.first ?? 300;
+                                const secondPrize = selectedQuiz?.prizes?.second ?? 200;
+                                const thirdPrize = selectedQuiz?.prizes?.third ?? 100;
+                                const top3 = auditLeaderboard.slice(0, 3);
 
-                          <div>
-                            <label className="block text-xs font-mono text-text-muted mb-1 uppercase">Total Points</label>
-                            <input
-                              type="number"
-                              value={newQuizForm.totalPoints}
-                              onChange={(e) => setNewQuizForm({ ...newQuizForm, totalPoints: Number(e.target.value) })}
-                              className="w-full bg-base border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs font-bold text-text-main outline-none"
-                              required
-                            />
-                          </div>
+                                return (
+                                  <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                      <h3 className="text-sm font-black uppercase tracking-wider text-text-main flex items-center gap-2">
+                                        <Trophy size={16} className="text-amber-400" /> Official Winners & Cash Prize Awards
+                                      </h3>
+                                      <span className="text-xs font-mono font-bold text-amber-400">
+                                        Total Prize Money: ₹{firstPrize + secondPrize + thirdPrize}
+                                      </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                      {/* Rank 1 */}
+                                      <div className="bg-gradient-to-b from-amber-500/10 to-surface border border-amber-500/40 rounded-2xl p-5 space-y-3 relative overflow-hidden shadow-lg">
+                                        <div className="flex items-center justify-between">
+                                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                                            🥇 1st Rank Award
+                                          </span>
+                                          <span className="text-sm font-black font-mono text-warning">₹{firstPrize}</span>
+                                        </div>
+                                        {top3[0] ? (
+                                          <div className="space-y-1">
+                                            <p className="text-base font-black text-text-main">{top3[0].userName}</p>
+                                            <p className="text-xs text-text-muted">{top3[0].userEmail}</p>
+                                            <div className="pt-2 flex items-center justify-between text-xs border-t border-white/5 font-mono">
+                                              <span className="text-warning font-bold">{top3[0].score} PTS</span>
+                                              <span className="text-text-muted">{Math.floor(top3[0].timeTakenSeconds / 60)}m {top3[0].timeTakenSeconds % 60}s</span>
+                                              <span className="text-emerald-400 font-bold">{top3[0].accuracyPercentage}% Acc</span>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <p className="text-xs text-text-muted py-4">No completed attempt recorded yet.</p>
+                                        )}
+                                      </div>
+
+                                      {/* Rank 2 */}
+                                      <div className="bg-gradient-to-b from-slate-400/10 to-surface border border-slate-400/30 rounded-2xl p-5 space-y-3 relative overflow-hidden shadow-lg">
+                                        <div className="flex items-center justify-between">
+                                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-400/20 text-slate-300 border border-slate-400/30">
+                                            🥈 2nd Rank Award
+                                          </span>
+                                          <span className="text-sm font-black font-mono text-slate-300">₹{secondPrize}</span>
+                                        </div>
+                                        {top3[1] ? (
+                                          <div className="space-y-1">
+                                            <p className="text-base font-black text-text-main">{top3[1].userName}</p>
+                                            <p className="text-xs text-text-muted">{top3[1].userEmail}</p>
+                                            <div className="pt-2 flex items-center justify-between text-xs border-t border-white/5 font-mono">
+                                              <span className="text-warning font-bold">{top3[1].score} PTS</span>
+                                              <span className="text-text-muted">{Math.floor(top3[1].timeTakenSeconds / 60)}m {top3[1].timeTakenSeconds % 60}s</span>
+                                              <span className="text-emerald-400 font-bold">{top3[1].accuracyPercentage}% Acc</span>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <p className="text-xs text-text-muted py-4">No completed attempt recorded yet.</p>
+                                        )}
+                                      </div>
+
+                                      {/* Rank 3 */}
+                                      <div className="bg-gradient-to-b from-amber-700/10 to-surface border border-amber-700/30 rounded-2xl p-5 space-y-3 relative overflow-hidden shadow-lg">
+                                        <div className="flex items-center justify-between">
+                                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-700/20 text-amber-500 border border-amber-700/30">
+                                            🥉 3rd Rank Award
+                                          </span>
+                                          <span className="text-sm font-black font-mono text-amber-500">₹{thirdPrize}</span>
+                                        </div>
+                                        {top3[2] ? (
+                                          <div className="space-y-1">
+                                            <p className="text-base font-black text-text-main">{top3[2].userName}</p>
+                                            <p className="text-xs text-text-muted">{top3[2].userEmail}</p>
+                                            <div className="pt-2 flex items-center justify-between text-xs border-t border-white/5 font-mono">
+                                              <span className="text-warning font-bold">{top3[2].score} PTS</span>
+                                              <span className="text-text-muted">{Math.floor(top3[2].timeTakenSeconds / 60)}m {top3[2].timeTakenSeconds % 60}s</span>
+                                              <span className="text-emerald-400 font-bold">{top3[2].accuracyPercentage}% Acc</span>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <p className="text-xs text-text-muted py-4">No completed attempt recorded yet.</p>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* Audit Guidelines Notice */}
+                                    <div className="p-4 rounded-2xl bg-base border border-black/5 dark:border-white/5 text-xs text-text-muted space-y-1.5">
+                                      <p className="font-bold text-text-main flex items-center gap-1.5">
+                                        <ShieldCheck size={14} className="text-warning" /> Forensic Challenge Prize Audit Guidelines
+                                      </p>
+                                      <p className="text-[11px] leading-relaxed">
+                                        1. Verify that completion time is realistic (&gt; 3–5 minutes for 25 questions).<br/>
+                                        2. Ensure the candidate took the test in official live challenge mode rather than practice.<br/>
+                                        3. Contact the top 3 winners directly at their registered email to disburse their ₹300, ₹200, and ₹100 cash prize payouts via UPI.
+                                      </p>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          )}
                         </div>
+                      )}
 
-                        {/* MANUAL QUESTIONS BUILDER SECTION */}
-                        <div className="pt-4 border-t border-black/10 dark:border-white/10 space-y-6">
-                          <div className="flex items-center justify-between">
+                      {/* SUBTAB 4: ALL QUIZZES & DRAFTS LIST */}
+                      {quizSubTab === 'list' && (
+                        <div className="pt-6 space-y-4">
+                          <div className="flex items-center justify-between flex-wrap gap-3">
                             <div>
-                              <h3 className="text-sm font-heading font-black uppercase tracking-wider text-text-main flex items-center gap-2">
-                                <HelpCircle size={16} className="text-warning" /> Quiz Questions ({quizQuestions.length})
+                              <h3 className="text-sm font-black uppercase tracking-wider text-text-main flex items-center gap-2">
+                                <ClipboardList size={16} className="text-warning" /> Quizzes & Drafts ({adminQuizzes.length})
                               </h3>
-                              <p className="text-[11px] text-text-muted mt-0.5">
-                                Add questions manually with choices, mark the correct answer, and set point values.
+                              <p className="text-xs text-text-muted mt-0.5">
+                                Manage published challenges and resume in-progress drafts.
                               </p>
                             </div>
-                            <button
-                              type="button"
-                              onClick={handleAddQuestion}
-                              className="px-3 py-1.5 bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning text-xs font-bold rounded-xl transition flex items-center gap-1.5 cursor-pointer"
-                            >
-                              <Plus size={14} /> Add Question
-                            </button>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              {/* Filter buttons */}
+                              <div className="flex items-center bg-base p-1 rounded-xl border border-black/10 dark:border-white/10 text-[11px] font-mono flex-wrap">
+                                <button
+                                  type="button"
+                                  onClick={() => setQuizListFilter('all')}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded-lg font-bold transition",
+                                    quizListFilter === 'all' ? "bg-surface text-text-main shadow-sm" : "text-text-muted hover:text-text-main"
+                                  )}
+                                >
+                                  All ({adminQuizzes.length})
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setQuizListFilter('published')}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded-lg font-bold transition",
+                                    quizListFilter === 'published' ? "bg-emerald-500/20 text-emerald-400 shadow-sm" : "text-text-muted hover:text-text-main"
+                                  )}
+                                >
+                                  Published ({adminQuizzes.filter(q => q.status !== 'draft').length})
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setQuizListFilter('drafts')}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded-lg font-bold transition",
+                                    quizListFilter === 'drafts' ? "bg-amber-500/20 text-amber-400 shadow-sm" : "text-text-muted hover:text-text-main"
+                                  )}
+                                >
+                                  Drafts ({adminQuizzes.filter(q => q.status === 'draft').length})
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setQuizListFilter('free')}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded-lg font-bold transition",
+                                    quizListFilter === 'free' ? "bg-emerald-500/20 text-emerald-400 shadow-sm" : "text-text-muted hover:text-text-main"
+                                  )}
+                                >
+                                  Free ({adminQuizzes.filter(q => !q.isPaid).length})
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setQuizListFilter('paid')}
+                                  className={cn(
+                                    "px-2.5 py-1 rounded-lg font-bold transition",
+                                    quizListFilter === 'paid' ? "bg-amber-500/20 text-amber-400 shadow-sm" : "text-text-muted hover:text-text-main"
+                                  )}
+                                >
+                                  Paid ({adminQuizzes.filter(q => q.isPaid).length})
+                                </button>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleResetQuizForm();
+                                  setQuizSubTab('editor');
+                                }}
+                                className="px-3 py-1.5 bg-warning text-crust font-black text-xs uppercase rounded-xl transition flex items-center gap-1 cursor-pointer"
+                              >
+                                <Plus size={14} /> Create New
+                              </button>
+                            </div>
                           </div>
 
-                          <div className="space-y-6">
-                            {quizQuestions.map((q, qIdx) => (
-                              <div key={q.id || qIdx} className="bg-base border border-black/10 dark:border-white/10 rounded-2xl p-5 relative shadow-sm">
-                                <div className="flex items-center justify-between mb-3 border-b border-black/5 dark:border-white/5 pb-3">
-                                  <div className="flex items-center gap-2">
-                                    <span className="w-6 h-6 rounded-full bg-warning/20 text-warning text-xs font-mono font-bold flex items-center justify-center">
-                                      {qIdx + 1}
-                                    </span>
-                                    <span className="font-bold text-xs uppercase tracking-wider text-text-main">
-                                      Question #{qIdx + 1}
-                                    </span>
-                                  </div>
-                                  
-                                  <div className="flex items-center gap-2">
-                                    <div className="flex items-center gap-1 bg-surface border border-black/10 dark:border-white/10 px-2 py-1 rounded-lg">
-                                      <span className="text-[10px] text-text-muted font-mono uppercase">Points:</span>
-                                      <input
-                                        type="number"
-                                        min={1}
-                                        value={q.points || 10}
-                                        onChange={(e) => handleQuestionChange(qIdx, 'points', Number(e.target.value))}
-                                        className="w-12 bg-transparent text-xs font-bold font-mono text-warning outline-none text-right"
-                                      />
+                          {adminQuizzes.length === 0 ? (
+                            <div className="py-8 text-center text-xs text-text-muted">No quizzes or drafts available in database.</div>
+                          ) : (
+                            <div className="space-y-3">
+                              {adminQuizzes
+                                .filter(q => {
+                                  if (quizListFilter === 'published') return q.status !== 'draft';
+                                  if (quizListFilter === 'drafts') return q.status === 'draft';
+                                  if (quizListFilter === 'free') return !q.isPaid;
+                                  if (quizListFilter === 'paid') return q.isPaid;
+                                  return true;
+                                })
+                                .map((q) => (
+                                <div key={q.id} className={cn(
+                                  "p-4 bg-base border rounded-xl flex items-center justify-between gap-4 flex-wrap transition",
+                                  q.status === 'draft' ? "border-amber-500/30 bg-amber-500/[0.03]" : "border-black/5 dark:border-white/5"
+                                )}>
+                                  <div>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <h3 className="font-bold text-sm text-text-main">{q.title}</h3>
+                                      {q.status === 'draft' ? (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center gap-1 font-mono">
+                                          <FileText size={10} /> Draft (In Progress)
+                                        </span>
+                                      ) : (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-mono">
+                                          <CheckCircle2 size={10} /> Published
+                                        </span>
+                                      )}
+                                      {q.isWeeklyChallenge && (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500/20 text-amber-400">
+                                          Weekly Challenge
+                                        </span>
+                                      )}
+                                      {q.isPaid ? (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-warning/20 text-warning font-mono border border-warning/30">
+                                          ₹{q.price || 49} Paid Challenge
+                                        </span>
+                                      ) : (
+                                        <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-400 font-mono border border-emerald-500/30">
+                                          100% Free
+                                        </span>
+                                      )}
                                     </div>
+                                    <div className="flex items-center gap-2 mt-1 text-xs text-text-muted flex-wrap">
+                                      <span>{q.category}</span>
+                                      <span>• {q.durationMinutes} mins</span>
+                                      <span>• {q.questions?.length || 0} Questions</span>
+                                      <span>• {q.totalPoints || 0} Points</span>
+                                      {q.status !== 'draft' && (
+                                        <button
+                                          type="button"
+                                          onClick={() => handleViewEnrolledUsers(q)}
+                                          className="text-emerald-400 hover:text-emerald-300 font-mono font-bold flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 px-2.5 py-0.5 rounded-lg border border-emerald-500/20 transition cursor-pointer"
+                                          title="Click to view enrolled candidates"
+                                        >
+                                          <Users size={12} /> {q.enrolledUserIds?.length || 0} Enrolled
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {q.status === 'draft' ? (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            handleEditQuiz(q);
+                                            setQuizSubTab('editor');
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                          }}
+                                          className="px-3 py-2 border border-amber-500/40 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25 text-xs font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+                                          title="Resume editing this draft"
+                                        >
+                                          <Edit3 size={14} /> Resume & Edit Draft
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleToggleQuizPublish(q)}
+                                          className="px-3 py-2 border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 text-xs font-bold rounded-lg flex items-center gap-1.5 transition cursor-pointer"
+                                          title="Publish quiz immediately to students"
+                                        >
+                                          <Award size={14} /> Publish Now
+                                        </button>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleViewEnrolledUsers(q)}
+                                          className="p-2 border border-emerald-500/30 text-emerald-400 text-xs font-bold rounded-lg hover:bg-emerald-500/10 flex items-center gap-1.5 cursor-pointer transition"
+                                          title="View enrolled candidates"
+                                        >
+                                          <Users size={14} /> Enrolled ({q.enrolledUserIds?.length || 0})
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            setAuditQuizId(q.id);
+                                            handleAuditQuiz(q.id);
+                                            setQuizSubTab('audit');
+                                          }}
+                                          className="p-2 border border-amber-500/30 text-amber-400 text-xs font-bold rounded-lg hover:bg-amber-500/10 flex items-center gap-1 cursor-pointer"
+                                          title="Audit top 3 winners"
+                                        >
+                                          <Trophy size={14} /> Audit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            handleEditQuiz(q);
+                                            setQuizSubTab('editor');
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                          }}
+                                          className="p-2 border border-blue-500/20 text-blue-400 text-xs font-bold rounded-lg hover:bg-blue-500/10 flex items-center gap-1 cursor-pointer"
+                                          title="Edit quiz"
+                                        >
+                                          <Edit3 size={14} /> Edit
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleToggleQuizPublish(q)}
+                                          className="p-2 border border-black/10 dark:border-white/10 text-text-muted hover:text-amber-400 text-xs font-bold rounded-lg hover:bg-white/5 flex items-center gap-1 cursor-pointer"
+                                          title="Unpublish and revert to Draft to make revisions privately"
+                                        >
+                                          <FileText size={14} /> Unpublish
+                                        </button>
+                                        <Link
+                                          to={`/quizzes/${q.id}/leaderboard`}
+                                          className="px-3 py-2 border border-amber-500/30 text-amber-400 text-xs font-bold rounded-lg hover:bg-amber-500/10 flex items-center gap-1"
+                                        >
+                                          Leaderboard
+                                        </Link>
+                                      </>
+                                    )}
+
                                     <button
                                       type="button"
-                                      onClick={() => handleRemoveQuestion(qIdx)}
-                                      className="p-1.5 text-text-muted hover:text-red-400 hover:bg-red-500/10 rounded-lg transition"
-                                      title="Remove Question"
+                                      onClick={() => handleAdminDeleteQuiz(q.id)}
+                                      className="p-2 border border-red-500/20 text-red-400 text-xs font-bold rounded-lg hover:bg-red-500/10 cursor-pointer"
+                                      title="Delete Quiz"
                                     >
                                       <Trash2 size={14} />
                                     </button>
                                   </div>
                                 </div>
-
-                                <div className="space-y-4">
-                                  {/* Question prompt text */}
-                                  <div>
-                                    <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
-                                      Question Prompt / Statement
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={q.question}
-                                      onChange={(e) => handleQuestionChange(qIdx, 'question', e.target.value)}
-                                      placeholder="e.g. Which chemical is used to visualize latent fingerprints on porous surfaces?"
-                                      className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
-                                      required
-                                    />
-                                  </div>
-
-                                  {/* Answer Options */}
-                                  <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                      <label className="text-[10px] font-mono text-text-muted uppercase">
-                                        Answer Choices (Click letter icon to mark correct answer)
-                                      </label>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleAddOption(qIdx)}
-                                        className="text-[10px] font-bold text-warning hover:underline flex items-center gap-1 cursor-pointer"
-                                      >
-                                        <Plus size={12} /> Add Choice
-                                      </button>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                      {q.options.map((opt, optIdx) => {
-                                        const isCorrect = q.correctAnswerIndex === optIdx;
-                                        return (
-                                          <div
-                                            key={optIdx}
-                                            className={cn(
-                                              "flex items-center gap-2 p-2 rounded-xl border transition-all",
-                                              isCorrect
-                                                ? "bg-green-500/10 border-green-500/40 text-text-main"
-                                                : "bg-surface border-black/10 dark:border-white/10"
-                                            )}
-                                          >
-                                            <button
-                                              type="button"
-                                              onClick={() => handleQuestionChange(qIdx, 'correctAnswerIndex', optIdx)}
-                                              className={cn(
-                                                "w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-xs font-bold transition-all cursor-pointer",
-                                                isCorrect
-                                                  ? "bg-green-500 text-crust font-black shadow-sm"
-                                                  : "border border-black/20 dark:border-white/20 text-text-muted hover:border-warning"
-                                              )}
-                                              title={isCorrect ? "Correct Answer" : "Mark as Correct Answer"}
-                                            >
-                                              {isCorrect ? <CheckCircle2 size={14} /> : String.fromCharCode(65 + optIdx)}
-                                            </button>
-
-                                            <input
-                                              type="text"
-                                              value={opt}
-                                              onChange={(e) => handleOptionChange(qIdx, optIdx, e.target.value)}
-                                              placeholder={`Option ${String.fromCharCode(65 + optIdx)}...`}
-                                              className="w-full bg-transparent text-xs font-medium text-text-main outline-none"
-                                              required
-                                            />
-
-                                            {isCorrect && (
-                                              <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-green-500/20 text-green-500 shrink-0">
-                                                Correct Answer
-                                              </span>
-                                            )}
-
-                                            {q.options.length > 2 && (
-                                              <button
-                                                type="button"
-                                                onClick={() => handleRemoveOption(qIdx, optIdx)}
-                                                className="p-1 text-text-muted hover:text-red-400 rounded transition shrink-0"
-                                                title="Remove Choice"
-                                              >
-                                                <Trash2 size={12} />
-                                              </button>
-                                            )}
-                                          </div>
-                                        );
-                                      })}
-                                    </div>
-                                  </div>
-
-                                  {/* Explanation / Rationale */}
-                                  <div>
-                                    <label className="block text-[10px] font-mono text-text-muted uppercase mb-1">
-                                      Explanation / Rationale (Optional)
-                                    </label>
-                                    <input
-                                      type="text"
-                                      value={q.explanation || ''}
-                                      onChange={(e) => handleQuestionChange(qIdx, 'explanation', e.target.value)}
-                                      placeholder="e.g. Ninhydrin reacts with amino acids in sweat to form purple Ruhemann's purple."
-                                      className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-2.5 text-xs text-text-muted outline-none focus:text-text-main focus:border-warning"
-                                    />
-                                  </div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-
-                          <div className="flex items-center justify-center pt-2">
-                            <button
-                              type="button"
-                              onClick={handleAddQuestion}
-                              className="w-full border-2 border-dashed border-warning/30 hover:border-warning/60 bg-warning/5 hover:bg-warning/10 p-3 rounded-2xl text-warning font-bold text-xs uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer"
-                            >
-                              <Plus size={16} /> Add Another Question
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-3 pt-4">
-                          <button
-                            type="submit"
-                            className="px-6 py-3 bg-warning text-crust hover:bg-warning/90 font-black rounded-xl text-xs uppercase tracking-widest transition flex items-center gap-2 cursor-pointer"
-                          >
-                            <Award size={16} /> {editingQuizId ? "Update Quiz" : "Save Quiz / Weekly Challenge"}
-                          </button>
-
-                          {editingQuizId && (
-                            <button
-                              type="button"
-                              onClick={handleResetQuizForm}
-                              className="px-4 py-3 bg-base hover:bg-white/5 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main font-bold rounded-xl text-xs uppercase tracking-widest transition cursor-pointer"
-                            >
-                              Cancel Edit
-                            </button>
-                          )}
-                        </div>
-                      </form>
-                    </div>
-
-                    {/* Active Quizzes Listing */}
-                    <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6">
-                      <h2 className="text-xl font-heading font-black uppercase tracking-tight mb-4">Existing Quizzes</h2>
-                      
-                      {quizLoading ? (
-                        <div className="py-8 text-center text-xs text-text-muted">Loading Quizzes...</div>
-                      ) : adminQuizzes.length === 0 ? (
-                        <div className="py-8 text-center text-xs text-text-muted">No quizzes available in database.</div>
-                      ) : (
-                        <div className="space-y-3">
-                          {adminQuizzes.map((q) => (
-                            <div key={q.id} className="p-4 bg-base border border-black/5 dark:border-white/5 rounded-xl flex items-center justify-between gap-4">
-                              <div>
-                                <div className="flex items-center gap-2">
-                                  <h3 className="font-bold text-sm text-text-main">{q.title}</h3>
-                                  {q.isWeeklyChallenge && (
-                                    <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-500/20 text-amber-400">
-                                      Weekly Challenge
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="flex items-center gap-2 mt-1">
-                                  <p className="text-xs text-text-muted">{q.category} • {q.durationMinutes} mins • {q.questions?.length || 0} Questions</p>
-                                  {q.isWeeklyChallenge && (
-                                    <span className="text-xs text-emerald-400 font-mono font-bold flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-lg border border-emerald-500/20">
-                                      <Users size={12} /> {q.enrolledUserIds?.length || 0} Enrolled
-                                    </span>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="flex items-center gap-2">
-                                {q.isWeeklyChallenge && (
-                                  <button
-                                    onClick={() => handleViewEnrolledUsers(q)}
-                                    className="p-2 border border-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg hover:bg-emerald-500/10 flex items-center gap-1"
-                                  >
-                                    <Users size={14} /> Users
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => {
-                                    handleEditQuiz(q);
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                  }}
-                                  className="p-2 border border-blue-500/20 text-blue-400 text-xs font-bold rounded-lg hover:bg-blue-500/10 flex items-center gap-1"
-                                >
-                                  <Edit3 size={14} /> Edit
-                                </button>
-                                <Link
-                                  to={`/quizzes/${q.id}/leaderboard`}
-                                  className="px-3 py-1.5 border border-amber-500/30 text-amber-400 text-xs font-bold rounded-lg hover:bg-amber-500/10"
-                                >
-                                  Leaderboard
-                                </Link>
-                                <button
-                                  onClick={() => handleAdminDeleteQuiz(q.id)}
-                                  className="p-2 border border-red-500/20 text-red-400 text-xs font-bold rounded-lg hover:bg-red-500/10"
-                                >
-                                  <Trash2 size={14} />
-                                </button>
-                              </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
                       )}
                     </div>
@@ -5697,50 +7274,410 @@ export default function Admin() {
           </div>
         )}
       </div>
-      {/* Enrolled Users Modal */}
+      {/* Enrolled Candidates & Participants Modal */}
       <AnimatePresence>
-        {isUsersModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setIsUsersModalOpen(false)} />
+        {isUsersModalOpen && selectedQuizForEnrollment && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+            <div 
+              className="fixed inset-0 bg-background/80 backdrop-blur-md transition-opacity" 
+              onClick={() => setIsUsersModalOpen(false)} 
+            />
+            
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="relative w-full max-w-lg bg-surface border border-black/10 dark:border-white/10 rounded-2xl p-6 shadow-2xl max-h-[80vh] flex flex-col"
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
+              className="relative w-full max-w-4xl bg-surface border border-emerald-500/30 rounded-3xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden z-10 my-auto"
             >
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-heading font-black text-text-main">
-                  Enrolled Users
-                </h3>
-                <button
-                  onClick={() => setIsUsersModalOpen(false)}
-                  className="p-2 text-text-muted hover:text-text-main hover:bg-black/5 dark:hover:bg-white/5 rounded-full transition-colors flex items-center justify-center"
-                >
-                  <span className="text-xl leading-none font-bold">&times;</span>
-                </button>
-              </div>
-              <p className="text-xs text-warning mb-4 font-bold">{selectedQuizTitle}</p>
-              
-              <div className="flex-1 overflow-y-auto space-y-2 pr-2">
-                {fetchingUsers ? (
-                  <div className="py-8 text-center text-xs text-text-muted flex justify-center items-center gap-2">
-                    <Loader2 size={16} className="animate-spin" /> Fetching users...
+              {/* Modal Header */}
+              <div className="p-6 border-b border-black/10 dark:border-white/10 bg-gradient-to-r from-emerald-500/10 via-surface to-amber-500/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
+                      <Users size={12} /> Enrolled Candidates
+                    </span>
+                    {selectedQuizForEnrollment.isWeeklyChallenge && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        Weekly Challenge
+                      </span>
+                    )}
+                    {selectedQuizForEnrollment.isPaid ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-warning/20 text-warning font-mono text-[10px] border border-warning/30">
+                        ₹{selectedQuizForEnrollment.price || 49} Paid Entry
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/20 text-emerald-400 font-mono text-[10px] border border-emerald-500/30">
+                        100% Free
+                      </span>
+                    )}
+                    <span className="text-[11px] text-text-muted">
+                      • {selectedQuizForEnrollment.category} • {selectedQuizForEnrollment.durationMinutes} mins • {selectedQuizForEnrollment.totalPoints} pts
+                    </span>
                   </div>
-                ) : enrolledUsersList.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-text-muted">No users enrolled yet.</div>
-                ) : (
-                  enrolledUsersList.map((u, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 bg-base rounded-xl border border-black/5 dark:border-white/5">
-                      <div className="w-8 h-8 rounded-full bg-warning/20 text-warning flex items-center justify-center font-bold uppercase text-xs">
-                        {u.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-text-main">{u.name}</p>
-                        <p className="text-xs text-text-muted">{u.email}</p>
-                      </div>
+
+                  <h3 className="text-xl font-heading font-black text-text-main flex items-center gap-2 mt-1">
+                    {selectedQuizForEnrollment.title}
+                  </h3>
+                </div>
+
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <button
+                    type="button"
+                    onClick={handleRefreshEnrolledUsers}
+                    disabled={fetchingUsers}
+                    className="p-2.5 bg-surface hover:bg-surface/80 border border-black/10 dark:border-white/10 rounded-xl text-text-muted hover:text-text-main transition cursor-pointer flex items-center gap-1 text-xs font-bold"
+                    title="Refresh participant list"
+                  >
+                    <RefreshCw size={15} className={fetchingUsers ? "animate-spin text-emerald-400" : ""} />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsUsersModalOpen(false)}
+                    className="p-2.5 bg-surface hover:bg-surface/80 border border-black/10 dark:border-white/10 rounded-xl text-text-muted hover:text-text-main transition cursor-pointer flex items-center justify-center"
+                    title="Close"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Filter and Actions Bar */}
+              <div className="p-4 sm:p-6 border-b border-black/10 dark:border-white/10 bg-black/5 dark:bg-white/[0.02] space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* Search Bar */}
+                  <div className="relative flex-1">
+                    <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+                    <input
+                      type="text"
+                      placeholder="Search candidates by name, email, college, or UTR..."
+                      value={enrolledSearchQuery}
+                      onChange={(e) => setEnrolledSearchQuery(e.target.value)}
+                      className="w-full pl-10 pr-4 py-2 bg-surface border border-black/10 dark:border-white/10 rounded-xl text-xs text-text-main focus:outline-none focus:border-emerald-500 transition"
+                    />
+                    {enrolledSearchQuery && (
+                      <button
+                        onClick={() => setEnrolledSearchQuery('')}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Batch Action Buttons */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <button
+                      type="button"
+                      onClick={handleCopyEnrolledEmails}
+                      disabled={enrolledParticipants.length === 0}
+                      className="px-3.5 py-2 bg-surface hover:bg-surface/80 border border-black/10 dark:border-white/10 rounded-xl text-xs font-bold text-text-main hover:text-emerald-400 transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {copiedEmailsMsg ? (
+                        <>
+                          <Check size={14} className="text-emerald-400" />
+                          <span className="text-emerald-400 font-black">Emails Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy size={14} />
+                          <span>Copy All Emails ({enrolledParticipants.filter(p => p.userEmail && p.userEmail.includes('@')).length})</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleExportEnrolledCSV}
+                      disabled={enrolledParticipants.length === 0}
+                      className="px-3.5 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl text-xs font-bold text-emerald-400 transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Download size={14} />
+                      <span>Export CSV</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Filter Tabs */}
+                {(() => {
+                  const attemptedCount = enrolledParticipants.filter(p => p.hasAttempted).length;
+                  const notAttemptedCount = enrolledParticipants.filter(p => !p.hasAttempted).length;
+                  const approvedCount = enrolledParticipants.filter(p => p.registrationStatus === 'approved' || (!p.registrationStatus && p.enrollmentType === 'free')).length;
+                  const pendingCount = enrolledParticipants.filter(p => p.registrationStatus === 'pending').length;
+
+                  return (
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                      <button
+                        type="button"
+                        onClick={() => setEnrolledFilterTab('all')}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap",
+                          enrolledFilterTab === 'all'
+                            ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20 font-black"
+                            : "bg-surface text-text-muted hover:text-text-main border border-black/10 dark:border-white/10"
+                        )}
+                      >
+                        All Candidates ({enrolledParticipants.length})
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEnrolledFilterTab('attempted')}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap",
+                          enrolledFilterTab === 'attempted'
+                            ? "bg-emerald-500 text-black shadow-md shadow-emerald-500/20 font-black"
+                            : "bg-surface text-text-muted hover:text-text-main border border-black/10 dark:border-white/10"
+                        )}
+                      >
+                        Attempted & Scored ({attemptedCount})
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setEnrolledFilterTab('not_attempted')}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap",
+                          enrolledFilterTab === 'not_attempted'
+                            ? "bg-amber-500 text-black shadow-md shadow-amber-500/20 font-black"
+                            : "bg-surface text-text-muted hover:text-text-main border border-black/10 dark:border-white/10"
+                        )}
+                      >
+                        Awaiting Attempt ({notAttemptedCount})
+                      </button>
+
+                      {pendingCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setEnrolledFilterTab('pending')}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap",
+                            enrolledFilterTab === 'pending'
+                              ? "bg-amber-500 text-black shadow-md shadow-amber-500/20 font-black"
+                              : "bg-surface text-amber-400 border border-amber-500/30"
+                          )}
+                        >
+                          Pending Approval ({pendingCount})
+                        </button>
+                      )}
                     </div>
-                  ))
-                )}
+                  );
+                })()}
+              </div>
+
+              {/* Candidates List Body */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+                {fetchingUsers ? (
+                  <div className="py-16 text-center text-xs text-text-muted flex flex-col justify-center items-center gap-3">
+                    <Loader2 size={24} className="animate-spin text-emerald-400" />
+                    <span>Loading verified candidates from database...</span>
+                  </div>
+                ) : (() => {
+                  const filtered = enrolledParticipants.filter(p => {
+                    // Filter tab condition
+                    if (enrolledFilterTab === 'attempted' && !p.hasAttempted) return false;
+                    if (enrolledFilterTab === 'not_attempted' && p.hasAttempted) return false;
+                    if (enrolledFilterTab === 'pending' && p.registrationStatus !== 'pending') return false;
+                    if (enrolledFilterTab === 'approved' && p.registrationStatus !== 'approved' && !(p.enrollmentType === 'free')) return false;
+
+                    // Search condition
+                    if (enrolledSearchQuery.trim()) {
+                      const q = enrolledSearchQuery.toLowerCase();
+                      const matchName = (p.userName || '').toLowerCase().includes(q);
+                      const matchEmail = (p.userEmail || '').toLowerCase().includes(q);
+                      const matchCollege = (p.college || '').toLowerCase().includes(q);
+                      const matchUtr = (p.utrNumber || '').toLowerCase().includes(q);
+                      const matchId = (p.userId || '').toLowerCase().includes(q);
+                      return matchName || matchEmail || matchCollege || matchUtr || matchId;
+                    }
+                    return true;
+                  });
+
+                  if (filtered.length === 0) {
+                    return (
+                      <div className="py-16 text-center border border-dashed border-black/10 dark:border-white/10 rounded-2xl p-8">
+                        <Users size={32} className="mx-auto text-text-muted mb-3 opacity-40" />
+                        <h4 className="text-sm font-bold text-text-main">No Candidates Found</h4>
+                        <p className="text-xs text-text-muted mt-1 max-w-sm mx-auto">
+                          {enrolledParticipants.length === 0 
+                            ? "No users have enrolled in or attempted this quiz yet." 
+                            : "No candidates match your current search query or filter tab."}
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="space-y-3">
+                      {filtered.map((participant, idx) => (
+                        <div 
+                          key={participant.userId || idx} 
+                          className="bg-base/70 hover:bg-base border border-black/10 dark:border-white/10 hover:border-emerald-500/30 rounded-2xl p-4 transition duration-150 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                        >
+                          {/* Candidate Identity */}
+                          <div className="flex items-start gap-3 min-w-0">
+                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center font-black uppercase text-sm shrink-0 overflow-hidden">
+                              {participant.userPhoto ? (
+                                <img 
+                                  src={participant.userPhoto} 
+                                  alt={participant.userName} 
+                                  className="w-full h-full object-cover" 
+                                  referrerPolicy="no-referrer"
+                                />
+                              ) : (
+                                <span>{(participant.userName || 'U').charAt(0)}</span>
+                              )}
+                            </div>
+
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-bold text-sm text-text-main">
+                                  {participant.userName}
+                                </span>
+                                
+                                {participant.enrollmentType === 'paid' ? (
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-warning/15 text-warning border border-warning/30">
+                                    Paid Challenge (₹{participant.amountPaid || selectedQuizForEnrollment.price || 49})
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                                    Free
+                                  </span>
+                                )}
+
+                                {participant.registrationStatus === 'approved' && (
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1">
+                                    <UserCheck size={11} /> Approved
+                                  </span>
+                                )}
+
+                                {participant.registrationStatus === 'pending' && (
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 flex items-center gap-1">
+                                    <Clock size={11} /> Verification Pending
+                                  </span>
+                                )}
+                              </div>
+
+                              <div className="text-xs text-text-muted mt-0.5 flex items-center gap-2 flex-wrap">
+                                <span className="font-mono text-text-main/90">{participant.userEmail}</span>
+                                {participant.userEmail && participant.userEmail.includes('@') && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(participant.userEmail);
+                                      setSuccessMsg(`Copied email for ${participant.userName}`);
+                                    }}
+                                    className="text-[10px] text-text-muted hover:text-emerald-400 transition"
+                                    title="Copy email"
+                                  >
+                                    <Copy size={11} />
+                                  </button>
+                                )}
+                                {participant.college && participant.college !== 'N/A' && (
+                                  <span className="text-text-muted/80">• {participant.college}</span>
+                                )}
+                              </div>
+
+                              {/* UTR and Payment Details */}
+                              {participant.utrNumber && (
+                                <div className="mt-2 flex items-center gap-2 text-xs bg-surface/80 px-2.5 py-1 rounded-lg border border-black/5 dark:border-white/5 w-fit">
+                                  <span className="text-text-muted font-bold text-[11px]">UTR / Ref:</span>
+                                  <span className="font-mono font-bold text-amber-400 text-[11px]">
+                                    {participant.utrNumber}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopySingleUtr(participant.utrNumber!)}
+                                    className="text-text-muted hover:text-amber-400 transition ml-1"
+                                    title="Copy UTR number"
+                                  >
+                                    {copiedUtrMap[participant.utrNumber] ? (
+                                      <Check size={12} className="text-emerald-400" />
+                                    ) : (
+                                      <Copy size={12} />
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Attempt / Score Stats & Action */}
+                          <div className="flex items-center gap-3 shrink-0 self-end md:self-center">
+                            {participant.hasAttempted ? (
+                              <div className="bg-surface border border-emerald-500/20 p-2.5 rounded-xl text-right min-w-[140px]">
+                                <div className="flex items-center justify-end gap-1.5">
+                                  <Trophy size={14} className="text-amber-400" />
+                                  <span className="text-sm font-black font-mono text-emerald-400">
+                                    {participant.score ?? 0}
+                                  </span>
+                                  <span className="text-[11px] font-mono text-text-muted">
+                                    / {participant.totalPoints || selectedQuizForEnrollment.totalPoints} pts
+                                  </span>
+                                </div>
+                                <div className="text-[10px] text-text-muted mt-0.5 flex items-center justify-end gap-2">
+                                  {participant.accuracyPercentage !== undefined && (
+                                    <span className="font-bold text-text-main">
+                                      {participant.accuracyPercentage}% Acc
+                                    </span>
+                                  )}
+                                  {participant.timeTakenSeconds !== undefined && (
+                                    <span>
+                                      {Math.floor(participant.timeTakenSeconds / 60)}m {participant.timeTakenSeconds % 60}s
+                                    </span>
+                                  )}
+                                </div>
+                                {participant.completedAt && (
+                                  <div className="text-[9px] text-text-muted/70 mt-0.5">
+                                    {new Date(participant.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="bg-surface/50 border border-black/10 dark:border-white/5 px-3 py-2 rounded-xl text-center min-w-[130px]">
+                                <span className="text-[11px] font-bold text-amber-400/90 flex items-center justify-center gap-1">
+                                  <Clock size={12} /> Awaiting Attempt
+                                </span>
+                                <span className="text-[9px] text-text-muted block mt-0.5">
+                                  Registered / Enrolled
+                                </span>
+                              </div>
+                            )}
+
+                            {/* Unenroll / Remove Action */}
+                            <button
+                              type="button"
+                              onClick={() => handleUnenrollUser(participant)}
+                              disabled={removingUserId === participant.userId}
+                              className="p-2.5 border border-red-500/20 hover:border-red-500/40 text-red-400 hover:bg-red-500/10 rounded-xl transition cursor-pointer text-xs font-bold disabled:opacity-50"
+                              title="Unenroll participant from this quiz"
+                            >
+                              {removingUserId === participant.userId ? (
+                                <Loader2 size={15} className="animate-spin text-red-400" />
+                              ) : (
+                                <UserX size={15} />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="p-4 border-t border-black/10 dark:border-white/10 bg-surface flex items-center justify-between text-xs text-text-muted">
+                <span className="font-mono">
+                  Showing {enrolledParticipants.length} total enrolled participant{enrolledParticipants.length === 1 ? '' : 's'}.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setIsUsersModalOpen(false)}
+                  className="px-4 py-2 bg-surface hover:bg-surface/80 border border-black/10 dark:border-white/10 rounded-xl text-xs font-bold text-text-main transition cursor-pointer"
+                >
+                  Close Window
+                </button>
               </div>
             </motion.div>
           </div>

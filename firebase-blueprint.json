@@ -234,6 +234,7 @@
         "totalPoints": { "type": "integer" },
         "passingScore": { "type": "integer" },
         "enrolledUserIds": { "type": "array", "items": { "type": "string" } },
+        "status": { "type": "string", "enum": ["draft", "published"] },
         "questions": { "type": "array" },
         "createdAt": { "type": "string" },
         "createdBy": { "type": "string" }

@@ -152,12 +152,7 @@ export async function uploadBlobToCloudFirestore(
     const end = Math.min(start + FIRESTORE_CHUNK_SIZE, file.size);
     const slice = file.slice(start, end);
 
-    const base64Data = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as string);
-      reader.onerror = () => reject(new Error(`Failed to read slice ${i}`));
-      reader.readAsDataURL(slice);
-    });
+    const base64Data = await convertToBase64(slice);
 
     const chunkDocRef = doc(db, '_cloud_blobs', blobId, 'chunks', `chunk_${i}`);
     await setDoc(chunkDocRef, {
@@ -295,12 +290,42 @@ function getApiCandidates(apiPath: string): string[] {
   return list;
 }
 
-const convertToBase64 = (file: File): Promise<string> => {
+export const convertToBase64 = async (file: File | Blob): Promise<string> => {
+  try {
+    if (typeof file.arrayBuffer === 'function') {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      let binary = '';
+      const chunkSize = 8192;
+      for (let i = 0; i < bytes.length; i += chunkSize) {
+        const chunk = bytes.subarray(i, Math.min(i + chunkSize, bytes.length));
+        binary += String.fromCharCode.apply(null, Array.from(chunk));
+      }
+      const base64 = window.btoa(binary);
+      const mimeType = file.type || 'application/octet-stream';
+      return `data:${mimeType};base64,${base64}`;
+    }
+  } catch (bufErr) {
+    console.warn('[convertToBase64] arrayBuffer conversion failed, trying FileReader fallback:', bufErr);
+  }
+
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = () => reject(new Error('Failed to convert file to Base64'));
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          resolve(reader.result);
+        } else {
+          resolve('');
+        }
+      };
+      reader.onerror = () => {
+        reject(new Error('Failed to convert file to Base64 data'));
+      };
+      reader.readAsDataURL(file);
+    } catch (e: any) {
+      reject(new Error(e?.message || 'FileReader initialization failed'));
+    }
   });
 };
 
@@ -418,12 +443,7 @@ async function uploadChunksToServer(
         }
 
         // Convert slice to data URL
-        const base64Data = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onloadend = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error(`Failed to convert slice ${chunkIndex} to Base64`));
-          reader.readAsDataURL(chunkBlob);
-        });
+        const base64Data = await convertToBase64(chunkBlob);
 
         const response = await fetch(chunkEndpoint, {
           method: 'POST',
@@ -600,23 +620,22 @@ export async function uploadFileResilient(
     try {
       const { compressImage } = await import('./image-utils');
       // Compress to a friendly resolution and quality so it fits comfortably within Firestore boundaries
-      const compressedBlob = await compressImage(fileToUpload, 800, 0.6);
-      const base64Url = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read compressed image file'));
-        reader.readAsDataURL(compressedBlob);
-      });
-      return { url: base64Url, isFallback: true };
+      const compressedBlob = await compressImage(fileToUpload, 1200, 0.7);
+      const base64Url = await convertToBase64(compressedBlob);
+      if (base64Url) {
+        return { url: base64Url, isFallback: true };
+      }
     } catch (compressErr) {
-      console.warn("Compression failed during Base64 fallback, using raw file:", compressErr);
-      const base64Url = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error('Failed to read raw image file for Base64'));
-        reader.readAsDataURL(fileToUpload);
-      });
-      return { url: base64Url, isFallback: true };
+      console.warn("Compression failed during Base64 fallback, attempting raw conversion:", compressErr);
+    }
+
+    try {
+      const base64Url = await convertToBase64(fileToUpload);
+      if (base64Url) {
+        return { url: base64Url, isFallback: true };
+      }
+    } catch (rawErr) {
+      console.warn("Raw Base64 conversion failed, falling back to local storage:", rawErr);
     }
   }
 

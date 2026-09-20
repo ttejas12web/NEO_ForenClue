@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
-import { Quiz, QuizAttempt } from '@/types/quiz';
-import { Clock, Calendar, Users, Award, Trophy, ArrowRight, CheckCircle2, Lock, Sparkles, Target, Timer, BookOpen, Zap, Share2, RotateCcw } from 'lucide-react';
+import { Quiz, QuizAttempt, QuizRegistration } from '@/types/quiz';
+import { 
+  Clock, Calendar, Users, Award, Trophy, ArrowRight, CheckCircle2, 
+  Lock, Sparkles, Target, Timer, BookOpen, Zap, Share2, RotateCcw,
+  CreditCard, ShieldAlert, AlertCircle, HelpCircle
+} from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { RippleButton, RippleWrapper } from '@/components/ui/RippleButton';
+import { PaidChallengeRegistrationModal } from '@/components/quiz/PaidChallengeRegistrationModal';
+import { getUserQuizRegistration } from '@/services/quizService';
 
 interface QuizCardProps {
   quiz: Quiz;
@@ -19,8 +25,18 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
   const navigate = useNavigate();
   const [status, setStatus] = useState<'UPCOMING' | 'LIVE' | 'ENDED' | 'STANDARD'>('STANDARD');
   const [timeLeft, setTimeLeft] = useState<string>('');
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [userRegistration, setUserRegistration] = useState<QuizRegistration | null>(null);
 
   const isEnrolled = user && quiz.enrolledUserIds?.includes(user.uid);
+
+  useEffect(() => {
+    if (quiz.isPaid && user?.uid) {
+      getUserQuizRegistration(quiz.id, user.uid)
+        .then(reg => setUserRegistration(reg))
+        .catch(err => console.warn("Could not check user registration:", err));
+    }
+  }, [quiz.id, quiz.isPaid, user?.uid, isEnrolled]);
 
   useEffect(() => {
     if (!quiz.isWeeklyChallenge || !quiz.scheduledStartTime) {
@@ -165,9 +181,20 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
       {/* Main Content */}
       <div className="p-6 space-y-4 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-warning bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
-            {quiz.category}
-          </span>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-bold uppercase tracking-wider text-warning bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
+              {quiz.category}
+            </span>
+            {quiz.isPaid ? (
+              <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 font-mono">
+                <Trophy size={11} className="text-amber-400" /> ₹{quiz.price || 49} Challenge
+              </span>
+            ) : (
+              <span className="text-[10px] font-black uppercase tracking-wider text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30 flex items-center gap-1 font-mono">
+                <Zap size={11} className="text-emerald-400" /> 100% Free
+              </span>
+            )}
+          </div>
           <span className="text-xs font-semibold text-text-muted flex items-center gap-1">
             <Clock size={13} /> {quiz.durationMinutes} Mins
           </span>
@@ -202,6 +229,66 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
               <div className="text-right text-[11px] text-text-muted font-mono hidden sm:block">
                 <p className="font-bold text-text-main">{Math.floor(userAttempt.timeTakenSeconds / 60)}m {userAttempt.timeTakenSeconds % 60}s</p>
                 <p className="text-[10px] opacity-75">{new Date(userAttempt.completedAt).toLocaleDateString()}</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Free Quiz Access Box */}
+        {!quiz.isPaid && (
+          <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs">
+            <span className="font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+              <CheckCircle2 size={14} className="text-emerald-400" /> Free Entry • Open For All
+            </span>
+            <span className="font-mono text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+              ₹0 NO FEES
+            </span>
+          </div>
+        )}
+
+        {/* Paid Challenge Prize Pool Card */}
+        {quiz.isPaid && (
+          <div className="bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/5 border border-amber-500/30 rounded-xl p-3.5 space-y-2.5 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="font-extrabold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <Trophy size={14} className="fill-amber-400" /> Cash Prizes: ₹{(quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100)}
+              </span>
+              <span className="font-black font-mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                Fee: ₹{quiz.price || 49}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-3 gap-1.5 text-center font-mono">
+              <div className="bg-base/80 p-1.5 rounded-lg border border-amber-500/20">
+                <span className="text-[9px] text-amber-400 block uppercase font-bold">1st Rank</span>
+                <span className="font-black text-text-main text-xs">₹{quiz.prizes?.first ?? 300}</span>
+              </div>
+              <div className="bg-base/80 p-1.5 rounded-lg border border-amber-500/20">
+                <span className="text-[9px] text-amber-400 block uppercase font-bold">2nd Rank</span>
+                <span className="font-black text-text-main text-xs">₹{quiz.prizes?.second ?? 200}</span>
+              </div>
+              <div className="bg-base/80 p-1.5 rounded-lg border border-amber-500/20">
+                <span className="text-[9px] text-amber-400 block uppercase font-bold">3rd Rank</span>
+                <span className="font-black text-text-main text-xs">₹{quiz.prizes?.third ?? 100}</span>
+              </div>
+            </div>
+
+            {userRegistration && (
+              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
+                <span className="text-text-muted">Verification Status:</span>
+                {userRegistration.status === 'approved' ? (
+                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                    <CheckCircle2 size={12} /> Approved & Ready
+                  </span>
+                ) : userRegistration.status === 'rejected' ? (
+                  <span className="text-rose-400 font-bold flex items-center gap-1">
+                    <AlertCircle size={12} /> Rejected (Click to retry)
+                  </span>
+                ) : (
+                  <span className="text-amber-400 font-bold flex items-center gap-1 animate-pulse">
+                    <Clock size={12} /> Reviewing UTR #{userRegistration.utrNumber.slice(-4)}
+                  </span>
+                )}
               </div>
             )}
           </div>
@@ -242,7 +329,44 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
 
       {/* Bottom Footer Actions */}
       <div className="p-6 pt-0 space-y-3">
-        {quiz.isWeeklyChallenge ? (
+        {quiz.isPaid && !isEnrolled && status !== 'ENDED' ? (
+          <div>
+            {user ? (
+              userRegistration?.status === 'pending' ? (
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentModal(true)}
+                  className="w-full bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-400 font-extrabold text-xs uppercase tracking-wider py-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Clock size={14} className="animate-pulse" /> Payment Under Review • Check Status
+                </button>
+              ) : userRegistration?.status === 'rejected' ? (
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentModal(true)}
+                  className="w-full bg-rose-500/20 hover:bg-rose-500/30 border border-rose-500/40 text-rose-400 font-extrabold text-xs uppercase tracking-wider py-3 rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <AlertCircle size={14} /> Verification Failed • Re-submit UTR
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentModal(true)}
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-95 text-black font-extrabold text-xs uppercase tracking-wider py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
+                >
+                  <CreditCard size={14} /> Register & Pay ₹{quiz.price || 49}
+                </button>
+              )
+            ) : (
+              <RippleButton
+                onClick={() => navigate('/login')}
+                className="w-full bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm uppercase tracking-wider py-3 rounded-xl transition-all shadow-md cursor-pointer"
+              >
+                <Lock size={14} /> Login To Register
+              </RippleButton>
+            )}
+          </div>
+        ) : quiz.isWeeklyChallenge ? (
           <div>
             {status === 'UPCOMING' && (
               <div>
@@ -377,6 +501,20 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
           </div>
         )}
       </div>
+
+      {/* Paid Challenge Modal */}
+      {quiz.isPaid && (
+        <PaidChallengeRegistrationModal
+          quiz={quiz}
+          isOpen={showPaymentModal}
+          onClose={() => setShowPaymentModal(false)}
+          onRegistrationSubmitted={() => {
+            if (user?.uid) {
+              getUserQuizRegistration(quiz.id, user.uid).then(setUserRegistration);
+            }
+          }}
+        />
+      )}
     </motion.div>
   );
 }

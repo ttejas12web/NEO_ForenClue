@@ -10,6 +10,13 @@ export interface QuizQuestion {
   hint?: string;
 }
 
+export interface QuizPrizePool {
+  first?: number;
+  second?: number;
+  third?: number;
+  currency?: string; // default '₹'
+}
+
 export interface Quiz {
   id: string;
   title: string;
@@ -30,6 +37,37 @@ export interface Quiz {
   coverImage?: string;
   bannerImage?: string;
   image?: string;
+  status?: 'draft' | 'published';
+
+  // Paid Challenge & Cash Prize Extensions
+  isPaid?: boolean;
+  price?: number;               // Entry fee in INR (e.g. 49)
+  upiId?: string;               // Admin UPI VPA (e.g. 'forenclue@okaxis')
+  payeeName?: string;           // Payee Name (e.g. 'ForenClue Admin')
+  upiQrUrl?: string;            // Optional custom QR image URL
+  prizes?: QuizPrizePool;       // 1st, 2nd, 3rd cash prizes
+  registrationStartTime?: string; // ISO string when registrations open (e.g. 1 week prior)
+  registrationEndTime?: string;   // ISO string when registrations cut off (e.g. 2 hrs prior)
+  shuffleQuestions?: boolean;   // Anti-cheat: randomize question order
+  shuffleOptions?: boolean;     // Anti-cheat: randomize option choices
+  enableTabSwitchDetection?: boolean; // Anti-cheat: monitor tab unfocus
+}
+
+export interface QuizRegistration {
+  id: string;
+  quizId: string;
+  quizTitle: string;
+  userId: string;
+  userEmail: string;
+  userName: string;
+  utrNumber: string;
+  senderName?: string;
+  amount: number;
+  status: 'pending' | 'approved' | 'rejected';
+  rejectReason?: string;
+  createdAt: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
 }
 
 export interface QuizAttempt {
@@ -50,4 +88,24 @@ export interface QuizAttempt {
 export interface LeaderboardEntry extends QuizAttempt {
   rank: number;
   accuracyPercentage: number;
+}
+
+export interface EnrolledParticipant {
+  userId: string;
+  userName: string;
+  userEmail: string;
+  userPhoto?: string;
+  college?: string;
+  enrolledAt?: string;
+  enrollmentType: 'free' | 'paid';
+  registrationStatus?: 'approved' | 'pending' | 'rejected' | 'direct';
+  utrNumber?: string;
+  amountPaid?: number;
+  hasAttempted: boolean;
+  score?: number;
+  totalPoints?: number;
+  timeTakenSeconds?: number;
+  completedAt?: string;
+  isPractice?: boolean;
+  accuracyPercentage?: number;
 }

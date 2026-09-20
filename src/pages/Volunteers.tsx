@@ -30,12 +30,6 @@ const activeVolunteers = [
     image: 'https://blogger.googleusercontent.com/img/a/AVvXsEidAAeAg6jc08x9t83IfZ2oSvO-7cRgvZDN2wwC1zXXSNX0VzHRvyZnszcuc0z8TXnVGPDQbsOkXAm4daUgNvNjoiiODnVPTnM11LDaGZ2l-4jH51Ph415zlMpB_a6dPaVHXApbe78UiSTEg2q4whJ2XPMb8ABm9TqoseJRZxqQSd5luqJUteIqNDOO0Uw'
   },
   { 
-    name: 'Deepanshi Malviya', 
-    role: 'Forensic Research Associate', 
-    id: 'FC-VOL-2026-011',
-    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiPBgFaRzm6PvVzor12dmxsoWGZumwmp2fWBfYmUuhrOfiEi4fKpHCuEB6nWh8g3xkINoZEYWx573iZl4gf7Bg4-3LVNZPAS2Tbt2cult8nMup5605reOHB2UjDwEdahylfvhzbF-L9GPAvFaFXfBqY0hokbVcseReWgqLKr9_W9VhPmMX9PD-PHIQTAmM/s593/WhatsApp%20Image%202026-07-20%20at%2018.35.14.jpeg'
-  },
-  { 
     name: 'Poonam Kumari', 
     role: 'Forensic Research Associate', 
     id: 'FC-VOL-2026-007',

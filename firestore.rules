@@ -204,7 +204,8 @@ service cloud.firestore {
     function isValidQuiz(data) {
       return data.keys().hasAll(['title', 'description'])
         && data.title is string && data.title.size() <= 300
-        && data.description is string && data.description.size() <= 5000;
+        && data.description is string && data.description.size() <= 5000
+        && (!('status' in data) || data.status in ['draft', 'published']);
     }
 
     function isValidQuizAttempt(data) {
@@ -372,8 +373,15 @@ service cloud.firestore {
     match /quizzes/{quizId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      // Allow admin to update OR enrolled signed-in user updating enrolledUserIds
-      allow update: if isAdmin() || (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['enrolledUserIds']));
+      // Allow admin to update. For students, only allow free/unpaid quizzes to be self-enrolled.
+      allow update: if isAdmin() || (isSignedIn() && (!('isPaid' in existing().data) || existing().data.isPaid != true) && incoming().diff(existing()).affectedKeys().hasOnly(['enrolledUserIds']));
+    }
+
+    // Paid Quiz Registrations (UTR Review & Approvals)
+    match /quizRegistrations/{regId} {
+      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
 
     // Contact Messages Rule

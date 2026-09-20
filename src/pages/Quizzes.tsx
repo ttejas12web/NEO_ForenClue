@@ -4,7 +4,7 @@ import { fetchQuizzes, enrollInQuiz, fetchUserQuizAttempts, isWeeklyChallengeExp
 import { QuizCard } from '@/components/quiz/QuizCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
-  Trophy, HelpCircle, CheckCircle2, Target, Award, Sparkles, BookOpen
+  Trophy, HelpCircle, CheckCircle2, Target, Award, Sparkles, BookOpen, Zap
 } from 'lucide-react';
 import { SEO } from '@/components/layout/SEO';
 
@@ -17,6 +17,7 @@ export default function Quizzes() {
   const [userAttemptsMap, setUserAttemptsMap] = useState<Record<string, QuizAttempt>>({});
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'weekly' | 'practice'>('weekly');
+  const [pricingFilter, setPricingFilter] = useState<'all' | 'free' | 'paid'>('all');
   const [enrollingQuizId, setEnrollingQuizId] = useState<string | null>(null);
   const [enrollSuccessMsg, setEnrollSuccessMsg] = useState<string | null>(null);
 
@@ -65,11 +66,11 @@ export default function Quizzes() {
     setEnrollingQuizId(null);
   };
 
-  // Active / Upcoming Weekly Challenges (not yet expired)
-  const activeWeeklyChallenges = quizzes.filter(q => q.isWeeklyChallenge && !isWeeklyChallengeExpired(q));
+  // Active / Upcoming Weekly Challenges (not yet expired & published)
+  const activeWeeklyChallenges = quizzes.filter(q => q.status !== 'draft' && q.isWeeklyChallenge && !isWeeklyChallengeExpired(q));
 
   // Practice Quizzes includes standard practice quizzes + concluded weekly challenges whose date and time has passed
-  const practiceQuizzes = quizzes.filter(q => !q.isWeeklyChallenge || isWeeklyChallengeExpired(q));
+  const practiceQuizzes = quizzes.filter(q => q.status !== 'draft' && (!q.isWeeklyChallenge || isWeeklyChallengeExpired(q)));
 
   useEffect(() => {
     if (!loading && activeWeeklyChallenges.length === 0 && practiceQuizzes.length > 0) {
@@ -77,7 +78,12 @@ export default function Quizzes() {
     }
   }, [loading, activeWeeklyChallenges.length, practiceQuizzes.length]);
 
-  const filteredQuizzes = activeTab === 'weekly' ? activeWeeklyChallenges : practiceQuizzes;
+  const baseQuizzes = activeTab === 'weekly' ? activeWeeklyChallenges : practiceQuizzes;
+  const filteredQuizzes = baseQuizzes.filter(q => {
+    if (pricingFilter === 'free') return !q.isPaid;
+    if (pricingFilter === 'paid') return q.isPaid;
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-background text-text-main py-12 px-4 sm:px-6 lg:px-8">
@@ -114,9 +120,9 @@ export default function Quizzes() {
           </div>
         </div>
 
-        {/* Navigation Tabs */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 pb-6">
-          <div className="flex items-center gap-2 bg-surface dark:bg-black/40 p-1.5 rounded-2xl border border-black/10 dark:border-white/10 shadow-sm">
+        {/* Navigation Tabs and Access Filters */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 pb-6">
+          <div className="flex items-center gap-2 bg-surface dark:bg-black/40 p-1.5 rounded-2xl border border-black/10 dark:border-white/10 shadow-sm flex-wrap">
             <button
               onClick={() => setActiveTab('weekly')}
               className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 cursor-pointer ${
@@ -140,12 +146,50 @@ export default function Quizzes() {
             </button>
           </div>
 
-          {activeTab === 'practice' && (
-            <div className="flex items-center gap-2 text-xs font-mono text-amber-400/90 bg-amber-500/10 px-3.5 py-1.5 rounded-xl border border-amber-500/20">
-              <BookOpen size={14} />
-              <span>Includes concluded weekly challenges moved for self-paced practice</span>
+          {/* Pricing Access Filter (All / Free / Paid) */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center bg-surface dark:bg-black/40 p-1.5 rounded-2xl border border-black/10 dark:border-white/10 shadow-sm text-xs font-mono">
+              <button
+                onClick={() => setPricingFilter('all')}
+                className={`px-3.5 py-1.5 rounded-xl font-bold uppercase transition-all cursor-pointer ${
+                  pricingFilter === 'all'
+                    ? 'bg-base text-text-main shadow-sm border border-black/10 dark:border-white/10'
+                    : 'text-text-muted hover:text-text-main'
+                }`}
+              >
+                All ({baseQuizzes.length})
+              </button>
+
+              <button
+                onClick={() => setPricingFilter('free')}
+                className={`px-3.5 py-1.5 rounded-xl font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+                  pricingFilter === 'free'
+                    ? 'bg-emerald-500/20 text-emerald-400 shadow-sm border border-emerald-500/30'
+                    : 'text-text-muted hover:text-emerald-400'
+                }`}
+              >
+                <Zap size={13} /> 100% Free ({baseQuizzes.filter(q => !q.isPaid).length})
+              </button>
+
+              <button
+                onClick={() => setPricingFilter('paid')}
+                className={`px-3.5 py-1.5 rounded-xl font-bold uppercase transition-all flex items-center gap-1.5 cursor-pointer ${
+                  pricingFilter === 'paid'
+                    ? 'bg-amber-500/20 text-amber-400 shadow-sm border border-amber-500/30'
+                    : 'text-text-muted hover:text-amber-400'
+                }`}
+              >
+                <Trophy size={13} /> Paid Challenges ({baseQuizzes.filter(q => q.isPaid).length})
+              </button>
             </div>
-          )}
+
+            {activeTab === 'practice' && (
+              <div className="hidden xl:flex items-center gap-2 text-xs font-mono text-amber-400/90 bg-amber-500/10 px-3.5 py-2 rounded-xl border border-amber-500/20">
+                <BookOpen size={14} />
+                <span>Concluded weekly challenges saved for self-study</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Quizzes List Grid */}

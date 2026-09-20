@@ -1,71 +1,69 @@
 /**
  * Utility to compress images on the client side before upload
  */
-export async function compressImage(file: File, maxWidth = 1200, quality = 0.7): Promise<Blob> {
+export async function compressImage(file: File | Blob, maxWidth = 1200, quality = 0.7): Promise<Blob> {
+  if (!file || !(file instanceof Blob) || !file.type.startsWith('image/')) {
+    return file;
+  }
+
+  // If SVG or GIF, don't re-encode (SVGs are vector, GIFs lose animation)
+  if (file.type === 'image/svg+xml' || file.type === 'image/gif') {
+    return file;
+  }
+
   return new Promise((resolve) => {
-    if (!file || !(file instanceof Blob) || !file.type.startsWith('image/')) {
-      return resolve(file);
-    }
-
     try {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = (event) => {
+      const objectUrl = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        URL.revokeObjectURL(objectUrl);
         try {
-          const img = new Image();
-          img.src = event.target?.result as string;
-          img.onload = () => {
-            try {
-              const canvas = document.createElement('canvas');
-              let width = img.width;
-              let height = img.height;
+          let width = img.width || img.naturalWidth;
+          let height = img.height || img.naturalHeight;
 
-              if (width > maxWidth) {
-                height = Math.round((height * maxWidth) / width);
-                width = maxWidth;
+          if (!width || !height) {
+            return resolve(file);
+          }
+
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            console.warn('Canvas context unavailable for image compression, returning raw file');
+            return resolve(file);
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+
+          canvas.toBlob(
+            (blob) => {
+              if (blob && blob.size < file.size) {
+                resolve(blob);
+              } else {
+                resolve(file);
               }
-
-              canvas.width = width;
-              canvas.height = height;
-
-              const ctx = canvas.getContext('2d');
-              if (!ctx) {
-                console.warn('Canvas context unavailable for image compression, returning raw file');
-                return resolve(file);
-              }
-
-              ctx.drawImage(img, 0, 0, width, height);
-
-              canvas.toBlob(
-                (blob) => {
-                  if (blob) {
-                    resolve(blob);
-                  } else {
-                    console.warn('Canvas toBlob returned null, returning raw file');
-                    resolve(file);
-                  }
-                },
-                'image/jpeg',
-                quality
-              );
-            } catch (err) {
-              console.warn('Canvas compression error, returning raw file:', err);
-              resolve(file);
-            }
-          };
-          img.onerror = (err) => {
-            console.warn('Image element failed to load data URL, returning raw file:', err);
-            resolve(file);
-          };
+            },
+            file.type === 'image/png' ? 'image/png' : 'image/jpeg',
+            quality
+          );
         } catch (err) {
-          console.warn('FileReader onload handler error, returning raw file:', err);
+          console.warn('Canvas compression error, returning raw file:', err);
           resolve(file);
         }
       };
-      reader.onerror = (err) => {
-        console.warn('FileReader failed to read image file, returning raw file:', err);
+      img.onerror = (err) => {
+        URL.revokeObjectURL(objectUrl);
+        console.warn('Image element failed to load object URL, returning raw file:', err);
         resolve(file);
       };
+      img.src = objectUrl;
     } catch (err) {
       console.warn('compressImage exception, returning raw file:', err);
       resolve(file);
