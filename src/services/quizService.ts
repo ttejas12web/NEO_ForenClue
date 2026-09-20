@@ -716,26 +716,16 @@ export async function deleteQuiz(quizId: string): Promise<void> {
 // Submit Paid Quiz Registration with 12-digit UTR
 export async function submitQuizRegistration(registration: Omit<QuizRegistration, 'id' | 'createdAt' | 'status'>): Promise<string> {
   try {
-    // 1. Check for duplicate UTR usage across all registrations
     const utrTrimmed = registration.utrNumber.trim();
-    const duplicateQuery = query(
-      collection(db, REGISTRATIONS_COLLECTION),
-      where('utrNumber', '==', utrTrimmed)
-    );
-    const dupSnap = await getDocs(duplicateQuery);
-    if (!dupSnap.empty) {
-      // Check if it belongs to a different user
-      const existing = dupSnap.docs[0].data() as QuizRegistration;
-      if (existing.userId !== registration.userId) {
-        throw new Error('This UTR / Reference number has already been submitted by another user.');
-      }
+    if (!utrTrimmed) {
+      throw new Error('Please provide a valid UTR / transaction reference number.');
     }
 
-    // 2. Check if user already submitted for this specific quiz
+    // 1. Check if user already submitted for this specific quiz (scoped to user's auth UID)
     const userRegQuery = query(
       collection(db, REGISTRATIONS_COLLECTION),
-      where('quizId', '==', registration.quizId),
-      where('userId', '==', registration.userId)
+      where('userId', '==', registration.userId),
+      where('quizId', '==', registration.quizId)
     );
     const userRegSnap = await getDocs(userRegQuery);
     if (!userRegSnap.empty) {
@@ -748,6 +738,8 @@ export async function submitQuizRegistration(registration: Omit<QuizRegistration
       await updateDoc(doc(db, REGISTRATIONS_COLLECTION, existingDoc.id), {
         utrNumber: utrTrimmed,
         senderName: registration.senderName || '',
+        userName: registration.userName || '',
+        userEmail: registration.userEmail || '',
         status: 'pending',
         amount: registration.amount,
         createdAt: new Date().toISOString(),
@@ -756,7 +748,7 @@ export async function submitQuizRegistration(registration: Omit<QuizRegistration
       return existingDoc.id;
     }
 
-    // 3. Create fresh registration document
+    // 2. Create fresh registration document
     const newDoc = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
       ...registration,
       utrNumber: utrTrimmed,

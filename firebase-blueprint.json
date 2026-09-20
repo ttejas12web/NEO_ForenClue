@@ -259,6 +259,27 @@
       },
       "required": ["quizId", "userId", "score"]
     },
+    "QuizRegistration": {
+      "title": "Quiz Challenge Registration",
+      "description": "Candidate registration and payment proof submission for paid quizzes and weekly challenges",
+      "type": "object",
+      "properties": {
+        "quizId": { "type": "string" },
+        "quizTitle": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "userEmail": { "type": "string" },
+        "utrNumber": { "type": "string" },
+        "senderName": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "rejectReason": { "type": "string" },
+        "reviewedAt": { "type": "string" },
+        "reviewedBy": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["quizId", "userId", "utrNumber", "status"]
+    },
     "College": {
       "title": "College or University",
       "description": "Global directory of forensic science colleges and universities",
@@ -325,6 +346,10 @@
     "/quizAttempts/{attemptId}": {
       "schema": "QuizAttempt",
       "description": "User quiz attempt submissions for scoring and leaderboard"
+    },
+    "/quizRegistrations/{regId}": {
+      "schema": "QuizRegistration",
+      "description": "Candidate registrations and UTR payment proof for paid quiz challenges"
     },
     "/employees/{employeeId}": {
       "schema": "Employee",
