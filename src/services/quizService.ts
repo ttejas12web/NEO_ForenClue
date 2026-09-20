@@ -716,46 +716,71 @@ export async function deleteQuiz(quizId: string): Promise<void> {
 // Submit Paid Quiz Registration with 12-digit UTR
 export async function submitQuizRegistration(registration: Omit<QuizRegistration, 'id' | 'createdAt' | 'status'>): Promise<string> {
   try {
-    const utrTrimmed = registration.utrNumber.trim();
-    if (!utrTrimmed) {
-      throw new Error('Please provide a valid UTR / transaction reference number.');
+    // 1. Sanitize & Validate UTR
+    const rawUtr = registration.utrNumber || '';
+    const utrTrimmed = rawUtr.trim().replace(/\s+/g, '').toUpperCase();
+    if (!utrTrimmed || utrTrimmed.length < 6) {
+      throw new Error('Please provide a valid UTR / transaction reference number (typically 12 digits).');
     }
 
-    // 1. Check if user already submitted for this specific quiz (scoped to user's auth UID)
-    const userRegQuery = query(
-      collection(db, REGISTRATIONS_COLLECTION),
-      where('userId', '==', registration.userId),
-      where('quizId', '==', registration.quizId)
-    );
-    const userRegSnap = await getDocs(userRegQuery);
-    if (!userRegSnap.empty) {
-      const existingDoc = userRegSnap.docs[0];
-      const existingData = existingDoc.data() as QuizRegistration;
+    if (!registration.userId) {
+      throw new Error('User authentication required to submit registration.');
+    }
+
+    if (!registration.quizId) {
+      throw new Error('Target challenge identifier is missing.');
+    }
+
+    // Deterministic registration Document ID: userId_quizId
+    const deterministicId = `${registration.userId}_${registration.quizId}`;
+    const regDocRef = doc(db, REGISTRATIONS_COLLECTION, deterministicId);
+
+    // Check if deterministic document already exists
+    const existingSnap = await getDoc(regDocRef);
+    if (existingSnap.exists()) {
+      const existingData = existingSnap.data() as QuizRegistration;
       if (existingData.status === 'approved') {
         throw new Error('Your registration for this challenge has already been approved!');
       }
-      // If previously rejected or pending, update with new UTR
-      await updateDoc(doc(db, REGISTRATIONS_COLLECTION, existingDoc.id), {
-        utrNumber: utrTrimmed,
-        senderName: registration.senderName || '',
-        userName: registration.userName || '',
-        userEmail: registration.userEmail || '',
-        status: 'pending',
-        amount: registration.amount,
-        createdAt: new Date().toISOString(),
-        rejectReason: ''
-      });
-      return existingDoc.id;
     }
 
-    // 2. Create fresh registration document
-    const newDoc = await addDoc(collection(db, REGISTRATIONS_COLLECTION), {
-      ...registration,
+    const payload: Omit<QuizRegistration, 'id'> = {
+      quizId: registration.quizId,
+      quizTitle: registration.quizTitle || 'Quiz Challenge',
+      userId: registration.userId,
+      userName: (registration.userName || 'Candidate').trim(),
+      userEmail: (registration.userEmail || '').trim(),
       utrNumber: utrTrimmed,
+      senderName: (registration.senderName || registration.userName || 'Candidate').trim(),
+      amount: Number(registration.amount) || 0,
       status: 'pending',
-      createdAt: new Date().toISOString()
-    });
-    return newDoc.id;
+      createdAt: new Date().toISOString(),
+      rejectReason: ''
+    };
+
+    // Save with deterministic doc ID
+    await setDoc(regDocRef, payload, { merge: true });
+
+    // Also check for any legacy random-ID documents for this user & quiz to keep state in sync
+    try {
+      const legacyQuery = query(
+        collection(db, REGISTRATIONS_COLLECTION),
+        where('userId', '==', registration.userId),
+        where('quizId', '==', registration.quizId)
+      );
+      const legacySnap = await getDocs(legacyQuery);
+      for (const legacyDoc of legacySnap.docs) {
+        if (legacyDoc.id !== deterministicId) {
+          await updateDoc(doc(db, REGISTRATIONS_COLLECTION, legacyDoc.id), {
+            ...payload
+          }).catch(() => {});
+        }
+      }
+    } catch {
+      // Non-blocking legacy cleanup
+    }
+
+    return deterministicId;
   } catch (err: any) {
     console.error('Error submitting quiz registration:', err);
     throw err;
@@ -764,15 +789,37 @@ export async function submitQuizRegistration(registration: Omit<QuizRegistration
 
 // Fetch user registration for a quiz
 export async function getUserQuizRegistration(quizId: string, userId: string): Promise<QuizRegistration | null> {
+  if (!quizId || !userId) return null;
   try {
+    // 1. Direct deterministic document lookup (instant 1-doc read, 0 query overhead)
+    const deterministicId = `${userId}_${quizId}`;
+    const directDocRef = doc(db, REGISTRATIONS_COLLECTION, deterministicId);
+    const directSnap = await getDoc(directDocRef);
+
+    if (directSnap.exists()) {
+      return { id: directSnap.id, ...directSnap.data() } as QuizRegistration;
+    }
+
+    // 2. Fallback query for legacy auto-generated document IDs
     const q = query(
       collection(db, REGISTRATIONS_COLLECTION),
-      where('quizId', '==', quizId),
-      where('userId', '==', userId)
+      where('userId', '==', userId),
+      where('quizId', '==', quizId)
     );
     const snap = await getDocs(q);
     if (snap.empty) return null;
-    return { id: snap.docs[0].id, ...snap.docs[0].data() } as QuizRegistration;
+
+    // Prefer approved status if multiple legacy records exist
+    let bestDoc = snap.docs[0];
+    for (const d of snap.docs) {
+      const data = d.data() as QuizRegistration;
+      if (data.status === 'approved') {
+        bestDoc = d;
+        break;
+      }
+    }
+
+    return { id: bestDoc.id, ...bestDoc.data() } as QuizRegistration;
   } catch (err) {
     console.warn('Could not fetch user quiz registration:', err);
     return null;

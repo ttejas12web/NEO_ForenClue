@@ -389,7 +389,13 @@ service cloud.firestore {
     match /quizRegistrations/{regId} {
       allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
       allow create: if isSignedIn() && isValidQuizRegistration(incoming()) && incoming().userId == request.auth.uid;
-      allow update: if isAdmin() || (isSignedIn() && existing().userId == request.auth.uid && incoming().userId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['utrNumber', 'senderName', 'amount', 'status', 'createdAt', 'rejectReason']));
+      allow update: if isAdmin() || (
+        isSignedIn() 
+        && existing().userId == request.auth.uid 
+        && incoming().userId == request.auth.uid 
+        && isValidQuizRegistration(incoming())
+        && (incoming().status == 'pending' || incoming().status == existing().status)
+      );
       allow delete: if isAdmin();
     }
 
