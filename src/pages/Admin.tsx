@@ -10,7 +10,7 @@ import {
   Users, RefreshCw, ShieldCheck, Database, Fingerprint, ClipboardList,
   Star, Building2, MapPin, Eye, EyeOff, Wrench, Power, Clock, ShieldAlert, AlertTriangle,
   Trophy, CreditCard, Copy, Check, Shuffle, Search, Filter, Zap,
-  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb
+  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb, RotateCcw
 } from 'lucide-react';
 import { db, storage, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
@@ -28,7 +28,8 @@ import {
   rejectQuizRegistration,
   fetchLeaderboard,
   fetchEnrolledParticipantsForQuiz,
-  unenrollUserFromQuiz
+  unenrollUserFromQuiz,
+  resetAllQuizEnrollments
 } from '@/services/quizService';
 import { CRIME_SCENE_DOCUMENTATION_QUESTIONS } from '@/data/crimeSceneQuestions';
 import { College, CollegeCourse } from '@/types/college';
@@ -358,6 +359,33 @@ export default function Admin() {
       console.error("Error unenrolling candidate:", e);
     } finally {
       setRemovingUserId(null);
+    }
+  };
+
+  const handleResetAllEnrollments = async () => {
+    if (!selectedQuizForEnrollment) return;
+    if (!window.confirm(`Are you sure you want to RESET and CLEAR all enrolled participants from "${selectedQuizForEnrollment.title}"?\n\nThis will reset the challenge so all candidates (both old and new) must register/enroll anew. This action cannot be undone.`)) {
+      return;
+    }
+    setFetchingUsers(true);
+    try {
+      const ok = await resetAllQuizEnrollments(selectedQuizForEnrollment.id);
+      if (ok) {
+        setEnrolledParticipants([]);
+        setAdminQuizzes(prev => prev.map(q => {
+          if (q.id === selectedQuizForEnrollment.id) {
+            return { ...q, enrolledUserIds: [] };
+          }
+          return q;
+        }));
+        setSelectedQuizForEnrollment(prev => prev ? { ...prev, enrolledUserIds: [] } : null);
+        setSuccessMsg(`All participant enrollments for "${selectedQuizForEnrollment.title}" have been successfully reset to 0. All users will now see fresh "Register / Enroll"!`);
+        fetchCollections();
+      }
+    } catch (err: any) {
+      setErrMsg(`Failed to reset enrollments: ${err.message}`);
+    } finally {
+      setFetchingUsers(false);
     }
   };
 
@@ -7394,6 +7422,17 @@ export default function Admin() {
                     >
                       <Download size={14} />
                       <span>Export CSV</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleResetAllEnrollments}
+                      disabled={fetchingUsers}
+                      className="px-3.5 py-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 rounded-xl text-xs font-bold text-rose-400 transition cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                      title="Reset all candidate enrollments to 0 for this challenge so everyone sees Enroll / Register anew"
+                    >
+                      <RotateCcw size={14} />
+                      <span>Reset All Enrollments (Set to 0)</span>
                     </button>
                   </div>
                 </div>

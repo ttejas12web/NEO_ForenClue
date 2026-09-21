@@ -72,21 +72,33 @@ export default function QuizPlayer() {
     const data = await fetchQuizById(id);
     setQuiz(data);
     if (data) {
-      const isUserEnrolled = user && data.enrolledUserIds?.includes(user.uid);
+      let currentReg: QuizRegistration | null = null;
       if (data.isPaid && user?.uid) {
         try {
-          const reg = await getUserQuizRegistration(data.id, user.uid);
-          setUserRegistration(reg);
+          currentReg = await getUserQuizRegistration(data.id, user.uid);
+          setUserRegistration(currentReg);
         } catch (e) {
           console.warn("Could not check registration", e);
         }
+      } else {
+        setUserRegistration(null);
       }
+
+      const isUserEnrolled = Boolean(
+        user && (data.isPaid ? currentReg?.status === 'approved' : data.enrolledUserIds?.includes(user.uid))
+      );
 
       const totalSec = (data.durationMinutes || 10) * 60;
       setTimeRemainingSec(totalSec);
 
-      // Only start quiz timer if not blocked by payment enrollment
-      if (!data.isPaid || isUserEnrolled) {
+      // Only start quiz timer if not blocked by payment enrollment or upcoming schedule
+      const isUpcoming = Boolean(
+        data.isWeeklyChallenge &&
+        data.scheduledStartTime &&
+        new Date().getTime() < new Date(data.scheduledStartTime).getTime()
+      );
+
+      if ((!data.isPaid || isUserEnrolled) && !isUpcoming) {
         setQuizStartedAt(Date.now());
       }
     }
@@ -544,54 +556,13 @@ export default function QuizPlayer() {
   }
 
   const currentQ = quiz.questions[currentQuestionIdx];
-  const isEnrolled = quiz.enrolledUserIds?.includes(user.uid);
+  const isEnrolled = Boolean(
+    user && (quiz.isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
+  );
   const answeredCount = Object.keys(userAnswers).length;
   const flaggedCount = Object.values(flaggedQuestions).filter(Boolean).length;
 
-  // Weekly Challenge Schedule Guards
-  if (quiz.isWeeklyChallenge && quiz.scheduledStartTime) {
-    const now = new Date().getTime();
-    const start = new Date(quiz.scheduledStartTime).getTime();
-
-    if (now < start) {
-      return (
-        <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-surface border border-warning/30 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
-            <div className="w-16 h-16 rounded-full bg-warning/10 text-warning border border-warning/30 flex items-center justify-center mx-auto">
-              <Clock size={28} />
-            </div>
-            <h2 className="text-2xl font-black uppercase tracking-tight">Challenge Upcoming</h2>
-            <p className="text-text-muted text-sm leading-relaxed">
-              <strong>{quiz.title}</strong> will be live on <span className="font-bold text-warning">{formattedDate}</span>.
-            </p>
-
-            {isEnrolled ? (
-              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
-                <CheckCircle2 size={18} /> You are enrolled for this challenge!
-              </div>
-            ) : quiz.isEnrollmentOpen !== false ? (
-              <button
-                onClick={() => enrollInQuiz(quiz.id, user.uid).then(() => loadQuiz(quiz.id))}
-                className="w-full bg-warning hover:bg-warning-dark text-crust font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-warning/20"
-              >
-                Enroll Now
-              </button>
-            ) : (
-              <div className="p-4 rounded-2xl bg-surface/50 border border-white/5 text-text-muted font-bold text-sm flex items-center justify-center gap-2">
-                <Lock size={18} /> Enrollment not yet open
-              </div>
-            )}
-
-            <Link to="/quizzes" className="inline-block text-text-muted text-xs hover:text-text-main underline">
-              Back to All Quizzes
-            </Link>
-          </div>
-        </div>
-      );
-    }
-  }
-
-  // Paid Challenge Registration Guard (Requires Admin-Approved UTR)
+  // 1. Paid Challenge Registration Guard (Requires Admin-Approved UTR)
   if (quiz.isPaid && !isEnrolled) {
     const totalPrize = (quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100);
     return (
@@ -702,6 +673,49 @@ export default function QuizPlayer() {
         </div>
       </div>
     );
+  }
+
+  // 2. Weekly Challenge Schedule Guards (For approved paid candidates or free participants)
+  if (quiz.isWeeklyChallenge && quiz.scheduledStartTime) {
+    const now = new Date().getTime();
+    const start = new Date(quiz.scheduledStartTime).getTime();
+
+    if (now < start) {
+      return (
+        <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4">
+          <div className="max-w-lg w-full bg-surface border border-warning/30 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
+            <div className="w-16 h-16 rounded-full bg-warning/10 text-warning border border-warning/30 flex items-center justify-center mx-auto">
+              <Clock size={28} />
+            </div>
+            <h2 className="text-2xl font-black uppercase tracking-tight">Challenge Upcoming</h2>
+            <p className="text-text-muted text-sm leading-relaxed">
+              <strong>{quiz.title}</strong> will be live on <span className="font-bold text-warning">{formattedDate}</span>.
+            </p>
+
+            {isEnrolled ? (
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
+                <CheckCircle2 size={18} /> {quiz.isPaid ? 'Payment Approved • You are registered for this challenge!' : 'You are enrolled for this challenge!'}
+              </div>
+            ) : !quiz.isPaid && quiz.isEnrollmentOpen !== false ? (
+              <button
+                onClick={() => enrollInQuiz(quiz.id, user.uid).then(() => loadQuiz(quiz.id))}
+                className="w-full bg-warning hover:bg-warning-dark text-crust font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-warning/20"
+              >
+                Enroll Now
+              </button>
+            ) : (
+              <div className="p-4 rounded-2xl bg-surface/50 border border-white/5 text-text-muted font-bold text-sm flex items-center justify-center gap-2">
+                <Lock size={18} /> Enrollment not yet open
+              </div>
+            )}
+
+            <Link to="/quizzes" className="inline-block text-text-muted text-xs hover:text-text-main underline">
+              Back to All Quizzes
+            </Link>
+          </div>
+        </div>
+      );
+    }
   }
 
   return (

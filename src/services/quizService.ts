@@ -398,10 +398,19 @@ export async function fetchQuizById(quizId: string): Promise<Quiz | null> {
   }
 }
 
-// Enroll user in Weekly Challenge
+// Enroll user in Weekly Challenge (For Free Quizzes only; Paid challenges require approved UTR)
 export async function enrollInQuiz(quizId: string, userId: string): Promise<boolean> {
   try {
     const docRef = doc(db, QUIZZES_COLLECTION, quizId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      const data = snap.data() as Quiz;
+      if (data.isPaid) {
+        // Paid challenge requires admin UTR approval
+        console.warn("Direct enrollment blocked: This is a paid quiz challenge requiring payment approval.");
+        return false;
+      }
+    }
     await updateDoc(docRef, {
       enrolledUserIds: arrayUnion(userId)
     });
@@ -492,13 +501,19 @@ export async function submitQuizAttempt(attempt: QuizAttempt): Promise<string> {
   try {
     const docRef = await addDoc(collection(db, ATTEMPTS_COLLECTION), attemptWithTime);
 
-    // Also auto-ensure user is in quiz.enrolledUserIds
+    // Auto-ensure user is in quiz.enrolledUserIds ONLY for free quizzes
     if (attempt.quizId && attempt.userId) {
       try {
         const quizRef = doc(db, QUIZZES_COLLECTION, attempt.quizId);
-        await updateDoc(quizRef, {
-          enrolledUserIds: arrayUnion(attempt.userId)
-        });
+        const quizSnap = await getDoc(quizRef);
+        if (quizSnap.exists()) {
+          const quizData = quizSnap.data() as Quiz;
+          if (!quizData.isPaid) {
+            await updateDoc(quizRef, {
+              enrolledUserIds: arrayUnion(attempt.userId)
+            });
+          }
+        }
       } catch (e) {
         // Non-blocking if sample quiz
       }
@@ -895,6 +910,20 @@ export async function unenrollUserFromQuiz(quizId: string, userId: string): Prom
     return true;
   } catch (err) {
     console.error("Error unenrolling user:", err);
+    return false;
+  }
+}
+
+// Admin API: Reset / Clear all enrolled users from a quiz (Sets enrolledUserIds to empty)
+export async function resetAllQuizEnrollments(quizId: string): Promise<boolean> {
+  try {
+    const quizRef = doc(db, QUIZZES_COLLECTION, quizId);
+    await updateDoc(quizRef, {
+      enrolledUserIds: []
+    });
+    return true;
+  } catch (err) {
+    console.error("Error resetting all quiz enrollments:", err);
     return false;
   }
 }

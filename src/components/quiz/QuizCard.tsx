@@ -28,15 +28,19 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [userRegistration, setUserRegistration] = useState<QuizRegistration | null>(null);
 
-  const isEnrolled = user && quiz.enrolledUserIds?.includes(user.uid);
+  const isEnrolled = Boolean(
+    user && (quiz.isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
+  );
 
   useEffect(() => {
     if (quiz.isPaid && user?.uid) {
       getUserQuizRegistration(quiz.id, user.uid)
         .then(reg => setUserRegistration(reg))
         .catch(err => console.warn("Could not check user registration:", err));
+    } else if (!quiz.isPaid) {
+      setUserRegistration(null);
     }
-  }, [quiz.id, quiz.isPaid, user?.uid, isEnrolled]);
+  }, [quiz.id, quiz.isPaid, user?.uid]);
 
   useEffect(() => {
     if (!quiz.isWeeklyChallenge || !quiz.scheduledStartTime) {

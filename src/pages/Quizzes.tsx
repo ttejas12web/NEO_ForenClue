@@ -56,6 +56,10 @@ export default function Quizzes() {
       navigate('/login');
       return;
     }
+    const targetQuiz = quizzes.find(q => q.id === quizId);
+    if (targetQuiz?.isPaid) {
+      return;
+    }
     setEnrollingQuizId(quizId);
     const ok = await enrollInQuiz(quizId, user.uid);
     if (ok) {
