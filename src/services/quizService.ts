@@ -36,9 +36,7 @@ export const SAMPLE_QUIZZES: Quiz[] = [
     title: 'Weekly Challenge: Cheiloscopy & Forensic Lip Print Analysis',
     description: 'Comprehensive 30-question forensic assessment on Cheiloscopy (lip print analysis) based on scientific classification systems (Suzuki & Tsuchihashi, Martin Santos, Renaud), anatomical morphology of sulci labiorum, latent print development with lysochrome dyes, identical twin studies, chemical lipstick chromatography, and judicial admissibility standards.',
     category: 'Forensic Odontology & Biometrics',
-    isWeeklyChallenge: true,
-    scheduledStartTime: new Date(Date.now() - 300000).toISOString(), // Started 5 minutes ago (Live)
-    scheduledEndTime: new Date(Date.now() + 30 * 60000).toISOString(), // 35 minutes total duration
+    isWeeklyChallenge: false,
     durationMinutes: 35,
     totalPoints: 300,
     passingScore: 210,
@@ -57,13 +55,12 @@ export const SAMPLE_QUIZZES: Quiz[] = [
     title: 'Weekly Challenge #1: Fingerprint Analysis & Friction Ridge Patterns',
     description: 'Test your expertise in loop, whorl, and arch pattern classification, minutiae identification, and AFIS database matching under timed challenge conditions!',
     category: 'Forensic Identification',
-    isWeeklyChallenge: true,
-    scheduledStartTime: new Date(Date.now() + 86400000 * 2).toISOString(), // Starts in 2 days
-    scheduledEndTime: new Date(Date.now() + 86400000 * 5).toISOString(), // Active for 3 days
+    isWeeklyChallenge: false,
     durationMinutes: 10,
     totalPoints: 100,
     passingScore: 70,
     enrolledUserIds: [],
+    isEnrollmentOpen: true,
     createdBy: 'ForenClue Team',
     createdAt: new Date().toISOString(),
     questions: [
@@ -112,15 +109,14 @@ export const SAMPLE_QUIZZES: Quiz[] = [
   {
     id: 'weekly-challenge-2',
     title: 'Weekly Challenge #2: Forensic Serology & DNA Profiling',
-    description: 'Upcoming high-stakes quiz on STR profiling, Kastle-Meyer presumptive testing, and capillary electrophoresis analysis.',
+    description: 'High-yield forensic assessment on STR profiling, Kastle-Meyer presumptive testing, and capillary electrophoresis analysis. Available for self-paced practice!',
     category: 'Forensic Biology',
-    isWeeklyChallenge: true,
-    scheduledStartTime: new Date(Date.now() + 86400000 * 2).toISOString(), // Starts in 2 days
-    scheduledEndTime: new Date(Date.now() + 86400000 * 5).toISOString(),
+    isWeeklyChallenge: false,
     durationMinutes: 15,
     totalPoints: 100,
     passingScore: 75,
     enrolledUserIds: [],
+    isEnrollmentOpen: true,
     createdBy: 'Dr. A. Gaikwad',
     createdAt: new Date().toISOString(),
     questions: [
@@ -163,13 +159,12 @@ export const SAMPLE_QUIZZES: Quiz[] = [
     title: 'Weekly Challenge #0: Forensic Ballistics & Firearms Identification',
     description: 'Concluded weekly challenge covering striation pattern comparison, gunshot residue (GSR) analysis, and caliber measurements. Available now for self-paced practice!',
     category: 'Forensic Ballistics',
-    isWeeklyChallenge: true,
-    scheduledStartTime: new Date(Date.now() - 86400000 * 7).toISOString(), // 7 days ago
-    scheduledEndTime: new Date(Date.now() - 86400000 * 3).toISOString(), // Ended 3 days ago
+    isWeeklyChallenge: false,
     durationMinutes: 12,
     totalPoints: 100,
     passingScore: 70,
     enrolledUserIds: [],
+    isEnrollmentOpen: true,
     createdBy: 'ForenClue Team',
     createdAt: new Date(Date.now() - 86400000 * 10).toISOString(),
     questions: [
@@ -296,33 +291,27 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
     quiz.price = quiz.price || 25;
     quiz.isWeeklyChallenge = true;
     quiz.enrolledUserIds = [];
-  } else if (quiz.id === 'weekly-challenge-cheiloscopy') {
-    quiz.durationMinutes = 35;
-    if (!quiz.scheduledStartTime) {
-      quiz.scheduledStartTime = new Date(Date.now() - 300000).toISOString();
-    }
-    const startMs = new Date(quiz.scheduledStartTime).getTime();
-    quiz.scheduledEndTime = new Date(startMs + 35 * 60000).toISOString();
+  } else if (
+    quiz.id === 'weekly-challenge-cheiloscopy' ||
+    quiz.id === 'weekly-challenge-1' ||
+    quiz.id === 'weekly-challenge-2' ||
+    quiz.id === 'weekly-challenge-0' ||
+    Boolean(
+      quiz.title && (
+        quiz.title.toLowerCase().includes('fingerprint analysis & friction ridge patterns') ||
+        quiz.title.toLowerCase().includes('forensic serology & dna profiling') ||
+        quiz.title.toLowerCase().includes('cheiloscopy & forensic lip print analysis')
+      )
+    )
+  ) {
+    // Kept exclusively in practice mode (removed from upcoming mode)
+    quiz.isWeeklyChallenge = false;
     quiz.isEnrollmentOpen = true;
-    quiz.isWeeklyChallenge = true;
-  } else if (quiz.id === 'weekly-challenge-1') {
-    if (!quiz.scheduledStartTime) {
-      quiz.scheduledStartTime = new Date(Date.now() + 86400000 * 2).toISOString();
-      quiz.scheduledEndTime = new Date(Date.now() + 86400000 * 5).toISOString();
+    delete quiz.scheduledStartTime;
+    delete quiz.scheduledEndTime;
+    if (quiz.id === 'weekly-challenge-cheiloscopy') {
+      quiz.durationMinutes = 35;
     }
-    quiz.isEnrollmentOpen = true;
-  } else if (quiz.id === 'weekly-challenge-2') {
-    if (!quiz.scheduledStartTime) {
-      quiz.scheduledStartTime = new Date(Date.now() + 86400000 * 4).toISOString();
-      quiz.scheduledEndTime = new Date(Date.now() + 86400000 * 7).toISOString();
-    }
-    quiz.isEnrollmentOpen = false;
-  } else if (quiz.id === 'weekly-challenge-0') {
-    if (!quiz.scheduledStartTime) {
-      quiz.scheduledStartTime = new Date(Date.now() - 86400000 * 7).toISOString();
-      quiz.scheduledEndTime = new Date(Date.now() - 86400000 * 3).toISOString();
-    }
-    quiz.isEnrollmentOpen = false;
   } else if (quiz.id === 'practice-bpa-1') {
     // This authored practice bank is maintained in code. Do not serve stale database questions.
     // No database records or previous attempts are changed here.
@@ -372,6 +361,30 @@ export async function fetchAdminQuizzes(): Promise<Quiz[]> {
           data.questions = sample.questions;
         }
       }
+
+      // Sync practice mode update to Firestore document if it was previously marked as weekly challenge
+      const isPracticeTarget = 
+        data.id === 'weekly-challenge-cheiloscopy' ||
+        data.id === 'weekly-challenge-1' ||
+        data.id === 'weekly-challenge-2' ||
+        data.id === 'weekly-challenge-0' ||
+        Boolean(
+          data.title && (
+            data.title.toLowerCase().includes('fingerprint analysis & friction ridge patterns') ||
+            data.title.toLowerCase().includes('forensic serology & dna profiling') ||
+            data.title.toLowerCase().includes('cheiloscopy & forensic lip print analysis')
+          )
+        );
+
+      if (isPracticeTarget && docSnap.data().isWeeklyChallenge === true) {
+        updateDoc(doc(db, QUIZZES_COLLECTION, docSnap.id), {
+          isWeeklyChallenge: false,
+          isEnrollmentOpen: true
+        }).catch(e => {
+          console.warn("Could not sync practice challenge status to Firestore:", e);
+        });
+      }
+
       quizzes.push(applyQuizOverrides(data));
     });
 
