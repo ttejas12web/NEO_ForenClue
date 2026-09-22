@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Quiz, QuizAttempt } from '@/types/quiz';
-import { fetchQuizzes, enrollInQuiz, fetchUserQuizAttempts, isWeeklyChallengeExpired } from '@/services/quizService';
+import { fetchQuizzes, enrollInQuiz, fetchUserQuizAttempts, isWeeklyChallengeExpired, isPaidQuiz } from '@/services/quizService';
 import { QuizCard } from '@/components/quiz/QuizCard';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
@@ -57,7 +57,7 @@ export default function Quizzes() {
       return;
     }
     const targetQuiz = quizzes.find(q => q.id === quizId);
-    if (targetQuiz?.isPaid) {
+    if (isPaidQuiz(targetQuiz)) {
       return;
     }
     setEnrollingQuizId(quizId);
@@ -84,8 +84,8 @@ export default function Quizzes() {
 
   const baseQuizzes = activeTab === 'weekly' ? activeWeeklyChallenges : practiceQuizzes;
   const filteredQuizzes = baseQuizzes.filter(q => {
-    if (pricingFilter === 'free') return !q.isPaid;
-    if (pricingFilter === 'paid') return q.isPaid;
+    if (pricingFilter === 'free') return !isPaidQuiz(q);
+    if (pricingFilter === 'paid') return isPaidQuiz(q);
     return true;
   });
 
@@ -172,7 +172,7 @@ export default function Quizzes() {
                     : 'text-text-muted hover:text-emerald-400'
                 }`}
               >
-                <Zap size={13} /> 100% Free ({baseQuizzes.filter(q => !q.isPaid).length})
+                <Zap size={13} /> 100% Free ({baseQuizzes.filter(q => !isPaidQuiz(q)).length})
               </button>
 
               <button
@@ -183,7 +183,7 @@ export default function Quizzes() {
                     : 'text-text-muted hover:text-amber-400'
                 }`}
               >
-                <Trophy size={13} /> Paid Challenges ({baseQuizzes.filter(q => q.isPaid).length})
+                <Trophy size={13} /> Paid Challenges ({baseQuizzes.filter(q => isPaidQuiz(q)).length})
               </button>
             </div>
 

@@ -120,8 +120,8 @@ export function PaidChallengeRegistrationModal({
       await loadExisting();
       onRegistrationSubmitted?.();
     } catch (err: any) {
-      console.error("UTR submission error:", err);
-      const friendlyMsg = err.message || 'Failed to submit registration proof. Please try again.';
+      console.warn("Notice: UTR submission issue:", err?.message || err);
+      const friendlyMsg = err?.message || 'Failed to submit registration proof. Please try again.';
       setErrorMsg(friendlyMsg);
     } finally {
       setSubmitting(false);

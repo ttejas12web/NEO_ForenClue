@@ -273,9 +273,30 @@ export function isWeeklyChallengeExpired(quiz: Quiz): boolean {
   return false;
 }
 
-// Helper to force sample challenges to have scheduled times if missing
+// Universal helper to detect if a quiz or weekly challenge requires payment
+export function isPaidQuiz(quiz?: Partial<Quiz> | null): boolean {
+  if (!quiz) return false;
+  return Boolean(quiz.isPaid === true || (quiz.price !== undefined && Number(quiz.price) > 0));
+}
+
+// Helper to force sample challenges to have scheduled times if missing and normalize paid flags
 function applyQuizOverrides(quiz: Quiz): Quiz {
-  if (quiz.id === 'weekly-challenge-cheiloscopy') {
+  // Normalize paid quiz flags: if price > 0, isPaid MUST be true
+  if (isPaidQuiz(quiz)) {
+    quiz.isPaid = true;
+    quiz.price = Number(quiz.price) > 0 ? Number(quiz.price) : 49;
+  } else {
+    quiz.isPaid = false;
+  }
+
+  // Recent paid challenge "5PkY9duGUxCwriid7i6t" (Crime Scene Documentation)
+  // Clear any legacy enrolled participants so that all candidates start fresh with "Register & Pay / Enroll"
+  if (quiz.id === '5PkY9duGUxCwriid7i6t') {
+    quiz.isPaid = true;
+    quiz.price = quiz.price || 25;
+    quiz.isWeeklyChallenge = true;
+    quiz.enrolledUserIds = [];
+  } else if (quiz.id === 'weekly-challenge-cheiloscopy') {
     quiz.durationMinutes = 35;
     if (!quiz.scheduledStartTime) {
       quiz.scheduledStartTime = new Date(Date.now() - 300000).toISOString();
@@ -405,7 +426,7 @@ export async function enrollInQuiz(quizId: string, userId: string): Promise<bool
     const snap = await getDoc(docRef);
     if (snap.exists()) {
       const data = snap.data() as Quiz;
-      if (data.isPaid) {
+      if (isPaidQuiz(data)) {
         // Paid challenge requires admin UTR approval
         console.warn("Direct enrollment blocked: This is a paid quiz challenge requiring payment approval.");
         return false;
@@ -508,7 +529,7 @@ export async function submitQuizAttempt(attempt: QuizAttempt): Promise<string> {
         const quizSnap = await getDoc(quizRef);
         if (quizSnap.exists()) {
           const quizData = quizSnap.data() as Quiz;
-          if (!quizData.isPaid) {
+          if (!isPaidQuiz(quizData)) {
             await updateDoc(quizRef, {
               enrolledUserIds: arrayUnion(attempt.userId)
             });
@@ -684,8 +705,11 @@ export async function fetchLeaderboard(quiz: Quiz): Promise<LeaderboardEntry[]> 
 // Admin API: Save or Update Quiz
 export async function saveQuiz(quiz: Partial<Quiz>): Promise<string> {
   try {
+    const isPaid = isPaidQuiz(quiz);
     const dataToSave = {
       ...quiz,
+      isPaid,
+      price: isPaid ? (Number(quiz.price) > 0 ? Number(quiz.price) : 49) : 0,
       status: quiz.status || 'published'
     };
     if (quiz.id) {
@@ -751,12 +775,20 @@ export async function submitQuizRegistration(registration: Omit<QuizRegistration
     const regDocRef = doc(db, REGISTRATIONS_COLLECTION, deterministicId);
 
     // Check if deterministic document already exists
-    const existingSnap = await getDoc(regDocRef);
-    if (existingSnap.exists()) {
-      const existingData = existingSnap.data() as QuizRegistration;
-      if (existingData.status === 'approved') {
-        throw new Error('Your registration for this challenge has already been approved!');
+    try {
+      const existingSnap = await getDoc(regDocRef);
+      if (existingSnap.exists()) {
+        const existingData = existingSnap.data() as QuizRegistration;
+        if (existingData.status === 'approved') {
+          throw new Error('Your registration for this challenge has already been approved!');
+        }
       }
+    } catch (checkErr: any) {
+      if (checkErr.message?.includes('already been approved')) {
+        throw checkErr;
+      }
+      // Non-blocking notice if pre-check read was skipped
+      console.warn("Notice: Pre-check read for registration skipped:", checkErr?.code || checkErr?.message || checkErr);
     }
 
     const payload: Omit<QuizRegistration, 'id'> = {
@@ -797,7 +829,11 @@ export async function submitQuizRegistration(registration: Omit<QuizRegistration
 
     return deterministicId;
   } catch (err: any) {
-    console.error('Error submitting quiz registration:', err);
+    if (err?.code === 'permission-denied' || err?.message?.includes('Missing or insufficient permissions')) {
+      console.warn('Registration submission notice: permission rejected by rules engine for user', registration?.userId);
+      throw new Error('Registration could not be verified by security rules. Please check your network and log in again.');
+    }
+    console.warn('Notice: Error submitting quiz registration:', err?.message || err);
     throw err;
   }
 }
@@ -1011,8 +1047,8 @@ export async function fetchEnrolledParticipantsForQuiz(quiz: Quiz): Promise<Enro
       const photo = profile?.photoURL || profile?.avatar || att?.userPhoto || '';
       const college = profile?.college || profile?.university || 'Forensic Science Aspirant';
 
-      const isPaid = quiz.isPaid || Boolean(reg);
-      const regStatus = reg?.status || (quiz.enrolledUserIds?.includes(uid) ? 'approved' : 'approved');
+      const isPaid = isPaidQuiz(quiz) || Boolean(reg);
+      const regStatus = reg?.status || (isPaid ? 'pending' : 'approved');
       const enrolledAt = reg?.createdAt || att?.completedAt || profile?.createdAt || quiz.createdAt || new Date().toISOString();
 
       const participant: EnrolledParticipant = {
@@ -1025,7 +1061,7 @@ export async function fetchEnrolledParticipantsForQuiz(quiz: Quiz): Promise<Enro
         enrollmentType: isPaid ? 'paid' : 'free',
         registrationStatus: regStatus,
         utrNumber: reg?.utrNumber,
-        amountPaid: reg?.amount || (isPaid ? (quiz.price || 49) : 0),
+        amountPaid: reg?.amount || (isPaid && reg?.status === 'approved' ? (quiz.price || 49) : 0),
         hasAttempted: Boolean(att),
         score: att?.score,
         totalPoints: att?.totalPoints || quiz.totalPoints,

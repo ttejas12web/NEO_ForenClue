@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { Quiz, QuizQuestion, QuizAttempt, QuizRegistration } from '@/types/quiz';
-import { fetchQuizById, submitQuizAttempt, enrollInQuiz, getUserQuizRegistration } from '@/services/quizService';
+import { fetchQuizById, submitQuizAttempt, enrollInQuiz, getUserQuizRegistration, isPaidQuiz } from '@/services/quizService';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   Clock, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, 
@@ -73,7 +73,8 @@ export default function QuizPlayer() {
     setQuiz(data);
     if (data) {
       let currentReg: QuizRegistration | null = null;
-      if (data.isPaid && user?.uid) {
+      const isPaid = isPaidQuiz(data);
+      if (isPaid && user?.uid) {
         try {
           currentReg = await getUserQuizRegistration(data.id, user.uid);
           setUserRegistration(currentReg);
@@ -85,7 +86,7 @@ export default function QuizPlayer() {
       }
 
       const isUserEnrolled = Boolean(
-        user && (data.isPaid ? currentReg?.status === 'approved' : data.enrolledUserIds?.includes(user.uid))
+        user && (isPaid ? currentReg?.status === 'approved' : data.enrolledUserIds?.includes(user.uid))
       );
 
       const totalSec = (data.durationMinutes || 10) * 60;
@@ -98,7 +99,7 @@ export default function QuizPlayer() {
         new Date().getTime() < new Date(data.scheduledStartTime).getTime()
       );
 
-      if ((!data.isPaid || isUserEnrolled) && !isUpcoming) {
+      if ((!isPaid || isUserEnrolled) && !isUpcoming) {
         setQuizStartedAt(Date.now());
       }
     }
@@ -135,7 +136,7 @@ export default function QuizPlayer() {
       if (now < start) return;
     }
 
-    const shouldEnforceTabSwitch = quiz.enableTabSwitchDetection ?? (quiz.isWeeklyChallenge || quiz.isPaid || false);
+    const shouldEnforceTabSwitch = quiz.enableTabSwitchDetection ?? (quiz.isWeeklyChallenge || isPaidQuiz(quiz) || false);
 
     const handleViolation = () => {
       if (!shouldEnforceTabSwitch) return;
@@ -556,14 +557,15 @@ export default function QuizPlayer() {
   }
 
   const currentQ = quiz.questions[currentQuestionIdx];
+  const isPaid = isPaidQuiz(quiz);
   const isEnrolled = Boolean(
-    user && (quiz.isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
+    user && (isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
   );
   const answeredCount = Object.keys(userAnswers).length;
   const flaggedCount = Object.values(flaggedQuestions).filter(Boolean).length;
 
   // 1. Paid Challenge Registration Guard (Requires Admin-Approved UTR)
-  if (quiz.isPaid && !isEnrolled) {
+  if (isPaid && !isEnrolled) {
     const totalPrize = (quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100);
     return (
       <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4 relative overflow-hidden">
@@ -694,9 +696,9 @@ export default function QuizPlayer() {
 
             {isEnrolled ? (
               <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
-                <CheckCircle2 size={18} /> {quiz.isPaid ? 'Payment Approved • You are registered for this challenge!' : 'You are enrolled for this challenge!'}
+                <CheckCircle2 size={18} /> {isPaid ? 'Payment Approved • You are registered for this challenge!' : 'You are enrolled for this challenge!'}
               </div>
-            ) : !quiz.isPaid && quiz.isEnrollmentOpen !== false ? (
+            ) : !isPaid && quiz.isEnrollmentOpen !== false ? (
               <button
                 onClick={() => enrollInQuiz(quiz.id, user.uid).then(() => loadQuiz(quiz.id))}
                 className="w-full bg-warning hover:bg-warning-dark text-crust font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-warning/20"

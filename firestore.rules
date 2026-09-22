@@ -381,20 +381,38 @@ service cloud.firestore {
     match /quizzes/{quizId} {
       allow read: if true;
       allow create, delete: if isAdmin();
-      // Allow admin full updates; allow authenticated students to enroll by updating enrolledUserIds
-      allow update: if isAdmin() || (isSignedIn() && incoming().diff(existing()).affectedKeys().hasOnly(['enrolledUserIds']));
+      // Allow admin full updates; allow authenticated students to enroll by updating enrolledUserIds ONLY on free quizzes
+      allow update: if isAdmin() || (
+        isSignedIn() 
+        && incoming().diff(existing()).affectedKeys().hasOnly(['enrolledUserIds'])
+        && (!('isPaid' in existing()) || existing().isPaid != true)
+        && (!('price' in existing()) || existing().price <= 0)
+      );
     }
 
     // Paid Quiz Registrations (UTR Review & Approvals)
     match /quizRegistrations/{regId} {
-      allow read: if isSignedIn() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow get: if isSignedIn() && (
+        resource == null 
+        || !('userId' in resource.data)
+        || resource.data.userId == request.auth.uid 
+        || resource.data.userEmail == request.auth.token.email
+        || isAdmin()
+      );
+      allow list: if isAdmin() || (
+        isSignedIn() && (
+          !('userId' in resource.data)
+          || resource.data.userId == request.auth.uid 
+          || resource.data.userEmail == request.auth.token.email
+        )
+      );
       allow create: if isSignedIn() && isValidQuizRegistration(incoming()) && incoming().userId == request.auth.uid;
       allow update: if isAdmin() || (
         isSignedIn() 
-        && existing().userId == request.auth.uid 
         && incoming().userId == request.auth.uid 
+        && (!('userId' in existing()) || existing().userId == request.auth.uid)
         && isValidQuizRegistration(incoming())
-        && (incoming().status == 'pending' || incoming().status == existing().status)
+        && (!('status' in existing()) || incoming().status == 'pending' || incoming().status == existing().status)
       );
       allow delete: if isAdmin();
     }

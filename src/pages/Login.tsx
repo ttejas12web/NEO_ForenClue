@@ -219,9 +219,17 @@ export default function Login() {
           setAuthSuccess('Registration completed! Welcome to ForenClue.');
         } catch (signupErr: any) {
           if (signupErr?.code === 'auth/email-already-in-use') {
-            // Email exists, try to sign in instead
-            await signInWithEmail(simulatedEmail, simulatedPassword);
-            setAuthSuccess('Account found. Sign in successful! Directing to portal...');
+            // Email exists, try to sign in with the entered credentials
+            try {
+              await signInWithEmail(simulatedEmail, simulatedPassword);
+              setAuthSuccess('Account found. Signed in successfully! Directing to portal...');
+            } catch (signInErr: any) {
+              // If credentials don't match existing account, switch to sign-in tab with clear guidance
+              setActiveTab('signin');
+              setAuthError('An account with this email already exists. Please enter your account password to sign in, or click "Forgot Password?" below.');
+              setIsSubmitting(false);
+              return;
+            }
           } else {
             throw signupErr;
           }
@@ -238,16 +246,18 @@ export default function Login() {
         }, 800);
       }
     } catch (err: any) {
-      console.warn("Authentication failed:", err?.code || err?.message || err);
+      console.warn("Authentication notice:", err?.code || err?.message || err);
       let errMsg = "An unexpected error occurred. Please try again.";
       if (err.code === 'auth/email-already-in-use') {
-        errMsg = "This email is already registered. Please sign in instead.";
+        errMsg = "This email is already registered. Please sign in instead or reset your password.";
       } else if (err.code === 'auth/invalid-email') {
         errMsg = "The email address is invalid.";
       } else if (err.code === 'auth/weak-password') {
-        errMsg = "The password is too weak. Please include letters, numbers, and symbols.";
+        errMsg = "The password is too weak. Please include uppercase, lowercase, numbers, and symbols.";
       } else if (err.code === 'auth/wrong-password' || err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential') {
-        errMsg = "Invalid email or password. If you do not have an account yet, please click 'Sign Up' above to register.";
+        errMsg = activeTab === 'signup'
+          ? "An account with this email already exists. Please switch to Sign In or click 'Forgot Password?' to reset it."
+          : "Invalid email or password. If you do not have an account yet, please click 'Create Account' above to register.";
       } else if (err.code === 'auth/operation-not-allowed') {
         errMsg = "Email authentication is disabled in Firebase configuration.";
       } else {

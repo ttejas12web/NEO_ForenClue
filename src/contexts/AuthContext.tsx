@@ -564,8 +564,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       lastActivityRef.current = Date.now();
       return result.user;
     } catch (error: any) {
-      recordFailedLogin(normalizedEmail);
-      console.error("Error signing up with email and password: ", error);
+      if (error?.code === 'auth/email-already-in-use') {
+        console.warn("Sign up notice: email already in use for", normalizedEmail);
+      } else {
+        recordFailedLogin(normalizedEmail);
+        console.error("Error signing up with email and password: ", error);
+      }
       throw error;
     }
   };
@@ -619,7 +623,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await sendPasswordResetEmail(auth, normalizedEmail);
       recordPasswordResetRequest(normalizedEmail);
     } catch (error: any) {
-      console.error("Error sending password reset email: ", error);
+      console.warn("Notice: Error sending password reset email: ", error?.code || error?.message || error);
       throw error;
     }
   };

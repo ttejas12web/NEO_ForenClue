@@ -29,7 +29,8 @@ import {
   fetchLeaderboard,
   fetchEnrolledParticipantsForQuiz,
   unenrollUserFromQuiz,
-  resetAllQuizEnrollments
+  resetAllQuizEnrollments,
+  isPaidQuiz
 } from '@/services/quizService';
 import { CRIME_SCENE_DOCUMENTATION_QUESTIONS } from '@/data/crimeSceneQuestions';
 import { College, CollegeCourse } from '@/types/college';
@@ -729,8 +730,8 @@ export default function Admin() {
       durationMinutes: q.durationMinutes || 30,
       totalPoints: q.totalPoints || 500,
       passingScore: q.passingScore || 350,
-      isPaid: q.isPaid || false,
-      price: q.price || 49,
+      isPaid: isPaidQuiz(q),
+      price: isPaidQuiz(q) ? (q.price || 49) : 0,
       upiId: q.upiId || 'forenclue@okaxis',
       payeeName: q.payeeName || 'ForenClue Forensic Services',
       upiQrUrl: q.upiQrUrl || '',
@@ -1747,8 +1748,8 @@ export default function Admin() {
         passingScore: Number(newQuizForm.passingScore),
         questions: quizQuestions,
         createdBy: user?.email || 'Admin',
-        isPaid: Boolean(newQuizForm.isPaid),
-        price: Number(newQuizForm.price) || 0,
+        isPaid: Boolean(newQuizForm.isPaid || (Number(newQuizForm.price) > 0)),
+        price: (newQuizForm.isPaid || Number(newQuizForm.price) > 0) ? (Number(newQuizForm.price) > 0 ? Number(newQuizForm.price) : 49) : 0,
         upiId: newQuizForm.upiId || '',
         payeeName: newQuizForm.payeeName || '',
         upiQrUrl: newQuizForm.upiQrUrl || '',

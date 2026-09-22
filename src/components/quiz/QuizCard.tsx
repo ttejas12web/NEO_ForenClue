@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { RippleButton, RippleWrapper } from '@/components/ui/RippleButton';
 import { PaidChallengeRegistrationModal } from '@/components/quiz/PaidChallengeRegistrationModal';
-import { getUserQuizRegistration } from '@/services/quizService';
+import { getUserQuizRegistration, isPaidQuiz } from '@/services/quizService';
 
 interface QuizCardProps {
   quiz: Quiz;
@@ -28,19 +28,20 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [userRegistration, setUserRegistration] = useState<QuizRegistration | null>(null);
 
+  const isPaid = isPaidQuiz(quiz);
   const isEnrolled = Boolean(
-    user && (quiz.isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
+    user && (isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
   );
 
   useEffect(() => {
-    if (quiz.isPaid && user?.uid) {
+    if (isPaid && user?.uid) {
       getUserQuizRegistration(quiz.id, user.uid)
         .then(reg => setUserRegistration(reg))
         .catch(err => console.warn("Could not check user registration:", err));
-    } else if (!quiz.isPaid) {
+    } else if (!isPaid) {
       setUserRegistration(null);
     }
-  }, [quiz.id, quiz.isPaid, user?.uid]);
+  }, [quiz.id, isPaid, user?.uid]);
 
   useEffect(() => {
     if (!quiz.isWeeklyChallenge || !quiz.scheduledStartTime) {
@@ -189,7 +190,7 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
             <span className="text-xs font-bold uppercase tracking-wider text-warning bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
               {quiz.category}
             </span>
-            {quiz.isPaid ? (
+            {isPaid ? (
               <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1 font-mono">
                 <Trophy size={11} className="text-amber-400" /> ₹{quiz.price || 49} Challenge
               </span>
@@ -333,7 +334,7 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
 
       {/* Bottom Footer Actions */}
       <div className="p-6 pt-0 space-y-3">
-        {quiz.isPaid && !isEnrolled && status !== 'ENDED' ? (
+        {isPaid && !isEnrolled && status !== 'ENDED' ? (
           <div>
             {user ? (
               userRegistration?.status === 'pending' ? (
