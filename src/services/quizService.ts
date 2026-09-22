@@ -285,12 +285,12 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
   }
 
   // Recent paid challenge "5PkY9duGUxCwriid7i6t" (Crime Scene Documentation)
-  // Clear any legacy enrolled participants so that all candidates start fresh with "Register & Pay / Enroll"
+  // Preserve approved participant enrollments so valid registered candidates are retained
   if (quiz.id === '5PkY9duGUxCwriid7i6t') {
     quiz.isPaid = true;
     quiz.price = quiz.price || 25;
     quiz.isWeeklyChallenge = true;
-    quiz.enrolledUserIds = [];
+    quiz.enrolledUserIds = Array.isArray(quiz.enrolledUserIds) ? quiz.enrolledUserIds : [];
   } else if (
     quiz.id === 'weekly-challenge-cheiloscopy' ||
     quiz.id === 'weekly-challenge-1' ||
@@ -387,6 +387,51 @@ export async function fetchAdminQuizzes(): Promise<Quiz[]> {
 
       quizzes.push(applyQuizOverrides(data));
     });
+
+    // For paid quizzes, sync approved registrations from quizRegistrations into quiz.enrolledUserIds
+    try {
+      const regRef = collection(db, REGISTRATIONS_COLLECTION);
+      const approvedSnap = await getDocs(query(regRef, where('status', '==', 'approved')));
+      if (!approvedSnap.empty) {
+        const approvedByQuiz = new Map<string, Set<string>>();
+        approvedSnap.forEach(d => {
+          const rData = d.data();
+          if (rData.quizId && rData.userId) {
+            if (!approvedByQuiz.has(rData.quizId)) {
+              approvedByQuiz.set(rData.quizId, new Set());
+            }
+            approvedByQuiz.get(rData.quizId)!.add(rData.userId);
+          }
+        });
+
+        for (const q of quizzes) {
+          const approvedUids = approvedByQuiz.get(q.id);
+          if (approvedUids && approvedUids.size > 0) {
+            const currentEnrolled = new Set(Array.isArray(q.enrolledUserIds) ? q.enrolledUserIds : []);
+            let needsUpdate = false;
+            approvedUids.forEach(uid => {
+              if (!currentEnrolled.has(uid)) {
+                currentEnrolled.add(uid);
+                needsUpdate = true;
+              }
+            });
+
+            if (needsUpdate) {
+              q.enrolledUserIds = Array.from(currentEnrolled);
+              // Persist to Firestore doc so all public users and students see the updated enrollment count
+              setDoc(doc(db, QUIZZES_COLLECTION, q.id), {
+                enrolledUserIds: q.enrolledUserIds
+              }, { merge: true }).catch(e => {
+                console.warn(`Could not sync enrolledUserIds to Firestore for quiz ${q.id}:`, e);
+              });
+            }
+          }
+        }
+      }
+    } catch (regErr) {
+      // Non-blocking: regular users may not have permission to query all registrations, but admin does
+      console.warn("Could not sync approved registrations to quizzes:", regErr);
+    }
 
     // Ensure built-in challenges (like Cheiloscopy) are included if not yet in Firestore
     for (const sample of SAMPLE_QUIZZES) {
@@ -922,11 +967,11 @@ export async function approveQuizRegistration(registrationId: string, quizId: st
       reviewedBy: reviewerName
     });
 
-    // 2. Add user to quiz enrolledUserIds
+    // 2. Add user to quiz enrolledUserIds in Firestore (using setDoc with merge to ensure doc exists)
     const quizRef = doc(db, QUIZZES_COLLECTION, quizId);
-    await updateDoc(quizRef, {
+    await setDoc(quizRef, {
       enrolledUserIds: arrayUnion(userId)
-    });
+    }, { merge: true });
   } catch (err: any) {
     handleFirestoreError(err, OperationType.UPDATE, `${REGISTRATIONS_COLLECTION}/${registrationId}`);
     throw err;
@@ -934,7 +979,7 @@ export async function approveQuizRegistration(registrationId: string, quizId: st
 }
 
 // Admin: Reject Registration
-export async function rejectQuizRegistration(registrationId: string, reason: string = 'UTR verification failed', reviewerName: string = 'Admin'): Promise<void> {
+export async function rejectQuizRegistration(registrationId: string, reason: string = 'UTR verification failed', reviewerName: string = 'Admin', quizId?: string, userId?: string): Promise<void> {
   try {
     const regRef = doc(db, REGISTRATIONS_COLLECTION, registrationId);
     await updateDoc(regRef, {
@@ -943,9 +988,65 @@ export async function rejectQuizRegistration(registrationId: string, reason: str
       reviewedAt: new Date().toISOString(),
       reviewedBy: reviewerName
     });
+
+    if (quizId && userId) {
+      const quizRef = doc(db, QUIZZES_COLLECTION, quizId);
+      await setDoc(quizRef, {
+        enrolledUserIds: arrayRemove(userId)
+      }, { merge: true }).catch(e => console.warn("Could not remove rejected user from enrolledUserIds:", e));
+    }
   } catch (err: any) {
     handleFirestoreError(err, OperationType.UPDATE, `${REGISTRATIONS_COLLECTION}/${registrationId}`);
     throw err;
+  }
+}
+
+// Admin: Synchronize all approved registrations to the quiz enrolledUserIds in Firestore
+export async function syncApprovedRegistrations(quizId?: string): Promise<number> {
+  try {
+    const regRef = collection(db, REGISTRATIONS_COLLECTION);
+    const q = quizId 
+      ? query(regRef, where('quizId', '==', quizId), where('status', '==', 'approved'))
+      : query(regRef, where('status', '==', 'approved'));
+    
+    const snap = await getDocs(q);
+    if (snap.empty) return 0;
+
+    const approvedByQuiz = new Map<string, Set<string>>();
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.quizId && data.userId) {
+        if (!approvedByQuiz.has(data.quizId)) {
+          approvedByQuiz.set(data.quizId, new Set());
+        }
+        approvedByQuiz.get(data.quizId)!.add(data.userId);
+      }
+    });
+
+    let totalSynced = 0;
+    for (const [targetQuizId, userIds] of approvedByQuiz.entries()) {
+      const quizRef = doc(db, QUIZZES_COLLECTION, targetQuizId);
+      const qSnap = await getDoc(quizRef);
+      const existing = qSnap.exists() ? qSnap.data() : {};
+      const currentEnrolled = new Set<string>(Array.isArray(existing.enrolledUserIds) ? existing.enrolledUserIds : []);
+      let hasNew = false;
+      userIds.forEach(uid => {
+        if (!currentEnrolled.has(uid)) {
+          currentEnrolled.add(uid);
+          hasNew = true;
+        }
+      });
+      if (hasNew) {
+        await setDoc(quizRef, {
+          enrolledUserIds: Array.from(currentEnrolled)
+        }, { merge: true });
+        totalSynced += userIds.size;
+      }
+    }
+    return totalSynced;
+  } catch (e) {
+    console.warn("Could not sync approved registrations:", e);
+    return 0;
   }
 }
 

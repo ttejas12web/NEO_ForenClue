@@ -86,7 +86,9 @@ export default function QuizPlayer() {
       }
 
       const isUserEnrolled = Boolean(
-        user && (isPaid ? currentReg?.status === 'approved' : data.enrolledUserIds?.includes(user.uid))
+        user && (isPaid 
+          ? (currentReg?.status === 'approved' || (data.enrolledUserIds && data.enrolledUserIds.includes(user.uid)))
+          : (data.enrolledUserIds && data.enrolledUserIds.includes(user.uid)))
       );
 
       const totalSec = (data.durationMinutes || 10) * 60;
@@ -559,7 +561,9 @@ export default function QuizPlayer() {
   const currentQ = quiz.questions[currentQuestionIdx];
   const isPaid = isPaidQuiz(quiz);
   const isEnrolled = Boolean(
-    user && (isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
+    user && (isPaid 
+      ? (userRegistration?.status === 'approved' || (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
+      : (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
   );
   const answeredCount = Object.keys(userAnswers).length;
   const flaggedCount = Object.values(flaggedQuestions).filter(Boolean).length;

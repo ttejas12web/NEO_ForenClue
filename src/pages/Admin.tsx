@@ -26,6 +26,7 @@ import {
   fetchQuizRegistrations,
   approveQuizRegistration,
   rejectQuizRegistration,
+  syncApprovedRegistrations,
   fetchLeaderboard,
   fetchEnrolledParticipantsForQuiz,
   unenrollUserFromQuiz,
@@ -480,6 +481,7 @@ export default function Admin() {
   const fetchRegistrationsList = async (targetQuizId?: string) => {
     setLoadingRegistrations(true);
     try {
+      await syncApprovedRegistrations(targetQuizId);
       const data = await fetchQuizRegistrations(targetQuizId);
       setQuizRegistrations(data);
     } catch (e) {
@@ -633,8 +635,8 @@ export default function Admin() {
     try {
       await approveQuizRegistration(reg.id, reg.quizId, reg.userId, user?.displayName || user?.email || 'Admin');
       setSuccessMsg(`Approved payment for ${reg.userName}! Challenge is now unlocked for them.`);
-      fetchRegistrationsList();
-      fetchCollections(); // refresh quiz enrolled counts
+      await fetchRegistrationsList();
+      await fetchCollections(); // refresh quiz enrolled counts
     } catch (e: any) {
       setErrMsg(`Failed to approve registration: ${e.message}`);
     } finally {
@@ -647,9 +649,10 @@ export default function Admin() {
     if (reason === null) return;
     setApprovingRegId(reg.id);
     try {
-      await rejectQuizRegistration(reg.id, reason, user?.displayName || user?.email || 'Admin');
+      await rejectQuizRegistration(reg.id, reason, user?.displayName || user?.email || 'Admin', reg.quizId, reg.userId);
       setSuccessMsg(`Rejected registration for ${reg.userName}. Reason recorded.`);
-      fetchRegistrationsList();
+      await fetchRegistrationsList();
+      await fetchCollections();
     } catch (e: any) {
       setErrMsg(`Failed to reject registration: ${e.message}`);
     } finally {

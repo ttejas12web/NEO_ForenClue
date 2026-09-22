@@ -30,8 +30,17 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
 
   const isPaid = isPaidQuiz(quiz);
   const isEnrolled = Boolean(
-    user && (isPaid ? userRegistration?.status === 'approved' : quiz.enrolledUserIds?.includes(user.uid))
+    user && (userRegistration?.status === 'approved' || (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
   );
+
+  // Participant count: combines the quiz document's enrolledUserIds with the current user's approved registration if not yet synced
+  const enrolledCount = (() => {
+    const list = Array.isArray(quiz.enrolledUserIds) ? quiz.enrolledUserIds : [];
+    if (user?.uid && userRegistration?.status === 'approved' && !list.includes(user.uid)) {
+      return list.length + 1;
+    }
+    return list.length;
+  })();
 
   useEffect(() => {
     if (isPaid && user?.uid) {
@@ -325,7 +334,7 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
                 <Users size={13} className="text-info" /> Enrolled Participants:
               </span>
               <span className="font-bold text-info">
-                {quiz.enrolledUserIds?.length || 0} Users
+                {enrolledCount} {enrolledCount === 1 ? 'User' : 'Users'}
               </span>
             </div>
           </div>
