@@ -204,7 +204,7 @@ export function Maintenance({ onBypass }: MaintenanceProps) {
         >
           {/* WhatsApp Community */}
           <a
-            href="https://chat.whatsapp.com/DVmTqoEYIDnJl4bpPFdWzK?s=cl&p=i&ilr=0"
+            href="https://chat.whatsapp.com/CPFnpY6yoPyCvhk5bFRe3y?s=cl&p=i&mlu=4&ilr=4"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-black font-bold text-xs sm:text-sm transition-all shadow-sm active:scale-95 cursor-pointer"

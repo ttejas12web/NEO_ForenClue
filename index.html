@@ -19,49 +19,6 @@
     <script>
       (function () {
         document.documentElement.classList.add('js');
-
-        var retryKey = 'forenclue:boot-retry';
-        var retryWindowMs = 30000;
-
-        function showBootFailure() {
-          document.documentElement.classList.add('app-boot-failed');
-        }
-
-        function retryApp() {
-          if (document.documentElement.dataset.appMounted === 'true') return;
-
-          try {
-            var lastRetry = Number(sessionStorage.getItem(retryKey) || 0);
-            if (lastRetry && Date.now() - lastRetry < retryWindowMs) {
-              showBootFailure();
-              return;
-            }
-            sessionStorage.setItem(retryKey, String(Date.now()));
-          } catch (_) { }
-
-          var retryUrl = new URL(window.location.href);
-          retryUrl.searchParams.set('_app_retry', String(Date.now()));
-          window.location.replace(retryUrl.toString());
-        }
-
-        function isApplicationAsset(target) {
-          if (!target || (target.tagName !== 'SCRIPT' && target.tagName !== 'LINK')) return false;
-          var source = target.src || target.href;
-          if (!source) return false;
-
-          try {
-            var assetUrl = new URL(source, window.location.href);
-            return assetUrl.origin === window.location.origin && assetUrl.pathname.indexOf('/assets/') === 0;
-          } catch (_) {
-            return false;
-          }
-        }
-
-        window.addEventListener('error', function (event) {
-          if (isApplicationAsset(event.target)) retryApp();
-        }, true);
-
-        window.__forenclueBootRetryTimer = window.setTimeout(retryApp, 12000);
       })();
     </script>
     <style>

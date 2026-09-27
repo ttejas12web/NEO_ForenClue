@@ -43,18 +43,3 @@ createRoot(rootElement).render(
 
 document.documentElement.dataset.appMounted = 'true';
 document.documentElement.classList.remove('app-boot-failed');
-
-const bootWindow = window as Window & { __forenclueBootRetryTimer?: number };
-if (bootWindow.__forenclueBootRetryTimer !== undefined) {
-  window.clearTimeout(bootWindow.__forenclueBootRetryTimer);
-  delete bootWindow.__forenclueBootRetryTimer;
-}
-
-try {
-  window.sessionStorage.removeItem('forenclue:boot-retry');
-  const currentUrl = new URL(window.location.href);
-  if (currentUrl.searchParams.has('_app_retry')) {
-    currentUrl.searchParams.delete('_app_retry');
-    window.history.replaceState(window.history.state, '', currentUrl.toString());
-  }
-} catch (_) { }

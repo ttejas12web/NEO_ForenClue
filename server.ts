@@ -189,7 +189,7 @@ async function deleteFromR2(objectKey: string): Promise<boolean> {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
   // CORS Middleware for cross-domain / preview iframe file uploads and API calls
   app.use((req, res, next) => {
@@ -253,8 +253,11 @@ async function startServer() {
   });
 
   // API routes FIRST
-  app.get("/api/health", (req, res) => {
+  app.get(["/api/health", "/health", "/_health"], (req, res) => {
     res.json({ status: "ok" });
+  });
+  app.head(["/api/health", "/health", "/_health"], (req, res) => {
+    res.status(200).end();
   });
 
 
@@ -1297,11 +1300,11 @@ async function startServer() {
   }
 
   // SPA HTML Fallback & Dynamic Social Meta Tags Handler
-  // Intercept GET HTML requests for social media sharing cards & embed previews
+  // Intercept GET and HEAD HTML requests for social media sharing cards & embed previews
   // This MUST be AFTER static assets are handled
-  app.get('*', async (req, res, next) => {
-    // We only want to handle GET requests for HTML, and avoid assets
-    if (req.method !== 'GET') {
+  app.all('*', async (req, res, next) => {
+    // We only want to handle GET and HEAD requests for HTML, and avoid assets
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
       return next();
     }
     
@@ -1817,6 +1820,10 @@ async function startServer() {
 
 
       res.setHeader('Content-Type', 'text/html');
+      if (req.method === 'HEAD') {
+        res.status(200).end();
+        return;
+      }
       res.send(html);
       return;
     } catch (err) {

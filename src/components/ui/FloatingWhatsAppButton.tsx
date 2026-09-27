@@ -34,7 +34,7 @@ export function FloatingWhatsAppButton() {
           className="fixed bottom-6 right-6 z-50 pointer-events-auto"
         >
           <a
-            href="https://chat.whatsapp.com/DVmTqoEYIDnJl4bpPFdWzK?s=cl&p=i&ilr=0"
+            href="https://chat.whatsapp.com/CPFnpY6yoPyCvhk5bFRe3y?s=cl&p=i&mlu=4&ilr=4"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Join WhatsApp Group"
