@@ -304,10 +304,92 @@ export default function Admin() {
   const [isUsersModalOpen, setIsUsersModalOpen] = useState(false);
   const [fetchingUsers, setFetchingUsers] = useState(false);
   const [enrolledSearchQuery, setEnrolledSearchQuery] = useState('');
-  const [enrolledFilterTab, setEnrolledFilterTab] = useState<'all' | 'attempted' | 'not_attempted' | 'approved' | 'pending'>('all');
+  const [enrolledFilterTab, setEnrolledFilterTab] = useState<'all' | 'attempted' | 'not_attempted' | 'approved' | 'pending' | 'rejected'>('all');
   const [copiedEmailsMsg, setCopiedEmailsMsg] = useState(false);
   const [copiedUtrMap, setCopiedUtrMap] = useState<Record<string, boolean>>({});
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
+
+  const handleApproveParticipantDirectly = async (participant: EnrolledParticipant) => {
+    if (!selectedQuizForEnrollment) return;
+    if (!window.confirm(`Approve UTR #${participant.utrNumber || 'N/A'} for ${participant.userName} (${participant.userEmail})?\n\nThis will immediately unlock the challenge for them and move them to Awaiting Attempt.`)) return;
+
+    setApprovingRegId(participant.userId);
+    try {
+      const regId = `${participant.userId}_${selectedQuizForEnrollment.id}`;
+      const existingReg = quizRegistrations.find(r => r.userId === participant.userId && (r.quizId === selectedQuizForEnrollment.id || r.quizTitle === selectedQuizForEnrollment.title));
+      const targetRegId = existingReg?.id || regId;
+
+      await approveQuizRegistration(targetRegId, selectedQuizForEnrollment.id, participant.userId, user?.displayName || user?.email || 'Admin');
+
+      setEnrolledParticipants(prev => prev.map(p => {
+        if (p.userId === participant.userId) {
+          return {
+            ...p,
+            registrationStatus: 'approved'
+          };
+        }
+        return p;
+      }));
+
+      setAdminQuizzes(prev => prev.map(q => {
+        if (q.id === selectedQuizForEnrollment.id) {
+          const list = new Set(q.enrolledUserIds || []);
+          list.add(participant.userId);
+          return { ...q, enrolledUserIds: Array.from(list) };
+        }
+        return q;
+      }));
+
+      setSuccessMsg(`Approved UTR for ${participant.userName}! Challenge access is now unlocked.`);
+      fetchRegistrationsList();
+    } catch (err: any) {
+      setErrMsg(`Failed to approve: ${err.message}`);
+    } finally {
+      setApprovingRegId(null);
+    }
+  };
+
+  const handleRejectParticipantDirectly = async (participant: EnrolledParticipant) => {
+    if (!selectedQuizForEnrollment) return;
+    const reason = window.prompt(`Enter rejection reason for UTR #${participant.utrNumber || 'N/A'}:`, "UTR number not found in bank statement / transaction not received");
+    if (reason === null) return;
+
+    setApprovingRegId(participant.userId);
+    try {
+      const regId = `${participant.userId}_${selectedQuizForEnrollment.id}`;
+      const existingReg = quizRegistrations.find(r => r.userId === participant.userId && (r.quizId === selectedQuizForEnrollment.id || r.quizTitle === selectedQuizForEnrollment.title));
+      const targetRegId = existingReg?.id || regId;
+
+      await rejectQuizRegistration(targetRegId, reason, user?.displayName || user?.email || 'Admin', selectedQuizForEnrollment.id, participant.userId);
+
+      setEnrolledParticipants(prev => prev.map(p => {
+        if (p.userId === participant.userId) {
+          return {
+            ...p,
+            registrationStatus: 'rejected'
+          };
+        }
+        return p;
+      }));
+
+      setAdminQuizzes(prev => prev.map(q => {
+        if (q.id === selectedQuizForEnrollment.id) {
+          return {
+            ...q,
+            enrolledUserIds: (q.enrolledUserIds || []).filter(uid => uid !== participant.userId)
+          };
+        }
+        return q;
+      }));
+
+      setSuccessMsg(`Rejected registration for ${participant.userName}.`);
+      fetchRegistrationsList();
+    } catch (err: any) {
+      setErrMsg(`Failed to reject: ${err.message}`);
+    } finally {
+      setApprovingRegId(null);
+    }
+  };
 
   const handleViewEnrolledUsers = async (q: Quiz) => {
     setSelectedQuizForEnrollment(q);
@@ -7443,10 +7525,25 @@ export default function Admin() {
 
                 {/* Filter Tabs */}
                 {(() => {
+                  const isPaid = isPaidQuiz(selectedQuizForEnrollment) || enrolledParticipants.some(p => p.enrollmentType === 'paid' || Boolean(p.utrNumber) || p.registrationStatus === 'pending');
+                  const isUtrApproved = (p: EnrolledParticipant) => {
+                    if (isPaid || p.enrollmentType === 'paid' || Boolean(p.utrNumber)) {
+                      return p.registrationStatus === 'approved';
+                    }
+                    return true;
+                  };
+                  const isUtrPending = (p: EnrolledParticipant) => {
+                    return (isPaid || p.enrollmentType === 'paid' || Boolean(p.utrNumber)) && (p.registrationStatus === 'pending' || (!p.hasAttempted && p.registrationStatus !== 'approved' && p.registrationStatus !== 'rejected'));
+                  };
+                  const isUtrRejected = (p: EnrolledParticipant) => {
+                    return (isPaid || p.enrollmentType === 'paid' || Boolean(p.utrNumber)) && p.registrationStatus === 'rejected';
+                  };
+
                   const attemptedCount = enrolledParticipants.filter(p => p.hasAttempted).length;
-                  const notAttemptedCount = enrolledParticipants.filter(p => !p.hasAttempted).length;
-                  const approvedCount = enrolledParticipants.filter(p => p.registrationStatus === 'approved' || (!p.registrationStatus && p.enrollmentType === 'free')).length;
-                  const pendingCount = enrolledParticipants.filter(p => p.registrationStatus === 'pending').length;
+                  // ONLY UTR approved users who have not attempted yet are awaiting attempt!
+                  const awaitingAttemptCount = enrolledParticipants.filter(p => !p.hasAttempted && isUtrApproved(p)).length;
+                  const pendingCount = enrolledParticipants.filter(p => isUtrPending(p)).length;
+                  const rejectedCount = enrolledParticipants.filter(p => isUtrRejected(p)).length;
 
                   return (
                     <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
@@ -7486,10 +7583,10 @@ export default function Admin() {
                             : "bg-surface text-text-muted hover:text-text-main border border-black/10 dark:border-white/10"
                         )}
                       >
-                        Awaiting Attempt ({notAttemptedCount})
+                        Awaiting Attempt ({awaitingAttemptCount})
                       </button>
 
-                      {pendingCount > 0 && (
+                      {(pendingCount > 0 || isPaid) && (
                         <button
                           type="button"
                           onClick={() => setEnrolledFilterTab('pending')}
@@ -7500,7 +7597,22 @@ export default function Admin() {
                               : "bg-surface text-amber-400 border border-amber-500/30"
                           )}
                         >
-                          Pending Approval ({pendingCount})
+                          Pending UTR Approval ({pendingCount})
+                        </button>
+                      )}
+
+                      {rejectedCount > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setEnrolledFilterTab('rejected')}
+                          className={cn(
+                            "px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1.5 cursor-pointer whitespace-nowrap",
+                            enrolledFilterTab === 'rejected'
+                              ? "bg-rose-500 text-black shadow-md shadow-rose-500/20 font-black"
+                              : "bg-surface text-rose-400 border border-rose-500/30"
+                          )}
+                        >
+                          Rejected ({rejectedCount})
                         </button>
                       )}
                     </div>
@@ -7516,12 +7628,21 @@ export default function Admin() {
                     <span>Loading verified candidates from database...</span>
                   </div>
                 ) : (() => {
+                  const isPaid = isPaidQuiz(selectedQuizForEnrollment) || enrolledParticipants.some(p => p.enrollmentType === 'paid' || Boolean(p.utrNumber) || p.registrationStatus === 'pending');
+                  const isUtrApproved = (p: EnrolledParticipant) => (isPaid || p.enrollmentType === 'paid' || Boolean(p.utrNumber)) ? p.registrationStatus === 'approved' : true;
+                  const isUtrPending = (p: EnrolledParticipant) => (isPaid || p.enrollmentType === 'paid' || Boolean(p.utrNumber)) && (p.registrationStatus === 'pending' || (!p.hasAttempted && p.registrationStatus !== 'approved' && p.registrationStatus !== 'rejected'));
+                  const isUtrRejected = (p: EnrolledParticipant) => (isPaid || p.enrollmentType === 'paid' || Boolean(p.utrNumber)) && p.registrationStatus === 'rejected';
+
                   const filtered = enrolledParticipants.filter(p => {
                     // Filter tab condition
                     if (enrolledFilterTab === 'attempted' && !p.hasAttempted) return false;
-                    if (enrolledFilterTab === 'not_attempted' && p.hasAttempted) return false;
-                    if (enrolledFilterTab === 'pending' && p.registrationStatus !== 'pending') return false;
-                    if (enrolledFilterTab === 'approved' && p.registrationStatus !== 'approved' && !(p.enrollmentType === 'free')) return false;
+                    if (enrolledFilterTab === 'not_attempted') {
+                      if (p.hasAttempted) return false;
+                      if (!isUtrApproved(p)) return false; // ONLY UTR approved users in Awaiting Attempt!
+                    }
+                    if (enrolledFilterTab === 'pending' && !isUtrPending(p)) return false;
+                    if (enrolledFilterTab === 'rejected' && !isUtrRejected(p)) return false;
+                    if (enrolledFilterTab === 'approved' && !isUtrApproved(p)) return false;
 
                     // Search condition
                     if (enrolledSearchQuery.trim()) {
@@ -7589,14 +7710,20 @@ export default function Admin() {
                                 )}
 
                                 {participant.registrationStatus === 'approved' && (
-                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1">
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 flex items-center gap-1 border border-emerald-500/20">
                                     <UserCheck size={11} /> Approved
                                   </span>
                                 )}
 
                                 {participant.registrationStatus === 'pending' && (
-                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 flex items-center gap-1">
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400 flex items-center gap-1 border border-amber-500/20">
                                     <Clock size={11} /> Verification Pending
+                                  </span>
+                                )}
+
+                                {participant.registrationStatus === 'rejected' && (
+                                  <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-500/10 text-rose-400 flex items-center gap-1 border border-rose-500/20">
+                                    <AlertCircle size={11} /> UTR Rejected
                                   </span>
                                 )}
                               </div>
@@ -7676,13 +7803,51 @@ export default function Admin() {
                                   </div>
                                 )}
                               </div>
-                            ) : (
-                              <div className="bg-surface/50 border border-black/10 dark:border-white/5 px-3 py-2 rounded-xl text-center min-w-[130px]">
-                                <span className="text-[11px] font-bold text-amber-400/90 flex items-center justify-center gap-1">
+                            ) : isUtrApproved(participant) ? (
+                              <div className="bg-emerald-500/10 border border-emerald-500/30 px-3 py-2 rounded-xl text-center min-w-[130px]">
+                                <span className="text-[11px] font-black text-emerald-400 flex items-center justify-center gap-1">
                                   <Clock size={12} /> Awaiting Attempt
                                 </span>
-                                <span className="text-[9px] text-text-muted block mt-0.5">
-                                  Registered / Enrolled
+                                <span className="text-[9px] text-emerald-400/80 block mt-0.5 font-bold">
+                                  UTR Approved • Ready
+                                </span>
+                              </div>
+                            ) : isUtrPending(participant) ? (
+                              <div className="flex items-center gap-2">
+                                <div className="bg-amber-500/10 border border-amber-500/30 px-3 py-2 rounded-xl text-center min-w-[130px]">
+                                  <span className="text-[11px] font-bold text-amber-400 flex items-center justify-center gap-1 animate-pulse">
+                                    <Clock size={12} /> Pending Approval
+                                  </span>
+                                  <span className="text-[9px] text-amber-300/80 block mt-0.5 font-medium">
+                                    UTR Verification Needed
+                                  </span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => handleApproveParticipantDirectly(participant)}
+                                  disabled={approvingRegId === participant.userId}
+                                  className="px-3 py-2 bg-emerald-500 hover:bg-emerald-400 text-crust font-black text-xs uppercase tracking-wider rounded-xl transition cursor-pointer shadow-md shadow-emerald-500/10 flex items-center gap-1 whitespace-nowrap"
+                                  title="Approve UTR and unlock live quiz attempt"
+                                >
+                                  <CheckCircle2 size={13} /> Approve UTR
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRejectParticipantDirectly(participant)}
+                                  disabled={approvingRegId === participant.userId}
+                                  className="px-2.5 py-2 bg-surface hover:bg-rose-500/10 border border-rose-500/30 text-rose-400 font-bold text-xs uppercase rounded-xl transition cursor-pointer"
+                                  title="Reject UTR"
+                                >
+                                  Reject
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="bg-rose-500/10 border border-rose-500/30 px-3 py-2 rounded-xl text-center min-w-[130px]">
+                                <span className="text-[11px] font-bold text-rose-400 flex items-center justify-center gap-1">
+                                  <X size={12} /> UTR Rejected
+                                </span>
+                                <span className="text-[9px] text-rose-300/70 block mt-0.5">
+                                  Not Eligible
                                 </span>
                               </div>
                             )}

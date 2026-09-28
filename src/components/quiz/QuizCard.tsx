@@ -28,9 +28,12 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [userRegistration, setUserRegistration] = useState<QuizRegistration | null>(null);
 
-  const isPaid = isPaidQuiz(quiz);
+  const isPaid = isPaidQuiz(quiz) || Boolean(userRegistration);
+  const isUtrApproved = Boolean(userRegistration && userRegistration.status === 'approved');
   const isEnrolled = Boolean(
-    user && (userRegistration?.status === 'approved' || (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
+    user && (isPaid 
+      ? isUtrApproved
+      : (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
   );
 
   // Participant count: combines the quiz document's enrolledUserIds with the current user's approved registration if not yet synced

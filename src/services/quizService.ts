@@ -271,7 +271,13 @@ export function isWeeklyChallengeExpired(quiz: Quiz): boolean {
 // Universal helper to detect if a quiz or weekly challenge requires payment
 export function isPaidQuiz(quiz?: Partial<Quiz> | null): boolean {
   if (!quiz) return false;
-  return Boolean(quiz.isPaid === true || (quiz.price !== undefined && Number(quiz.price) > 0));
+  return Boolean(
+    quiz.isPaid === true || 
+    (quiz.price !== undefined && Number(quiz.price) > 0) ||
+    Boolean(quiz.upiId && quiz.upiId.trim().length > 0) ||
+    quiz.id === '5PkY9duGUxCwriid7i6t' ||
+    (quiz.isWeeklyChallenge && (Boolean(quiz.prizes?.first) || (quiz.price !== undefined && Number(quiz.price) > 0) || quiz.isPaid))
+  );
 }
 
 // Helper to force sample challenges to have scheduled times if missing and normalize paid flags
@@ -1091,6 +1097,20 @@ export async function fetchEnrolledParticipantsForQuiz(quiz: Quiz): Promise<Enro
       regSnap.forEach(d => {
         registrations.push({ id: d.id, ...d.data() } as QuizRegistration);
       });
+
+      // Also query by title if quiz.title exists to catch any legacy submissions
+      if (quiz.title) {
+        try {
+          const titleSnap = await getDocs(query(regRef, where('quizTitle', '==', quiz.title)));
+          titleSnap.forEach(d => {
+            if (!registrations.some(r => r.id === d.id)) {
+              registrations.push({ id: d.id, ...d.data() } as QuizRegistration);
+            }
+          });
+        } catch {
+          // ignore
+        }
+      }
     } catch (e) {
       console.warn("Could not fetch quiz registrations:", e);
     }
@@ -1161,8 +1181,20 @@ export async function fetchEnrolledParticipantsForQuiz(quiz: Quiz): Promise<Enro
       const photo = profile?.photoURL || profile?.avatar || att?.userPhoto || '';
       const college = profile?.college || profile?.university || 'Forensic Science Aspirant';
 
-      const isPaid = isPaidQuiz(quiz) || Boolean(reg);
-      const regStatus = reg?.status || (isPaid ? 'pending' : 'approved');
+      const isPaid = isPaidQuiz(quiz) || registrations.length > 0 || Boolean(reg);
+      let regStatus: 'approved' | 'pending' | 'rejected' | 'direct';
+      if (isPaid) {
+        if (reg?.status === 'approved') {
+          regStatus = 'approved';
+        } else if (reg?.status === 'rejected') {
+          regStatus = 'rejected';
+        } else {
+          // If UTR is pending, or user has enrolled without an approved UTR record
+          regStatus = 'pending';
+        }
+      } else {
+        regStatus = 'approved';
+      }
       const enrolledAt = reg?.createdAt || att?.completedAt || profile?.createdAt || quiz.createdAt || new Date().toISOString();
 
       const participant: EnrolledParticipant = {
@@ -1174,7 +1206,7 @@ export async function fetchEnrolledParticipantsForQuiz(quiz: Quiz): Promise<Enro
         enrolledAt: enrolledAt,
         enrollmentType: isPaid ? 'paid' : 'free',
         registrationStatus: regStatus,
-        utrNumber: reg?.utrNumber,
+        utrNumber: reg?.utrNumber || '',
         amountPaid: reg?.amount || (isPaid && reg?.status === 'approved' ? (quiz.price || 49) : 0),
         hasAttempted: Boolean(att),
         score: att?.score,

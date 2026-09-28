@@ -3,12 +3,14 @@ import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { Quiz, QuizQuestion, QuizAttempt, QuizRegistration } from '@/types/quiz';
 import { fetchQuizById, submitQuizAttempt, enrollInQuiz, getUserQuizRegistration, isPaidQuiz } from '@/services/quizService';
 import { useAuth } from '@/contexts/AuthContext';
+import { db } from '@/lib/firebase';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { 
   Clock, CheckCircle2, AlertTriangle, ArrowRight, ArrowLeft, 
   Trophy, ShieldCheck, HelpCircle, Lock, RefreshCw, Sparkles,
   Bookmark, EyeOff, LayoutGrid, Keyboard, RotateCcw, Share2, Filter,
   X, Check, Flame, Award, Zap, Calendar, Maximize2, ZoomIn, Lightbulb,
-  CreditCard, AlertCircle
+  CreditCard, AlertCircle, Copy, Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { cn } from '@/lib/utils';
@@ -22,10 +24,14 @@ export default function QuizPlayer() {
   const { quizId } = useParams<{ quizId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user, isAdmin, isQuizOnlyAdmin } = useAuth();
+  const { user, loading: authLoading, isAdmin, isQuizOnlyAdmin } = useAuth();
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkingUtr, setCheckingUtr] = useState(true);
+  const [isRefreshingUtr, setIsRefreshingUtr] = useState(false);
+  const [copiedUtr, setCopiedUtr] = useState(false);
+  const [adminPreviewMode, setAdminPreviewMode] = useState(false);
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, number>>({});
   
@@ -59,54 +65,146 @@ export default function QuizPlayer() {
   const [finalScore, setFinalScore] = useState(0);
   const [timeTakenSec, setTimeTakenSec] = useState(0);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  // Live clock state for upcoming scheduled quiz countdown
+  const [nowMs, setNowMs] = useState(Date.now());
 
   useEffect(() => {
-    if (quizId) {
-      loadQuiz(quizId);
+    const timer = setInterval(() => {
+      setNowMs(Date.now());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Verify UTR approval status against Firestore
+  const verifyUtrStatus = useCallback(async (qId: string, uId: string, showSpinner = false) => {
+    if (showSpinner) setIsRefreshingUtr(true);
+    try {
+      const reg = await getUserQuizRegistration(qId, uId);
+      setUserRegistration(reg);
+      return reg;
+    } catch (e) {
+      console.warn("Could not verify UTR approval status against Firestore:", e);
+      return null;
+    } finally {
+      if (showSpinner) {
+        setTimeout(() => setIsRefreshingUtr(false), 500);
+      }
     }
-  }, [quizId]);
+  }, []);
 
   const loadQuiz = async (id: string) => {
     setLoading(true);
-    const data = await fetchQuizById(id);
-    setQuiz(data);
-    if (data) {
-      let currentReg: QuizRegistration | null = null;
-      const isPaid = isPaidQuiz(data);
-      if (isPaid && user?.uid) {
-        try {
-          currentReg = await getUserQuizRegistration(data.id, user.uid);
-          setUserRegistration(currentReg);
-        } catch (e) {
-          console.warn("Could not check registration", e);
+    setCheckingUtr(true);
+    try {
+      const data = await fetchQuizById(id);
+      setQuiz(data);
+      if (data) {
+        let currentReg: QuizRegistration | null = null;
+        const isPaid = isPaidQuiz(data);
+        if (isPaid && user?.uid) {
+          try {
+            currentReg = await verifyUtrStatus(data.id, user.uid);
+          } catch (e) {
+            console.warn("Could not check registration in Firestore:", e);
+          }
+        } else {
+          setUserRegistration(null);
         }
-      } else {
-        setUserRegistration(null);
+
+        // STRICT UTR APPROVAL:
+        // Paid challenges REQUIRE admin UTR approval in Firestore (currentReg?.status === 'approved')!
+        const isUserEnrolled = Boolean(
+          user && (isPaid 
+            ? (currentReg?.status === 'approved')
+            : (data.enrolledUserIds && data.enrolledUserIds.includes(user.uid)))
+        );
+
+        const totalSec = (data.durationMinutes || 10) * 60;
+        setTimeRemainingSec(totalSec);
+
+        // Only start quiz timer if not blocked by payment enrollment or upcoming schedule
+        const isUpcoming = Boolean(
+          data.isWeeklyChallenge &&
+          data.scheduledStartTime &&
+          Date.now() < new Date(data.scheduledStartTime).getTime()
+        );
+
+        if ((!isPaid || isUserEnrolled) && !isUpcoming) {
+          setQuizStartedAt(Date.now());
+        }
       }
+    } finally {
+      setLoading(false);
+      setCheckingUtr(false);
+    }
+  };
 
-      const isUserEnrolled = Boolean(
-        user && (isPaid 
-          ? (currentReg?.status === 'approved' || (data.enrolledUserIds && data.enrolledUserIds.includes(user.uid)))
-          : (data.enrolledUserIds && data.enrolledUserIds.includes(user.uid)))
-      );
+  useEffect(() => {
+    if (quizId && !authLoading) {
+      loadQuiz(quizId);
+    }
+  }, [quizId, user?.uid, authLoading]);
 
-      const totalSec = (data.durationMinutes || 10) * 60;
-      setTimeRemainingSec(totalSec);
+  // Real-time Firestore listener & background sync for UTR approval status
+  useEffect(() => {
+    if (!quiz?.id || !user?.uid) return;
+    const isPaid = isPaidQuiz(quiz);
+    if (!isPaid) return;
 
-      // Only start quiz timer if not blocked by payment enrollment or upcoming schedule
-      const isUpcoming = Boolean(
-        data.isWeeklyChallenge &&
-        data.scheduledStartTime &&
-        new Date().getTime() < new Date(data.scheduledStartTime).getTime()
-      );
+    // Listen to deterministic registration doc in Firestore
+    const deterministicId = `${user.uid}_${quiz.id}`;
+    const docRef = doc(db, 'quizRegistrations', deterministicId);
 
-      if ((!isPaid || isUserEnrolled) && !isUpcoming) {
-        setQuizStartedAt(Date.now());
+    const unsubscribe = onSnapshot(docRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = { id: docSnap.id, ...docSnap.data() } as QuizRegistration;
+        setUserRegistration(data);
+      }
+    }, (err) => {
+      console.warn("Quiet notice: onSnapshot registration listener:", err);
+    });
+
+    // Also poll every 4s to catch legacy auto-generated Firestore document IDs
+    const poller = setInterval(async () => {
+      try {
+        const reg = await getUserQuizRegistration(quiz.id, user.uid);
+        if (reg && reg.status !== userRegistration?.status) {
+          setUserRegistration(reg);
+        }
+      } catch {
+        // quiet background check
+      }
+    }, 4000);
+
+    return () => {
+      unsubscribe();
+      clearInterval(poller);
+    };
+  }, [quiz?.id, user?.uid, userRegistration?.status]);
+
+  // Auto-start quiz attempt timer when countdown reaches 00:00:00 (quiz goes live) for approved candidates
+  useEffect(() => {
+    if (!quiz || isSubmitted || quizStartedAt || checkingUtr) return;
+    const startMs = quiz.scheduledStartTime ? new Date(quiz.scheduledStartTime).getTime() : 0;
+    if (quiz.isWeeklyChallenge && startMs && nowMs < startMs) return; // Still upcoming
+
+    const isPaid = isPaidQuiz(quiz) || Boolean(userRegistration);
+    const isUtrApproved = Boolean(userRegistration && userRegistration.status === 'approved');
+    const canAttempt = Boolean(
+      user && (isPaid 
+        ? isUtrApproved 
+        : (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
+    );
+
+    if (!isPaid || canAttempt || (isAdmin && adminPreviewMode)) {
+      setQuizStartedAt(Date.now());
+      if (timeRemainingSec === 0) {
+        setTimeRemainingSec((quiz.durationMinutes || 10) * 60);
       }
     }
-    setLoading(false);
-  };
+  }, [quiz, isSubmitted, quizStartedAt, nowMs, userRegistration, user, checkingUtr, adminPreviewMode, isAdmin]);
 
   // Timer Countdown Effect
   useEffect(() => {
@@ -366,10 +464,16 @@ export default function QuizPlayer() {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  if (loading) {
+  if (loading || authLoading || (quiz && isPaidQuiz(quiz) && checkingUtr)) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-text-muted">
-        <RefreshCw size={32} className="animate-spin text-warning" />
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center text-text-muted space-y-4 p-4">
+        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg shadow-amber-500/10">
+          <RefreshCw size={28} className="animate-spin text-amber-400" />
+        </div>
+        <div className="text-center space-y-1">
+          <p className="text-sm font-bold text-white uppercase tracking-wider">Verifying UTR Approval Status</p>
+          <p className="text-xs text-text-muted">Checking database records against Firestore...</p>
+        </div>
       </div>
     );
   }
@@ -559,110 +663,213 @@ export default function QuizPlayer() {
   }
 
   const currentQ = quiz.questions[currentQuestionIdx];
-  const isPaid = isPaidQuiz(quiz);
+  const isPaid = isPaidQuiz(quiz) || Boolean(userRegistration);
+  const isUtrApproved = Boolean(userRegistration && userRegistration.status === 'approved');
   const isEnrolled = Boolean(
     user && (isPaid 
-      ? (userRegistration?.status === 'approved' || (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
+      ? isUtrApproved
       : (quiz.enrolledUserIds && quiz.enrolledUserIds.includes(user.uid)))
   );
   const answeredCount = Object.keys(userAnswers).length;
   const flaggedCount = Object.values(flaggedQuestions).filter(Boolean).length;
 
-  // 1. Paid Challenge Registration Guard (Requires Admin-Approved UTR)
-  if (isPaid && !isEnrolled) {
+  const startTimeMs = quiz.scheduledStartTime ? new Date(quiz.scheduledStartTime).getTime() : 0;
+  const isUpcoming = Boolean(quiz.isWeeklyChallenge && startTimeMs && nowMs < startTimeMs);
+
+  // 1. Upcoming Weekly Challenge Screen with Real-Time Digital Countdown
+  if (isUpcoming) {
+    const diffMs = Math.max(0, startTimeMs - nowMs);
+    const diffSec = Math.floor(diffMs / 1000);
+    const cdDays = Math.floor(diffSec / 86400);
+    const cdHours = Math.floor((diffSec % 86400) / 3600);
+    const cdMins = Math.floor((diffSec % 3600) / 60);
+    const cdSecs = diffSec % 60;
     const totalPrize = (quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100);
+
     return (
       <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4 relative overflow-hidden">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-
         <SEOManager 
           collectionName="quizzes"
           docId={quizId}
           initialData={quiz}
-          fallbackTitle={`Register for ${quiz?.title || 'Paid Challenge'} | ForenClue`}
-          fallbackDescription={`Submit your payment registration for ${quiz?.title || 'this challenge'}.`}
+          fallbackTitle={`Upcoming: ${quiz?.title || 'Quiz Challenge'} | ForenClue`}
+          fallbackDescription={quiz?.description}
           fallbackImage={quiz?.thumbnail}
         />
 
-        <div className="max-w-lg w-full bg-surface border border-amber-500/30 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative z-10">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/10">
-            <Trophy size={32} className="fill-amber-400" />
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-xl w-full bg-surface border border-warning/30 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative z-10">
+          <div className="w-16 h-16 rounded-2xl bg-warning/10 text-warning border border-warning/30 flex items-center justify-center mx-auto shadow-lg shadow-warning/10">
+            <Clock size={32} className="text-warning" />
           </div>
 
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black uppercase tracking-wider">
-              Paid Challenge • Registration Required
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-warning/15 border border-warning/30 text-warning text-xs font-black uppercase tracking-wider">
+              {quiz.category || 'Forensic Challenge'} • Upcoming Live Quiz
             </div>
-            <h2 className="text-2xl font-black font-heading tracking-tight text-white uppercase">
+            <h2 className="text-2xl sm:text-3xl font-black font-heading tracking-tight text-white uppercase leading-snug">
               {quiz.title}
             </h2>
-            <p className="text-text-muted text-xs leading-relaxed">
-              This challenge requires advance registration, UPI fee payment, and admin verification of your 12-digit UTR before access is granted.
+            <p className="text-text-muted text-xs sm:text-sm leading-relaxed">
+              Scheduled to go live on <span className="font-bold text-warning">{formattedDate}</span>.
             </p>
           </div>
 
-          {/* Cash Prizes Summary */}
-          <div className="bg-black/40 border border-amber-500/20 rounded-2xl p-4 space-y-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-text-muted uppercase font-mono">Entry Fee</span>
-              <span className="text-warning font-black font-mono text-sm">₹{quiz.price || 49}</span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-text-muted uppercase font-mono">Cash Prize Pool</span>
-              <span className="text-amber-400 font-black font-mono text-sm">₹{totalPrize}</span>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center font-mono">
-              <div className="bg-surface/80 p-2 rounded-xl">
-                <span className="text-[10px] text-amber-400 block font-bold">1st Rank</span>
-                <span className="text-xs font-black text-white">₹{quiz.prizes?.first ?? 300}</span>
+          {/* Live Real-Time Digital Countdown */}
+          <div className="bg-black/50 border border-warning/20 rounded-2xl p-4 sm:p-5 shadow-inner">
+            <span className="text-[10px] font-mono uppercase tracking-widest text-text-muted block mb-3 font-bold">
+              Time Remaining Until Live Quiz
+            </span>
+            <div className="grid grid-cols-4 gap-2 sm:gap-3 text-center">
+              <div className="bg-surface/90 border border-white/5 p-2 sm:p-3 rounded-xl">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-warning block">
+                  {String(cdDays).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold text-text-muted tracking-wider">Days</span>
               </div>
-              <div className="bg-surface/80 p-2 rounded-xl">
-                <span className="text-[10px] text-amber-400 block font-bold">2nd Rank</span>
-                <span className="text-xs font-black text-white">₹{quiz.prizes?.second ?? 200}</span>
+              <div className="bg-surface/90 border border-white/5 p-2 sm:p-3 rounded-xl">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-warning block">
+                  {String(cdHours).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold text-text-muted tracking-wider">Hours</span>
               </div>
-              <div className="bg-surface/80 p-2 rounded-xl">
-                <span className="text-[10px] text-amber-400 block font-bold">3rd Rank</span>
-                <span className="text-xs font-black text-white">₹{quiz.prizes?.third ?? 100}</span>
+              <div className="bg-surface/90 border border-white/5 p-2 sm:p-3 rounded-xl">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-warning block">
+                  {String(cdMins).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold text-text-muted tracking-wider">Mins</span>
+              </div>
+              <div className="bg-surface/90 border border-white/5 p-2 sm:p-3 rounded-xl">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-amber-400 block animate-pulse">
+                  {String(cdSecs).padStart(2, '0')}
+                </span>
+                <span className="text-[9px] sm:text-[10px] uppercase font-bold text-text-muted tracking-wider">Secs</span>
               </div>
             </div>
           </div>
 
-          {/* Status Display */}
-          {userRegistration?.status === 'pending' ? (
-            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs space-y-1">
-              <p className="font-bold flex items-center justify-center gap-1.5">
-                <Clock size={16} className="animate-pulse" /> Payment Verification Pending
-              </p>
-              <p className="text-text-muted text-[11px]">
-                Submitted UTR: <span className="font-mono font-bold text-text-main">{userRegistration.utrNumber}</span>. Our admin team will verify it with bank statements. Your challenge will unlock automatically upon approval.
-              </p>
+          {/* Quiz Metadata & Cash Prizes */}
+          {isPaid && (
+            <div className="bg-black/40 border border-amber-500/20 rounded-2xl p-4 space-y-2.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-text-muted font-mono uppercase">Entry Fee</span>
+                <span className="text-warning font-black font-mono text-sm">₹{quiz.price || 49}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-text-muted font-mono uppercase">Total Prize Pool</span>
+                <span className="text-amber-400 font-black font-mono text-sm">₹{totalPrize}</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2 pt-2 border-t border-white/10 text-center font-mono">
+                <div className="bg-surface/80 p-2 rounded-xl">
+                  <span className="text-[10px] text-amber-400 block font-bold">1st Rank</span>
+                  <span className="text-xs font-black text-white">₹{quiz.prizes?.first ?? 300}</span>
+                </div>
+                <div className="bg-surface/80 p-2 rounded-xl">
+                  <span className="text-[10px] text-amber-400 block font-bold">2nd Rank</span>
+                  <span className="text-xs font-black text-white">₹{quiz.prizes?.second ?? 200}</span>
+                </div>
+                <div className="bg-surface/80 p-2 rounded-xl">
+                  <span className="text-[10px] text-amber-400 block font-bold">3rd Rank</span>
+                  <span className="text-xs font-black text-white">₹{quiz.prizes?.third ?? 100}</span>
+                </div>
+              </div>
             </div>
-          ) : userRegistration?.status === 'rejected' ? (
-            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs space-y-1">
-              <p className="font-bold flex items-center justify-center gap-1.5">
-                <AlertCircle size={16} /> Verification Failed
-              </p>
-              <p className="text-text-muted text-[11px]">
-                {userRegistration.rejectReason || 'UTR not verified in bank records. Please re-submit your correct UTR.'}
-              </p>
-            </div>
-          ) : null}
+          )}
 
-          <div className="space-y-3">
-            <button
-              onClick={() => setShowPaymentModal(true)}
-              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-black font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
-            >
-              <CreditCard size={16} />
-              {userRegistration?.status === 'pending'
-                ? 'Check UTR Status / Update'
-                : userRegistration?.status === 'rejected'
-                ? 'Re-submit 12-Digit UTR'
-                : `Register & Pay ₹${quiz.price || 49}`}
-            </button>
+          {/* User Registration & UTR Verification Status */}
+          {isPaid ? (
+            isUtrApproved ? (
+              <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 space-y-1.5 shadow-lg shadow-emerald-500/10">
+                <div className="flex items-center justify-center gap-2 font-black text-sm">
+                  <CheckCircle2 size={18} className="text-emerald-400 shrink-0" />
+                  <span>Payment & UTR Approved by Admin</span>
+                </div>
+                <p className="text-xs text-emerald-300/90 leading-relaxed">
+                  Your registration is verified. When the timer hits 00:00:00, your live quiz challenge will unlock automatically. Please stay on this screen!
+                </p>
+              </div>
+            ) : userRegistration?.status === 'pending' ? (
+              <div className="p-4 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-300 space-y-2 shadow-lg shadow-amber-500/10">
+                <div className="flex items-center justify-center gap-2 font-black text-sm text-amber-400">
+                  <Clock size={18} className="animate-spin shrink-0" />
+                  <span>Payment Verification Pending • Awaiting Admin UTR Approval</span>
+                </div>
+                <p className="text-xs text-amber-200/80 leading-relaxed">
+                  Submitted UTR: <span className="font-mono font-bold text-white">#{userRegistration.utrNumber}</span>. The admin team is verifying your payment with bank statements. Only candidates with admin-approved UTR will be able to attempt when the quiz goes live.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => quizId && loadQuiz(quizId)}
+                  className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold transition flex items-center justify-center gap-1.5 mx-auto cursor-pointer"
+                >
+                  <RefreshCw size={13} /> Check Approval Status
+                </button>
+              </div>
+            ) : userRegistration?.status === 'rejected' ? (
+              <div className="p-4 rounded-2xl bg-rose-500/15 border border-rose-500/30 text-rose-300 space-y-2 shadow-lg shadow-rose-500/10">
+                <div className="flex items-center justify-center gap-2 font-black text-sm text-rose-400">
+                  <AlertCircle size={18} className="shrink-0" />
+                  <span>UTR Verification Failed</span>
+                </div>
+                <p className="text-xs text-rose-200/80 leading-relaxed">
+                  {userRegistration.rejectReason || 'UTR not verified in bank records. Please re-submit your correct 12-digit UTR.'}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowPaymentModal(true)}
+                  className="px-4 py-2 rounded-xl bg-rose-500 hover:bg-rose-600 text-white text-xs font-black uppercase transition flex items-center justify-center gap-1.5 mx-auto cursor-pointer shadow-md shadow-rose-500/20"
+                >
+                  <RotateCcw size={13} /> Re-submit 12-Digit UTR
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-3 pt-1">
+                <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs text-center leading-relaxed">
+                  Advance registration and admin UTR verification are required to participate in this live quiz.
+                </div>
+                {user ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowPaymentModal(true)}
+                    className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-black font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                  >
+                    <CreditCard size={16} /> Register & Pay ₹{quiz.price || 49}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => navigate('/login', { state: { from: location } })}
+                    className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+                  >
+                    <Lock size={16} /> Sign In to Register & Attempt
+                  </button>
+                )}
+              </div>
+            )
+          ) : (
+            isEnrolled ? (
+              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
+                <CheckCircle2 size={18} /> You are enrolled for this challenge! Live quiz unlocks when timer reaches zero.
+              </div>
+            ) : quiz.isEnrollmentOpen !== false ? (
+              <button
+                type="button"
+                onClick={() => user && enrollInQuiz(quiz.id, user.uid).then(() => loadQuiz(quiz.id))}
+                className="w-full bg-warning hover:bg-warning-dark text-crust font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-warning/20"
+              >
+                Enroll Now
+              </button>
+            ) : (
+              <div className="p-4 rounded-2xl bg-surface/50 border border-white/5 text-text-muted font-bold text-sm flex items-center justify-center gap-2">
+                <Lock size={18} /> Enrollment not yet open
+              </div>
+            )
+          )}
 
-            <Link to="/quizzes" className="block text-xs font-bold text-text-muted hover:text-amber-400 transition-colors">
-              ← Back to Quizzes
+          <div className="pt-2">
+            <Link to="/quizzes" className="inline-block text-text-muted text-xs hover:text-text-main underline">
+              ← Back to All Quizzes
             </Link>
           </div>
 
@@ -681,47 +888,323 @@ export default function QuizPlayer() {
     );
   }
 
-  // 2. Weekly Challenge Schedule Guards (For approved paid candidates or free participants)
-  if (quiz.isWeeklyChallenge && quiz.scheduledStartTime) {
-    const now = new Date().getTime();
-    const start = new Date(quiz.scheduledStartTime).getTime();
+  // 2. LIVE QUIZ ACCESS GUARD: ONLY Admin-Approved UTR Candidates Can Attempt Live Challenge
+  if (isPaid && !isUtrApproved && !(isAdmin && adminPreviewMode)) {
+    const totalPrize = (quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100);
 
-    if (now < start) {
+    // A. DEDICATED PENDING VERIFICATION SCREEN: User has submitted UTR and is awaiting Admin review
+    if (userRegistration?.status === 'pending') {
       return (
-        <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4">
-          <div className="max-w-lg w-full bg-surface border border-warning/30 rounded-3xl p-8 text-center space-y-6 shadow-2xl">
-            <div className="w-16 h-16 rounded-full bg-warning/10 text-warning border border-warning/30 flex items-center justify-center mx-auto">
-              <Clock size={28} />
+        <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <SEOManager 
+            collectionName="quizzes"
+            docId={quizId}
+            initialData={quiz}
+            fallbackTitle={`Pending Verification: ${quiz?.title || 'Quiz Challenge'} | ForenClue`}
+            fallbackDescription={`Your UTR payment verification for ${quiz?.title || 'this challenge'} is pending admin review.`}
+            fallbackImage={quiz?.thumbnail}
+          />
+
+          <div className="max-w-xl w-full bg-surface border border-amber-500/30 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative z-10">
+            {/* Animated Header Icon */}
+            <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/10">
+              <Clock size={32} className="animate-spin text-amber-400" />
             </div>
-            <h2 className="text-2xl font-black uppercase tracking-tight">Challenge Upcoming</h2>
-            <p className="text-text-muted text-sm leading-relaxed">
-              <strong>{quiz.title}</strong> will be live on <span className="font-bold text-warning">{formattedDate}</span>.
-            </p>
 
-            {isEnrolled ? (
-              <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-sm flex items-center justify-center gap-2">
-                <CheckCircle2 size={18} /> {isPaid ? 'Payment Approved • You are registered for this challenge!' : 'You are enrolled for this challenge!'}
+            {/* Badge & Title */}
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black uppercase tracking-wider">
+                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block" />
+                <span>Pending Verification</span>
               </div>
-            ) : !isPaid && quiz.isEnrollmentOpen !== false ? (
+              <h2 className="text-2xl sm:text-3xl font-black font-heading tracking-tight text-white uppercase leading-snug">
+                {quiz.title}
+              </h2>
+              <p className="text-text-muted text-xs sm:text-sm leading-relaxed max-w-md mx-auto">
+                Your payment and 12-digit UTR transaction reference have been recorded. Our admin team is currently verifying your payment with bank statements before quiz attempt access is granted.
+              </p>
+            </div>
+
+            {/* Verification Status Card */}
+            <div className="bg-black/50 border border-amber-500/25 rounded-2xl p-5 space-y-4 text-left shadow-inner">
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-text-muted font-bold">Verification Status</span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-xs font-black uppercase tracking-wider border border-amber-500/30 shadow-sm">
+                  <Clock size={12} className="animate-spin" /> Awaiting Admin Approval
+                </span>
+              </div>
+
+              {/* UTR Box with Copy */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-mono uppercase text-text-muted block font-semibold">Submitted 12-Digit UTR</span>
+                <div className="flex items-center justify-between bg-surface/90 border border-white/10 rounded-xl p-3">
+                  <span className="font-mono font-bold text-amber-300 text-sm tracking-widest break-all">
+                    #{userRegistration.utrNumber}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      navigator.clipboard.writeText(userRegistration.utrNumber);
+                      setCopiedUtr(true);
+                      setTimeout(() => setCopiedUtr(false), 2000);
+                    }}
+                    className="ml-2 px-2.5 py-1 text-xs font-bold text-text-muted hover:text-white bg-white/5 hover:bg-white/10 rounded-lg transition flex items-center gap-1 cursor-pointer shrink-0"
+                  >
+                    {copiedUtr ? (
+                      <>
+                        <Check size={12} className="text-emerald-400" />
+                        <span className="text-emerald-400 text-[11px]">Copied</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy size={12} />
+                        <span className="text-[11px]">Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Meta Grid */}
+              <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
+                <div className="bg-surface/60 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-mono text-text-muted block uppercase">Amount Paid</span>
+                  <span className="font-bold text-white text-sm">₹{userRegistration.amount || quiz.price || 49}</span>
+                </div>
+                <div className="bg-surface/60 p-3 rounded-xl border border-white/5">
+                  <span className="text-[10px] font-mono text-text-muted block uppercase">Submission Time</span>
+                  <span className="font-bold text-white text-xs truncate block">
+                    {userRegistration.createdAt ? new Date(userRegistration.createdAt).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'Recorded'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Live sync notice */}
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-start gap-2.5 text-xs text-amber-200/90 leading-relaxed">
+                <Sparkles size={16} className="text-amber-400 shrink-0 mt-0.5" />
+                <p>
+                  <strong>Real-Time Firestore Sync:</strong> As soon as an administrator verifies and approves your UTR in the database, this screen will <strong>automatically transition and unlock your quiz attempt</strong> without requiring a manual refresh.
+                </p>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="space-y-3">
               <button
-                onClick={() => enrollInQuiz(quiz.id, user.uid).then(() => loadQuiz(quiz.id))}
-                className="w-full bg-warning hover:bg-warning-dark text-crust font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-warning/20"
+                type="button"
+                disabled={isRefreshingUtr}
+                onClick={async () => {
+                  if (quizId && user?.uid) {
+                    await verifyUtrStatus(quizId, user.uid, true);
+                  }
+                }}
+                className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-black font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
               >
-                Enroll Now
+                <RefreshCw size={16} className={cn(isRefreshingUtr && "animate-spin")} />
+                <span>{isRefreshingUtr ? 'Checking Firestore Records...' : 'Check Approval Status Now'}</span>
               </button>
-            ) : (
-              <div className="p-4 rounded-2xl bg-surface/50 border border-white/5 text-text-muted font-bold text-sm flex items-center justify-center gap-2">
-                <Lock size={18} /> Enrollment not yet open
-              </div>
-            )}
 
-            <Link to="/quizzes" className="inline-block text-text-muted text-xs hover:text-text-main underline">
-              Back to All Quizzes
-            </Link>
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(true)}
+                className="w-full bg-surface hover:bg-surface/80 border border-white/10 text-text-muted hover:text-white text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <RotateCcw size={13} />
+                <span>Need to update or re-enter 12-digit UTR?</span>
+              </button>
+
+              {(isAdmin || isQuizOnlyAdmin) && (
+                <button
+                  type="button"
+                  onClick={() => setAdminPreviewMode(true)}
+                  className="w-full bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning text-xs font-bold py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <ShieldCheck size={14} />
+                  <span>Admin Bypass: Preview Quiz Interface</span>
+                </button>
+              )}
+
+              <Link to="/quizzes" className="block text-xs font-bold text-text-muted hover:text-amber-400 transition-colors pt-1">
+                ← Return to All Quizzes
+              </Link>
+            </div>
+
+            <PaidChallengeRegistrationModal
+              quiz={quiz}
+              isOpen={showPaymentModal}
+              onClose={() => setShowPaymentModal(false)}
+              onRegistrationSubmitted={() => {
+                if (quizId && user?.uid) {
+                  verifyUtrStatus(quizId, user.uid, true);
+                }
+              }}
+            />
           </div>
         </div>
       );
     }
+
+    // B. REJECTED UTR SCREEN
+    if (userRegistration?.status === 'rejected') {
+      return (
+        <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4 sm:p-6 relative overflow-hidden">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+
+          <SEOManager 
+            collectionName="quizzes"
+            docId={quizId}
+            initialData={quiz}
+            fallbackTitle={`Verification Rejected: ${quiz?.title || 'Quiz Challenge'} | ForenClue`}
+            fallbackDescription={`Your UTR verification for ${quiz?.title || 'this challenge'} was rejected.`}
+            fallbackImage={quiz?.thumbnail}
+          />
+
+          <div className="max-w-lg w-full bg-surface border border-rose-500/30 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative z-10">
+            <div className="w-16 h-16 rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30 flex items-center justify-center mx-auto shadow-lg shadow-rose-500/10">
+              <AlertCircle size={32} />
+            </div>
+
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-black uppercase tracking-wider">
+                Verification Failed / Rejected
+              </div>
+              <h2 className="text-2xl font-black font-heading tracking-tight text-white uppercase">
+                {quiz.title}
+              </h2>
+              <p className="text-text-muted text-xs leading-relaxed">
+                The UTR transaction reference submitted could not be verified against bank records.
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs space-y-2 text-left">
+              <div className="flex items-center justify-between pb-2 border-b border-rose-500/20">
+                <span className="font-bold text-rose-400 flex items-center gap-1.5">
+                  <AlertCircle size={14} /> Reason for Rejection
+                </span>
+                <span className="font-mono text-[11px] text-rose-200">
+                  UTR: #{userRegistration.utrNumber}
+                </span>
+              </div>
+              <p className="text-rose-100 text-xs leading-relaxed pt-1">
+                {userRegistration.rejectReason || 'UTR not verified in bank records. Please double check your payment receipt and submit the correct 12-digit UTR.'}
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <button
+                type="button"
+                onClick={() => setShowPaymentModal(true)}
+                className="w-full bg-rose-500 hover:bg-rose-600 text-white font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-rose-500/20 flex items-center justify-center gap-2"
+              >
+                <RotateCcw size={16} /> Re-submit 12-Digit UTR
+              </button>
+
+              <Link to="/quizzes" className="block text-xs font-bold text-text-muted hover:text-rose-400 transition-colors">
+                ← Back to Quizzes
+              </Link>
+            </div>
+
+            <PaidChallengeRegistrationModal
+              quiz={quiz}
+              isOpen={showPaymentModal}
+              onClose={() => setShowPaymentModal(false)}
+              onRegistrationSubmitted={() => {
+                if (quizId && user?.uid) {
+                  verifyUtrStatus(quizId, user.uid, true);
+                }
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    // C. REGISTRATION & PAYMENT REQUIRED SCREEN (No registration record found yet)
+    return (
+      <div className="min-h-screen bg-background text-text-main flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
+
+        <SEOManager 
+          collectionName="quizzes"
+          docId={quizId}
+          initialData={quiz}
+          fallbackTitle={`Live Quiz: ${quiz?.title || 'Paid Challenge'} | ForenClue`}
+          fallbackDescription={`Admin UTR verification required for ${quiz?.title || 'this challenge'}.`}
+          fallbackImage={quiz?.thumbnail}
+        />
+
+        <div className="max-w-lg w-full bg-surface border border-amber-500/30 rounded-3xl p-6 sm:p-8 text-center space-y-6 shadow-2xl relative z-10">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/10">
+            <Trophy size={32} className="fill-amber-400" />
+          </div>
+
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-black uppercase tracking-wider">
+              Live Challenge • Admin UTR Approval Required
+            </div>
+            <h2 className="text-2xl font-black font-heading tracking-tight text-white uppercase">
+              {quiz.title}
+            </h2>
+            <p className="text-text-muted text-xs leading-relaxed">
+              This live challenge is actively running. Only candidates whose payment 12-digit UTR is verified and approved by the admin can attempt the quiz.
+            </p>
+          </div>
+
+          <div className="bg-black/40 border border-amber-500/20 rounded-2xl p-4 space-y-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-text-muted uppercase font-mono">Entry Fee</span>
+              <span className="text-warning font-black font-mono text-sm">₹{quiz.price || 49}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-text-muted uppercase font-mono">Cash Prize Pool</span>
+              <span className="text-amber-400 font-black font-mono text-sm">₹{totalPrize}</span>
+            </div>
+            <p className="text-[11px] text-text-muted text-center pt-1 border-t border-white/5">
+              Submit payment via UPI and enter your 12-digit UTR to get verified and approved by admin.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <button
+              type="button"
+              onClick={() => setShowPaymentModal(true)}
+              className="w-full bg-gradient-to-r from-amber-500 to-yellow-500 hover:opacity-90 text-black font-black text-sm uppercase tracking-wider py-3.5 rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2"
+            >
+              <CreditCard size={16} />
+              <span>Register & Pay ₹{quiz.price || 49}</span>
+            </button>
+
+            {(isAdmin || isQuizOnlyAdmin) && (
+              <button
+                type="button"
+                onClick={() => setAdminPreviewMode(true)}
+                className="w-full bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning text-xs font-bold py-2 rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ShieldCheck size={14} />
+                <span>Admin Bypass: Preview Quiz Interface</span>
+              </button>
+            )}
+
+            <Link to="/quizzes" className="block text-xs font-bold text-text-muted hover:text-amber-400 transition-colors">
+              ← Back to Quizzes
+            </Link>
+          </div>
+
+          <PaidChallengeRegistrationModal
+            quiz={quiz}
+            isOpen={showPaymentModal}
+            onClose={() => setShowPaymentModal(false)}
+            onRegistrationSubmitted={() => {
+              if (quizId && user?.uid) {
+                verifyUtrStatus(quizId, user.uid, true);
+              }
+            }}
+          />
+        </div>
+      </div>
+    );
   }
 
   return (
