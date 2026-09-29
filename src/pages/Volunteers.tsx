@@ -5,9 +5,6 @@ import { SEO } from '@/components/layout/SEO';
 const activeVolunteers = [
   { 
     name: 'Nikitha B', 
-    role: 'Forensic Analyst & Researcher', 
-    institute: 'Amity University',
-    badge: 'Verified Contributor',
     id: 'FC-VOL-2026-025',
     image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhofilNlkbJWvjAxFLk9i72sbgVT_2SwexBeXssxgZYH1EwiuEsAHceh5ESFONKrPOrvk1n7daXMe8lRVtXMpCtk20vWJC1BdHzG3V3sfQDuiBMD2E4WQYnge_a-ECnx6TSOjMB4s4ZFiEjPZM2WmCMhTeGN6mLT2Qjg333AwuyDoyapc3Vi8u_U6WcF4c/s1280/WhatsApp%20Image%202026-07-21%20at%2019.05.19.jpeg'
   },
@@ -174,7 +171,7 @@ export default function Volunteers() {
     '@type': 'Person',
     '@id': `https://forenclue.in/volunteers#${vol.id}`,
     'name': vol.name,
-    'jobTitle': vol.role,
+    'jobTitle': vol.role || 'Volunteer',
     'memberOf': {
       '@type': 'Organization',
       '@id': 'https://forenclue.in/#organization',
@@ -252,16 +249,15 @@ export default function Volunteers() {
             {activeVolunteers.map((vol, idx) => (
               <motion.div
                 key={idx}
-                initial={{ opacity: 0, scale: 0.75, y: 40 }}
-                whileInView={{ opacity: 1, scale: 1, y: 0 }}
-                viewport={{ once: true, margin: "-30px" }}
-                whileHover={{ scale: 1.03, y: -8 }}
+                initial={{ opacity: 0, y: 22 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                whileHover={{ y: -6, transition: { duration: 0.25, ease: "easeOut" } }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ 
-                  delay: (idx % 6) * 0.07, 
-                  type: "spring", 
-                  stiffness: 260, 
-                  damping: 18 
+                  duration: 0.5, 
+                  delay: (idx % 3) * 0.08, 
+                  ease: [0.21, 0.47, 0.32, 0.98] 
                 }}
                 className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6 relative group hover:border-warning/50 hover:shadow-[0_20px_35px_-10px_rgba(0,0,0,0.5),_0_0_30px_rgba(217,119,6,0.18)] transition-all duration-300 shadow-xl flex flex-col items-center text-center justify-between cursor-pointer"
               >
@@ -299,7 +295,7 @@ export default function Volunteers() {
                 </div>
 
                 {/* Info */}
-                <div className="space-y-2.5 w-full">
+                <div className="space-y-1 w-full">
                   <div>
                     <h3 className="text-base font-heading font-black uppercase text-text-main group-hover:text-warning transition-colors tracking-tight">
                       {vol.name}
@@ -308,8 +304,6 @@ export default function Volunteers() {
                       {vol.id}
                     </p>
                   </div>
-
-
                 </div>
 
                 {/* Verification Status */}
