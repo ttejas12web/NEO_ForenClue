@@ -64,7 +64,7 @@ const WEBINARS_DATA: WebinarEvent[] = [
       name: "Mr. Rajat Pithadia",
       role: "UGC.NET, GSET Qualified | Asst. Professor Parul University | Wiley Author | PhD Scholar Genotoxicity & Mutagenicity M.Sc.(Forensic Chemistry, Toxicology & Pharmacology)",
       avatar: "https://blogger.googleusercontent.com/img/a/AVvXsEiseuO8LFJ74UtogyoZLu5orh44gH7WVqDM4oinlMLhD3u4grQKoinTCZYk-OfKJrXJjV8E9EZHoPbhefI60LoXmqO623wQXiv-4hXumhYmBrBJCh4HYvYk9ifZ4nSccrYe5qyJHQXAQvW_8Zgkdq3T7vCycYqiJy0aUSZYzhmqc8M12jhhUq3X1GoORws",
-      linkedin: "https://www.linkedin.com/in/arpita-sharma-9979a31b",
+      linkedin: "https://www.linkedin.com/in/rajatresearch",
       bio: "UGC.NET, GSET Qualified | Asst. Professor Parul University | Wiley Author | PhD Scholar Genotoxicity & Mutagenicity M.Sc.(Forensic Chemistry, Toxicology & Pharmacology)"
     },
     poster: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpYn8CExwzqv9CrcbHqeYMI9TX0iOypg6BM_HeSUPn52oz5KJIzP-9746Z3Fp6O3-wtS-Y8ejm32Izylt2rMctCIQKklo1KH-7YdHHA1YSYQyzIYSV2zxny9OxxdkEXnA8fnliEjalVfGxwslh6ej-b14Ub6IzQj-lO7XUgXjHjO32NRLgjuqpHenbnEM/s1600/Forensic%20toxicology2.png",
