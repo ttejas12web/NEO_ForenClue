@@ -140,3 +140,20 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-
 .crime-tape-visual-copy::before {
   content: attr(data-text);
 }
+
+/* Admin In-Page Live Text Editor Highlight */
+.admin-edit-highlight {
+  outline: 2px dashed #f59e0b !important;
+  outline-offset: 3px !important;
+  cursor: pointer !important;
+  transition: outline 0.15s ease-in-out, background-color 0.15s ease-in-out !important;
+  background-color: rgba(245, 158, 11, 0.08) !important;
+  border-radius: 4px !important;
+}
+
+.admin-edit-saved-flash {
+  outline: 3px solid #10b981 !important;
+  outline-offset: 2px !important;
+  background-color: rgba(16, 185, 129, 0.18) !important;
+  transition: all 0.3s ease-in-out !important;
+}

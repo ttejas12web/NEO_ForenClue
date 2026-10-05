@@ -10,7 +10,7 @@ import {
   Users, RefreshCw, ShieldCheck, Database, Fingerprint, ClipboardList,
   Star, Building2, MapPin, Eye, EyeOff, Wrench, Power, Clock, ShieldAlert, AlertTriangle,
   Trophy, CreditCard, Copy, Check, Shuffle, Search, Filter, Zap,
-  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb, RotateCcw, Pin
+  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb, RotateCcw, Pin, Save
 } from 'lucide-react';
 import { db, storage, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
@@ -295,6 +295,10 @@ export default function Admin() {
   const [copiedTexts, setCopiedTexts] = useState<any[]>([]);
   const [textKey, setTextKey] = useState('');
   const [textVal, setTextVal] = useState('');
+  const [textPageRoute, setTextPageRoute] = useState('/');
+  const [textFilterSearch, setTextFilterSearch] = useState('');
+  const [textPageFilter, setTextPageFilter] = useState('all');
+  const [editingTextDoc, setEditingTextDoc] = useState<{ id: string, text: string, originalText?: string, page?: string } | null>(null);
 
   // Quizzes state
   const [adminQuizzes, setAdminQuizzes] = useState<Quiz[]>([]);
@@ -2238,7 +2242,7 @@ export default function Admin() {
   };
 
   // Edit / Add Website text general
-  const handleUpdateWebsiteText = async (key: string, val: string) => {
+  const handleUpdateWebsiteText = async (key: string, val: string, pageRoute: string = '/') => {
     setSuccessMsg('');
     setErrMsg('');
 
@@ -2248,14 +2252,34 @@ export default function Admin() {
     }
 
     try {
-      await setDoc(doc(db, 'websiteTexts', key.trim()), { text: val });
-      setSuccessMsg(`Website Copy for "${key}" successfully saved live.`);
+      const trimmedKey = key.trim();
+      const payload: any = {
+        text: val.trim(),
+        page: pageRoute || '/',
+        updatedAt: new Date().toISOString(),
+        updatedBy: user?.email || 'admin'
+      };
+      await setDoc(doc(db, 'websiteTexts', trimmedKey), payload, { merge: true });
+      setSuccessMsg(`Website text override for "${trimmedKey}" saved live!`);
       setTextKey('');
       setTextVal('');
+      setEditingTextDoc(null);
       fetchCollections();
     } catch (err: any) {
       console.error(err);
       setErrMsg(`Failed to save web copy: ${err.message}`);
+    }
+  };
+
+  const handleDeleteWebsiteText = async (id: string) => {
+    if (!window.confirm(`Delete this text override and restore default content?`)) return;
+    try {
+      await deleteDoc(doc(db, 'websiteTexts', id));
+      setCopiedTexts(prev => prev.filter(t => t.id !== id));
+      setSuccessMsg(`Website text override restored to default.`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (err: any) {
+      setErrMsg(`Failed to delete text override: ${err.message}`);
     }
   };
 
@@ -2922,6 +2946,20 @@ export default function Admin() {
                         </span>
                       )}
                     </button>
+
+                    <button 
+                      onClick={() => setActiveTab('texts')}
+                      className={`w-full text-left px-4 py-3 rounded-lg text-xs font-black uppercase tracking-wider flex items-center justify-between transition-colors ${activeTab === 'texts' ? 'bg-warning text-crust' : 'bg-surface hover:bg-surface/80 text-text-muted hover:text-text-main border border-black/5 dark:border-white/5'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Edit3 size={16} /> Website Texts & Copy
+                      </div>
+                      {copiedTexts.length > 0 && (
+                        <span className="bg-amber-500/20 text-amber-400 font-extrabold text-[10px] px-2 py-0.5 rounded-full border border-amber-500/30">
+                          {copiedTexts.length} Overrides
+                        </span>
+                      )}
+                    </button>
                     <p className="text-[10px] font-mono text-text-muted uppercase tracking-widest px-3 mb-2 mt-6">Systems Controls</p>
 
                     <button 
@@ -3323,6 +3361,264 @@ export default function Admin() {
                                       <span>Delete</span>
                                     </button>
                                   </div>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  );
+                })()}
+
+                {/* WEBSITE TEXTS & COPY MANAGER */}
+                {activeTab === 'texts' && (() => {
+                  const PAGE_OPTIONS = [
+                    { path: 'all', label: 'All Pages' },
+                    { path: '/', label: 'Home (/)' },
+                    { path: '/about', label: 'About (/about)' },
+                    { path: '/services', label: 'Services (/services)' },
+                    { path: '/courses', label: 'Courses (/courses)' },
+                    { path: '/webinar', label: 'Webinars (/webinar)' },
+                    { path: '/volunteers', label: 'Volunteers (/volunteers)' },
+                    { path: '/ambassadors', label: 'Campus Ambassadors (/ambassadors)' },
+                    { path: '/colleges', label: 'Colleges (/colleges)' },
+                    { path: '/careers', label: 'Careers (/careers)' },
+                    { path: '/ebooks', label: 'E-Books (/ebooks)' },
+                    { path: '/podcast', label: 'Podcast (/podcast)' },
+                    { path: '/contact', label: 'Contact (/contact)' },
+                  ];
+
+                  const filteredTexts = copiedTexts.filter((item) => {
+                    if (textPageFilter !== 'all') {
+                      if (item.page && item.page !== textPageFilter) return false;
+                    }
+                    if (textFilterSearch.trim()) {
+                      const q = textFilterSearch.toLowerCase();
+                      const keyMatch = item.id?.toLowerCase().includes(q);
+                      const textMatch = item.text?.toLowerCase().includes(q);
+                      const origMatch = item.originalText?.toLowerCase().includes(q);
+                      return keyMatch || textMatch || origMatch;
+                    }
+                    return true;
+                  });
+
+                  return (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                      <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6">
+                        {/* Header */}
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/10 dark:border-white/10">
+                          <div>
+                            <h2 className="text-xl font-heading font-black uppercase tracking-tight flex items-center gap-2 text-text-main">
+                              <Edit3 size={20} className="text-warning" /> Website Text Overrides & Copy Manager
+                            </h2>
+                            <p className="text-sm text-text-muted mt-1">
+                              Manage and override all textual content on every page of the ForenClue platform. Overrides update in real-time.
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                              <Sparkles size={13} /> {copiedTexts.length} Active Overrides
+                            </span>
+                            <Link
+                              to="/"
+                              className="px-3.5 py-1.5 bg-warning text-crust font-black text-xs uppercase tracking-wider rounded-lg shadow-md transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer hover:bg-warning/90"
+                              title="Go to website and use in-page click-to-edit"
+                            >
+                              <ExternalLink size={13} />
+                              <span>In-Page Visual Editor</span>
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Pro-Tip Box */}
+                        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 via-warning/5 to-transparent border border-warning/20 flex items-start gap-3">
+                          <div className="p-2 rounded-lg bg-warning/20 text-warning shrink-0 mt-0.5">
+                            <Sparkles size={16} />
+                          </div>
+                          <div className="space-y-1">
+                            <h4 className="text-xs font-heading font-black uppercase tracking-wider text-text-main">
+                              Two Ways to Edit Any Text On the Website:
+                            </h4>
+                            <p className="text-xs text-text-muted leading-relaxed">
+                              <strong>1. In-Page Click-To-Edit:</strong> Visit any page on the website as an admin. Toggle the floating <strong>"Live Text Editor"</strong> switch in the bottom-right corner to hover and click on any text directly.
+                              <br />
+                              <strong>2. Central Dashboard:</strong> Use the form below to add, edit, or reset text overrides across all pages from this single manager.
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Add / Update Manual Text Override Form */}
+                        <div className="mb-6 p-5 rounded-xl bg-base border border-black/5 dark:border-white/5 space-y-4">
+                          <h3 className="text-sm font-heading font-black uppercase tracking-wider text-text-main flex items-center gap-2">
+                            <Plus size={16} className="text-warning" /> Add or Update Website Text Override
+                          </h3>
+
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            <div>
+                              <label className="text-[10px] font-mono font-bold uppercase text-text-muted block mb-1">
+                                Text Key or Identifier:
+                              </label>
+                              <input
+                                type="text"
+                                value={textKey}
+                                onChange={(e) => setTextKey(e.target.value)}
+                                placeholder="e.g. home_hero_title or wt_..."
+                                className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-xs text-text-main focus:outline-none focus:border-warning font-mono"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="text-[10px] font-mono font-bold uppercase text-text-muted block mb-1">
+                                Target Page Route:
+                              </label>
+                              <select
+                                value={textPageRoute}
+                                onChange={(e) => setTextPageRoute(e.target.value)}
+                                className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-lg px-3 py-2 text-xs text-text-main focus:outline-none focus:border-warning font-mono cursor-pointer"
+                              >
+                                {PAGE_OPTIONS.filter(p => p.path !== 'all').map((p) => (
+                                  <option key={p.path} value={p.path}>
+                                    {p.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div className="md:col-span-3">
+                              <label className="text-[10px] font-mono font-bold uppercase text-text-muted block mb-1">
+                                Customized Live Text:
+                              </label>
+                              <textarea
+                                value={textVal}
+                                onChange={(e) => setTextVal(e.target.value)}
+                                rows={3}
+                                placeholder="Enter customized text content to display live on the website..."
+                                className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-lg p-3 text-xs text-text-main focus:outline-none focus:border-warning font-sans leading-relaxed"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="flex justify-end">
+                            <button
+                              onClick={() => handleUpdateWebsiteText(textKey, textVal, textPageRoute)}
+                              disabled={!textKey.trim() || !textVal.trim()}
+                              className="px-5 py-2 bg-warning hover:bg-warning/90 text-crust font-black text-xs uppercase tracking-wider rounded-lg shadow transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            >
+                              <Save size={13} />
+                              <span>Save Text Override Live</span>
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Search & Filter Bar */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-5 p-3 bg-base/60 rounded-xl border border-black/5 dark:border-white/5">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-xs font-mono font-bold text-text-muted uppercase flex items-center gap-1">
+                              <Filter size={13} className="text-warning" /> Page:
+                            </span>
+                            <select
+                              value={textPageFilter}
+                              onChange={(e) => setTextPageFilter(e.target.value)}
+                              className="bg-surface text-text-main text-xs font-bold rounded-lg px-3 py-1.5 border border-black/10 dark:border-white/10 focus:outline-none focus:border-warning cursor-pointer font-mono"
+                            >
+                              {PAGE_OPTIONS.map((p) => (
+                                <option key={p.path} value={p.path}>
+                                  {p.label}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+
+                          <div className="relative w-full md:w-72">
+                            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                            <input
+                              type="text"
+                              value={textFilterSearch}
+                              onChange={(e) => setTextFilterSearch(e.target.value)}
+                              placeholder="Search text or key..."
+                              className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-text-main placeholder:text-text-muted focus:outline-none focus:border-warning font-mono"
+                            />
+                            {textFilterSearch && (
+                              <button
+                                onClick={() => setTextFilterSearch('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
+                              >
+                                <X size={12} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Overrides Table / Grid */}
+                        <div className="space-y-3">
+                          {filteredTexts.length === 0 ? (
+                            <div className="text-center py-12 border border-dashed border-black/10 dark:border-white/10 rounded-xl text-text-muted font-mono text-xs space-y-1">
+                              <div>No website text overrides found.</div>
+                              <p className="text-[11px] text-text-muted/70">
+                                Use the form above to add an override, or visit any page and use the in-page click-to-edit tool!
+                              </p>
+                            </div>
+                          ) : (
+                            filteredTexts.map((item) => (
+                              <div
+                                key={item.id}
+                                className="p-4 rounded-xl bg-base border border-black/5 dark:border-white/5 hover:border-warning/30 transition-all space-y-3"
+                              >
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-black/5 dark:border-white/5 pb-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-warning/10 text-warning border border-warning/20">
+                                      Key: {item.id}
+                                    </span>
+                                    {item.page && (
+                                      <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-black/5 dark:bg-white/5 text-text-muted">
+                                        Route: {item.page}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  {item.updatedAt && (
+                                    <span className="text-[10px] font-mono text-text-muted">
+                                      Updated: {new Date(item.updatedAt).toLocaleDateString()}
+                                    </span>
+                                  )}
+                                </div>
+
+                                {item.originalText && (
+                                  <div className="text-[11px] text-text-muted font-sans italic bg-surface/50 p-2.5 rounded-lg border border-black/5 dark:border-white/5">
+                                    <strong className="not-italic text-[10px] uppercase font-mono text-text-muted/80 block mb-0.5">Original Default:</strong>
+                                    "{item.originalText}"
+                                  </div>
+                                )}
+
+                                <div className="text-xs text-text-main font-sans leading-relaxed bg-surface p-3 rounded-lg border border-black/5 dark:border-white/5">
+                                  <strong className="text-[10px] uppercase font-mono text-warning block mb-0.5">Live Override:</strong>
+                                  "{item.text}"
+                                </div>
+
+                                <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/5 dark:border-white/5">
+                                  <button
+                                    onClick={() => {
+                                      setTextKey(item.id);
+                                      setTextVal(item.text);
+                                      if (item.page) setTextPageRoute(item.page);
+                                      window.scrollTo({ top: 300, behavior: 'smooth' });
+                                    }}
+                                    className="px-3 py-1 bg-black/5 dark:bg-white/5 hover:bg-warning/20 hover:text-warning text-text-main rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Edit3 size={12} />
+                                    <span>Edit</span>
+                                  </button>
+
+                                  <button
+                                    onClick={() => handleDeleteWebsiteText(item.id)}
+                                    className="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
+                                    title="Reset to website default"
+                                  >
+                                    <Trash2 size={12} />
+                                    <span>Reset to Default</span>
+                                  </button>
                                 </div>
                               </div>
                             ))

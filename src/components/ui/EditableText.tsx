@@ -44,7 +44,12 @@ export function EditableText({ id, defaultText, className = '', isTextArea = fal
     }
     setLoading(true);
     try {
-      await setDoc(doc(db, 'websiteTexts', id), { text: editText });
+      await setDoc(doc(db, 'websiteTexts', id), { 
+        text: editText,
+        originalText: defaultText,
+        page: window.location.pathname,
+        updatedAt: new Date().toISOString()
+      }, { merge: true });
       setText(editText);
       setIsEditing(false);
     } catch (err) {

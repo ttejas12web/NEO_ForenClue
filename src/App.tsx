@@ -22,6 +22,8 @@ import {
   subscribeMaintenanceConfig, 
   MaintenanceConfig 
 } from './services/maintenanceService';
+import { WebsiteTextProvider } from './contexts/WebsiteTextContext';
+import { AdminLiveEditor } from './components/admin/AdminLiveEditor';
 
 function GlobalSEO() {
   const location = useLocation();
@@ -232,48 +234,51 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-base flex flex-col">
-      <GlobalSEO />
+    <WebsiteTextProvider>
+      <div className="min-h-screen bg-base flex flex-col">
+        <GlobalSEO />
 
-      {/* Staff Preview Bar when bypassing active maintenance */}
-      {isMaintenanceActive && isBypassed && (
-        <div className="bg-amber-500/90 text-black px-4 py-1.5 text-xs font-mono font-bold flex items-center justify-between z-[9999] shadow-md">
-          <span className="flex items-center gap-2">
-            <span className="inline-block w-2 h-2 rounded-full bg-black animate-pulse" />
-            STAFF PREVIEW MODE: Public visitors see Maintenance Screen
-          </span>
-          <button
-            onClick={handleRevokeBypass}
-            className="px-2.5 py-0.5 rounded bg-black/80 hover:bg-black text-white text-[11px] font-mono cursor-pointer transition-colors"
-          >
-            Re-engage Maintenance View
-          </button>
-        </div>
-      )}
-
-      <AnimatePresence>
-        {isOffline && (
-          <motion.div 
-            initial={{ y: -50, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -50, opacity: 0 }}
-            className="fixed top-0 left-0 right-0 z-[9999] bg-red-600 border-b border-red-500/50 flex items-center justify-center py-2 px-4 gap-3 shadow-lg"
-          >
-            <WifiOff size={16} className="text-text-main" />
-            <span className="text-xs font-black uppercase tracking-widest text-text-main">Connection Lost. Operating in offline mode.</span>
-          </motion.div>
+        {/* Staff Preview Bar when bypassing active maintenance */}
+        {isMaintenanceActive && isBypassed && (
+          <div className="bg-amber-500/90 text-black px-4 py-1.5 text-xs font-mono font-bold flex items-center justify-between z-[9999] shadow-md">
+            <span className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-black animate-pulse" />
+              STAFF PREVIEW MODE: Public visitors see Maintenance Screen
+            </span>
+            <button
+              onClick={handleRevokeBypass}
+              className="px-2.5 py-0.5 rounded bg-black/80 hover:bg-black text-white text-[11px] font-mono cursor-pointer transition-colors"
+            >
+              Re-engage Maintenance View
+            </button>
+          </div>
         )}
-      </AnimatePresence>
-      <ScrollToTop />
-      <FloatingWhatsAppButton />
 
-      <Suspense fallback={<PageLoader />}>
-        <Routes>
-          <Route path="/maintenance" element={<Maintenance onBypass={() => setIsBypassed(true)} />} />
-          <Route path="/player/:courseId" element={<CoursePlayer />} />
-          <Route path="*" element={<AppMain />} />
-        </Routes>
-      </Suspense>
-    </div>
+        <AnimatePresence>
+          {isOffline && (
+            <motion.div 
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              className="fixed top-0 left-0 right-0 z-[9999] bg-red-600 border-b border-red-500/50 flex items-center justify-center py-2 px-4 gap-3 shadow-lg"
+            >
+              <WifiOff size={16} className="text-text-main" />
+              <span className="text-xs font-black uppercase tracking-widest text-text-main">Connection Lost. Operating in offline mode.</span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <ScrollToTop />
+        <FloatingWhatsAppButton />
+        <AdminLiveEditor />
+
+        <Suspense fallback={<PageLoader />}>
+          <Routes>
+            <Route path="/maintenance" element={<Maintenance onBypass={() => setIsBypassed(true)} />} />
+            <Route path="/player/:courseId" element={<CoursePlayer />} />
+            <Route path="*" element={<AppMain />} />
+          </Routes>
+        </Suspense>
+      </div>
+    </WebsiteTextProvider>
   );
 }
