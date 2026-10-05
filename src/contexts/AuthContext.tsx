@@ -668,7 +668,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return true;
     } catch (err: any) {
       recordFailedLogin(normalizedEmail);
-      console.error("Admin authentication rejected:", err?.message || err);
+      console.warn("Admin authentication attempt notice:", err?.code || err?.message || err);
+      const errorCode = err?.code || '';
+      if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/wrong-password' || errorCode === 'auth/user-not-found' || err?.message?.includes('auth/invalid-credential')) {
+        throw new Error("Invalid admin email or password. Please verify your credentials and try again.");
+      } else if (errorCode === 'auth/too-many-requests') {
+        throw new Error("Access temporarily locked due to multiple failed attempts. Please wait a few moments or reset your password.");
+      }
       throw err;
     }
   };

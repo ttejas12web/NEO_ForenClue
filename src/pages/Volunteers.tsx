@@ -2,7 +2,16 @@ import { motion } from 'motion/react';
 import { Users, CheckCircle2, Shield } from 'lucide-react';
 import { SEO } from '@/components/layout/SEO';
 
-const activeVolunteers = [
+interface Volunteer {
+  name: string;
+  id: string;
+  image: string;
+  role?: string;
+  institute?: string;
+  badge?: string;
+}
+
+const activeVolunteers: Volunteer[] = [
   { 
     name: 'Nikitha B', 
     id: 'FC-VOL-2026-025',

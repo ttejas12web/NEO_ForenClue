@@ -324,9 +324,35 @@
         "updatedAt": { "type": "string", "format": "date-time" },
         "updatedBy": { "type": "string" }
       }
+    },
+    "WebinarFeedback": {
+      "title": "Webinar Feedback",
+      "description": "Participant feedback submissions for webinars and seminars",
+      "type": "object",
+      "properties": {
+        "eventId": { "type": "string" },
+        "eventSequence": { "type": "integer" },
+        "eventName": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "rating": { "type": "integer" },
+        "text": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "date": { "type": "string" },
+        "approved": { "type": "boolean" },
+        "status": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "pinned": { "type": "boolean" },
+        "pinnedAt": { "type": "string", "format": "date-time" },
+        "verified": { "type": "boolean" }
+      },
+      "required": ["eventId", "name", "text", "createdAt"]
     }
   },
   "firestore": {
+    "/webinar_feedbacks/{feedbackId}": {
+      "schema": "WebinarFeedback",
+      "description": "Participant seminar feedbacks with admin review and pinning controls"
+    },
     "/system_settings/{settingId}": {
       "schema": "SystemSetting",
       "description": "Global system configurations including maintenance mode and scheduled downtime"

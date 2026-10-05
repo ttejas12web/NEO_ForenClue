@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   Clock, Sparkles, ArrowLeft, Calendar, User, 
   Linkedin, Play, ExternalLink, Star, MessageSquare, Send, Check,
-  ChevronLeft, ChevronRight, ThumbsUp, Radio, Youtube
+  ChevronLeft, ChevronRight, ThumbsUp, Radio, Youtube, Pin
 } from 'lucide-react';
 import { SEO } from '@/components/layout/SEO';
 import { SEOManager } from '@/components/layout/SEOManager';
@@ -20,6 +20,7 @@ interface Feedback {
   text: string;
   date: string;
   verified: boolean;
+  pinned?: boolean;
 }
 
 interface WebinarEvent {
@@ -261,16 +262,16 @@ export default function Webinar() {
 
     const fetchFirestoreFeedbacks = async () => {
       try {
-        const q = query(
-          collection(db, 'webinar_feedbacks'),
-          where('eventId', '==', currentEvent.id)
-        );
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await getDocs(collection(db, 'webinar_feedbacks'));
         const dbFeedbacks: Feedback[] = [];
         querySnapshot.forEach((docSnap) => {
           const data = docSnap.data();
+          const matchesEvent = data.eventId === currentEvent.id ||
+            (data.eventSequence && Number(data.eventSequence) === Number(currentEvent.sequence)) ||
+            (data.eventName && data.eventName.toLowerCase().includes(currentEvent.title.toLowerCase().slice(0, 15)));
+
           // Only display approved feedbacks publicly
-          if (data.approved === true || data.status === 'approved') {
+          if (matchesEvent && (data.approved === true || data.status === 'approved')) {
             dbFeedbacks.push({
               id: docSnap.id,
               name: data.name || 'Anonymous Participant',
@@ -278,7 +279,8 @@ export default function Webinar() {
               rating: Number(data.rating) || 5,
               text: data.text || '',
               date: data.date || 'Recently',
-              verified: true
+              verified: true,
+              pinned: Boolean(data.pinned)
             });
           }
         });
@@ -288,9 +290,16 @@ export default function Webinar() {
             const initialFeedbacks = WEBINARS_DATA.find(w => w.id === currentEvent.id)?.feedbacks || [];
             const existingIds = new Set(initialFeedbacks.map(f => f.id));
             const newFromDb = dbFeedbacks.filter(f => !existingIds.has(f.id));
+            const combined = [...newFromDb, ...initialFeedbacks];
+            // Sort: Pinned comments strictly prioritized to the top
+            combined.sort((a, b) => {
+              if (a.pinned && !b.pinned) return -1;
+              if (!a.pinned && b.pinned) return 1;
+              return 0;
+            });
             return {
               ...ev,
-              feedbacks: [...newFromDb, ...initialFeedbacks]
+              feedbacks: combined
             };
           }
           return ev;
@@ -748,12 +757,24 @@ export default function Webinar() {
                       {currentEvent.feedbacks.map((item) => (
                         <div 
                           key={item.id}
-                          className="w-[82vw] max-w-[320px] sm:w-[350px] shrink-0 snap-start bg-crust border border-black/10 dark:border-white/5 rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4 relative overflow-hidden flex flex-col justify-between hover:border-warning/30 transition-colors shadow-lg"
+                          className={`w-[82vw] max-w-[320px] sm:w-[350px] shrink-0 snap-start bg-crust rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4 relative overflow-hidden flex flex-col justify-between transition-all shadow-lg ${
+                            item.pinned 
+                              ? 'border-2 border-warning/80 bg-gradient-to-b from-warning/10 via-crust to-crust shadow-warning/10 ring-1 ring-warning/30' 
+                              : 'border border-black/10 dark:border-white/5 hover:border-warning/30'
+                          }`}
                         >
+                          {/* Pinned Tag */}
+                          {item.pinned && (
+                            <div className="absolute top-0 right-0 bg-warning text-crust px-2.5 py-0.5 rounded-bl-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                              <Pin size={10} className="fill-current" />
+                              <span>Pinned</span>
+                            </div>
+                          )}
+
                           {/* Top part: details */}
                           <div className="space-y-2.5 sm:space-y-3">
                             <div className="flex items-start justify-between gap-2">
-                              <div className="space-y-0.5 min-w-0">
+                              <div className={`space-y-0.5 min-w-0 ${item.pinned ? 'pr-14' : ''}`}>
                                 <h4 className="text-xs font-black text-text-main uppercase line-clamp-1">{item.name}</h4>
                                 <p className="text-[10px] font-mono text-warning font-semibold line-clamp-1">{item.role}</p>
                               </div>

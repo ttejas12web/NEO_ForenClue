@@ -10,7 +10,7 @@ import {
   Users, RefreshCw, ShieldCheck, Database, Fingerprint, ClipboardList,
   Star, Building2, MapPin, Eye, EyeOff, Wrench, Power, Clock, ShieldAlert, AlertTriangle,
   Trophy, CreditCard, Copy, Check, Shuffle, Search, Filter, Zap,
-  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb, RotateCcw
+  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb, RotateCcw, Pin
 } from 'lucide-react';
 import { db, storage, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
@@ -54,7 +54,7 @@ const getLocalDatetimeString = (dateObj: Date | string | number) => {
 };
 
 export default function Admin() {
-  const { user, isAdmin, isQuizOnlyAdmin, adminLogin, logout } = useAuth();
+  const { user, isAdmin, isQuizOnlyAdmin, adminLogin, logout, sendPasswordReset } = useAuth();
   const navigate = useNavigate();
 
   // Authentication Fields
@@ -63,7 +63,7 @@ export default function Admin() {
   const [showPassword, setShowPassword] = useState(false);
   const [authError, setAuthError] = useState('');
   const [btnLoading, setBtnLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  const [resetLoading, setResetLoading] = useState(false);
 
   // Active Tab: 'overview' | 'courses' | 'ebooks' | 'texts' | 'doubts' | 'podcast' | 'certificates' | 'employees' | 'quizzes' | 'colleges' | 'inbox' | 'feedbacks' | 'maintenance'
   const [activeTab, setActiveTab] = useState<'overview' | 'courses' | 'ebooks' | 'texts' | 'doubts' | 'podcast' | 'certificates' | 'employees' | 'quizzes' | 'colleges' | 'inbox' | 'feedbacks' | 'maintenance'>('overview');
@@ -200,7 +200,9 @@ export default function Admin() {
 
   const [webinarFeedbacks, setWebinarFeedbacks] = useState<any[]>([]);
   const [feedbacksLoading, setFeedbacksLoading] = useState(false);
-  const [feedbackFilter, setFeedbackFilter] = useState<'all' | 'pending' | 'approved'>('pending');
+  const [feedbackFilter, setFeedbackFilter] = useState<'all' | 'pending' | 'approved' | 'pinned'>('pending');
+  const [feedbackSessionFilter, setFeedbackSessionFilter] = useState<string>('all');
+  const [pinActionLoading, setPinActionLoading] = useState<string | null>(null);
 
   const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
   const [editingEbookId, setEditingEbookId] = useState<string | null>(null);
@@ -1763,6 +1765,37 @@ export default function Admin() {
     }
   };
 
+  const handleTogglePinFeedback = async (docId: string, currentPinStatus: boolean, sessionLabel?: string) => {
+    setPinActionLoading(docId);
+    try {
+      const nextPinStatus = !currentPinStatus;
+      const updatePayload: any = {
+        pinned: nextPinStatus,
+        pinnedAt: nextPinStatus ? new Date().toISOString() : null
+      };
+      // If pinning a comment that is not approved yet, also approve & publish it
+      if (nextPinStatus) {
+        updatePayload.approved = true;
+        updatePayload.status = 'approved';
+      }
+
+      await setDoc(doc(db, 'webinar_feedbacks', docId), updatePayload, { merge: true });
+      setWebinarFeedbacks(prev => prev.map(f => f.docId === docId ? { ...f, ...updatePayload } : f));
+      
+      setSuccessMsg(nextPinStatus 
+        ? `Comment successfully PINNED for ${sessionLabel || 'this webinar session'}!` 
+        : `Comment UNPINNED from ${sessionLabel || 'this webinar session'}.`
+      );
+      setTimeout(() => setSuccessMsg(''), 4000);
+    } catch (e: any) {
+      console.error("Error toggling pin status:", e);
+      setErrMsg(`Failed to update pin status: ${e.message || e}`);
+      setTimeout(() => setErrMsg(''), 4000);
+    } finally {
+      setPinActionLoading(null);
+    }
+  };
+
   const handleDeleteFeedback = async (docId: string, authorName: string) => {
     if (!window.confirm(`Are you sure you want to delete the session feedback submission from "${authorName}"?`)) {
       return;
@@ -1919,9 +1952,10 @@ export default function Admin() {
     }
   }, [isAdmin]);
 
-  const handleManualLogin = (e: React.FormEvent) => {
+  const handleManualLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    setSuccessMsg('');
     setBtnLoading(true);
 
     if (!adminLogin) {
@@ -1930,14 +1964,39 @@ export default function Admin() {
       return;
     }
 
-    const success = adminLogin(email, password);
-    setBtnLoading(false);
+    try {
+      const success = await adminLogin(email, password);
+      if (success) {
+        setSuccessMsg('Forenclue Core Credentials approved! Elevating access.');
+        setTimeout(() => setSuccessMsg(''), 3000);
+      } else {
+        setAuthError('Invalid credentials. Administrator role rejected.');
+      }
+    } catch (err: any) {
+      setAuthError(err?.message || 'Invalid credentials. Administrator role rejected.');
+    } finally {
+      setBtnLoading(false);
+    }
+  };
 
-    if (success) {
-      setSuccessMsg('Forenclue Core Credentials approved! Elevating access.');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    } else {
-      setAuthError('Invalid credentials. Administrator role rejected.');
+  const handleAdminPasswordReset = async () => {
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      setAuthError('Please enter your admin email address first, then click "Forgot Password?".');
+      return;
+    }
+    setAuthError('');
+    setResetLoading(true);
+    try {
+      if (sendPasswordReset) {
+        await sendPasswordReset(trimmedEmail);
+        setSuccessMsg(`Password reset email sent to ${trimmedEmail}. Please check your inbox.`);
+        setTimeout(() => setSuccessMsg(''), 8000);
+      }
+    } catch (err: any) {
+      setAuthError(err?.message || 'Failed to send password reset email. Please verify your email.');
+    } finally {
+      setResetLoading(false);
     }
   };
 
@@ -2753,6 +2812,16 @@ export default function Admin() {
                       {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+                  <div className="flex justify-end pt-1.5">
+                    <button
+                      type="button"
+                      onClick={handleAdminPasswordReset}
+                      disabled={resetLoading}
+                      className="text-[11px] font-mono text-warning hover:underline disabled:opacity-50 cursor-pointer"
+                    >
+                      {resetLoading ? 'Sending reset link...' : 'Forgot password?'}
+                    </button>
+                  </div>
                 </div>
 
                 <button 
@@ -2988,83 +3057,188 @@ export default function Admin() {
                 )}
 
                 {/* SEMINAR FEEDBACKS APPROVAL SECTION */}
-                {activeTab === 'feedbacks' && (
-                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                    <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/10 dark:border-white/10">
-                        <div>
-                          <h2 className="text-xl font-heading font-black uppercase tracking-tight flex items-center gap-2 text-text-main">
-                            <MessageSquare size={20} className="text-warning" /> Seminar Session Feedbacks Manager
-                          </h2>
-                          <p className="text-sm text-text-muted mt-1">
-                            Review, verify, and approve participant feedbacks submitted from webinar / seminar pages.
-                          </p>
+                {activeTab === 'feedbacks' && (() => {
+                  const WEBINAR_OPTIONS = [
+                    { id: 'all', label: 'All Webinar Sessions' },
+                    { id: 'forensic-toxicology', label: 'Session 4: Forensic Toxicology Exclusive Webinar' },
+                    { id: 'autopsy-the-silent-witness', label: 'Session 3: Autopsy – The Silent Witness' },
+                    { id: 'beyond-the-smiles', label: 'Session 2: Beyond The Smiles' },
+                    { id: 'cybersecurity-career-pathways', label: 'Session 1: Cybersecurity Career Pathways' }
+                  ];
+
+                  const matchesFeedbackSession = (item: any, selectedSession: string) => {
+                    if (selectedSession === 'all') return true;
+                    if (item.eventId === selectedSession) return true;
+                    const nameLower = (item.eventName || '').toLowerCase();
+                    if (selectedSession === 'forensic-toxicology') {
+                      return item.eventSequence === 4 || nameLower.includes('toxicology');
+                    }
+                    if (selectedSession === 'autopsy-the-silent-witness') {
+                      return item.eventSequence === 3 || nameLower.includes('autopsy');
+                    }
+                    if (selectedSession === 'beyond-the-smiles') {
+                      return item.eventSequence === 2 || nameLower.includes('smiles') || nameLower.includes('odontology');
+                    }
+                    if (selectedSession === 'cybersecurity-career-pathways') {
+                      return item.eventSequence === 1 || nameLower.includes('cybersecurity') || nameLower.includes('career');
+                    }
+                    return false;
+                  };
+
+                  const feedbacksInSession = webinarFeedbacks.filter(f => matchesFeedbackSession(f, feedbackSessionFilter));
+                  const pendingCount = feedbacksInSession.filter(f => !f.approved).length;
+                  const approvedCount = feedbacksInSession.filter(f => f.approved).length;
+                  const pinnedCount = feedbacksInSession.filter(f => Boolean(f.pinned)).length;
+                  const totalCount = feedbacksInSession.length;
+
+                  const visibleFeedbacks = feedbacksInSession
+                    .filter(f => {
+                      if (feedbackFilter === 'pending') return !f.approved;
+                      if (feedbackFilter === 'approved') return f.approved;
+                      if (feedbackFilter === 'pinned') return Boolean(f.pinned);
+                      return true;
+                    })
+                    .sort((a, b) => {
+                      // Pinned comments always appear at the top
+                      if (a.pinned && !b.pinned) return -1;
+                      if (!a.pinned && b.pinned) return 1;
+                      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+                      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+                      return timeB - timeA;
+                    });
+
+                  return (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                      <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6">
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6 pb-4 border-b border-black/10 dark:border-white/10">
+                          <div>
+                            <h2 className="text-xl font-heading font-black uppercase tracking-tight flex items-center gap-2 text-text-main">
+                              <MessageSquare size={20} className="text-warning" /> Seminar Session Feedbacks & Pin Manager
+                            </h2>
+                            <p className="text-sm text-text-muted mt-1">
+                              Review, verify, and pin standout participant comments to the top of specific webinar sessions.
+                            </p>
+                          </div>
+
+                          {/* Quick Stats Pill */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                              <Pin size={12} className="fill-amber-400" /> {pinnedCount} Pinned
+                            </span>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              <CheckCircle2 size={12} /> {approvedCount} Live
+                            </span>
+                            {pendingCount > 0 && (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-mono font-bold bg-amber-500 text-black">
+                                <AlertCircle size={12} /> {pendingCount} Pending
+                              </span>
+                            )}
+                          </div>
                         </div>
 
-                        {/* Filter Tabs */}
-                        <div className="flex items-center bg-base border border-black/10 dark:border-white/10 rounded-xl p-1 gap-1">
-                          <button
-                            onClick={() => setFeedbackFilter('pending')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                              feedbackFilter === 'pending' ? 'bg-warning text-crust' : 'text-text-muted hover:text-text-main'
-                            }`}
-                          >
-                            Pending ({webinarFeedbacks.filter(f => !f.approved).length})
-                          </button>
-                          <button
-                            onClick={() => setFeedbackFilter('approved')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                              feedbackFilter === 'approved' ? 'bg-warning text-crust' : 'text-text-muted hover:text-text-main'
-                            }`}
-                          >
-                            Approved ({webinarFeedbacks.filter(f => f.approved).length})
-                          </button>
-                          <button
-                            onClick={() => setFeedbackFilter('all')}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                              feedbackFilter === 'all' ? 'bg-warning text-crust' : 'text-text-muted hover:text-text-main'
-                            }`}
-                          >
-                            All ({webinarFeedbacks.length})
-                          </button>
-                        </div>
-                      </div>
+                        {/* Controls Bar: Session Dropdown & Status Filter */}
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 p-3.5 bg-base/60 rounded-xl border border-black/5 dark:border-white/5">
+                          {/* Webinar Session Selector */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <label htmlFor="adminWebinarSessionFilter" className="text-xs font-mono font-bold text-text-muted uppercase flex items-center gap-1.5 shrink-0">
+                              <Filter size={13} className="text-warning" /> Select Session:
+                            </label>
+                            <select
+                              id="adminWebinarSessionFilter"
+                              value={feedbackSessionFilter}
+                              onChange={(e) => setFeedbackSessionFilter(e.target.value)}
+                              className="bg-surface text-text-main text-xs font-bold rounded-lg px-3 py-2 border border-black/10 dark:border-white/10 focus:outline-none focus:border-warning cursor-pointer max-w-full sm:max-w-xs shadow-sm"
+                            >
+                              {WEBINAR_OPTIONS.map((opt) => {
+                                const count = opt.id === 'all' 
+                                  ? webinarFeedbacks.length 
+                                  : webinarFeedbacks.filter(f => matchesFeedbackSession(f, opt.id)).length;
+                                return (
+                                  <option key={opt.id} value={opt.id}>
+                                    {opt.label} ({count})
+                                  </option>
+                                );
+                              })}
+                            </select>
+                          </div>
 
-                      {/* Feedbacks List */}
-                      <div className="space-y-4">
-                        {feedbacksLoading ? (
-                          <div className="text-center py-12 text-text-muted flex items-center justify-center gap-2 font-mono text-xs">
-                            <Loader2 className="animate-spin text-warning" size={18} /> Loading seminar feedbacks...
+                          {/* Filter Tabs */}
+                          <div className="flex items-center bg-base border border-black/10 dark:border-white/10 rounded-xl p-1 gap-1 flex-wrap">
+                            <button
+                              onClick={() => setFeedbackFilter('pending')}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                                feedbackFilter === 'pending' ? 'bg-warning text-crust' : 'text-text-muted hover:text-text-main'
+                              }`}
+                            >
+                              Pending ({pendingCount})
+                            </button>
+                            <button
+                              onClick={() => setFeedbackFilter('approved')}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                                feedbackFilter === 'approved' ? 'bg-warning text-crust' : 'text-text-muted hover:text-text-main'
+                              }`}
+                            >
+                              Approved ({approvedCount})
+                            </button>
+                            <button
+                              onClick={() => setFeedbackFilter('pinned')}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer flex items-center gap-1 ${
+                                feedbackFilter === 'pinned' ? 'bg-warning text-crust' : 'text-text-muted hover:text-text-main'
+                              }`}
+                            >
+                              <Pin size={11} className={feedbackFilter === 'pinned' ? 'fill-crust' : 'fill-warning text-warning'} />
+                              <span>Pinned ({pinnedCount})</span>
+                            </button>
+                            <button
+                              onClick={() => setFeedbackFilter('all')}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
+                                feedbackFilter === 'all' ? 'bg-warning text-crust' : 'text-text-muted hover:text-text-main'
+                              }`}
+                            >
+                              All ({totalCount})
+                            </button>
                           </div>
-                        ) : webinarFeedbacks.filter(f => {
-                          if (feedbackFilter === 'pending') return !f.approved;
-                          if (feedbackFilter === 'approved') return f.approved;
-                          return true;
-                        }).length === 0 ? (
-                          <div className="text-center py-12 border border-dashed border-black/10 dark:border-white/10 rounded-xl text-text-muted font-mono text-xs">
-                            No seminar feedbacks found for filter: <span className="text-warning font-bold uppercase">{feedbackFilter}</span>
-                          </div>
-                        ) : (
-                          webinarFeedbacks
-                            .filter(f => {
-                              if (feedbackFilter === 'pending') return !f.approved;
-                              if (feedbackFilter === 'approved') return f.approved;
-                              return true;
-                            })
-                            .map((item) => (
+                        </div>
+
+                        {/* Feedbacks List */}
+                        <div className="space-y-4">
+                          {feedbacksLoading ? (
+                            <div className="text-center py-12 text-text-muted flex items-center justify-center gap-2 font-mono text-xs">
+                              <Loader2 className="animate-spin text-warning" size={18} /> Loading seminar feedbacks...
+                            </div>
+                          ) : visibleFeedbacks.length === 0 ? (
+                            <div className="text-center py-12 border border-dashed border-black/10 dark:border-white/10 rounded-xl text-text-muted font-mono text-xs space-y-1">
+                              <div>No seminar feedbacks found for filter: <span className="text-warning font-bold uppercase">{feedbackFilter}</span></div>
+                              {feedbackSessionFilter !== 'all' && (
+                                <div className="text-[11px] text-text-muted/70">
+                                  In session: {WEBINAR_OPTIONS.find(o => o.id === feedbackSessionFilter)?.label}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            visibleFeedbacks.map((item) => (
                               <div 
                                 key={item.docId} 
                                 className={`p-5 rounded-2xl border transition-all ${
-                                  !item.approved 
-                                    ? 'bg-amber-500/5 border-amber-500/30 shadow-lg shadow-amber-500/5' 
-                                    : 'bg-base border-black/5 dark:border-white/5'
+                                  item.pinned
+                                    ? 'bg-amber-500/10 border-amber-500/50 shadow-lg shadow-amber-500/10 ring-1 ring-amber-500/20'
+                                    : !item.approved 
+                                      ? 'bg-amber-500/5 border-amber-500/30 shadow-lg shadow-amber-500/5' 
+                                      : 'bg-base border-black/5 dark:border-white/5'
                                 }`}
                               >
                                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 border-b border-black/5 dark:border-white/5 pb-3">
-                                  <div>
-                                    <span className="text-[10px] font-mono font-bold uppercase bg-warning/10 text-warning px-2.5 py-0.5 rounded-md border border-warning/20">
-                                      {item.eventName || `Session ${item.eventSequence || 'Webinar'}`}
-                                    </span>
+                                  <div className="space-y-1">
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <span className="text-[10px] font-mono font-bold uppercase bg-warning/10 text-warning px-2.5 py-0.5 rounded-md border border-warning/20">
+                                        {item.eventName || `Session ${item.eventSequence || 'Webinar'}`}
+                                      </span>
+                                      {item.pinned && (
+                                        <span className="inline-flex items-center gap-1 text-[10px] font-mono font-black uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40 px-2.5 py-0.5 rounded-md shadow-sm">
+                                          <Pin size={11} className="fill-amber-400" /> Pinned Comment
+                                        </span>
+                                      )}
+                                    </div>
                                     <h4 className="font-extrabold text-sm text-text-main mt-1.5 flex items-center gap-2">
                                       {item.name}
                                       <span className="text-xs font-normal text-text-muted font-mono">
@@ -3107,7 +3281,30 @@ export default function Admin() {
                                     Submitted: {item.date || item.createdAt || 'Recently'}
                                   </span>
 
-                                  <div className="flex items-center gap-2">
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    {/* Pin / Unpin Button for Particular Session */}
+                                    <button
+                                      onClick={() => handleTogglePinFeedback(
+                                        item.docId, 
+                                        Boolean(item.pinned), 
+                                        item.eventName || `Session ${item.eventSequence || 'Webinar'}`
+                                      )}
+                                      disabled={pinActionLoading === item.docId}
+                                      className={`px-3.5 py-1.5 font-bold text-xs uppercase tracking-wider rounded-lg transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer shadow-sm ${
+                                        item.pinned 
+                                          ? 'bg-amber-500 hover:bg-amber-600 text-black font-black' 
+                                          : 'bg-black/10 dark:bg-white/10 hover:bg-amber-500/20 hover:text-amber-400 text-text-muted border border-black/10 dark:border-white/10'
+                                      }`}
+                                      title={item.pinned ? "Click to unpin this feedback" : "Pin this feedback to the top of its webinar session"}
+                                    >
+                                      {pinActionLoading === item.docId ? (
+                                        <Loader2 size={13} className="animate-spin" />
+                                      ) : (
+                                        <Pin size={13} className={item.pinned ? "fill-current" : ""} />
+                                      )}
+                                      <span>{item.pinned ? 'Pinned (Click to Unpin)' : 'Pin Comment'}</span>
+                                    </button>
+
                                     {!item.approved && (
                                       <button
                                         onClick={() => handleApproveFeedback(item.docId)}
@@ -3129,11 +3326,12 @@ export default function Admin() {
                                 </div>
                               </div>
                             ))
-                        )}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
+                    </motion.div>
+                  );
+                })()}
 
                 {activeTab === 'overview' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
