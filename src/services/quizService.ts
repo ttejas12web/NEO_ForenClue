@@ -275,7 +275,6 @@ export function isPaidQuiz(quiz?: Partial<Quiz> | null): boolean {
     quiz.isPaid === true || 
     (quiz.price !== undefined && Number(quiz.price) > 0) ||
     Boolean(quiz.upiId && quiz.upiId.trim().length > 0) ||
-    quiz.id === '5PkY9duGUxCwriid7i6t' ||
     (quiz.isWeeklyChallenge && (Boolean(quiz.prizes?.first) || (quiz.price !== undefined && Number(quiz.price) > 0) || quiz.isPaid))
   );
 }
@@ -290,12 +289,14 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
     quiz.isPaid = false;
   }
 
-  // Recent paid challenge "5PkY9duGUxCwriid7i6t" (Crime Scene Documentation)
-  // Preserve approved participant enrollments so valid registered candidates are retained
+  // Crime Scene Documentation quiz "5PkY9duGUxCwriid7i6t" is now free for practice mode
   if (quiz.id === '5PkY9duGUxCwriid7i6t') {
-    quiz.isPaid = true;
-    quiz.price = quiz.price || 25;
-    quiz.isWeeklyChallenge = true;
+    quiz.isPaid = false;
+    quiz.price = 0;
+    quiz.isWeeklyChallenge = false;
+    quiz.isEnrollmentOpen = true;
+    delete quiz.scheduledStartTime;
+    delete quiz.scheduledEndTime;
     quiz.enrolledUserIds = Array.isArray(quiz.enrolledUserIds) ? quiz.enrolledUserIds : [];
   } else if (
     quiz.id === 'weekly-challenge-cheiloscopy' ||
@@ -306,12 +307,16 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
       quiz.title && (
         quiz.title.toLowerCase().includes('fingerprint analysis & friction ridge patterns') ||
         quiz.title.toLowerCase().includes('forensic serology & dna profiling') ||
-        quiz.title.toLowerCase().includes('cheiloscopy & forensic lip print analysis')
+        quiz.title.toLowerCase().includes('cheiloscopy & forensic lip print analysis') ||
+        quiz.title.toLowerCase().includes('crime sence documentation') ||
+        quiz.title.toLowerCase().includes('crime scene documentation')
       )
     )
   ) {
     // Kept exclusively in practice mode (removed from upcoming mode)
     quiz.isWeeklyChallenge = false;
+    quiz.isPaid = false;
+    quiz.price = 0;
     quiz.isEnrollmentOpen = true;
     delete quiz.scheduledStartTime;
     delete quiz.scheduledEndTime;

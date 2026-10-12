@@ -52,8 +52,14 @@ export function AdminLiveEditor() {
     }
   }, [location.pathname, isDrawerOpen, refreshPageTexts]);
 
-  // Only render for authenticated admins
-  if (!isAdmin) return null;
+  // Only render for authenticated admins, and hide on admin and dashboard panels
+  if (
+    !isAdmin || 
+    location.pathname.startsWith('/admin') || 
+    location.pathname.startsWith('/dashboard')
+  ) {
+    return null;
+  }
 
   const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();

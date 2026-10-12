@@ -555,6 +555,10 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
     let hoveredEl: HTMLElement | null = null;
 
     const isEligibleElement = (el: HTMLElement): boolean => {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname;
+        if (path.startsWith('/admin') || path.startsWith('/dashboard')) return false;
+      }
       if (el.closest('[data-admin-editor-ignore="true"]')) return false;
       const tag = el.tagName.toLowerCase();
       if (['html', 'body', 'script', 'style', 'input', 'textarea', 'select'].includes(tag)) {
