@@ -7,9 +7,11 @@ import { cn } from '@/lib/utils';
 interface LeaderboardPodiumProps {
   entries: LeaderboardEntry[];
   quizTitle?: string;
+  badgeLabel?: string;
+  subtitleNote?: string;
 }
 
-export function LeaderboardPodium({ entries, quizTitle }: LeaderboardPodiumProps) {
+export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote }: LeaderboardPodiumProps) {
   const top1 = entries.find(e => e.rank === 1);
   const top2 = entries.find(e => e.rank === 2);
   const top3 = entries.find(e => e.rank === 3);
@@ -27,7 +29,7 @@ export function LeaderboardPodium({ entries, quizTitle }: LeaderboardPodiumProps
       {/* Top 3 Premium Podium Section */}
       <div className="text-center space-y-2 mb-6">
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold uppercase tracking-widest">
-          <Trophy size={14} /> Official Leaderboard
+          <Trophy size={14} /> {badgeLabel || 'Official Leaderboard'}
         </div>
         <h2 className="text-3xl font-black uppercase tracking-tight text-text-main">
           Top 10 Participants
@@ -38,7 +40,7 @@ export function LeaderboardPodium({ entries, quizTitle }: LeaderboardPodiumProps
           </p>
         )}
         <p className="text-text-muted/70 text-xs max-w-lg mx-auto italic">
-          * Shows official initial submissions recorded during the live time-bounded challenge window. Subsequent reattempts or practice attempts are excluded from altering official rankings.
+          {subtitleNote || '* Shows official initial submissions recorded during the live time-bounded challenge window. Subsequent reattempts or practice attempts are excluded from altering official rankings.'}
         </p>
       </div>
 

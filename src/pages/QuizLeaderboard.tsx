@@ -12,21 +12,27 @@ export default function QuizLeaderboard() {
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
+  const [leaderboardMode, setLeaderboardMode] = useState<'official' | 'practice'>('official');
 
   useEffect(() => {
     loadData();
   }, [quizId]);
 
-  const loadData = async () => {
+  const loadData = async (targetMode: 'official' | 'practice' = leaderboardMode) => {
     setLoading(true);
     const allQuizzes = await fetchQuizzes();
     setQuizzes(allQuizzes);
 
-    let activeQuiz = allQuizzes.find(q => q.id === quizId) || allQuizzes[0] || null;
+    // Prioritize requested quizId, or Crime Scene Documentation (5PkY9duGUxCwriid7i6t), or first quiz
+    let activeQuiz = allQuizzes.find(q => q.id === quizId) || 
+      allQuizzes.find(q => q.id === '5PkY9duGUxCwriid7i6t' || q.title?.toLowerCase().includes('crime sence') || q.title?.toLowerCase().includes('crime scene documentation')) ||
+      allQuizzes[0] || 
+      null;
+
     setSelectedQuiz(activeQuiz);
 
     if (activeQuiz) {
-      const topEntries = await fetchLeaderboard(activeQuiz);
+      const topEntries = await fetchLeaderboard(activeQuiz, targetMode);
       setEntries(topEntries);
     }
     setLoading(false);
@@ -37,11 +43,28 @@ export default function QuizLeaderboard() {
     if (found) {
       setSelectedQuiz(found);
       setLoading(true);
-      const topEntries = await fetchLeaderboard(found);
+      const topEntries = await fetchLeaderboard(found, leaderboardMode);
       setEntries(topEntries);
       setLoading(false);
     }
   };
+
+  const handleToggleMode = async (mode: 'official' | 'practice') => {
+    setLeaderboardMode(mode);
+    if (selectedQuiz) {
+      setLoading(true);
+      const topEntries = await fetchLeaderboard(selectedQuiz, mode);
+      setEntries(topEntries);
+      setLoading(false);
+    }
+  };
+
+  const isChallenge = Boolean(
+    selectedQuiz?.isWeeklyChallenge ||
+    selectedQuiz?.id === '5PkY9duGUxCwriid7i6t' ||
+    selectedQuiz?.title?.toLowerCase().includes('crime sence') ||
+    selectedQuiz?.title?.toLowerCase().includes('crime scene')
+  );
 
   return (
     <div className="min-h-screen bg-background text-text-main py-12 px-4 sm:px-6 lg:px-8">
@@ -66,22 +89,49 @@ export default function QuizLeaderboard() {
             <ArrowLeft size={16} /> Back to Quizzes Arena
           </Link>
 
-          {quizzes.length > 0 && (
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-text-muted">Select Quiz:</span>
-              <select
-                value={selectedQuiz?.id || ''}
-                onChange={(e) => handleSelectQuiz(e.target.value)}
-                className="bg-black/50 border border-amber-500/30 text-amber-300 font-bold text-sm rounded-xl px-4 py-2 outline-none cursor-pointer"
-              >
-                {quizzes.map(q => (
-                  <option key={q.id} value={q.id}>
-                    {q.isWeeklyChallenge ? '🏆 ' : '📝 '} {q.title}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          <div className="flex flex-wrap items-center gap-3">
+            {isChallenge && (
+              <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/10">
+                <button
+                  onClick={() => handleToggleMode('official')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    leaderboardMode === 'official'
+                      ? 'bg-amber-500 text-black shadow-md'
+                      : 'text-text-muted hover:text-white'
+                  }`}
+                >
+                  <Trophy size={13} /> Official Live Challenge
+                </button>
+                <button
+                  onClick={() => handleToggleMode('practice')}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    leaderboardMode === 'practice'
+                      ? 'bg-amber-500 text-black shadow-md'
+                      : 'text-text-muted hover:text-white'
+                  }`}
+                >
+                  <Sparkles size={13} /> Practice Mode
+                </button>
+              </div>
+            )}
+
+            {quizzes.length > 0 && (
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-text-muted hidden sm:inline">Quiz:</span>
+                <select
+                  value={selectedQuiz?.id || ''}
+                  onChange={(e) => handleSelectQuiz(e.target.value)}
+                  className="bg-black/50 border border-amber-500/30 text-amber-300 font-bold text-sm rounded-xl px-4 py-2 outline-none cursor-pointer"
+                >
+                  {quizzes.map(q => (
+                    <option key={q.id} value={q.id}>
+                      {q.isWeeklyChallenge ? '🏆 ' : '📝 '} {q.title}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </div>
         </div>
 
         {loading ? (
@@ -90,7 +140,20 @@ export default function QuizLeaderboard() {
             <span className="font-bold text-sm">Loading Leaderboard Rankings...</span>
           </div>
         ) : (
-          <LeaderboardPodium entries={entries} quizTitle={selectedQuiz?.title} />
+          <LeaderboardPodium 
+            entries={entries} 
+            quizTitle={selectedQuiz?.title}
+            badgeLabel={
+              leaderboardMode === 'official' && isChallenge
+                ? 'Official Live Challenge Leaderboard'
+                : 'Practice Mode Leaderboard'
+            }
+            subtitleNote={
+              leaderboardMode === 'official' && isChallenge
+                ? '* Certified official rankings from the live competition held on October 11, 2026. Practice mode attempts are completely isolated and excluded from altering live competition standings.'
+                : '* Standings among students attempting this quiz in practice mode.'
+            }
+          />
         )}
 
       </div>

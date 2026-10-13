@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { Quiz, QuizQuestion, QuizAttempt, QuizRegistration } from '@/types/quiz';
-import { fetchQuizById, submitQuizAttempt, enrollInQuiz, getUserQuizRegistration, isPaidQuiz } from '@/services/quizService';
+import { fetchQuizById, submitQuizAttempt, enrollInQuiz, getUserQuizRegistration, isPaidQuiz, isWeeklyChallengeExpired } from '@/services/quizService';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -1439,7 +1439,7 @@ export default function QuizPlayer() {
                   <Trophy size={16} /> View Top 10 Leaderboard
                 </Link>
 
-                {!quiz.isWeeklyChallenge && (
+                {(!quiz.isWeeklyChallenge || isWeeklyChallengeExpired(quiz)) && (
                   <button
                     onClick={() => {
                       setIsSubmitted(false);

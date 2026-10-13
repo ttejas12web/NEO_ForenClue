@@ -26,6 +26,12 @@ export function RecentQuizLeaderboardSection() {
       setLoading(true);
       const allQuizzes = await fetchQuizzes();
       
+      // Prioritize the recent paid challenge: Crime Scene Documentation (5PkY9duGUxCwriid7i6t)
+      const crimeSceneQuiz = allQuizzes.find(q => 
+        q.id === '5PkY9duGUxCwriid7i6t' || 
+        (q.title && (q.title.toLowerCase().includes('crime sence') || q.title.toLowerCase().includes('crime scene documentation')))
+      );
+
       // Filter for weekly challenges first and find the most recent/active one
       const weeklyChallenges = allQuizzes.filter(q => q.isWeeklyChallenge);
       weeklyChallenges.sort((a, b) => {
@@ -34,12 +40,12 @@ export function RecentQuizLeaderboardSection() {
         return timeB - timeA;
       });
 
-      // Target the latest weekly challenge, fallback to first available quiz
-      const chosen = weeklyChallenges[0] || allQuizzes[0] || null;
+      // Target Crime Scene Documentation challenge first, then latest weekly challenge, fallback to first available quiz
+      const chosen = crimeSceneQuiz || weeklyChallenges[0] || allQuizzes[0] || null;
       setSelectedQuiz(chosen);
 
       if (chosen) {
-        const topEntries = await fetchLeaderboard(chosen);
+        const topEntries = await fetchLeaderboard(chosen, 'official');
         setEntries(topEntries);
       } else {
         setEntries([]);
@@ -147,10 +153,13 @@ export function RecentQuizLeaderboardSection() {
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-warning/20 text-warning px-2.5 py-0.5 rounded border border-warning/30">
-                    {selectedQuiz.isWeeklyChallenge ? 'National Weekly Challenge' : 'Forensic Challenge'}
+                    Official Live Challenge Standings
                   </span>
                   <span className="text-[10px] font-mono text-slate-400">
                     {selectedQuiz.category || 'Forensic Science'}
+                  </span>
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    Concluded: Oct 11, 2026
                   </span>
                 </div>
                 <h3 className="text-base sm:text-lg font-bold text-white truncate mt-0.5">
@@ -164,7 +173,7 @@ export function RecentQuizLeaderboardSection() {
                 to={`/quizzes/${selectedQuiz.id}`}
                 className="px-5 py-2.5 bg-warning hover:bg-warning-dark text-slate-950 font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center gap-2"
               >
-                <span>Take This Challenge</span>
+                <span>Practice Quiz (Free)</span>
                 <ChevronRight size={14} />
               </Link>
             </div>
@@ -431,7 +440,12 @@ export function RecentQuizLeaderboardSection() {
               </div>
             )}
 
-
+            {/* Live Competition Verification Footer Note */}
+            <div className="text-center pt-2">
+              <p className="text-xs text-slate-400 italic">
+                * Official national challenge leaderboard reflecting authentic attempts from the live contest (Oct 11, 2026). Practice mode attempts are excluded to preserve certified competition rankings.
+              </p>
+            </div>
 
           </div>
         )}
