@@ -410,25 +410,28 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       );
     }
 
-    // 3. Fallback: Proxy to upstream backend server
-    try {
-      const upstreamRes = await fetch('https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app/api/upload-chunk', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(body)
-      });
-
-      if (upstreamRes.ok) {
-        const data = await upstreamRes.json();
-        return new Response(JSON.stringify(data), {
-          status: 200,
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    // 3. Fallback: Proxy to optional upstream backend server if configured
+    if ((env as any).UPSTREAM_API_URL) {
+      try {
+        const upstreamUrl = `${(env as any).UPSTREAM_API_URL.replace(/\/+$/, '')}/api/upload-chunk`;
+        const upstreamRes = await fetch(upstreamUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
         });
+
+        if (upstreamRes.ok) {
+          const data = await upstreamRes.json();
+          return new Response(JSON.stringify(data), {
+            status: 200,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+          });
+        }
+      } catch (proxyErr) {
+        console.warn('[Cloudflare Worker] Upstream chunk proxy failed:', proxyErr);
       }
-    } catch (proxyErr) {
-      console.warn('[Cloudflare Worker] Upstream chunk proxy failed:', proxyErr);
     }
 
     throw new Error('No active R2 binding or S3 environment variables configured on this deployment.');

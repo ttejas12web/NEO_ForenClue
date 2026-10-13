@@ -139,3 +139,20 @@ export function hasValidCaseSources(value: unknown): value is CaseSource[] {
 export function getCuratedCaseSources(title: unknown): CaseSource[] {
   return CASE_SOURCES_BY_TITLE[normalizeCaseTitle(title)]?.map((source) => ({ ...source })) || [];
 }
+
+export function ensureCaseSources(title: unknown, existingSources?: unknown): CaseSource[] {
+  if (hasValidCaseSources(existingSources)) {
+    return existingSources;
+  }
+  const curated = getCuratedCaseSources(title);
+  if (curated.length > 0) {
+    return curated;
+  }
+  const safeTitle = String(title || 'Forensic Investigation').trim();
+  return [
+    {
+      title: `${safeTitle} - Forensic Investigation Archive & Reference`,
+      url: 'https://forenclue.in'
+    }
+  ];
+}

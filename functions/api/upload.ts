@@ -314,45 +314,42 @@ export const onRequestPost = async (context: { request: Request; env: Env }) => 
       }
     }
 
-    // If R2 binding is not directly bound on this Cloudflare Worker/Pages worker, proxy to upstream server
-    console.warn(`[Cloudflare Worker] Native R2 binding not found. Forwarding to upstream R2 server...`);
-    try {
-      const upstreamRes = await fetch('https://ais-pre-qppxi7labjn6lbaqqz6h5u-642747300953.asia-southeast1.run.app/api/upload', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          fileName,
-          fileType,
-          base64Data: base64StringForProxy,
-          cloudPath
-        })
-      });
-
-      if (upstreamRes.ok) {
-        const upstreamData = await upstreamRes.json();
-        return new Response(JSON.stringify(upstreamData), {
-          status: 200,
-          headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+    // If R2 binding is not directly bound on this Cloudflare Worker/Pages worker, check optional UPSTREAM_API_URL
+    if ((env as any).UPSTREAM_API_URL) {
+      try {
+        const upstreamUrl = `${(env as any).UPSTREAM_API_URL.replace(/\/+$/, '')}/api/upload`;
+        const upstreamRes = await fetch(upstreamUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            fileName,
+            fileType,
+            base64Data: base64StringForProxy,
+            cloudPath
+          })
         });
+
+        if (upstreamRes.ok) {
+          const upstreamData = await upstreamRes.json();
+          return new Response(JSON.stringify(upstreamData), {
+            status: 200,
+            headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
+          });
+        }
+      } catch (proxyErr) {
+        console.warn('[Cloudflare Worker] Upstream proxy attempt failed:', proxyErr);
       }
-    } catch (proxyErr) {
-      console.warn('[Cloudflare Worker] Upstream proxy attempt failed:', proxyErr);
     }
 
-    const publicUrl = `${domain}/${objectKey}`;
     return new Response(
       JSON.stringify({
-        success: true,
-        url: publicUrl,
-        relativePath: `/${objectKey}`,
-        fileName: sanitizedName,
-        size: dataLength,
-        uploadedToR2: true,
+        success: false,
+        error: 'No active Cloudflare R2 bucket binding or S3 credentials configured on this deployment.',
       }),
       {
-        status: 200,
+        status: 503,
         headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' },
       }
     );

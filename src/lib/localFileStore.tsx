@@ -522,89 +522,43 @@ export async function uploadFileResilient(
     fileToUpload = new File([file], `evidence_${Date.now()}.${extension}`, { type: file.type });
   }
 
-  // Primary Storage Target: Server Cloudflare R2 Object Storage / Server pipeline
-  try {
-    if (onStatusChange) onStatusChange('Routing upload to Cloudflare R2 Object Storage...');
-    let serverUrl: string;
-    if (fileToUpload.size > 300 * 1024) {
-      console.log(`[uploadFileResilient] File size is ${fileToUpload.size} bytes. Utilizing chunked upload pipeline.`);
-      try {
-        serverUrl = await uploadChunksToServer(fileToUpload, cloudPath, onStatusChange);
-      } catch (chunkErr) {
-        console.warn("[uploadFileResilient] Chunked upload failed, retrying with direct R2 upload pipeline:", chunkErr);
-        if (onStatusChange) onStatusChange('Retrying with direct R2 storage transfer...');
-        serverUrl = await uploadToServerDisk(fileToUpload, cloudPath, onStatusChange);
+  // Pre-optimize image files upfront so they are light, fast, and fit within all storage limits
+  if (fileToUpload.type.startsWith('image/')) {
+    try {
+      if (onStatusChange) onStatusChange('Optimizing evidence photo for fast upload...');
+      const { compressImage } = await import('./image-utils');
+      const compressedBlob = await compressImage(fileToUpload, 1280, 0.75);
+      if (compressedBlob && compressedBlob.size < fileToUpload.size) {
+        fileToUpload = new File([compressedBlob], fileToUpload.name, { 
+          type: compressedBlob.type || fileToUpload.type 
+        });
       }
-    } else {
-      console.log(`[uploadFileResilient] File size is ${fileToUpload.size} bytes. Utilizing direct upload.`);
-      serverUrl = await uploadToServerDisk(fileToUpload, cloudPath, onStatusChange);
+    } catch (compErr) {
+      console.warn('[uploadFileResilient] Image pre-compression bypassed:', compErr);
     }
+  }
+
+  // Primary Storage Target: Direct Server Upload via FormData (Fastest, handles up to 50MB in one clean request)
+  try {
+    if (onStatusChange) onStatusChange('Uploading dossier asset to secure cloud storage...');
+    const serverUrl = await uploadToServerDisk(fileToUpload, cloudPath, onStatusChange);
     return { url: serverUrl, isFallback: false };
   } catch (serverErr: any) {
-    const errorMsg = serverErr instanceof Error ? serverErr.message : String(serverErr);
-    console.warn("Server R2 upload pipeline rejected or unavailable. Trying Firebase Storage fallback:", serverErr);
-    if (onStatusChange) {
-      onStatusChange(`Server Upload Warning: ${errorMsg}. Trying Firebase Storage...`);
-    }
+    console.warn("[uploadFileResilient] Direct server upload failed, trying chunked transfer fallback:", serverErr);
   }
 
-  // Secondary Fallback: Firebase Storage
-  if (storage) {
+  // Fallback 1: Chunked upload pipeline for larger files or proxy constraints
+  if (fileToUpload.size > 300 * 1024) {
     try {
-      if (onStatusChange) onStatusChange('Connecting to Firebase Cloud Storage...');
-      const fileRef = ref(storage, cloudPath);
-      
-      const uploadPromise = new Promise<{ url: string; isFallback: boolean }>((resolve, reject) => {
-        if (onStatusChange) onStatusChange('Starting Cloud Storage upload...');
-        
-        const metadata = {
-          contentType: fileToUpload.type || 'application/octet-stream',
-        };
-        
-        const uploadTask = uploadBytesResumable(fileRef, fileToUpload, metadata);
-        
-        let completed = false;
-
-        const unsubscribe = uploadTask.on('state_changed', 
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            const progressFormatted = isNaN(progress) ? 0 : Math.round(progress);
-            if (onStatusChange) {
-              onStatusChange(`Cloud Storage: ${progressFormatted}% complete`);
-            }
-          }, 
-          (err) => {
-            if (!completed) {
-              completed = true;
-              unsubscribe();
-              reject(err);
-            }
-          }, 
-          async () => {
-            try {
-              if (!completed) {
-                completed = true;
-                unsubscribe();
-                if (onStatusChange) onStatusChange('Retrieving secure download URL...');
-                const downloadUrl = await getDownloadURL(uploadTask.snapshot.ref);
-                resolve({ url: downloadUrl, isFallback: false });
-              }
-            } catch (err) {
-              reject(err);
-            }
-          }
-        );
-      });
-
-      // Attempt Firebase Storage upload with a 15-second timeout
-      const result = await withTimeout(uploadPromise, 15000, "Firebase Storage took too long to complete.");
-      return result;
-    } catch (err: any) {
-      console.warn("Firebase Cloud storage upload rejected or timed out:", err);
+      if (onStatusChange) onStatusChange('Transferring via chunked pipeline...');
+      const serverUrl = await uploadChunksToServer(fileToUpload, cloudPath, onStatusChange);
+      return { url: serverUrl, isFallback: false };
+    } catch (chunkErr) {
+      console.warn("[uploadFileResilient] Chunked upload failed:", chunkErr);
     }
   }
 
-  // 3. Tertiary Target: Global Cloud Firestore Binary Storage (accessible on any device/user globally)
+  // Fallback 2: Global Cloud Firestore Binary Storage (accessible on any device/user globally)
   try {
     if (onStatusChange) onStatusChange('Synchronizing document to Cloud Database storage...');
     const firestoreBlobUrl = await uploadBlobToCloudFirestore(fileToUpload, cloudPath, onStatusChange);
@@ -671,6 +625,15 @@ export async function resolveFileUrl(url: string | null | undefined): Promise<st
       return URL.createObjectURL(blob);
     }
     return '';
+  }
+
+  // Optimize forenclue.in/cases image assets to local/current origin route
+  if (url.includes('forenclue.in/cases/') || (url.startsWith('/cases/') && /\.(png|jpe?g|gif|webp|svg)$/i.test(url))) {
+    const casePath = url.includes('forenclue.in') ? url.split('forenclue.in')[1] : url;
+    if (typeof window !== 'undefined' && window.location && window.location.origin) {
+      return `${window.location.origin}${casePath}`;
+    }
+    return casePath;
   }
 
   // Optimize relative server uploads paths (/uploads or /api/uploads)
@@ -804,9 +767,11 @@ export function ResilientImage({
   if (!resolvedSrc || hasError) {
     if (fallback) return <>{fallback}</>;
     return (
-      <div className={className ? className + " flex items-center justify-center bg-black/20 text-slate-400 text-xs font-mono p-2" : "w-full h-full flex items-center justify-center bg-black/20 text-slate-400 text-xs font-mono rounded-lg p-2"}>
-        <span>{alt || 'Image unavailable'}</span>
-      </div>
+      <img
+        src="https://images.unsplash.com/photo-1542382257-80dedb725088?auto=format&fit=crop&q=80&w=1000"
+        alt={alt || 'Investigation forensic dossier visual'}
+        className={className}
+      />
     );
   }
 

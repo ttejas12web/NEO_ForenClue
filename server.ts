@@ -229,6 +229,41 @@ async function startServer() {
 
   app.use("/api/uploads", serveStaticUploads);
   app.use("/uploads", serveStaticUploads);
+
+  // Handle uploaded case assets requested under /cases/...
+  app.use('/cases', (req, res, next) => {
+    const rawPath = req.path.replace(/^\/+/, '');
+    if (rawPath && /\.(png|jpe?g|gif|webp|svg|pdf)$/i.test(rawPath)) {
+      const sanitized = rawPath.replace(/[^a-zA-Z0-9.\-_]/g, '_');
+      const decoded = decodeURIComponent(rawPath);
+      const candidatePaths = [
+        path.join(uploadsDir, rawPath),
+        path.join(uploadsDir, sanitized),
+        path.join(uploadsDir, decoded),
+      ];
+      for (const p of candidatePaths) {
+        if (fs.existsSync(p)) {
+          return res.sendFile(p);
+        }
+      }
+      // Fuzzy match in uploadsDir by title keyword or timestamp prefix
+      try {
+        const files = fs.readdirSync(uploadsDir);
+        const nameKeywords = sanitized.toLowerCase().replace(/^\d+_/, '').replace(/\.[^.]+$/, '');
+        const match = files.find(f => {
+          const fLower = f.toLowerCase();
+          if (nameKeywords && nameKeywords.length >= 5 && fLower.includes(nameKeywords)) return true;
+          if (sanitized.length >= 7 && f.startsWith(sanitized.slice(0, 7))) return true;
+          return false;
+        });
+        if (match) {
+          return res.sendFile(path.join(uploadsDir, match));
+        }
+      } catch (_) {}
+    }
+    next();
+  });
+
   app.use("/images", express.static(path.join(process.cwd(), "public", "images")));
   app.use("/og", express.static(path.join(process.cwd(), "public", "og")));
 

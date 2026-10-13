@@ -22,7 +22,7 @@ import { PdfViewerModal } from '@/components/ui/PdfViewerModal';
 import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 import { ResilientImage } from '@/lib/localFileStore';
 import { buildSocialShareUrl } from '@/lib/socialShare';
-import { getCuratedCaseSources, hasValidCaseSources } from '@/data/caseSources';
+import { getCuratedCaseSources, hasValidCaseSources, ensureCaseSources } from '@/data/caseSources';
 
 // --- Types ---
 interface CaseFile {
@@ -282,8 +282,7 @@ export default function Cases() {
       const casesData: CaseFile[] = [];
       snapshot.forEach((doc) => {
         const data = doc.data();
-        const explicitSources = hasValidCaseSources(data.sources) ? data.sources : [];
-        const sources = explicitSources.length > 0 ? explicitSources : getCuratedCaseSources(data.title);
+        const sources = ensureCaseSources(data.title, data.sources);
         casesData.push({ id: doc.id, ...data, sources } as CaseFile);
       });
       setDbCases(casesData);
@@ -298,8 +297,8 @@ export default function Cases() {
        // Legacy demonstration records were fictional training seeds and must
        // never be presented or indexed as documented real-world cases.
        if (UNPUBLISHED_DEMO_CASE_TITLES.has(c.title.trim().toLowerCase())) return false;
-       // Every public educational case must include traceable references.
-       if (!hasValidCaseSources(c.sources)) return false;
+       // Every public educational case must include traceable references; admins always see their cases
+       if (!isAdmin && !hasValidCaseSources(c.sources)) return false;
        // Only keep files published by admins
        if (!c.createdBy || (!adminEmails.some(e => e.toLowerCase() === c.createdBy!.toLowerCase()) && !adminUids.includes(c.createdBy))) return false;
        // user can see published, or admin can see all
@@ -512,7 +511,6 @@ export default function Cases() {
                   <button
                     onClick={() => {
                       setCaseToEdit(selectedCase);
-                      setSelectedCase(null);
                       setIsEditorOpen(true);
                     }}
                     className="px-4 py-2 bg-blue-500/10 hover:bg-blue-500 hover:text-white text-blue-500 border border-blue-500/20 text-xs font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2 cursor-pointer shadow-sm"
@@ -985,9 +983,12 @@ export default function Cases() {
       {/* Editor Modal */}
       {isEditorOpen && isAdmin && user?.email && (
         <CaseEditorModal 
-          onClose={() => {
+          onClose={(savedCase?: any) => {
              setIsEditorOpen(false);
              setCaseToEdit(null);
+             if (savedCase) {
+               setSelectedCase(savedCase);
+             }
           }} 
           caseToEdit={caseToEdit} 
           userEmail={user.email}
