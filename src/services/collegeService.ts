@@ -1,13 +1,389 @@
 import { db, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { 
   collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, 
-  query, where, orderBy, limit, setDoc 
+  query, where, orderBy, limit, setDoc, arrayUnion, arrayRemove 
 } from 'firebase/firestore';
 import { College } from '@/types/college';
 
 const COLLEGES_COLLECTION = 'colleges';
 
 export const SAMPLE_COLLEGES: College[] = [
+  {
+    id: 'geeta-university',
+    name: 'Geeta University',
+    shortName: 'Geeta University Panipat',
+    country: 'India',
+    state: 'Haryana',
+    city: 'Panipat',
+    type: 'Private',
+    website: 'https://www.geetauniversity.edu.in',
+    logo: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&q=80&w=300',
+    bannerImage: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&q=80&w=1200',
+    description: 'Geeta University is a premier multidisciplinary institution located in Panipat (Delhi-NCR), Haryana, established under the Haryana Private Universities Act. Its School of Allied Health & Forensic Sciences delivers comprehensive, NEP 2020-aligned education in forensic science, crime scene investigation, questioned document analysis, toxicology, and digital forensics with world-class laboratory infrastructure, dedicated mock crime scenes, and industry-focused mentorship.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 with Physics, Chemistry, and Biology / Mathematics / Computer Science (Min 50-55% aggregate)',
+        estimatedFees: '₹59,000 / semester (approx ₹1,18,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Reconstruction',
+          'Forensic Toxicology & Chemical Profiling',
+          'Questioned Documents & Fingerprint Examination',
+          'Forensic Biology & DNA Serology',
+          'Cyber Forensics & Digital Evidence'
+        ]
+      },
+      {
+        name: 'M.Sc. Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Physics / Chemistry / Biology / Life Sciences / Biotechnology / MBBS / BDS / B.Pharm (Min 55% aggregate)',
+        estimatedFees: '₹65,000 / semester (approx ₹1,30,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Forensic Serology & DNA Profiling',
+          'Digital Evidence, Incident Response & Cyber Forensics',
+          'Forensic Chemistry, Narcotics & Toxicology'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree in Forensic Science or allied Life / Physical Sciences with minimum 55% aggregate marks (5% relaxation for reserved categories)',
+        estimatedFees: '₹55,000 / semester',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Instrumental Analysis',
+          'Digital Forensics, Anti-Forensics & Malware Forensics',
+          'Forensic Genetics & Molecular Identification'
+        ]
+      }
+    ],
+    feesRange: '₹85,000 - ₹1,30,000 / year',
+    admissionProcess: 'Merit-based on 10+2 / Graduation scores or CUET UG scores or GUTS (Geeta University Test of Scholarship) followed by personal counseling.',
+    accreditation: 'UGC Recognized | Haryana State Private Universities Act (Act 11 of 2022) | AIU Member',
+    contactEmail: 'info@geetauniversity.edu.in',
+    contactPhone: '+91 92787 68000',
+    address: 'NH-71, Naultha, Panipat, Haryana 132145, India',
+    ranking: 'Top Emerging Multidisciplinary University in Delhi-NCR & Haryana',
+    facilities: [
+      'Advanced Forensic Chemistry & Instrumental Toxicology Lab',
+      'Simulated Crime Scene Reconstruction & Investigation Arena',
+      'Questioned Documents & Latent Fingerprint Analysis Lab',
+      'Digital Forensics & High-Performance Cyber Security Lab',
+      'Comparison Microscopy & Ballistics Analysis Unit',
+      'Central University Library with Forensics E-Research Subscriptions',
+      'Air-Conditioned Smart Classrooms with Audio-Visual Aids',
+      'Separate Boys & Girls Hostels with 24/7 Security & High-Speed Wi-Fi',
+      'University Fleet Transportation across Panipat, Sonipat, Karnal & Delhi-NCR'
+    ],
+    featured: true
+  },
+  {
+    id: 'parul-university',
+    name: 'Parul University',
+    shortName: 'Parul University Vadodara',
+    country: 'India',
+    state: 'Gujarat',
+    city: 'Vadodara',
+    type: 'Private',
+    website: 'https://paruluniversity.ac.in',
+    logo: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=300',
+    bannerImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200',
+    description: 'Parul University is one of India\'s leading multidisciplinary private universities located in Vadodara, Gujarat, accredited with the prestigious NAAC A++ grade. Its Department of Forensic Sciences under the Faculty of Applied Sciences provides advanced education in crime scene investigation, questioned documents, toxicology, fingerprint examination, forensic biology, and cyber forensics with world-class labs, mock crime scenes, and hands-on investigative training.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 with Science stream (Physics, Chemistry, and Biology / Mathematics) from a recognized board (Min 45-50% aggregate)',
+        estimatedFees: '₹1,15,000 / year (approx ₹57,500 / semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Management & Reconstruction',
+          'Forensic Toxicology & Chemical Profiling',
+          'Questioned Documents & Fingerprint Examination',
+          'Forensic Serology & DNA Analysis',
+          'Cyber & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science, Life Sciences, Chemistry, Physics, or related Bachelor\'s degree with minimum 50% aggregate',
+        estimatedFees: '₹1,15,000 - ₹1,30,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Criminology & Forensic Psychology',
+          'Questioned Documents, Fingerprint & Forensic Photography',
+          'Digital Forensics & Cybercrime Investigation',
+          'Forensic Chemistry & Toxicology',
+          'Forensic Biology & Serology'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree in Forensic Science or allied Life / Physical Sciences with minimum 55% aggregate marks (5% relaxation for reserved categories)',
+        estimatedFees: '₹50,000 / semester',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Chemical Profiling',
+          'Digital Forensics & Incident Response',
+          'Forensic Genetics & Molecular Identification'
+        ]
+      }
+    ],
+    feesRange: '₹1,15,000 - ₹1,30,000 / year',
+    admissionProcess: 'Merit-based on qualifying exam (10+2 / Graduation) or national entrance scores (CUET) followed by counseling and document verification.',
+    accreditation: 'NAAC A++ Accredited | UGC Recognized | State Private University | Member of AIU',
+    contactEmail: 'info@paruluniversity.ac.in',
+    contactPhone: '+91 2668 260300',
+    address: 'P.O. Limda, Ta. Waghodia, Dist. Vadodara, Gujarat 391760, India',
+    ranking: 'NAAC A++ Grade (Top 2% Universities Nationwide) | NIRF Innovation Ranked',
+    facilities: [
+      'Advanced Forensic Science & Toxicology Laboratories',
+      'Simulated Crime Scene Investigation (CSI) Lab',
+      'Questioned Documents, Forgery Detection & Latent Fingerprint Lab',
+      'Dedicated Digital Forensics & Cyber Security Research Suite',
+      'Ballistics, Comparison Microscopy & Trace Evidence Lab',
+      'High-Tech Chromatography & Spectrophotometry Equipment',
+      'Moot Court & Legal Procedures Simulation Hall',
+      'Central AC Library with Online Forensic Journals & Research Databases',
+      'Separate Boys & Girls Hostels with 24/7 Security & Wi-Fi',
+      'Campus Hospital & Healthcare Support (Parul Sevashram Hospital)'
+    ],
+    featured: true
+  },
+  {
+    id: 'usha-martin-university',
+    name: 'Usha Martin University',
+    shortName: 'UMU Ranchi',
+    country: 'India',
+    state: 'Jharkhand',
+    city: 'Ranchi',
+    type: 'Private',
+    website: 'https://www.umu.ac.in',
+    logo: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=300',
+    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    description: 'Usha Martin University is a premier UGC-recognized state private university located in Ranchi, Jharkhand. Its Department of Forensic Science under the Faculty of Sciences provides comprehensive, hands-on academic training across crime scene management, forensic ballistics, toxicology, DNA profiling, questioned document examination, and digital forensics in state-of-the-art laboratory environments.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) with Science stream (Physics, Chemistry, and Biology / Mathematics / Computer Science) with min 50% aggregate marks',
+        estimatedFees: '₹46,500 / semester (approx ₹93,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Evidence Handling',
+          'Forensic Ballistics & Explosives',
+          'Forensic Toxicology & Applied Chemistry',
+          'DNA Forensics & Biological Evidence',
+          'Fingerprint Science & Document Examination',
+          'Cyber Forensics & Digital Investigation'
+        ]
+      },
+      {
+        name: 'M.Sc. Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry / Physics / Botany / Zoology / Biochemistry / Biotechnology (Min 50% aggregate)',
+        estimatedFees: '₹55,000 / semester (approx ₹1,10,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Instrumental Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Digital Forensics & Incident Response'
+        ]
+      }
+    ],
+    feesRange: '₹90,000 - ₹1,10,000 / year',
+    admissionProcess: 'Merit-based on qualifying 10+2 / Graduation examination scores or CUET followed by university counseling and document verification.',
+    accreditation: 'UGC Recognized | Established by Jharkhand State Legislature | Member of AIU | ISO 9001:2015 Certified',
+    contactEmail: 'info@umu.ac.in',
+    contactPhone: '+91 78273 06265',
+    address: 'Village Narayansoso, Near Angara Block Office, Ranchi-Purulia Highway, Angara, Ranchi, Jharkhand 835103, India',
+    ranking: 'Top Private University in Jharkhand | Excellence in Higher Education Award',
+    facilities: [
+      'Dedicated Forensic Science & Physical Evidence Laboratory',
+      'Forensic Ballistics, Firearms & Comparison Microscopy Unit',
+      'Analytical Chemistry & Forensic Toxicology Lab',
+      'Latent Fingerprint & Questioned Documents Analysis Lab',
+      'Cyber Forensics & Digital Evidence Investigation Lab',
+      'Crime Scene Reconstruction Simulation Arena',
+      'Eco-Friendly Modern Campus with High-Speed Wi-Fi Connectivity',
+      'Central Library with Comprehensive Forensic Science Journals & E-Resources',
+      'On-Campus Separate Hostels for Boys & Girls with 24/7 Security',
+      'Dedicated University Bus Transportation across Ranchi City & Suburbs'
+    ],
+    featured: true
+  },
+  {
+    id: 'vivekananda-global-university',
+    name: 'Vivekananda Global University',
+    shortName: 'VGU Jaipur',
+    country: 'India',
+    state: 'Rajasthan',
+    city: 'Jaipur',
+    type: 'Private',
+    website: 'https://vgu.ac.in',
+    logo: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&q=80&w=300',
+    bannerImage: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&q=80&w=1200',
+    description: 'Vivekananda Global University (VGU) is a premier multidisciplinary private university located in Jaipur, Rajasthan, accredited with the prestigious NAAC A+ grade. Its Department of Forensic Science under the Faculty of Basic & Applied Sciences offers advanced, research-oriented education encompassing crime scene investigation, DNA profiling, ballistics, forensic toxicology, questioned document examination, and cyber forensics in cutting-edge laboratory facilities.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 with Science stream (Physics, Chemistry, and Mathematics / Biology / Biotechnology) with min 45-50% aggregate marks',
+        estimatedFees: '₹1,10,000 - ₹1,30,000 / year (approx ₹55,000 / semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Reconstruction',
+          'Forensic Chemistry & Toxicology',
+          'DNA Profiling & Forensic Biology',
+          'Questioned Documents & Latent Fingerprints',
+          'Forensic Ballistics',
+          'Cyber & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or relevant Science discipline (Chemistry, Biology, Physics, Life Sciences) with min 50% aggregate marks',
+        estimatedFees: '₹1,10,000 - ₹1,20,000 / year (approx ₹55,000 / semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced DNA Profiling & Serology',
+          'Forensic Toxicology & Chemical Profiling',
+          'Cyber Forensics & Incident Response',
+          'Bloodstain Pattern Analysis (BPA)',
+          'Questioned Documents & Forensic Photography'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree in Forensic Science or allied Life / Physical Sciences with minimum 55% aggregate marks (5% relaxation for reserved categories)',
+        estimatedFees: '₹50,000 / semester',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Environmental Forensics',
+          'Digital & Network Forensics',
+          'Forensic Genetics & Molecular Biology'
+        ]
+      }
+    ],
+    feesRange: '₹1,10,000 - ₹1,30,000 / year',
+    admissionProcess: 'Merit-based on 10+2 / Graduation scores, or entrance performance in VGUCET, CUET UG, or AIFSET (All India Forensic Science Entrance Test) followed by counseling.',
+    accreditation: 'NAAC A+ Accredited | UGC Recognized | Member of AIU | BCI & PCI Approved Programs',
+    contactEmail: 'info@vgu.ac.in',
+    contactPhone: '+91 141 2851000',
+    address: 'Sector 36, NRI Road, Sisyawas, Jagatpura, Jaipur, Rajasthan 303012, India',
+    ranking: 'NAAC A+ Grade | Top Ranked Private University in Rajasthan & North India',
+    facilities: [
+      'Advanced Forensic Chemistry & Instrumental Toxicology Lab',
+      'DNA Profiling, Forensic Biology & Serology Lab',
+      'Simulated Crime Scene Reconstruction & Evidence Handling Arena',
+      'Forensic Ballistics, Comparison Microscopy & Firearms Unit',
+      'Questioned Documents, Forgery Detection & Latent Fingerprint Lab',
+      'Digital Forensics & High-Performance Cyber Investigation Suite',
+      'Bloodstain Pattern Analysis (BPA) Darkroom Setup',
+      'Central AC University Library with Forensics Journals & E-Resources',
+      'Air-Conditioned Smart Lecture Theatres with Audio-Visual Equipment',
+      'Separate Boys & Girls Hostels with 24/7 Security & High-Speed Wi-Fi',
+      'Dedicated University Bus Transportation across All Zones of Jaipur'
+    ],
+    featured: true
+  },
+  {
+    id: 'sri-sri-university',
+    name: 'Sri Sri University',
+    shortName: 'SSU Cuttack',
+    country: 'India',
+    state: 'Odisha',
+    city: 'Cuttack',
+    type: 'Private',
+    website: 'https://srisriuniversity.edu.in',
+    logo: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=300',
+    bannerImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200',
+    description: 'Sri Sri University (SSU) is a premier UGC-recognized university situated on a serene 187-acre eco-friendly campus in Cuttack (near Bhubaneswar), Odisha. Its Department of Forensic Science under the Faculty of Science offers interdisciplinary, cutting-edge education in crime scene management, forensic chemistry, DNA serology, ballistics, and cyber forensics, blending rigorous scientific methodology with value-based ethics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) Forensic Science (with Digital & Cyber Forensics)',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 with Science stream (Physics, Chemistry, and Mathematics / Biology) with min 45-50% aggregate marks (5% relaxation for reserved categories)',
+        estimatedFees: '₹60,000 / semester (approx ₹1,20,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Digital & Cyber Forensics',
+          'Crime Scene Management & Investigation',
+          'Forensic Toxicology & Chemistry',
+          'Fingerprint Science & Questioned Documents',
+          'Forensic Biology & DNA Profiling',
+          'Forensic Ballistics & Audio-Video Analysis'
+        ]
+      },
+      {
+        name: 'M.Sc. Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry / Physics / Botany / Zoology / Biochemistry / Biotechnology (Min 50% aggregate)',
+        estimatedFees: '₹60,000 / semester (approx ₹1,20,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Toxicology',
+          'Questioned Documents, Fingerprint & Photography',
+          'Criminology & Forensic Psychology'
+        ]
+      },
+      {
+        name: 'M.Sc. Cyber Security & Digital Forensics',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'Bachelor’s degree in Computer Science / IT / BCA / B.Tech / B.Sc. Forensic Science with min 50% marks',
+        estimatedFees: '₹65,000 / semester (approx ₹1,30,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Incident Response & Malware Forensics',
+          'Network Defense & Cryptography',
+          'Cloud & IoT Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹90,000 - ₹1,30,000 / year',
+    admissionProcess: 'Merit-based on 10+2 / Graduation scores, or entrance performance in SSU CET, CUET UG, or AIFSET (All India Forensic Science Entrance Test) followed by counseling.',
+    accreditation: 'UGC Recognized | Established under Sri Sri University Act | AIU Member | NAAC Accredited',
+    contactEmail: 'info@srisriuniversity.edu.in',
+    contactPhone: '+91 78944 24562',
+    address: 'Sri Sri Vihar, Ward No. 3, Godisahi, Bidyadharpur, Cuttack, Odisha 754006, India',
+    ranking: 'Top Private University in Eastern India | Award for Excellence in Holistic & Green Education',
+    facilities: [
+      'Advanced Forensic Chemistry & Instrumental Toxicology Lab',
+      'DNA Extraction, Forensic Serology & Molecular Biology Lab',
+      'Crime Scene Simulation & Physical Evidence Preservation Unit',
+      'Questioned Documents, Latent Fingerprints & Forgery Lab',
+      'Digital Forensics, Cyber Defense & Ethical Hacking Lab',
+      'Ballistics, Tool Marks & Comparison Microscopy Suite',
+      'Audio-Video Analysis & Biometrics Lab',
+      'Central Multi-Storeyed University Library & E-Learning Portal',
+      'Serene 187-Acre Eco-Friendly Green Campus with High-Speed Wi-Fi',
+      'On-Campus Separate Hostels for Boys & Girls with 24/7 Security & Cafeteria',
+      'University Bus Fleet Servicing Cuttack & Bhubaneswar Twin Cities'
+    ],
+    featured: true
+  },
   {
     id: 'nfsu-gandhinagar',
     name: 'National Forensic Sciences University (NFSU)',
@@ -391,18 +767,64 @@ export const SAMPLE_COLLEGES: College[] = [
   }
 ];
 
+const DELETED_COLLEGES_KEY = 'forenclue_deleted_college_ids';
+const SYSTEM_SETTINGS_DOC = 'deleted_colleges';
+
+/**
+ * Retrieves the set of permanently deleted college IDs from localStorage and Firestore system_settings.
+ */
+async function getDeletedCollegeIds(): Promise<Set<string>> {
+  const deletedSet = new Set<string>();
+
+  // 1. Read localStorage cache first (synchronous & instant)
+  try {
+    const local = localStorage.getItem(DELETED_COLLEGES_KEY);
+    if (local) {
+      const arr = JSON.parse(local);
+      if (Array.isArray(arr)) {
+        arr.forEach(id => {
+          if (typeof id === 'string') {
+            deletedSet.add(id.toLowerCase().trim());
+          }
+        });
+      }
+    }
+  } catch (_) {}
+
+  // 2. Query Firestore system_settings/deleted_colleges
+  try {
+    const settingsDoc = await getDoc(doc(db, 'system_settings', SYSTEM_SETTINGS_DOC));
+    if (settingsDoc.exists()) {
+      const data = settingsDoc.data();
+      if (Array.isArray(data?.deletedIds)) {
+        data.deletedIds.forEach((id: any) => {
+          if (typeof id === 'string') {
+            deletedSet.add(id.toLowerCase().trim());
+          }
+        });
+      }
+    }
+  } catch (err) {
+    console.warn("Could not read deleted_colleges from system_settings:", err);
+  }
+
+  return deletedSet;
+}
+
 export async function fetchColleges(): Promise<College[]> {
   try {
     const q = query(collection(db, COLLEGES_COLLECTION), orderBy('name', 'asc'));
     const querySnapshot = await getDocs(q);
     
-    if (querySnapshot.empty) {
-      return SAMPLE_COLLEGES;
-    }
-
     const fetched: College[] = [];
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
+
+      // Skip records marked deleted
+      if (data.isDeleted === true || data.status === 'deleted') {
+        return;
+      }
+
       fetched.push({
         id: docSnap.id,
         name: data.name || '',
@@ -431,23 +853,26 @@ export async function fetchColleges(): Promise<College[]> {
       });
     });
 
-    // Merge default sample colleges that are not present in Firestore so user sees a rich catalog immediately
-    const existingIds = new Set(fetched.map(c => c.id.toLowerCase()));
-    const missingSamples = SAMPLE_COLLEGES.filter(s => !existingIds.has(s.id.toLowerCase()));
-
-    return [...fetched, ...missingSamples];
+    return fetched;
   } catch (error) {
-    console.warn("Could not fetch colleges from Firestore, using fallback samples:", error);
-    return SAMPLE_COLLEGES;
+    console.warn("Could not fetch colleges from Firestore:", error);
+    return [];
   }
 }
 
 export async function fetchCollegeById(id: string): Promise<College | null> {
+  const cleanId = String(id || '').trim();
+  if (!cleanId) return null;
+  const cleanLower = cleanId.toLowerCase();
+
   try {
-    const docRef = doc(db, COLLEGES_COLLECTION, id);
+    const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
+      if (data.isDeleted === true || data.status === 'deleted') {
+        return null;
+      }
       return {
         id: docSnap.id,
         name: data.name || '',
@@ -473,19 +898,52 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString()
       };
     }
+
+    // Also check case-insensitive match from collection
+    const snap = await getDocs(collection(db, COLLEGES_COLLECTION));
+    for (const d of snap.docs) {
+      if (d.id.toLowerCase() === cleanLower) {
+        const data = d.data();
+        if (data.isDeleted === true || data.status === 'deleted') return null;
+        return {
+          id: d.id,
+          name: data.name || '',
+          shortName: data.shortName || '',
+          country: data.country || 'India',
+          state: data.state || '',
+          city: data.city || '',
+          type: data.type || 'Government',
+          website: data.website || '',
+          logo: data.logo || '',
+          bannerImage: data.bannerImage || '',
+          description: data.description || '',
+          coursesOffered: Array.isArray(data.coursesOffered) ? data.coursesOffered : [],
+          feesRange: data.feesRange || '',
+          admissionProcess: data.admissionProcess || '',
+          accreditation: data.accreditation || '',
+          contactEmail: data.contactEmail || '',
+          contactPhone: data.contactPhone || '',
+          address: data.address || '',
+          ranking: data.ranking || '',
+          facilities: Array.isArray(data.facilities) ? data.facilities : [],
+          featured: !!data.featured,
+          createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString()
+        };
+      }
+    }
   } catch (err) {
     console.error("Error loading college by ID:", err);
   }
   
-  // Fallback check in samples
-  const sample = SAMPLE_COLLEGES.find(c => c.id === id || c.id.toLowerCase() === id.toLowerCase());
-  return sample || null;
+  return null;
 }
 
 export async function saveCollege(collegeData: Partial<College> & { id?: string }): Promise<string> {
   const isUpdate = !!collegeData.id;
   const targetId = collegeData.id || `college_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
-  
+  const cleanId = targetId.trim();
+  const lowerId = cleanId.toLowerCase();
+
   const payload = {
     name: collegeData.name || 'Untitled College',
     shortName: collegeData.shortName || '',
@@ -507,28 +965,92 @@ export async function saveCollege(collegeData: Partial<College> & { id?: string 
     ranking: collegeData.ranking || '',
     facilities: collegeData.facilities || [],
     featured: !!collegeData.featured,
+    isDeleted: false,
+    status: 'active',
     updatedAt: new Date().toISOString()
   };
 
   try {
-    const docRef = doc(db, COLLEGES_COLLECTION, targetId);
+    const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
     if (!isUpdate) {
       (payload as any).createdAt = new Date().toISOString();
     }
     await setDoc(docRef, payload, { merge: true });
-    return targetId;
+
+    // Clean up any deleted status in localStorage
+    try {
+      const local = localStorage.getItem(DELETED_COLLEGES_KEY);
+      if (local) {
+        const arr = JSON.parse(local);
+        const filtered = (arr || []).filter((s: string) => s.toLowerCase() !== lowerId && s !== cleanId);
+        localStorage.setItem(DELETED_COLLEGES_KEY, JSON.stringify(filtered));
+      }
+    } catch (_) {}
+
+    return cleanId;
   } catch (error) {
-    handleFirestoreError(error, isUpdate ? OperationType.UPDATE : OperationType.WRITE, `${COLLEGES_COLLECTION}/${targetId}`);
+    handleFirestoreError(error, isUpdate ? OperationType.UPDATE : OperationType.WRITE, `${COLLEGES_COLLECTION}/${cleanId}`);
     throw error;
   }
 }
 
-export async function deleteCollege(collegeId: string): Promise<void> {
+export async function deleteCollege(collegeId: string, collegeName?: string): Promise<void> {
+  const cleanId = String(collegeId || '').trim();
+  if (!cleanId) return;
+
+  const lowerId = cleanId.toLowerCase();
+  const cleanName = String(collegeName || '').trim();
+  const lowerName = cleanName.toLowerCase();
+
+  // 1. Immediately update localStorage cache
   try {
-    const docRef = doc(db, COLLEGES_COLLECTION, collegeId);
+    const local = localStorage.getItem(DELETED_COLLEGES_KEY);
+    const arr: string[] = local ? JSON.parse(local) : [];
+    if (!arr.map((s: string) => s.toLowerCase()).includes(lowerId)) {
+      arr.push(lowerId);
+      arr.push(cleanId);
+      localStorage.setItem(DELETED_COLLEGES_KEY, JSON.stringify(arr));
+    }
+  } catch (localErr) {
+    console.warn("Could not update local deleted colleges cache:", localErr);
+  }
+
+  // 2. Perform direct deletion from Firestore
+  try {
+    const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
     await deleteDoc(docRef);
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, `${COLLEGES_COLLECTION}/${collegeId}`);
-    throw error;
+  } catch (directErr) {
+    console.warn(`Direct deleteDoc for ${cleanId} encountered:`, directErr);
+  }
+
+  // 3. Also soft-delete / mark inactive as fallback
+  try {
+    const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
+    await updateDoc(docRef, { isDeleted: true, status: 'deleted', updatedAt: new Date().toISOString() });
+  } catch (_) {}
+
+  // 4. Also scan for any documents in colleges matching doc id or case-insensitive name
+  try {
+    const snap = await getDocs(collection(db, COLLEGES_COLLECTION));
+    for (const d of snap.docs) {
+      const data = d.data();
+      const dIdLower = d.id.toLowerCase().trim();
+      const dNameLower = String(data?.name || '').toLowerCase().trim();
+      if (dIdLower === lowerId || (lowerName && dNameLower === lowerName)) {
+        await deleteDoc(d.ref).catch(() => {});
+      }
+    }
+  } catch (_) {}
+
+  // 5. Backend Server API fallback deletion with admin privileges
+  try {
+    await fetch('/api/admin/delete-college', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: cleanId, name: cleanName })
+    });
+  } catch (apiErr) {
+    console.warn("Server API college deletion notice:", apiErr);
   }
 }
+

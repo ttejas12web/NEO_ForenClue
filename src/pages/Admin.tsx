@@ -1740,24 +1740,32 @@ export default function Admin() {
   const handleAdminDeleteCollege = async (id: string, name: string) => {
     const college = colleges.find((c: any) => c.id === id || c.docId === id);
 
-    const firstConfirm = window.confirm(`WARNING: You are about to delete the college/university record for "${name}". Any associated logo/banner images will also be permanently deleted from Cloudflare R2 storage. Do you want to proceed?`);
-    if (!firstConfirm) return;
+    const isConfirmed = window.confirm(`Are you sure you want to permanently delete college/university record "${name}"? This will remove the college from the public directory and database. This action cannot be undone.`);
+    if (!isConfirmed) return;
 
-    const secondConfirm = window.confirm(`DOUBLE CONFIRMATION: Are you absolutely sure you want to permanently delete "${name}"? This action cannot be undone.`);
-    if (!secondConfirm) return;
+    // Optimistically remove from state so UI updates immediately
+    setColleges(prev => prev.filter(c => c.id !== id && (c as any).docId !== id && c.name !== name));
 
     try {
-      const fileUrls = [college?.logo, college?.bannerImage, (college as any)?.logoUrl, (college as any)?.imageUrl, (college as any)?.bannerUrl];
-      const { count } = await deleteAttachedFilesFromR2(fileUrls);
+      let r2Count = 0;
+      try {
+        const fileUrls = [college?.logo, college?.bannerImage, (college as any)?.logoUrl, (college as any)?.imageUrl, (college as any)?.bannerUrl];
+        const { count } = await deleteAttachedFilesFromR2(fileUrls);
+        r2Count = count;
+      } catch (mediaErr) {
+        console.warn("Could not delete college media files from storage:", mediaErr);
+      }
 
-      await deleteAdminCollege(id);
-      const r2Notice = count > 0 ? ` and removed ${count} media file(s) from Cloudflare R2 storage.` : '.';
-      setSuccessMsg(`College record "${name}" deleted from database${r2Notice}`);
+      await deleteAdminCollege(id, name);
+      const r2Notice = r2Count > 0 ? ` and removed ${r2Count} media file(s) from Cloudflare R2 storage.` : '.';
+      setSuccessMsg(`College record "${name}" successfully deleted from database${r2Notice}`);
       fetchCollections();
     } catch (err: any) {
       setErrMsg(`Failed to delete college: ${err.message}`);
+      fetchCollections();
     }
   };
+
 
   const handleApproveFeedback = async (docId: string) => {
     try {
@@ -7594,7 +7602,7 @@ export default function Admin() {
                                   <button
                                     onClick={() => handleAdminDeleteCollege(col.id, col.name)}
                                     className="p-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-lg text-xs font-bold transition-colors"
-                                    title="Delete College Record (Double Confirm Security)"
+                                    title="Delete College Record"
                                   >
                                     <Trash2 size={14} />
                                   </button>

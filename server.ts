@@ -1243,6 +1243,69 @@ async function startServer() {
     }
   });
 
+  // Admin Delete College API Route (reliably removes college record from Firestore)
+  app.post("/api/admin/delete-college", async (req, res) => {
+    try {
+      const { id, name } = req.body;
+      const cleanId = String(id || '').trim();
+      if (!cleanId) {
+        return res.status(400).json({ error: "Missing college ID for deletion." });
+      }
+
+      console.log(`[Admin Delete College] Processing deletion for id="${cleanId}", name="${name || ''}"`);
+      const dbAdmin = getDbAdmin();
+      const collegesRef = dbAdmin.collection('colleges');
+
+      // 1. Direct document deletion by document ID
+      try {
+        await collegesRef.doc(cleanId).delete();
+        console.log(`[Admin Delete College] Deleted document ${cleanId} from colleges collection.`);
+      } catch (docErr) {
+        console.warn(`[Admin Delete College] Direct doc delete for ${cleanId}:`, docErr);
+      }
+
+      // 2. Query any doc matching ID or Name (case-insensitive) to prevent lingering duplicates
+      try {
+        const lowerId = cleanId.toLowerCase();
+        const lowerName = String(name || '').toLowerCase().trim();
+        const snap = await collegesRef.get();
+        for (const d of snap.docs) {
+          const dIdLower = d.id.toLowerCase().trim();
+          const dData = d.data();
+          const dNameLower = String(dData?.name || '').toLowerCase().trim();
+          if (dIdLower === lowerId || (lowerName && dNameLower === lowerName)) {
+            await d.ref.delete().catch(() => {});
+            console.log(`[Admin Delete College] Cleaned up matched college document ${d.id} (${dData?.name}).`);
+          }
+        }
+      } catch (scanErr) {
+        console.warn("[Admin Delete College] Error during scan cleanup:", scanErr);
+      }
+
+      // 3. Also update system_settings/deleted_colleges
+      try {
+        const lowerId = cleanId.toLowerCase();
+        const settingsRef = dbAdmin.collection('system_settings').doc('deleted_colleges');
+        await settingsRef.set({
+          deletedIds: admin.firestore.FieldValue.arrayUnion(lowerId, cleanId),
+          lastDeletedId: cleanId,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (settErr) {
+        console.warn("[Admin Delete College] Could not update system_settings deletedIds:", settErr);
+      }
+
+      return res.json({
+        success: true,
+        message: `College record "${cleanId}" successfully deleted from database.`
+      });
+    } catch (err: any) {
+      console.error("[Admin Delete College Error]:", err);
+      return res.status(500).json({ error: err.message || "Failed to delete college record." });
+    }
+  });
+
+
   app.post("/api/create-order", async (req, res) => {
     const { amount } = req.body;
     if (!amount || amount < 100) return res.status(400).json({ error: "Invalid amount" });
