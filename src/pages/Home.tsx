@@ -254,7 +254,7 @@ The ForenClue Curriculum Board
               <div className="flex justify-center">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-warning/15 border border-warning/30 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] text-warning font-black shadow-sm">
                   <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                  Upcoming Live Session
+                  Featured Masterclass &bull; Video Available
                 </span>
               </div>
 
@@ -265,7 +265,7 @@ The ForenClue Curriculum Board
               >
                 <img 
                   src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpYn8CExwzqv9CrcbHqeYMI9TX0iOypg6BM_HeSUPn52oz5KJIzP-9746Z3Fp6O3-wtS-Y8ejm32Izylt2rMctCIQKklo1KH-7YdHHA1YSYQyzIYSV2zxny9OxxdkEXnA8fnliEjalVfGxwslh6ej-b14Ub6IzQj-lO7XUgXjHjO32NRLgjuqpHenbnEM/s1600/Forensic%20toxicology2.png"
-                  alt="Official Upcoming Webinar Event Poster"
+                  alt="Official Forensic Toxicology Webinar Event Poster"
                   className="w-full h-auto block object-cover"
                   referrerPolicy="no-referrer"
                   loading="eager"
@@ -296,7 +296,7 @@ The ForenClue Curriculum Board
                   className="group relative w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-warning hover:bg-warning-dark text-crust font-black uppercase tracking-wider rounded-xl text-xs sm:text-sm shadow-[0_6px_0_0_#9a3412] hover:shadow-[0_4px_0_0_#9a3412] active:shadow-[0_0px_0_0_#9a3412] active:translate-y-[6px] border border-amber-500/20 transition-all text-center cursor-pointer font-sans"
                 >
                   <Video size={16} className="text-crust" />
-                  <span>View Upcoming Webinar</span>
+                  <span>Watch Forensic Toxicology Webinar</span>
                 </Link>
               </div>
 

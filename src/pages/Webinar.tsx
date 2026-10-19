@@ -59,7 +59,8 @@ const WEBINARS_DATA: WebinarEvent[] = [
     time: "07:00 PM ONWARDS",
     description: "Exclusive masterclass on Forensic Toxicology exploring chemical analysis, genotoxicity, mutagenicity, and medico-legal investigative protocols.",
     fullDetails: "Forensic Toxicology Exclusive Webinar with speaker Mr. Rajat Pithadia.\n\nJoin our Forensic Toxicology Webinar to explore the critical role of toxicology in forensic investigations, chemical detection, and judicial evidence.\n\nKey Highlights & What You Will Gain:\n• Fundamentals & Advanced Workflows of Forensic Toxicology\n• Chemical Analysis, Genotoxicity & Mutagenicity\n• Toxicological Evidence in Postmortem & Legal Cases\n• Pharmacology & Analytical Instrumentation\n• Live Interactive Q&A Session\n\nPlatform: Google Meet (Online) & YouTube Live\nSchedule: 4 OCT 2026 | 07:00 PM ONWARDS\nPerks: Free E-Certificates to All Active Participants | No Entry Fee Required",
-    isUpcoming: true,
+    youtubeId: "J7cUbmKdR9M",
+    isUpcoming: false,
     isFeedbackClosed: false,
     speaker: {
       name: "Mr. Rajat Pithadia",
@@ -69,7 +70,7 @@ const WEBINARS_DATA: WebinarEvent[] = [
       bio: "UGC.NET, GSET Qualified | Asst. Professor Parul University | Wiley Author | PhD Scholar Genotoxicity & Mutagenicity M.Sc.(Forensic Chemistry, Toxicology & Pharmacology)"
     },
     poster: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpYn8CExwzqv9CrcbHqeYMI9TX0iOypg6BM_HeSUPn52oz5KJIzP-9746Z3Fp6O3-wtS-Y8ejm32Izylt2rMctCIQKklo1KH-7YdHHA1YSYQyzIYSV2zxny9OxxdkEXnA8fnliEjalVfGxwslh6ej-b14Ub6IzQj-lO7XUgXjHjO32NRLgjuqpHenbnEM/s1600/Forensic%20toxicology2.png",
-    tags: ["Forensic Toxicology", "Toxicology", "Parul University", "Genotoxicity", "Pharmacology", "Upcoming Event"],
+    tags: ["Forensic Toxicology", "Toxicology", "Parul University", "Genotoxicity", "Pharmacology", "Recent Event"],
     feedbacks: []
   },
   {
@@ -568,7 +569,21 @@ export default function Webinar() {
                           : 'Status: High Definition Playback Enabled'}
                       </span>
                     </span>
-                    <span className="shrink-0 font-bold text-warning sm:text-text-muted">Session {currentEvent.sequence}</span>
+                    <div className="flex items-center gap-3 shrink-0">
+                      {currentEvent.youtubeId && (
+                        <a
+                          href={`https://youtu.be/${currentEvent.youtubeId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 text-[9px] text-red-400 hover:text-red-300 font-bold transition-colors uppercase py-0.5 px-2 bg-red-950/40 border border-red-500/30 rounded-md"
+                        >
+                          <Youtube size={11} className="text-red-500" />
+                          <span>Watch on YouTube</span>
+                          <ExternalLink size={9} />
+                        </a>
+                      )}
+                      <span className="shrink-0 font-bold text-warning sm:text-text-muted">Session {currentEvent.sequence}</span>
+                    </div>
                   </div>
                 </div>
 
