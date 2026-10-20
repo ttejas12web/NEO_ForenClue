@@ -86,11 +86,6 @@ export default function Podcast() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
-    // We enforce dark mode locally for the spotify feel
-    document.documentElement.classList.add('dark');
-  }, []);
-
-  useEffect(() => {
     const loadDynamicEpisodes = async () => {
       try {
         const { db } = await import('@/lib/firebase');
@@ -279,7 +274,7 @@ export default function Podcast() {
   };
 
   return (
-    <div className="min-h-screen bg-[#121212] text-white pb-28 font-sans selection:bg-green-500/30 selection:text-green-200 pl-0 md:pl-2">
+    <div className="min-h-screen bg-base dark:bg-[#121212] text-text-main dark:text-white pb-28 font-sans selection:bg-green-500/30 selection:text-green-200 pl-0 md:pl-2">
       <SEOManager 
         collectionName="podcasts"
         docId={currentEpisode?.id}
@@ -349,11 +344,11 @@ export default function Podcast() {
       </div>
 
       <div className="max-w-6xl mx-auto px-6 sm:px-8 relative z-10">
-        <div className="bg-black/20 p-6 -mx-6 mb-8 flex items-center gap-6">
+        <div className="bg-surface dark:bg-black/20 border-b border-black/10 dark:border-transparent p-6 -mx-6 mb-8 flex items-center gap-6">
            {currentEpisode && (
              <button 
                 onClick={() => playEpisode(currentEpisode)}
-                className="w-14 h-14 rounded-full bg-[#1db954] hover:scale-105 transition-transform flex items-center justify-center text-black"
+                className="w-14 h-14 rounded-full bg-[#1db954] hover:scale-105 transition-transform flex items-center justify-center text-black shadow-lg"
              >
                 {isPlaying ? <Pause size={28} fill="currentColor" /> : <Play size={28} fill="currentColor" className="ml-1" />}
              </button>
@@ -361,7 +356,7 @@ export default function Podcast() {
            
            <div className="relative">
              <button 
-               className="text-white/60 hover:text-white transition-colors"
+               className="text-text-muted dark:text-white/60 hover:text-text-main dark:hover:text-white transition-colors"
                onClick={() => setIsPodcastOptionsOpen(true)}
              >
                <MoreHorizontal size={32} />
@@ -376,13 +371,13 @@ export default function Podcast() {
                      animate={{ opacity: 1, scale: 1, y: 0 }}
                      exit={{ opacity: 0, scale: 0.95, y: -10 }}
                      transition={{ duration: 0.15, ease: "easeOut" }}
-                     className="absolute left-0 sm:left-auto sm:right-0 top-12 w-56 bg-[#282828] border border-white/10 rounded-md shadow-2xl py-1 z-50 overflow-hidden"
+                     className="absolute left-0 sm:left-auto sm:right-0 top-12 w-56 bg-surface dark:bg-[#282828] border border-black/10 dark:border-white/10 rounded-md shadow-2xl py-1 z-50 overflow-hidden"
                    >
-                     <button className="w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-white/10 text-white/90 hover:text-white text-left transition-colors" onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('Podcast link copied!'); setIsPodcastOptionsOpen(false); }}>
+                     <button className="w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-black/5 dark:hover:bg-white/10 text-text-main dark:text-white/90 text-left transition-colors" onClick={() => { navigator.clipboard.writeText(window.location.href); showToast('Podcast link copied!'); setIsPodcastOptionsOpen(false); }}>
                        <Link2 size={18} />
                        <span>Copy Link to Podcast</span>
                      </button>
-                     <button className="w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-white/10 text-white/90 hover:text-white text-left transition-colors" onClick={() => { 
+                     <button className="w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-black/5 dark:hover:bg-white/10 text-text-main dark:text-white/90 text-left transition-colors" onClick={() => { 
                        const subject = encodeURIComponent(`Listen to ${PODCAST_INFO.title}`);
                        const body = encodeURIComponent(`Check out this podcast: ${window.location.href}`);
                        window.location.href = `mailto:?subject=${subject}&body=${body}`;
@@ -391,8 +386,8 @@ export default function Podcast() {
                        <Share2 size={18} />
                        <span>Share via Email</span>
                      </button>
-                     <div className="h-[1px] bg-white/10 my-1 w-full" />
-                     <button className="w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-white/10 text-white/90 hover:text-white text-left transition-colors" onClick={() => {
+                     <div className="h-[1px] bg-black/10 dark:bg-white/10 my-1 w-full" />
+                     <button className="w-full px-4 py-3 flex items-center gap-3 text-sm hover:bg-black/5 dark:hover:bg-white/10 text-text-main dark:text-white/90 text-left transition-colors" onClick={() => {
                        document.getElementById('about-show')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
                        setIsPodcastOptionsOpen(false);
                      }}>
@@ -407,15 +402,15 @@ export default function Podcast() {
         </div>
 
         <div className="max-w-4xl" id="about-show">
-          <p className="text-white/60 mb-8 leading-relaxed max-w-2xl">
+          <p className="text-text-muted dark:text-white/60 mb-8 leading-relaxed max-w-2xl">
             {PODCAST_INFO.description}
           </p>
 
-          <h3 className="text-xl sm:text-2xl font-bold mb-6">Episodes</h3>
+          <h3 className="text-xl sm:text-2xl font-bold mb-6 text-text-main dark:text-white">Episodes</h3>
           
           <div className="flex flex-col gap-4">
             {episodesList.length === 0 ? (
-              <div className="text-white/40 text-sm py-12 border border-dashed border-white/10 rounded-xl text-center bg-white/5 font-medium">
+              <div className="text-text-muted dark:text-white/40 text-sm py-12 border border-dashed border-black/15 dark:border-white/10 rounded-xl text-center bg-surface dark:bg-white/5 font-medium">
                 No active episodes uploaded yet. Check back soon!
               </div>
             ) : (
@@ -426,26 +421,26 @@ export default function Podcast() {
                   <div 
                     key={ep.id} 
                     className={cn(
-                      "group flex gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-white/5",
-                      isCurrentEp && "bg-white/5"
+                      "group flex gap-4 p-4 rounded-xl hover:bg-surface dark:hover:bg-white/5 transition-colors cursor-pointer border border-transparent hover:border-black/10 dark:hover:border-white/5",
+                      isCurrentEp && "bg-surface dark:bg-white/5 border-black/10 dark:border-white/5 shadow-sm"
                     )}
                     onClick={() => playEpisode(ep)}
                   >
-                    <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-md overflow-hidden shrink-0 mt-1">
+                    <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-md overflow-hidden shrink-0 mt-1 shadow-sm">
                       <ResilientImage src={ep.image} alt={ep.title} className="w-full h-full object-cover" />
                     </div>
                     
                     <div className="flex flex-col flex-1 justify-center relative pr-12">
-                       <h4 className={cn("font-bold text-base sm:text-lg mb-1 leading-tight", isCurrentEp ? "text-[#1db954]" : "text-white")}>{ep.title}</h4>
-                       <p className="text-sm text-white/60 line-clamp-2 md:line-clamp-none max-w-3xl mb-2 sm:mb-3">{ep.description}</p>
+                       <h4 className={cn("font-bold text-base sm:text-lg mb-1 leading-tight", isCurrentEp ? "text-[#16a34a] dark:text-[#1db954]" : "text-text-main dark:text-white")}>{ep.title}</h4>
+                       <p className="text-sm text-text-muted dark:text-white/60 line-clamp-2 md:line-clamp-none max-w-3xl mb-2 sm:mb-3">{ep.description}</p>
                        
-                      <div className="flex items-center gap-4 text-xs font-semibold text-white/50">
+                      <div className="flex items-center gap-4 text-xs font-semibold text-text-muted/80 dark:text-white/50">
                         <span>{ep.date}</span>
                         <span>•</span>
                         <span>{ep.duration}</span>
                       </div>
   
-                      <button className="absolute right-2 top-1/2 -translate-y-1/2 text-white/50 hover:text-white sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                      <button className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted dark:text-white/50 hover:text-text-main dark:hover:text-white sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                         {isCurrentEp && isPlaying ? <Pause fill="currentColor" size={24} /> : <Play fill="currentColor" size={24} />}
                       </button>
                     </div>

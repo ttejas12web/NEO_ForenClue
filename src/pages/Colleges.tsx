@@ -510,7 +510,7 @@ export default function Colleges() {
                   {college.accreditation && (
                     <div className="flex justify-between items-center py-1 border-b border-black/5 dark:border-white/5">
                       <span className="text-text-muted">Accreditation:</span>
-                      <span className="text-amber-400 font-bold">{college.accreditation}</span>
+                      <span className="text-amber-600 dark:text-amber-400 font-bold">{college.accreditation}</span>
                     </div>
                   )}
                   {college.feesRange && (
@@ -916,7 +916,7 @@ export default function Colleges() {
                           alt={college.name}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/40 to-black/50" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-black/45" />
 
                         {/* Type & Featured Badge */}
                         <div className="absolute top-3 left-3 right-3 flex items-center justify-between gap-2 z-10">

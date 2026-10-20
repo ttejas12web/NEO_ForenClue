@@ -142,7 +142,7 @@ export function RecentELibrarySection() {
   };
 
   return (
-    <section className="py-16 !bg-[#0B0F17] border-y border-white/10 relative overflow-hidden font-sans !text-white" style={{ backgroundColor: '#0B0F17', color: '#ffffff' }}>
+    <section className="py-16 bg-base dark:bg-[#0B0F17] border-y border-black/10 dark:border-white/10 relative overflow-hidden font-sans text-text-main">
       {/* Background Subtle Accent Gradients */}
       <div className="absolute top-0 left-1/4 w-96 h-96 bg-warning/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-[120px] pointer-events-none" />
@@ -157,11 +157,11 @@ export function RecentELibrarySection() {
               <span>Recently Uploaded E-Library Material</span>
             </div>
             
-            <h2 className="font-heading font-black text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight !text-white" style={{ color: '#ffffff' }}>
+            <h2 className="font-heading font-black text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-text-main">
               Explore E-Library
             </h2>
             
-            <p className="text-sm sm:text-base !text-white mt-2 max-w-2xl leading-relaxed font-normal" style={{ color: '#ffffff', opacity: 0.95 }}>
+            <p className="text-sm sm:text-base text-text-muted mt-2 max-w-2xl leading-relaxed font-normal">
               Explore recent forensic textbooks, reference keys, research papers, and laboratory manuals uploaded by admins and academic contributors.
             </p>
           </div>
@@ -170,10 +170,10 @@ export function RecentELibrarySection() {
         {/* Resources Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {displayList.length === 0 ? (
-            <div className="col-span-full text-center py-12 bg-[#121824] border border-dashed border-white/10 rounded-2xl p-6">
+            <div className="col-span-full text-center py-12 bg-surface dark:bg-[#121824] border border-dashed border-black/15 dark:border-white/10 rounded-2xl p-6">
               <BookOpen size={36} className="text-warning/60 mx-auto mb-3" />
-              <p className="text-sm font-black text-white uppercase tracking-wider">No E-Library Materials Uploaded Yet</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-md mx-auto">Reference textbooks, notes, and research papers will appear here as admins and verified contributors upload them.</p>
+              <p className="text-sm font-black text-text-main uppercase tracking-wider">No E-Library Materials Uploaded Yet</p>
+              <p className="text-xs text-text-muted mt-1 max-w-md mx-auto">Reference textbooks, notes, and research papers will appear here as admins and verified contributors upload them.</p>
             </div>
           ) : (
             displayList.map((item) => {
@@ -187,8 +187,7 @@ export function RecentELibrarySection() {
                 viewport={{ once: true }}
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.3 }}
-                className="!bg-[#121824] border border-white/10 hover:border-warning/50 rounded-2xl p-5 flex flex-col justify-between shadow-lg group transition-all"
-                style={{ backgroundColor: '#121824', color: '#ffffff' }}
+                className="bg-surface dark:bg-[#121824] border border-black/10 dark:border-white/10 hover:border-warning/50 rounded-2xl p-5 flex flex-col justify-between shadow-lg group transition-all text-text-main"
               >
                 <div>
                   {/* Top Header Badge & Type */}
@@ -196,7 +195,7 @@ export function RecentELibrarySection() {
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider bg-warning/15 text-warning px-2.5 py-0.5 rounded-md border border-warning/30">
                       {item.category}
                     </span>
-                    <span className="text-[10px] font-mono !text-slate-300 flex items-center gap-1 !bg-[#070A10] px-2 py-0.5 rounded border border-white/10" style={{ backgroundColor: '#070A10', color: '#cbd5e1' }}>
+                    <span className="text-[10px] font-mono text-text-muted flex items-center gap-1 bg-crust dark:bg-[#070A10] px-2 py-0.5 rounded border border-black/10 dark:border-white/10">
                       <Clock size={11} className="text-warning" />
                       <span>{item.type} &bull; {item.size}</span>
                     </span>
@@ -205,19 +204,19 @@ export function RecentELibrarySection() {
                   {/* Cover Image Container */}
                   <div 
                     onClick={() => handleOpenViewer(item)}
-                    className="aspect-[16/9] sm:aspect-[16/10] w-full rounded-xl bg-gradient-to-br from-[#070A10] via-[#0E1524] to-[#162035] border border-white/10 relative overflow-hidden flex items-center justify-center p-2 mb-3.5 shadow-inner cursor-pointer group-hover:border-warning/40 transition-colors"
+                    className="aspect-[16/9] sm:aspect-[16/10] w-full rounded-xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200/70 dark:from-[#070A10] dark:via-[#0E1524] dark:to-[#162035] border border-black/10 dark:border-white/10 relative overflow-hidden flex items-center justify-center p-2 mb-3.5 shadow-inner cursor-pointer group-hover:border-warning/40 transition-colors"
                   >
                     <ResilientImage 
                       src={item.image || item.coverImage || ''} 
                       alt={item.title} 
-                      className="h-full w-full object-cover sm:object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] group-hover:scale-[1.03] transition-transform duration-300"
+                      className="h-full w-full object-cover sm:object-contain rounded-lg drop-shadow-[0_4px_12px_rgba(0,0,0,0.25)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.6)] group-hover:scale-[1.03] transition-transform duration-300"
                       fallback={
                         <div className="flex flex-col items-center justify-center h-full w-full p-3 text-center">
                           <div className="p-2 rounded-full bg-warning/15 text-warning mb-1.5 border border-warning/25 shadow-sm">
                             <BookOpen size={20} />
                           </div>
-                          <span className="text-[11px] font-black text-white uppercase tracking-wider line-clamp-1 max-w-[200px]" style={{ color: '#ffffff' }}>{item.title}</span>
-                          <span className="text-[9px] font-mono text-slate-400 truncate max-w-[180px] mt-0.5">{item.author}</span>
+                          <span className="text-[11px] font-black text-text-main uppercase tracking-wider line-clamp-1 max-w-[200px]">{item.title}</span>
+                          <span className="text-[9px] font-mono text-text-muted truncate max-w-[180px] mt-0.5">{item.author}</span>
                         </div>
                       }
                     />
@@ -226,18 +225,17 @@ export function RecentELibrarySection() {
                   {/* Title & Author */}
                   <h3 
                     onClick={() => handleOpenViewer(item)}
-                    className="font-heading font-black text-lg !text-white group-hover:text-warning transition-colors line-clamp-2 cursor-pointer mb-1 leading-snug"
-                    style={{ color: '#ffffff' }}
+                    className="font-heading font-black text-lg text-text-main group-hover:text-warning transition-colors line-clamp-2 cursor-pointer mb-1 leading-snug"
                   >
                     {item.title}
                   </h3>
 
-                  <p className="text-xs !text-slate-300 font-sans mb-3 flex items-center gap-1.5" style={{ color: '#cbd5e1' }}>
-                    <span>By <strong className="!text-white" style={{ color: '#ffffff' }}>{item.author}</strong></span>
-                    {item.year && <span className="!text-slate-400" style={{ color: '#94a3b8' }}>({item.year})</span>}
+                  <p className="text-xs text-text-muted font-sans mb-3 flex items-center gap-1.5">
+                    <span>By <strong className="text-text-main">{item.author}</strong></span>
+                    {item.year && <span className="text-text-muted/80">({item.year})</span>}
                   </p>
 
-                  <p className="text-xs !text-slate-300 font-sans line-clamp-2 leading-relaxed mb-4" style={{ color: '#cbd5e1' }}>
+                  <p className="text-xs text-text-muted font-sans line-clamp-2 leading-relaxed mb-4">
                     {item.desc}
                   </p>
 
@@ -269,7 +267,7 @@ export function RecentELibrarySection() {
 
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[11px] font-extrabold !text-white group-hover/uploader:text-warning transition-colors truncate leading-tight" style={{ color: '#ffffff' }}>
+                            <span className="text-[11px] font-extrabold text-text-main group-hover/uploader:text-warning transition-colors truncate leading-tight">
                               {item.uploaderName || item.uploadedBy}
                             </span>
                             <span className="text-[8px] font-mono bg-warning/20 text-warning px-1.5 py-0.2 rounded font-bold uppercase shrink-0">
@@ -277,14 +275,14 @@ export function RecentELibrarySection() {
                             </span>
                           </div>
                           {item.volunteerId && (
-                            <div className="text-[9px] font-mono !text-slate-400 truncate" style={{ color: '#94a3b8' }}>
+                            <div className="text-[9px] font-mono text-text-muted truncate">
                               ID: {item.volunteerId}
                             </div>
                           )}
                         </div>
                       </div>
 
-                      <div className="shrink-0 text-slate-400 group-hover/uploader:text-warning transition-colors p-1" title="View Digital ID Card">
+                      <div className="shrink-0 text-text-muted group-hover/uploader:text-warning transition-colors p-1" title="View Digital ID Card">
                         <ShieldCheck size={16} />
                       </div>
                     </div>
@@ -292,10 +290,10 @@ export function RecentELibrarySection() {
                 </div>
 
                 {/* Bottom Actions */}
-                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2 mt-auto">
+                <div className="pt-3 border-t border-black/10 dark:border-white/10 flex items-center justify-between gap-2 mt-auto">
                   <button
                     onClick={() => handleOpenViewer(item)}
-                    className="flex-1 py-2 px-3 bg-warning hover:bg-warning-dark text-slate-950 font-black uppercase text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-sans"
+                    className="flex-1 py-2 px-3 bg-warning hover:bg-warning-dark text-crust font-black uppercase text-xs rounded-xl transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer font-sans"
                   >
                     <Eye size={14} />
                     <span>Read PDF</span>
@@ -303,8 +301,7 @@ export function RecentELibrarySection() {
 
                   <button
                     onClick={(e) => handleDownload(e, item)}
-                    className="p-2 !bg-[#070A10] hover:bg-white/10 !text-white border border-white/10 rounded-xl transition-colors cursor-pointer"
-                    style={{ backgroundColor: '#070A10', color: '#ffffff' }}
+                    className="p-2 bg-crust dark:bg-[#070A10] hover:bg-black/10 dark:hover:bg-white/10 text-text-main border border-black/10 dark:border-white/10 rounded-xl transition-colors cursor-pointer"
                     title="Download PDF Document"
                   >
                     <Download size={15} />
@@ -312,8 +309,7 @@ export function RecentELibrarySection() {
 
                   <Link
                     to={`/ebooks?id=${item.id}`}
-                    className="p-2 !bg-[#070A10] hover:bg-white/10 !text-slate-300 hover:!text-white border border-white/10 rounded-xl transition-colors cursor-pointer"
-                    style={{ backgroundColor: '#070A10', color: '#cbd5e1' }}
+                    className="p-2 bg-crust dark:bg-[#070A10] hover:bg-black/10 dark:hover:bg-white/10 text-text-muted hover:text-text-main border border-black/10 dark:border-white/10 rounded-xl transition-colors cursor-pointer"
                     title="Open details in E-Library"
                   >
                     <ExternalLink size={15} />
@@ -328,11 +324,10 @@ export function RecentELibrarySection() {
         <div className="text-center">
           <Link
             to="/ebooks"
-            className="inline-flex items-center gap-3 px-8 py-4 !bg-[#121824] hover:bg-white/10 !text-white font-black uppercase tracking-wider rounded-xl border border-white/15 hover:border-warning/50 transition-all shadow-lg group font-sans"
-            style={{ backgroundColor: '#121824', color: '#ffffff' }}
+            className="inline-flex items-center gap-3 px-8 py-4 bg-surface dark:bg-[#121824] hover:bg-surface-hover dark:hover:bg-white/10 text-text-main font-black uppercase tracking-wider rounded-xl border border-black/15 dark:border-white/15 hover:border-warning/50 transition-all shadow-lg group font-sans"
           >
             <BookOpen size={18} className="text-warning group-hover:scale-110 transition-transform" />
-            <span style={{ color: '#ffffff' }}>Browse E-library</span>
+            <span>Browse E-library</span>
             <ArrowRight size={16} className="group-hover:translate-x-1.5 transition-transform" />
           </Link>
         </div>

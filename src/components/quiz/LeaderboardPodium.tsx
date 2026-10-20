@@ -62,16 +62,16 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
                   transition={{ delay: 0.1 }}
                   className="bg-surface border border-slate-400/30 rounded-2xl p-6 text-center relative shadow-lg overflow-hidden group hover:border-slate-400/60 transition-all"
                 >
-                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400/50 via-slate-200 to-slate-400/50" />
-                  <div className="absolute top-3 right-3 bg-slate-500/10 text-slate-300 border border-slate-400/30 text-xs font-black px-2.5 py-1 rounded-full flex items-center gap-1">
-                    <Medal size={14} className="text-slate-300" /> #2 SILVER
+                  <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-slate-400/50 via-slate-300 to-slate-400/50" />
+                  <div className="absolute top-3 right-3 bg-slate-500/10 text-slate-700 dark:text-slate-300 border border-slate-400/30 text-xs font-black px-2.5 py-1 rounded-full flex items-center gap-1">
+                    <Medal size={14} className="text-slate-600 dark:text-slate-300" /> #2 SILVER
                   </div>
 
-                  <div className="relative mx-auto w-20 h-20 rounded-full border-2 border-slate-300/50 p-1 mb-4">
+                  <div className="relative mx-auto w-20 h-20 rounded-full border-2 border-slate-400/50 p-1 mb-4">
                     {top2.userPhoto ? (
                       <img src={top2.userPhoto} alt={top2.userName} className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-slate-300 font-bold text-xl">
+                      <div className="w-full h-full rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300 font-bold text-xl">
                         {top2.userName.charAt(0)}
                       </div>
                     )}
@@ -82,19 +82,19 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
                   </h3>
                   
 
-                  <div className="grid grid-cols-2 gap-2 bg-black/40 rounded-xl p-3 border border-white/5">
+                  <div className="grid grid-cols-2 gap-2 bg-crust dark:bg-black/40 rounded-xl p-3 border border-black/5 dark:border-white/5">
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-text-muted block">Score</span>
-                      <span className="font-extrabold text-sm text-slate-200">{top2.score}/{top2.totalPoints || 100}</span>
+                      <span className="font-extrabold text-sm text-text-main">{top2.score}/{top2.totalPoints || 100}</span>
                     </div>
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-text-muted block">Time</span>
-                      <span className="font-extrabold text-sm text-slate-200">{formatTime(top2.timeTakenSeconds)}</span>
+                      <span className="font-extrabold text-sm text-text-main">{formatTime(top2.timeTakenSeconds)}</span>
                     </div>
                   </div>
                 </motion.div>
               ) : (
-                <div className="bg-surface/30 border border-dashed border-white/10 rounded-2xl p-6 text-center text-text-muted text-sm">
+                <div className="bg-surface/30 border border-dashed border-black/15 dark:border-white/10 rounded-2xl p-6 text-center text-text-muted text-sm">
                   2nd Place Available
                 </div>
               )}
@@ -109,17 +109,17 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
                   transition={{ delay: 0.2 }}
                   className="bg-gradient-to-b from-amber-500/15 via-surface to-surface border-2 border-amber-500/50 rounded-3xl p-7 text-center relative shadow-[0_0_40px_rgba(245,158,11,0.2)] overflow-hidden group hover:border-amber-400 transition-all"
                 >
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500" />
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500" />
                   
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/40 text-xs font-black uppercase tracking-widest mb-4 shadow-sm">
-                    <Trophy size={14} className="text-yellow-400 fill-yellow-400" /> #1 CHAMPION
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-400 border border-amber-500/40 text-xs font-black uppercase tracking-widest mb-4 shadow-sm">
+                    <Trophy size={14} className="text-amber-500 dark:text-yellow-400 fill-amber-500 dark:fill-yellow-400" /> #1 CHAMPION
                   </div>
 
-                  <div className="relative mx-auto w-24 h-24 rounded-full border-4 border-yellow-400 p-1 mb-4 shadow-[0_0_20px_rgba(250,204,21,0.4)]">
+                  <div className="relative mx-auto w-24 h-24 rounded-full border-4 border-amber-400 p-1 mb-4 shadow-[0_0_20px_rgba(250,204,21,0.4)]">
                     {top1.userPhoto ? (
                       <img src={top1.userPhoto} alt={top1.userName} className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <div className="w-full h-full rounded-full bg-amber-950 flex items-center justify-center text-yellow-400 font-bold text-2xl">
+                      <div className="w-full h-full rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-700 dark:text-yellow-400 font-bold text-2xl">
                         {top1.userName.charAt(0)}
                       </div>
                     )}
@@ -130,19 +130,19 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
                   </h3>
                   
 
-                  <div className="grid grid-cols-2 gap-2 bg-amber-500/10 rounded-2xl p-3.5 border border-amber-500/20">
+                  <div className="grid grid-cols-2 gap-2 bg-amber-500/10 rounded-2xl p-3.5 border border-amber-500/25">
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300/80 block">Score</span>
-                      <span className="font-black text-lg text-yellow-300">{top1.score}/{top1.totalPoints || 100}</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-800/80 dark:text-amber-300/80 block">Score</span>
+                      <span className="font-black text-lg text-amber-700 dark:text-yellow-300">{top1.score}/{top1.totalPoints || 100}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300/80 block">Time</span>
-                      <span className="font-black text-lg text-yellow-300">{formatTime(top1.timeTakenSeconds)}</span>
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-amber-800/80 dark:text-amber-300/80 block">Time</span>
+                      <span className="font-black text-lg text-amber-700 dark:text-yellow-300">{formatTime(top1.timeTakenSeconds)}</span>
                     </div>
                   </div>
                 </motion.div>
               ) : (
-                <div className="bg-surface/30 border border-dashed border-white/10 rounded-3xl p-8 text-center text-text-muted text-sm">
+                <div className="bg-surface/30 border border-dashed border-black/15 dark:border-white/10 rounded-3xl p-8 text-center text-text-muted text-sm">
                   1st Place Available
                 </div>
               )}
@@ -158,15 +158,15 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
                   className="bg-surface border border-amber-700/40 rounded-2xl p-6 text-center relative shadow-lg overflow-hidden group hover:border-amber-600/60 transition-all"
                 >
                   <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-700 via-amber-600 to-amber-700" />
-                  <div className="absolute top-3 right-3 bg-amber-700/10 text-amber-500 border border-amber-700/30 text-xs font-black px-2.5 py-1 rounded-full flex items-center gap-1">
-                    <Award size={14} className="text-amber-500" /> #3 BRONZE
+                  <div className="absolute top-3 right-3 bg-amber-700/10 text-amber-700 dark:text-amber-500 border border-amber-700/30 text-xs font-black px-2.5 py-1 rounded-full flex items-center gap-1">
+                    <Award size={14} className="text-amber-700 dark:text-amber-500" /> #3 BRONZE
                   </div>
 
                   <div className="relative mx-auto w-20 h-20 rounded-full border-2 border-amber-600/50 p-1 mb-4">
                     {top3.userPhoto ? (
                       <img src={top3.userPhoto} alt={top3.userName} className="w-full h-full rounded-full object-cover" />
                     ) : (
-                      <div className="w-full h-full rounded-full bg-amber-950 flex items-center justify-center text-amber-500 font-bold text-xl">
+                      <div className="w-full h-full rounded-full bg-amber-100 dark:bg-amber-950 flex items-center justify-center text-amber-800 dark:text-amber-500 font-bold text-xl">
                         {top3.userName.charAt(0)}
                       </div>
                     )}
@@ -177,19 +177,19 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
                   </h3>
                   
 
-                  <div className="grid grid-cols-2 gap-2 bg-black/40 rounded-xl p-3 border border-white/5">
+                  <div className="grid grid-cols-2 gap-2 bg-crust dark:bg-black/40 rounded-xl p-3 border border-black/5 dark:border-white/5">
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-text-muted block">Score</span>
-                      <span className="font-extrabold text-sm text-amber-200">{top3.score}/{top3.totalPoints || 100}</span>
+                      <span className="font-extrabold text-sm text-amber-800 dark:text-amber-200">{top3.score}/{top3.totalPoints || 100}</span>
                     </div>
                     <div>
                       <span className="text-[10px] uppercase tracking-wider text-text-muted block">Time</span>
-                      <span className="font-extrabold text-sm text-amber-200">{formatTime(top3.timeTakenSeconds)}</span>
+                      <span className="font-extrabold text-sm text-amber-800 dark:text-amber-200">{formatTime(top3.timeTakenSeconds)}</span>
                     </div>
                   </div>
                 </motion.div>
               ) : (
-                <div className="bg-surface/30 border border-dashed border-white/10 rounded-2xl p-6 text-center text-text-muted text-sm">
+                <div className="bg-surface/30 border border-dashed border-black/15 dark:border-white/10 rounded-2xl p-6 text-center text-text-muted text-sm">
                   3rd Place Available
                 </div>
               )}
@@ -199,8 +199,8 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
 
           {/* Ranks 4 to 10 Table */}
           {restEntries.length > 0 && (
-            <div className="bg-surface rounded-2xl border border-white/10 overflow-hidden shadow-xl mt-8">
-              <div className="px-4 sm:px-6 py-4 bg-black/40 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="bg-surface rounded-2xl border border-black/10 dark:border-white/10 overflow-hidden shadow-xl mt-8">
+              <div className="px-4 sm:px-6 py-4 bg-crust dark:bg-black/40 border-b border-black/5 dark:border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <span className="text-[10px] sm:text-xs font-black uppercase tracking-wider text-text-muted">
                   Runner-Up Rankings (Ranks 4 - 10)
                 </span>
@@ -209,18 +209,18 @@ export function LeaderboardPodium({ entries, quizTitle, badgeLabel, subtitleNote
                 </span>
               </div>
 
-              <div className="divide-y divide-white/5">
+              <div className="divide-y divide-black/5 dark:divide-white/5">
                 {restEntries.map((entry) => (
                   <div 
                     key={entry.userId + entry.completedAt}
-                    className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-white/5 transition-colors gap-3 sm:gap-4"
+                    className="p-4 sm:px-6 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-black/[0.02] dark:hover:bg-white/5 transition-colors gap-3 sm:gap-4"
                   >
                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                      <span className="w-8 h-8 rounded-full bg-black/60 border border-white/10 flex items-center justify-center font-black text-sm text-text-muted shrink-0">
+                      <span className="w-8 h-8 rounded-full bg-crust dark:bg-black/60 border border-black/10 dark:border-white/10 flex items-center justify-center font-black text-sm text-text-main shrink-0">
                         #{entry.rank}
                       </span>
 
-                      <div className="w-10 h-10 rounded-full overflow-hidden bg-surface-dark shrink-0 border border-white/10">
+                      <div className="w-10 h-10 rounded-full overflow-hidden bg-crust shrink-0 border border-black/10 dark:border-white/10">
                         {entry.userPhoto ? (
                           <img src={entry.userPhoto} alt={entry.userName} className="w-full h-full object-cover" />
                         ) : (

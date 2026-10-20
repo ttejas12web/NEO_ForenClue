@@ -637,7 +637,7 @@ function ResourceCard({ item, onOpen, onDownload, onShare }: ResourceCardProps) 
         {/* Book Spine Portrait or Accent Banner */}
         <div 
           onClick={onOpen}
-          className="aspect-[5/3] w-full rounded-xl bg-gradient-to-br from-[#0e1726] to-[#040812] border border-black/10 dark:border-white/5 relative overflow-hidden flex items-center justify-center p-4 shadow-inner cursor-pointer group-hover:border-warning/20"
+          className="aspect-[5/3] w-full rounded-xl bg-gradient-to-br from-slate-100 via-slate-50 to-slate-200/80 dark:from-[#0e1726] dark:to-[#040812] border border-black/10 dark:border-white/5 relative overflow-hidden flex items-center justify-center p-4 shadow-inner cursor-pointer group-hover:border-warning/20"
         >
           {/* Subtle visual grid texture */}
           <div className="absolute inset-0 bg-grid-white/[0.01] bg-[size:16px_16px]" />
@@ -657,13 +657,13 @@ function ResourceCard({ item, onOpen, onDownload, onShare }: ResourceCardProps) 
           <ResilientImage 
             src={item.image || item.coverImage || ''} 
             alt={item.title} 
-            className="h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] group-hover:scale-[1.03] transition-transform duration-300"
+            className="h-full object-contain drop-shadow-[0_4px_12px_rgba(0,0,0,0.22)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] group-hover:scale-[1.03] transition-transform duration-300"
             fallback={
               <div className="flex flex-col items-center justify-between h-full w-full py-2">
-                <span className="text-[9px] font-mono text-warning/40 uppercase tracking-widest">{item.type}</span>
-                <BookOpen size={24} className="text-warning/30 my-2 group-hover:scale-110 transition-transform text-center" />
+                <span className="text-[9px] font-mono text-warning/70 dark:text-warning/40 uppercase tracking-widest">{item.type}</span>
+                <BookOpen size={24} className="text-warning/50 dark:text-warning/30 my-2 group-hover:scale-110 transition-transform text-center" />
                 <div className="text-center">
-                  <span className="block text-[10px] font-bold text-slate-100 uppercase tracking-wide truncate max-w-[180px]">{item.title}</span>
+                  <span className="block text-[10px] font-bold text-text-main uppercase tracking-wide truncate max-w-[180px]">{item.title}</span>
                   <span className="block text-[8px] font-mono text-text-muted mt-0.5 truncate max-w-[180px]">{item.author}</span>
                 </div>
               </div>

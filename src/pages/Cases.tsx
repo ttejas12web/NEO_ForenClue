@@ -90,9 +90,30 @@ export default function Cases() {
   const [naturalSize, setNaturalSize] = useState<{ width: number; height: number } | null>(null);
 
   // --- Reading Optimization & Accessibility Options ---
-  const [readingTheme, setReadingTheme] = useState<'slate' | 'sepia' | 'light'>('slate');
+  const [readingTheme, setReadingTheme] = useState<'slate' | 'sepia' | 'light'>(() => {
+    if (typeof document !== 'undefined' && document.documentElement.classList.contains('light')) {
+      return 'light';
+    }
+    return 'slate';
+  });
   const [readingFontSize, setReadingFontSize] = useState<number>(16); // in px
   const [readingFont, setReadingFont] = useState<'sans' | 'serif' | 'mono'>('sans');
+
+  // Keep readingTheme synced when user toggles global Light / Dark mode
+  useEffect(() => {
+    if (typeof document === 'undefined') return;
+    const syncReadingTheme = () => {
+      const isLight = document.documentElement.classList.contains('light');
+      setReadingTheme(prev => {
+        if (prev === 'sepia') return prev;
+        return isLight ? 'light' : 'slate';
+      });
+    };
+    syncReadingTheme();
+    const observer = new MutationObserver(syncReadingTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, [selectedCase]);
 
   // --- Speech Synthesis Assistant (Text-to-Speech) ---
   const [isNarrating, setIsNarrating] = useState(false);

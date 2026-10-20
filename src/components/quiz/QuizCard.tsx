@@ -229,14 +229,14 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
         {userAttempt && (
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-3 flex items-center justify-between text-xs my-3 shadow-sm">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
                 <CheckCircle2 size={16} />
               </div>
               <div>
-                <p className="font-bold text-emerald-400 uppercase tracking-wider text-[10px]">Attempted • Previous Score</p>
+                <p className="font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider text-[10px]">Attempted • Previous Score</p>
                 <p className="font-black text-text-main text-sm">
                   {userAttempt.score} / {userAttempt.totalPoints || quiz.totalPoints} PTS
-                  <span className="text-emerald-400 font-bold ml-1.5 text-xs">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold ml-1.5 text-xs">
                     ({Math.round((userAttempt.score / (userAttempt.totalPoints || quiz.totalPoints || 100)) * 100)}%)
                   </span>
                 </p>
@@ -254,10 +254,10 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
         {/* Free Quiz Access Box */}
         {!quiz.isPaid && (
           <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl px-3.5 py-2.5 flex items-center justify-between text-xs">
-            <span className="font-bold text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-              <CheckCircle2 size={14} className="text-emerald-400" /> Free Entry • Open For All
+            <span className="font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+              <CheckCircle2 size={14} className="text-emerald-600 dark:text-emerald-400" /> Free Entry • Open For All
             </span>
-            <span className="font-mono text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+            <span className="font-mono text-[10px] font-black text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
               ₹0 NO FEES
             </span>
           </div>
@@ -267,42 +267,42 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
         {quiz.isPaid && (
           <div className="bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-amber-500/5 border border-amber-500/30 rounded-xl p-3.5 space-y-2.5 text-xs">
             <div className="flex items-center justify-between">
-              <span className="font-extrabold text-amber-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-                <Trophy size={14} className="fill-amber-400" /> Cash Prizes: ₹{(quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100)}
+              <span className="font-extrabold text-amber-700 dark:text-amber-400 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                <Trophy size={14} className="fill-amber-500 dark:fill-amber-400 text-amber-500 dark:text-amber-400" /> Cash Prizes: ₹{(quiz.prizes?.first ?? 300) + (quiz.prizes?.second ?? 200) + (quiz.prizes?.third ?? 100)}
               </span>
-              <span className="font-black font-mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+              <span className="font-black font-mono text-[11px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-500/30">
                 Fee: ₹{quiz.price || 49}
               </span>
             </div>
             
             <div className="grid grid-cols-3 gap-1.5 text-center font-mono">
               <div className="bg-base/80 p-1.5 rounded-lg border border-amber-500/20">
-                <span className="text-[9px] text-amber-400 block uppercase font-bold">1st Rank</span>
+                <span className="text-[9px] text-amber-700 dark:text-amber-400 block uppercase font-bold">1st Rank</span>
                 <span className="font-black text-text-main text-xs">₹{quiz.prizes?.first ?? 300}</span>
               </div>
               <div className="bg-base/80 p-1.5 rounded-lg border border-amber-500/20">
-                <span className="text-[9px] text-amber-400 block uppercase font-bold">2nd Rank</span>
+                <span className="text-[9px] text-amber-700 dark:text-amber-400 block uppercase font-bold">2nd Rank</span>
                 <span className="font-black text-text-main text-xs">₹{quiz.prizes?.second ?? 200}</span>
               </div>
               <div className="bg-base/80 p-1.5 rounded-lg border border-amber-500/20">
-                <span className="text-[9px] text-amber-400 block uppercase font-bold">3rd Rank</span>
+                <span className="text-[9px] text-amber-700 dark:text-amber-400 block uppercase font-bold">3rd Rank</span>
                 <span className="font-black text-text-main text-xs">₹{quiz.prizes?.third ?? 100}</span>
               </div>
             </div>
 
             {userRegistration && (
-              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px]">
+              <div className="pt-2 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-[11px]">
                 <span className="text-text-muted">Verification Status:</span>
                 {userRegistration.status === 'approved' ? (
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
+                  <span className="text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1">
                     <CheckCircle2 size={12} /> Approved & Ready
                   </span>
                 ) : userRegistration.status === 'rejected' ? (
-                  <span className="text-rose-400 font-bold flex items-center gap-1">
+                  <span className="text-rose-600 dark:text-rose-400 font-bold flex items-center gap-1">
                     <AlertCircle size={12} /> Rejected (Click to retry)
                   </span>
                 ) : (
-                  <span className="text-amber-400 font-bold flex items-center gap-1 animate-pulse">
+                  <span className="text-amber-700 dark:text-amber-400 font-bold flex items-center gap-1 animate-pulse">
                     <Clock size={12} /> Reviewing UTR #{userRegistration.utrNumber.slice(-4)}
                   </span>
                 )}
@@ -313,10 +313,10 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
 
         {/* Schedule Info for Weekly Challenge */}
         {quiz.isWeeklyChallenge && quiz.scheduledStartTime && (
-          <div className="bg-black/40 rounded-xl p-3.5 border border-white/5 space-y-2 text-xs">
+          <div className="bg-crust dark:bg-black/40 rounded-xl p-3.5 border border-black/5 dark:border-white/5 space-y-2 text-xs">
             <div className="flex items-center justify-between text-text-muted">
               <span className="flex items-center gap-1.5">
-                <Calendar size={13} className="text-amber-400" /> Date & Time:
+                <Calendar size={13} className="text-amber-600 dark:text-amber-400" /> Date & Time:
               </span>
               <span className="font-semibold text-text-main">
                 {formatDate(quiz.scheduledStartTime)}
@@ -326,17 +326,17 @@ export function QuizCard({ quiz, onEnroll, isEnrolling, userAttempt }: QuizCardP
             {status !== 'ENDED' && (
               <div className="flex items-center justify-between">
                 <span className="text-text-muted">Countdown:</span>
-                <span className="font-extrabold text-amber-400 tracking-wider">
+                <span className="font-extrabold text-amber-700 dark:text-amber-400 tracking-wider">
                   {timeLeft}
                 </span>
               </div>
             )}
 
-            <div className="flex items-center justify-between pt-1 border-t border-white/5">
+            <div className="flex items-center justify-between pt-1 border-t border-black/5 dark:border-white/5">
               <span className="flex items-center gap-1.5 text-text-muted">
-                <Users size={13} className="text-info" /> Enrolled Participants:
+                <Users size={13} className="text-warning" /> Enrolled Participants:
               </span>
-              <span className="font-bold text-info">
+              <span className="font-bold text-warning">
                 {enrolledCount} {enrolledCount === 1 ? 'User' : 'Users'}
               </span>
             </div>

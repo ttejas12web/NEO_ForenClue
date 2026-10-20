@@ -101,21 +101,21 @@ export function UpcomingQuizSection() {
                 className="group relative bg-surface rounded-2xl border border-warning/30 hover:border-warning/70 shadow-xl shadow-warning/5 hover:shadow-warning/15 transition-all duration-300 flex flex-col justify-between overflow-hidden"
               >
                 {/* Header Tag / Banner */}
-                <div className="bg-gradient-to-r from-warning via-amber-500 to-yellow-500 px-4 py-2 flex items-center justify-between text-crust font-black text-[11px] uppercase tracking-widest shadow-sm">
+                <div className="bg-gradient-to-r from-warning via-amber-500 to-yellow-500 px-4 py-2 flex items-center justify-between text-slate-950 font-black text-[11px] uppercase tracking-widest shadow-sm">
                   <span className="flex items-center gap-1.5">
-                    <Trophy size={14} className="fill-crust" /> WEEKLY CHALLENGE #{idx + 1}
+                    <Trophy size={14} className="fill-slate-950" /> WEEKLY CHALLENGE #{idx + 1}
                   </span>
                   
                   {isLive ? (
-                    <span className="flex items-center gap-1.5 bg-crust text-warning px-2 py-0.5 rounded-full font-mono text-[10px] font-black border border-warning/30">
+                    <span className="flex items-center gap-1.5 bg-slate-950 text-emerald-400 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-black border border-emerald-500/30">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> LIVE NOW
                     </span>
                   ) : isUpcoming ? (
-                    <span className="flex items-center gap-1.5 bg-crust/90 text-amber-300 px-2 py-0.5 rounded-full font-mono text-[10px] font-black">
+                    <span className="flex items-center gap-1.5 bg-slate-950/90 text-amber-300 px-2.5 py-0.5 rounded-full font-mono text-[10px] font-black">
                       <Clock size={11} /> UPCOMING
                     </span>
                   ) : (
-                    <span className="bg-crust/80 text-white/80 px-2 py-0.5 rounded-full font-mono text-[10px]">
+                    <span className="bg-slate-950/85 text-white px-2.5 py-0.5 rounded-full font-mono text-[10px]">
                       ACTIVE
                     </span>
                   )}
@@ -129,7 +129,7 @@ export function UpcomingQuizSection() {
                       <span className="text-[11px] font-black uppercase tracking-wider text-warning bg-warning/10 px-3 py-1 rounded-full border border-warning/20">
                         {quiz.category || 'Forensic Challenge'}
                       </span>
-                      <span className="text-xs font-mono font-bold text-amber-500 flex items-center gap-1 bg-amber-500/10 px-2.5 py-1 rounded-lg">
+                      <span className="text-xs font-mono font-bold text-amber-600 dark:text-amber-500 flex items-center gap-1 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
                         <Award size={14} /> {quiz.totalPoints || 100} PTS
                       </span>
                     </div>
@@ -187,7 +187,7 @@ export function UpcomingQuizSection() {
                 </div>
 
                 {/* Card Footer Actions */}
-                <div className="p-4 bg-base/50 border-t border-black/10 dark:border-white/10 flex items-center gap-2">
+                <div className="p-4 bg-crust/60 dark:bg-base/50 border-t border-black/10 dark:border-white/10 flex items-center gap-2">
                   <Link
                     to={`/quizzes/${quiz.id}`}
                     className="flex-1 bg-warning hover:bg-warning-dark text-crust font-black text-xs uppercase tracking-wider py-3 rounded-xl transition-all text-center flex items-center justify-center gap-2 shadow-md shadow-warning/20 cursor-pointer"
@@ -196,7 +196,7 @@ export function UpcomingQuizSection() {
                   </Link>
                   <Link
                     to={`/quizzes/${quiz.id}/leaderboard`}
-                    className="p-3 bg-surface hover:bg-black/10 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 hover:border-amber-500/50 text-amber-500 rounded-xl transition-all cursor-pointer"
+                    className="p-3 bg-surface hover:bg-black/5 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 hover:border-amber-500/50 text-amber-600 dark:text-amber-500 rounded-xl transition-all cursor-pointer"
                     title="View Leaderboard"
                   >
                     <Trophy size={16} />
@@ -211,7 +211,7 @@ export function UpcomingQuizSection() {
         <div className="mt-16 flex justify-center relative z-10">
           <Link
             to="/quizzes"
-            className="group px-8 py-4 bg-gradient-to-r from-warning to-amber-500 hover:from-amber-400 hover:to-yellow-500 text-black font-black text-xs sm:text-sm uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-[0_8px_30px_rgba(252,211,77,0.4)] hover:shadow-[0_12px_40px_rgba(252,211,77,0.6)] hover:-translate-y-1 flex items-center gap-3 cursor-pointer ring-1 ring-white/20 overflow-hidden relative"
+            className="group px-8 py-4 bg-gradient-to-r from-warning to-amber-500 hover:from-amber-400 hover:to-yellow-500 text-slate-950 font-black text-xs sm:text-sm uppercase tracking-widest rounded-2xl transition-all duration-300 shadow-[0_8px_30px_rgba(2,132,199,0.25)] dark:shadow-[0_8px_30px_rgba(252,211,77,0.4)] hover:-translate-y-1 flex items-center gap-3 cursor-pointer ring-1 ring-black/10 dark:ring-white/20 overflow-hidden relative"
           >
             <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
             <span className="relative z-10">Enter Quiz Arena</span>

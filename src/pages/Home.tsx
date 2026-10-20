@@ -384,14 +384,14 @@ The ForenClue Curriculum Board
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.6 }}
-        className="py-20 bg-warning text-crust"
+        className="py-20 bg-warning text-white dark:text-crust"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
            <div className="text-center mb-12">
              <h2 className="font-heading font-black text-3xl md:text-5xl uppercase tracking-tight">
                Built for serious forensic learning
              </h2>
-             <p className="mt-4 max-w-3xl mx-auto text-sm md:text-base font-medium text-crust/80 leading-relaxed">
+             <p className="mt-4 max-w-3xl mx-auto text-sm md:text-base font-medium text-white/90 dark:text-crust/80 leading-relaxed">
                Use the platform to connect scientific principles with documented investigative practice. Every section has a clear learning purpose and links to the relevant public resource.
              </p>
            </div>
@@ -419,10 +419,10 @@ The ForenClue Curriculum Board
                  path: "/courses"
                }
              ].map((item, i) => (
-               <Link key={i} to={item.path} className="bg-crust/5 hover:bg-crust/10 p-6 rounded-lg flex flex-col justify-between transition-colors border border-crust/10">
+               <Link key={i} to={item.path} className="bg-white/15 hover:bg-white/25 dark:bg-crust/5 dark:hover:bg-crust/10 p-6 rounded-xl flex flex-col justify-between transition-colors border border-white/25 dark:border-crust/10 shadow-sm">
                  <div>
                    <p className="font-heading font-black text-xl uppercase tracking-tight mb-3">{item.title}</p>
-                   <p className="font-medium text-sm leading-relaxed text-crust/80">{item.description}</p>
+                   <p className="font-medium text-sm leading-relaxed text-white/90 dark:text-crust/80">{item.description}</p>
                  </div>
                  <span className="mt-6 text-xs font-black uppercase tracking-wider inline-flex items-center gap-2">Explore section <ArrowRight size={14} /></span>
                </Link>
@@ -431,7 +431,7 @@ The ForenClue Curriculum Board
         </div>
       </motion.section>
       
-      <CrimeTape text="CROSSING BOUNDARIES OF SCIENCE" angle={1} className="bg-white text-black" />
+      <CrimeTape text="CROSSING BOUNDARIES OF SCIENCE" angle={1} className="bg-slate-900 text-white dark:bg-white dark:text-black" />
 
       {/* Lightbox Modal for Poster */}
       {isPosterOpen && (

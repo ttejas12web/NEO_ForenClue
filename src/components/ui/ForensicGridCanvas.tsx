@@ -98,13 +98,13 @@ export function ForensicGridCanvas() {
       ctx.clearRect(0, 0, width, height);
 
       // Theme-based colors
-      const gridColor = isLightMode ? 'rgba(2, 132, 199, 0.08)' : 'rgba(0, 240, 255, 0.05)';
+      const gridColor = isLightMode ? 'rgba(15, 23, 42, 0.045)' : 'rgba(0, 240, 255, 0.05)';
       const laserGlowStart = isLightMode ? 'rgba(2, 132, 199, 0)' : 'rgba(0, 240, 255, 0)';
-      const laserGlowMid = isLightMode ? 'rgba(2, 132, 199, 0.06)' : 'rgba(0, 240, 255, 0.06)';
-      const laserGlowEnd = isLightMode ? 'rgba(2, 132, 199, 0.15)' : 'rgba(0, 240, 255, 0.15)';
-      const laserFilamentColor = isLightMode ? 'rgba(2, 132, 199, 0.5)' : 'rgba(0, 240, 255, 0.4)';
-      const radarRingColor = isLightMode ? 'rgba(2, 132, 199, 0.08)' : 'rgba(234, 179, 8, 0.04)';
-      const radarBeamColor = isLightMode ? 'rgba(2, 132, 199, 0.25)' : 'rgba(0, 240, 255, 0.15)';
+      const laserGlowMid = isLightMode ? 'rgba(2, 132, 199, 0.035)' : 'rgba(0, 240, 255, 0.06)';
+      const laserGlowEnd = isLightMode ? 'rgba(2, 132, 199, 0.09)' : 'rgba(0, 240, 255, 0.15)';
+      const laserFilamentColor = isLightMode ? 'rgba(2, 132, 199, 0.3)' : 'rgba(0, 240, 255, 0.4)';
+      const radarRingColor = isLightMode ? 'rgba(2, 132, 199, 0.05)' : 'rgba(234, 179, 8, 0.04)';
+      const radarBeamColor = isLightMode ? 'rgba(2, 132, 199, 0.14)' : 'rgba(0, 240, 255, 0.15)';
       const streamBaseColor = isLightMode ? 'rgba(2, 132, 199, ' : 'rgba(0, 240, 255, ';
 
       // 1. Draw subtle ambient high-tech grid (Gridlines spacing 45px)
@@ -180,9 +180,10 @@ export function ForensicGridCanvas() {
       // 4. Update and Render Digital Base Particles (DNA Typing & Cyber Streams)
       ctx.font = '9px monospace';
       particles.forEach((p) => {
-        // Render characters with higher active state opacity in light mode
-        const mult = isLightMode ? 2.0 : 1.0;
-        ctx.fillStyle = `${streamBaseColor}${Math.min(0.9, p.opacity * mult * (0.6 + 0.4 * Math.sin(scanLineY / 40)))})`;
+        // Render characters with balanced opacity in light mode
+        const mult = isLightMode ? 1.1 : 1.0;
+        const maxAlpha = isLightMode ? 0.35 : 0.9;
+        ctx.fillStyle = `${streamBaseColor}${Math.min(maxAlpha, p.opacity * mult * (0.6 + 0.4 * Math.sin(scanLineY / 40)))})`;
         ctx.fillText(p.char, p.x, p.y);
 
         // Slow updates
@@ -210,11 +211,11 @@ export function ForensicGridCanvas() {
         if (node.pulseSize < 2) node.pulseDirection = 1;
 
         // Colors for crosshair marker
-        const crosshairStroke = isLightMode ? 'rgba(217, 119, 6, 0.55)' : 'rgba(234, 179, 8, 0.35)';
-        const pulseStroke = isLightMode ? `rgba(217, 119, 6, ${0.6 - (node.pulseSize / 20)})` : `rgba(234, 179, 8, ${0.4 - (node.pulseSize / 20)})`;
-        const centerHairStroke = isLightMode ? 'rgba(217, 119, 6, 0.65)' : 'rgba(234, 179, 8, 0.4)';
-        const idColor = isLightMode ? 'rgba(180, 83, 9, 0.9)' : 'rgba(234, 179, 8, 0.7)';
-        const labelColor = isLightMode ? 'rgba(2, 132, 199, 0.85)' : 'rgba(0, 240, 255, 0.6)';
+        const crosshairStroke = isLightMode ? 'rgba(217, 119, 6, 0.35)' : 'rgba(234, 179, 8, 0.35)';
+        const pulseStroke = isLightMode ? `rgba(217, 119, 6, ${0.4 - (node.pulseSize / 20)})` : `rgba(234, 179, 8, ${0.4 - (node.pulseSize / 20)})`;
+        const centerHairStroke = isLightMode ? 'rgba(217, 119, 6, 0.45)' : 'rgba(234, 179, 8, 0.4)';
+        const idColor = isLightMode ? 'rgba(180, 83, 9, 0.65)' : 'rgba(234, 179, 8, 0.7)';
+        const labelColor = isLightMode ? 'rgba(2, 132, 199, 0.6)' : 'rgba(0, 240, 255, 0.6)';
 
         // Draw crosshair circle
         ctx.strokeStyle = crosshairStroke;

@@ -2,10 +2,13 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@custom-variant dark (&:where(:root:not(.light), :root:not(.light) *));
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
 
+  --color-background: var(--theme-base);
   --color-crust: var(--theme-crust);
   --color-base: var(--theme-base);
   --color-surface: var(--theme-surface);
@@ -32,30 +35,82 @@
     --theme-grid-line-strong: rgba(255, 255, 255, 0.05);
     --theme-scrollbar: rgba(255, 255, 255, 0.1);
     --theme-scrollbar-hover: rgba(255, 255, 255, 0.2);
+    color-scheme: dark;
   }
 
   .light {
-    --theme-crust: #f8fafc;
-    --theme-base: #ffffff;
-    --theme-surface: #f1f5f9;
-    --theme-surface-hover: #e2e8f0;
+    --theme-crust: #f1f5f9;
+    --theme-base: #f8fafc;
+    --theme-surface: #ffffff;
+    --theme-surface-hover: #f1f5f9;
     --theme-warning: #0284c7;
     --theme-warning-dark: #0369a1;
     --theme-text-main: #0f172a;
-    --theme-text-muted: #64748b;
-    --theme-grid-line: rgba(0, 0, 0, 0.03);
-    --theme-grid-line-strong: rgba(0, 0, 0, 0.05);
-    --theme-scrollbar: rgba(0, 0, 0, 0.1);
-    --theme-scrollbar-hover: rgba(0, 0, 0, 0.2);
+    --theme-text-muted: #475569;
+    --theme-grid-line: rgba(15, 23, 42, 0.04);
+    --theme-grid-line-strong: rgba(15, 23, 42, 0.07);
+    --theme-scrollbar: rgba(15, 23, 42, 0.18);
+    --theme-scrollbar-hover: rgba(2, 132, 199, 0.4);
+    color-scheme: light;
   }
 
   body {
-    @apply bg-base text-text-main font-sans antialiased overflow-x-hidden;
+    @apply bg-base text-text-main font-sans antialiased overflow-x-hidden transition-colors duration-200;
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
   }
+}
+
+/* Light Mode Comprehensive Surface, Border & Contrast Enhancements */
+.light .bg-surface {
+  box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.05), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+}
+
+.light .bg-warning.text-crust,
+.light .bg-warning.text-black,
+.light .bg-warning > .text-crust {
+  color: #ffffff;
+}
+
+.light .bg-amber-500.text-crust,
+.light .bg-amber-500\/80.text-crust,
+.light .bg-amber-400.text-crust {
+  color: #0f172a;
+}
+
+.light :is(
+  .border-white\/5,
+  .border-white\/10,
+  .border-white\/15,
+  .border-white\/20,
+  .border-white\/\[0\.05\],
+  .border-white\/\[0\.06\],
+  .border-white\/\[0\.08\],
+  .border-slate-800,
+  .border-slate-800\/50,
+  .border-slate-800\/60,
+  .border-slate-800\/80,
+  .border-zinc-800,
+  .border-zinc-800\/50,
+  .border-zinc-800\/60,
+  .border-zinc-800\/80
+) {
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+.light :is(
+  .bg-black\/20,
+  .bg-black\/30,
+  .bg-black\/40,
+  .bg-black\/50,
+  .bg-white\/5,
+  .bg-white\/\[0\.02\],
+  .bg-white\/\[0\.03\],
+  .bg-white\/\[0\.04\]
+):not(.fixed):not(.absolute) {
+  background-color: #f1f5f9;
 }
 
 .preserve-3d {
