@@ -9,17 +9,26 @@ import { ErrorBoundary } from './ErrorBoundary.tsx';
 
 if (typeof window !== 'undefined') {
   window.addEventListener('unhandledrejection', (event) => {
-    // Suppress raw Event objects (e.g. from network/iframe load failures, image loads, or HMR disconnects)
-    if (event.reason && (event.reason.isTrusted || event.reason instanceof Event || (typeof event.reason === 'object' && 'isTrusted' in event.reason))) {
+    const reasonMsg = event.reason instanceof Error ? event.reason.message : String(event.reason || '');
+    // Suppress raw Event objects or Vite HMR WebSocket disconnects when HMR is disabled
+    if (
+      reasonMsg.includes('WebSocket closed without opened') ||
+      (event.reason && (event.reason.isTrusted || event.reason instanceof Event || (typeof event.reason === 'object' && 'isTrusted' in event.reason)))
+    ) {
       event.preventDefault();
-      console.warn("Handled DOM Event promise rejection:", event.reason);
+      return;
     }
   });
 
   window.addEventListener('error', (event) => {
-    if (event.error && (event.error.isTrusted || event.error instanceof Event || (typeof event.error === 'object' && 'isTrusted' in event.error))) {
+    const errMsg = event.message || (event.error instanceof Error ? event.error.message : '');
+    if (
+      errMsg.includes('WebSocket closed without opened') ||
+      (event.filename && event.filename.includes('@vite/client')) ||
+      (event.error && (event.error.isTrusted || event.error instanceof Event || (typeof event.error === 'object' && 'isTrusted' in event.error)))
+    ) {
       event.preventDefault();
-      console.warn("Handled DOM Event error:", event.error);
+      return;
     }
   });
 }

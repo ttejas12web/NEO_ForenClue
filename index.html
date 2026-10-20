@@ -19,6 +19,35 @@
     <script>
       (function () {
         document.documentElement.classList.add('js');
+        if (typeof window !== 'undefined' && typeof window.WebSocket === 'function') {
+          var NativeWebSocket = window.WebSocket;
+          var WrappedWebSocket = function (url, protocols) {
+            var protoStr = Array.isArray(protocols) ? protocols.join(',') : String(protocols || '');
+            if (protoStr.indexOf('vite-hmr') !== -1 || protoStr.indexOf('vite-ping') !== -1) {
+              var target = new EventTarget();
+              target.url = String(url || '');
+              target.protocol = protoStr;
+              target.readyState = 1;
+              target.CONNECTING = 0;
+              target.OPEN = 1;
+              target.CLOSING = 2;
+              target.CLOSED = 3;
+              target. bufferedAmount = 0;
+              target.extensions = '';
+              target.binaryType = 'blob';
+              target.send = function () {};
+              target.close = function () { target.readyState = 3; };
+              return target;
+            }
+            return protocols !== undefined ? new NativeWebSocket(url, protocols) : new NativeWebSocket(url);
+          };
+          WrappedWebSocket.prototype = NativeWebSocket.prototype;
+          WrappedWebSocket.CONNECTING = NativeWebSocket.CONNECTING;
+          WrappedWebSocket.OPEN = NativeWebSocket.OPEN;
+          WrappedWebSocket.CLOSING = NativeWebSocket.CLOSING;
+          WrappedWebSocket.CLOSED = NativeWebSocket.CLOSED;
+          window.WebSocket = WrappedWebSocket;
+        }
       })();
     </script>
     <style>

@@ -1,7 +1,7 @@
 export interface CollegeCourse {
   id?: string;
   name: string;
-  degreeLevel: 'Bachelor' | 'Master' | 'Doctorate' | 'Diploma' | 'Certificate';
+  degreeLevel: 'Bachelor' | 'Master' | 'Doctorate' | 'Diploma' | 'Certificate' | 'Certificate/Diploma';
   duration: string;
   eligibility?: string;
   estimatedFees?: string;
@@ -16,7 +16,7 @@ export interface College {
   country: string;
   state: string;
   city: string;
-  type: 'Government' | 'Private' | 'Deemed University' | 'Autonomous' | 'Institute of National Importance' | 'Other';
+  type: 'Government' | 'Central' | 'State' | 'Private' | 'Deemed University' | 'Deemed' | 'Autonomous' | 'Institute of National Importance' | 'Other';
   website: string;
   logo?: string;
   bannerImage?: string;

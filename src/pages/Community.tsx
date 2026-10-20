@@ -721,8 +721,10 @@ export function PostCard({
 
   return (
     <motion.article 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 16 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-20px" }}
+      transition={{ duration: 0.45, ease: "easeOut" }}
       className={`bg-surface border border-black/10 dark:border-white/5 rounded-2xl overflow-hidden shadow-xl hover:border-warning/20 transition-all group relative ${
         doubt.imageUrl ? 'border-l-4 border-l-warning/40 shadow-warning/5' : ''
       }`}

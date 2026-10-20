@@ -92,8 +92,24 @@
   background: var(--theme-scrollbar-hover);
 }
 
+@keyframes subtleFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-viewport {
+  animation: subtleFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(2) > article:nth-of-type(2) > div:nth-of-type(1) {
     border-radius: 12px;
+    animation: subtleFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
     transition: border-radius 0.3s cubic-bezier(0.4, 0, 0.2, 1), transform 0.3s ease, box-shadow 0.3s ease;
 }
 

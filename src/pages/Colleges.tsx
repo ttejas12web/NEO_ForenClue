@@ -247,7 +247,13 @@ export default function Colleges() {
           ]}
         />
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-20px" }}
+          transition={{ duration: 0.45, ease: "easeOut" }}
+          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8"
+        >
           
           {/* Top Bar / Navigation & Actions */}
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -284,7 +290,13 @@ export default function Colleges() {
           </div>
 
           {/* Full Page Hero Header Card */}
-          <div className="relative rounded-3xl bg-surface border border-black/10 dark:border-white/10 overflow-hidden shadow-xl">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-20px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative rounded-3xl bg-surface border border-black/10 dark:border-white/10 overflow-hidden shadow-xl"
+          >
             {/* Banner Cover Image */}
             <div className="relative h-64 sm:h-80 w-full overflow-hidden bg-crust">
               <img
@@ -372,7 +384,7 @@ export default function Colleges() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Main Grid Content Layout */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -553,7 +565,7 @@ export default function Colleges() {
 
           </div>
 
-        </div>
+        </motion.div>
       </div>
     );
   }
@@ -890,8 +902,10 @@ export default function Colleges() {
                   return (
                     <motion.div
                       key={college.id}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
+                      initial={{ opacity: 0, y: 18 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-20px" }}
+                      transition={{ duration: 0.45, ease: "easeOut" }}
                       className="group bg-surface border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-warning/30 transition-all flex flex-col cursor-pointer"
                       onClick={() => handleOpenDetails(college)}
                     >

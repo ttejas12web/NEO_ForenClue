@@ -164,6 +164,11 @@ export default function Admin() {
   const [editingCollegeId, setEditingCollegeId] = useState<string | null>(null);
   const [deleteConfirmCollegeId, setDeleteConfirmCollegeId] = useState<string | null>(null);
   const [collegeSaveSuccess, setCollegeSaveSuccess] = useState('');
+  const [collegeAdminSearch, setCollegeAdminSearch] = useState('');
+  const [collegeAdminTypeFilter, setCollegeAdminTypeFilter] = useState<string>('all');
+  const collegeFormRef = React.useRef<HTMLFormElement | null>(null);
+  const collegeNameInputRef = React.useRef<HTMLInputElement | null>(null);
+  const collegeDirectoryListRef = React.useRef<HTMLDivElement | null>(null);
 
   const [collegeForm, setCollegeForm] = useState({
     name: '',
@@ -1683,7 +1688,51 @@ export default function Admin() {
         }
       ]
     });
+
+    // Smoothly scroll up to the editing form details and focus the name input
+    setTimeout(() => {
+      if (collegeFormRef.current) {
+        const yOffset = -96;
+        const y = collegeFormRef.current.getBoundingClientRect().top + window.scrollY + yOffset;
+        window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      setTimeout(() => {
+        collegeNameInputRef.current?.focus({ preventScroll: true });
+      }, 350);
+    }, 40);
   };
+
+  const filteredAdminColleges = React.useMemo(() => {
+    const q = collegeAdminSearch.trim().toLowerCase();
+    return colleges.filter((col) => {
+      if (collegeAdminTypeFilter !== 'all') {
+        if (collegeAdminTypeFilter === 'Featured') {
+          if (!col.featured) return false;
+        } else if (col.type !== collegeAdminTypeFilter) {
+          return false;
+        }
+      }
+      if (!q) return true;
+      const matchBasic =
+        (col.name || '').toLowerCase().includes(q) ||
+        (col.shortName || '').toLowerCase().includes(q) ||
+        (col.city || '').toLowerCase().includes(q) ||
+        (col.state || '').toLowerCase().includes(q) ||
+        (col.country || '').toLowerCase().includes(q) ||
+        (col.type || '').toLowerCase().includes(q) ||
+        (col.accreditation || '').toLowerCase().includes(q) ||
+        (col.id || '').toLowerCase().includes(q);
+      const matchCourses = (col.coursesOffered || []).some(
+        (c) =>
+          (c.name || '').toLowerCase().includes(q) ||
+          (c.degreeLevel || '').toLowerCase().includes(q) ||
+          (c.specializations || []).some((s) => s.toLowerCase().includes(q))
+      );
+      return matchBasic || matchCourses;
+    });
+  }, [colleges, collegeAdminSearch, collegeAdminTypeFilter]);
 
   const handleAdminSaveCollege = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -7135,45 +7184,146 @@ export default function Admin() {
                 {activeTab === 'colleges' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
                     
-                    {/* Header */}
-                    <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                      <div>
-                        <h2 className="text-xl font-heading font-black uppercase tracking-tight text-text-main flex items-center gap-2">
-                          <Building2 size={22} className="text-warning" /> Colleges & Universities Directory Manager
-                        </h2>
-                        <p className="text-xs text-text-muted mt-1">
-                          Add, edit, or update forensic science colleges, universities, and courses offered across the globe.
-                        </p>
+                    {/* Header & Quick Directory Search */}
+                    <div className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6 space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                          <h2 className="text-xl font-heading font-black uppercase tracking-tight text-text-main flex items-center gap-2">
+                            <Building2 size={22} className="text-warning" /> Colleges & Universities Directory Manager
+                          </h2>
+                          <p className="text-xs text-text-muted mt-1">
+                            Search, add, edit, or update forensic science colleges, universities, and courses offered across the globe.
+                          </p>
+                        </div>
+
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {editingCollegeId && (
+                            <button
+                              type="button"
+                              onClick={handleResetCollegeForm}
+                              className="px-4 py-2 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main rounded-xl text-xs font-bold transition-colors"
+                            >
+                              Cancel Editing
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              collegeDirectoryListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }}
+                            className="px-4 py-2 bg-warning/10 hover:bg-warning/20 text-warning border border-warning/20 rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+                          >
+                            <Search size={14} /> Browse Directory ({colleges.length})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={fetchCollections}
+                            className="px-4 py-2 bg-surface hover:bg-surface/80 text-text-main border border-black/10 dark:border-white/10 rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
+                          >
+                            <RefreshCw size={14} className={collegesLoading ? "animate-spin text-warning" : ""} /> Refresh List
+                          </button>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-2">
-                        {editingCollegeId && (
-                          <button
-                            onClick={handleResetCollegeForm}
-                            className="px-4 py-2 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main rounded-xl text-xs font-bold transition-colors"
-                          >
-                            Cancel Editing
-                          </button>
+                      {/* Quick Search Bar at Top for Fast Lookup & Edit */}
+                      <div className="pt-3 border-t border-black/10 dark:border-white/10 space-y-3">
+                        <div className="relative">
+                          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                          <input
+                            type="text"
+                            value={collegeAdminSearch}
+                            onChange={(e) => setCollegeAdminSearch(e.target.value)}
+                            placeholder="Quick search college to edit by name, short name, city, state, accreditation, or course..."
+                            className="w-full bg-background border border-black/10 dark:border-white/10 rounded-xl pl-10 pr-24 py-2.5 text-xs font-bold text-text-main outline-none focus:border-warning transition-colors"
+                          />
+                          {collegeAdminSearch && (
+                            <button
+                              type="button"
+                              onClick={() => setCollegeAdminSearch('')}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-text-muted hover:text-text-main flex items-center gap-1 px-2 py-1 rounded-lg bg-surface"
+                            >
+                              <X size={13} /> Clear
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Instant Quick-Pick Results when typing in top search bar */}
+                        {collegeAdminSearch.trim() !== '' && (
+                          <div className="bg-background border border-warning/30 rounded-xl p-3 space-y-2 max-h-64 overflow-y-auto">
+                            <div className="flex items-center justify-between text-[11px] font-mono text-text-muted px-1">
+                              <span>Matching Colleges ({filteredAdminColleges.length} found) — Click any college to load its editing details below</span>
+                              <button
+                                type="button"
+                                onClick={() => collegeDirectoryListRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })}
+                                className="text-warning hover:underline font-bold"
+                              >
+                                View in Full List ↓
+                              </button>
+                            </div>
+                            {filteredAdminColleges.length === 0 ? (
+                              <div className="text-xs text-text-muted py-3 text-center">
+                                No colleges match "{collegeAdminSearch}".
+                              </div>
+                            ) : (
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {filteredAdminColleges.slice(0, 8).map((col) => (
+                                  <button
+                                    key={col.id}
+                                    type="button"
+                                    onClick={() => handleAdminEditCollege(col)}
+                                    className={`text-left p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2 ${
+                                      editingCollegeId === col.id
+                                        ? 'bg-warning/15 border-warning text-text-main'
+                                        : 'bg-surface hover:bg-warning/5 border-black/10 dark:border-white/10 hover:border-warning/40'
+                                    }`}
+                                  >
+                                    <div className="min-w-0">
+                                      <div className="text-xs font-black text-text-main truncate">{col.name}</div>
+                                      <div className="text-[11px] text-text-muted truncate">
+                                        {col.city}{col.state ? `, ${col.state}` : ''} · {col.type}
+                                      </div>
+                                    </div>
+                                    <span className="shrink-0 px-2.5 py-1 rounded-lg bg-warning text-crust text-[10px] font-black uppercase flex items-center gap-1">
+                                      <Edit3 size={11} /> Edit
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+                          </div>
                         )}
-                        <button
-                          onClick={fetchCollections}
-                          className="px-4 py-2 bg-surface hover:bg-surface/80 text-text-main border border-black/10 dark:border-white/10 rounded-xl text-xs font-bold transition-colors flex items-center gap-2"
-                        >
-                          <RefreshCw size={14} className={collegesLoading ? "animate-spin text-warning" : ""} /> Refresh List
-                        </button>
                       </div>
                     </div>
 
                     {/* Add / Edit Form */}
-                    <form onSubmit={handleAdminSaveCollege} className="bg-surface border border-warning/30 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
-                      <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-4">
+                    <form
+                      ref={collegeFormRef}
+                      id="admin-college-edit-form"
+                      onSubmit={handleAdminSaveCollege}
+                      className={`bg-surface border rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl transition-all ${
+                        editingCollegeId
+                          ? 'border-warning ring-2 ring-warning/20'
+                          : 'border-warning/30'
+                      }`}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/10 dark:border-white/10 pb-4">
                         <h3 className="text-sm font-black uppercase tracking-widest text-warning flex items-center gap-2">
-                          <Plus size={16} /> {editingCollegeId ? `Edit College Record (${collegeForm.name})` : "Add New College / University"}
+                          {editingCollegeId ? <Edit3 size={16} /> : <Plus size={16} />}
+                          {editingCollegeId ? `Editing College Details: ${collegeForm.name}` : "Add New College / University"}
                         </h3>
                         {editingCollegeId && (
-                          <span className="text-xs font-mono text-warning bg-warning/10 px-2.5 py-1 rounded-full border border-warning/20">
-                            Editing ID: {editingCollegeId}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono text-warning bg-warning/10 px-2.5 py-1 rounded-lg border border-warning/20">
+                              ID: {editingCollegeId}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={handleResetCollegeForm}
+                              className="px-3 py-1 bg-background hover:bg-red-500/10 text-text-muted hover:text-red-400 border border-black/10 dark:border-white/10 rounded-lg text-xs font-bold transition-colors flex items-center gap-1"
+                            >
+                              <X size={13} /> Switch to Add New
+                            </button>
+                          </div>
                         )}
                       </div>
 
@@ -7182,6 +7332,7 @@ export default function Admin() {
                         <div className="space-y-1 md:col-span-2">
                           <label className="text-[10px] font-mono uppercase text-text-muted">College / University Name *</label>
                           <input
+                            ref={collegeNameInputRef}
                             type="text"
                             value={collegeForm.name}
                             onChange={(e) => setCollegeForm({ ...collegeForm, name: e.target.value })}
@@ -7546,14 +7697,70 @@ export default function Admin() {
                     </form>
 
                     {/* Listed Colleges Directory */}
-                    <div className="bg-surface border border-black/10 dark:border-white/5 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl">
-                      <div className="flex items-center justify-between border-b border-black/10 dark:border-white/10 pb-4">
+                    <div
+                      ref={collegeDirectoryListRef}
+                      className="bg-surface border border-black/10 dark:border-white/5 rounded-3xl p-6 sm:p-8 space-y-6 shadow-xl"
+                    >
+                      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 pb-5">
                         <div>
-                          <h3 className="text-base font-black uppercase tracking-tight text-text-main">
-                            Live College Directory Records ({colleges.length})
+                          <h3 className="text-base font-black uppercase tracking-tight text-text-main flex items-center gap-2">
+                            <span>Live College Directory Records</span>
+                            <span className="text-xs font-mono text-warning">
+                              ({filteredAdminColleges.length} of {colleges.length})
+                            </span>
                           </h3>
-                          <p className="text-xs text-text-muted">Currently active universities and institutes published in the database.</p>
+                          <p className="text-xs text-text-muted mt-0.5">
+                            Click on any college card or the Edit button to load its details into the editor above.
+                          </p>
                         </div>
+
+                        {/* Search Input inside Directory Section */}
+                        <div className="relative w-full lg:w-96">
+                          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
+                          <input
+                            type="text"
+                            value={collegeAdminSearch}
+                            onChange={(e) => setCollegeAdminSearch(e.target.value)}
+                            placeholder="Search colleges by name, city, state, course..."
+                            className="w-full bg-background border border-black/10 dark:border-white/10 rounded-xl pl-10 pr-9 py-2.5 text-xs font-bold text-text-main outline-none focus:border-warning transition-colors"
+                          />
+                          {collegeAdminSearch && (
+                            <button
+                              type="button"
+                              onClick={() => setCollegeAdminSearch('')}
+                              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main p-1"
+                              title="Clear search"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Institution Type Filter Controls */}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {[
+                          { label: 'All Institutions', value: 'all' },
+                          { label: 'Featured', value: 'Featured' },
+                          { label: 'Inst. of National Importance', value: 'Institute of National Importance' },
+                          { label: 'Government', value: 'Government' },
+                          { label: 'Private', value: 'Private' },
+                          { label: 'Deemed University', value: 'Deemed University' },
+                          { label: 'Autonomous', value: 'Autonomous' },
+                        ].map((tab) => (
+                          <button
+                            key={tab.value}
+                            type="button"
+                            onClick={() => setCollegeAdminTypeFilter(tab.value)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                              collegeAdminTypeFilter === tab.value
+                                ? 'bg-warning text-crust shadow-sm'
+                                : 'bg-background text-text-muted hover:text-text-main border border-black/5 dark:border-white/5'
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
                       </div>
 
                       {collegesLoading ? (
@@ -7564,66 +7771,110 @@ export default function Admin() {
                         <div className="py-12 text-center text-xs text-text-muted bg-background rounded-2xl border border-black/5">
                           No colleges added yet. Use the form above to publish your first college.
                         </div>
+                      ) : filteredAdminColleges.length === 0 ? (
+                        <div className="py-12 text-center space-y-3 bg-background rounded-2xl border border-black/5">
+                          <p className="text-xs text-text-muted">
+                            No colleges match your search "{collegeAdminSearch}"{collegeAdminTypeFilter !== 'all' ? ` in ${collegeAdminTypeFilter}` : ''}.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setCollegeAdminSearch('');
+                              setCollegeAdminTypeFilter('all');
+                            }}
+                            className="px-4 py-2 bg-warning/10 text-warning rounded-xl text-xs font-bold hover:bg-warning/20 transition-colors"
+                          >
+                            Reset Search & Filters
+                          </button>
+                        </div>
                       ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {colleges.map((col) => (
-                            <div
-                              key={col.id}
-                              className="bg-background border border-black/10 dark:border-white/10 rounded-2xl p-5 space-y-3 hover:border-warning/40 transition-colors relative"
-                            >
-                              <div className="flex items-start justify-between gap-3">
-                                <div>
-                                  <div className="flex items-center gap-2 flex-wrap">
-                                    <span className="px-2.5 py-0.5 rounded bg-warning/10 text-warning font-black text-[10px] uppercase">
-                                      {col.type}
-                                    </span>
-                                    {col.featured && (
-                                      <span className="px-2 py-0.5 rounded bg-warning text-crust font-black text-[9px] uppercase">
-                                        Featured
-                                      </span>
-                                    )}
+                          {filteredAdminColleges.map((col) => {
+                            const isBeingEdited = editingCollegeId === col.id;
+                            return (
+                              <div
+                                key={col.id}
+                                onClick={() => handleAdminEditCollege(col)}
+                                className={`bg-background border rounded-2xl p-5 space-y-3 transition-all relative cursor-pointer group ${
+                                  isBeingEdited
+                                    ? 'border-warning ring-2 ring-warning/20 bg-warning/5'
+                                    : 'border-black/10 dark:border-white/10 hover:border-warning/50'
+                                }`}
+                              >
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-text-muted">
+                                      <span className="text-warning uppercase">{col.type}</span>
+                                      {col.shortName && (
+                                        <>
+                                          <span aria-hidden="true">·</span>
+                                          <span>{col.shortName}</span>
+                                        </>
+                                      )}
+                                      {col.featured && (
+                                        <>
+                                          <span aria-hidden="true">·</span>
+                                          <span className="text-amber-500 font-black uppercase">Featured</span>
+                                        </>
+                                      )}
+                                      {isBeingEdited && (
+                                        <>
+                                          <span aria-hidden="true">·</span>
+                                          <span className="text-emerald-400 font-black uppercase">Editing Above ↑</span>
+                                        </>
+                                      )}
+                                    </div>
+                                    <h4 className="text-sm font-black text-text-main mt-1 group-hover:text-warning transition-colors">
+                                      {col.name}
+                                    </h4>
+                                    <p className="text-xs text-text-muted font-semibold flex items-center gap-1 mt-0.5">
+                                      <MapPin size={12} className="text-warning shrink-0" /> {col.city}, {col.state ? `${col.state}, ` : ''}{col.country}
+                                    </p>
                                   </div>
-                                  <h4 className="text-sm font-black text-text-main mt-1">
-                                    {col.name}
-                                  </h4>
-                                  <p className="text-xs text-warning font-bold flex items-center gap-1 mt-0.5">
-                                    <MapPin size={12} /> {col.city}, {col.state ? `${col.state}, ` : ''}{col.country}
-                                  </p>
+
+                                  <div className="flex items-center gap-1.5 shrink-0">
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAdminEditCollege(col);
+                                      }}
+                                      className="px-3 py-1.5 border border-warning/30 bg-warning/10 text-warning hover:bg-warning hover:text-crust rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5"
+                                      title="Edit College Record"
+                                    >
+                                      <Edit3 size={13} /> Edit
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAdminDeleteCollege(col.id, col.name);
+                                      }}
+                                      className="p-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-lg text-xs font-bold transition-colors"
+                                      title="Delete College Record"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  </div>
                                 </div>
 
-                                <div className="flex items-center gap-1.5 shrink-0">
-                                  <button
-                                    onClick={() => handleAdminEditCollege(col)}
-                                    className="p-2 border border-black/10 dark:border-white/10 text-warning hover:bg-warning/10 rounded-lg text-xs font-bold transition-colors"
-                                    title="Edit College Record"
-                                  >
-                                    <Edit3 size={14} />
-                                  </button>
-                                  <button
-                                    onClick={() => handleAdminDeleteCollege(col.id, col.name)}
-                                    className="p-2 border border-red-500/20 text-red-400 hover:bg-red-500/10 rounded-lg text-xs font-bold transition-colors"
-                                    title="Delete College Record"
-                                  >
-                                    <Trash2 size={14} />
-                                  </button>
+                                <div className="text-xs text-text-muted pt-2 border-t border-black/5 dark:border-white/5 flex flex-wrap items-center justify-between gap-2 font-semibold">
+                                  <span>{col.coursesOffered.length} Courses Offered {col.feesRange ? `· ${col.feesRange}` : ''}</span>
+                                  {col.website && (
+                                    <a
+                                      href={col.website.startsWith('http') ? col.website : `https://${col.website}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      onClick={(e) => e.stopPropagation()}
+                                      className="text-warning hover:underline flex items-center gap-1"
+                                    >
+                                      <Globe size={12} /> Official Portal <ExternalLink size={10} />
+                                    </a>
+                                  )}
                                 </div>
                               </div>
-
-                              <div className="text-xs text-text-muted pt-2 border-t border-black/5 dark:border-white/5 flex flex-wrap items-center justify-between gap-2 font-semibold">
-                                <span>{col.coursesOffered.length} Courses Offered</span>
-                                {col.website && (
-                                  <a
-                                    href={col.website.startsWith('http') ? col.website : `https://${col.website}`}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-warning hover:underline flex items-center gap-1"
-                                  >
-                                    <Globe size={12} /> Official Portal <ExternalLink size={10} />
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </div>
