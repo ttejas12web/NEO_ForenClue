@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams, useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -9,8 +9,11 @@ import {
 } from 'lucide-react';
 import { SEOManager } from '@/components/layout/SEOManager';
 import { College, CollegeFilters } from '@/types/college';
-import { fetchColleges, fetchCollegeById } from '@/services/collegeService';
+import { fetchColleges, fetchCollegeById, getCachedColleges } from '@/services/collegeService';
 import { cn } from '@/lib/utils';
+
+const RETURN_TO_COLLEGE_KEY = 'forenclue_return_to_college_id';
+const DIRECTORY_FILTERS_KEY = 'forenclue_colleges_directory_filters';
 
 // Helper to format fee strings appropriately, converting to ₹ for Indian colleges if needed
 const formatFee = (feeStr?: string, country?: string): string => {
@@ -50,9 +53,13 @@ export default function Colleges() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const [colleges, setColleges] = useState<College[]>([]);
-  const [loading, setLoading] = useState(true);
+  const initialCache = getCachedColleges();
+  const [colleges, setColleges] = useState<College[]>(() => initialCache || []);
+  const [loading, setLoading] = useState<boolean>(() => !initialCache || initialCache.length === 0);
   const [selectedCollege, setSelectedCollege] = useState<College | null>(null);
+  const [highlightedCollegeId, setHighlightedCollegeId] = useState<string | null>(null);
+  const lastTargetIdRef = useRef<string | null>(null);
+
   const [savedCollegeIds, setSavedCollegeIds] = useState<string[]>(() => {
     try {
       const saved = localStorage.getItem('forenclue_saved_colleges');
@@ -62,40 +69,102 @@ export default function Colleges() {
     }
   });
 
+  // Restore saved filters when returning from a college detail page
+  const savedFilters = useMemo(() => {
+    try {
+      const raw = sessionStorage.getItem(DIRECTORY_FILTERS_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
   // Filters state
-  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
-  const [selectedCountry, setSelectedCountry] = useState(searchParams.get('country') || 'All');
-  const [selectedState, setSelectedState] = useState(searchParams.get('state') || 'All');
-  const [selectedCity, setSelectedCity] = useState(searchParams.get('city') || 'All');
-  const [selectedDegree, setSelectedDegree] = useState(searchParams.get('degree') || 'All');
-  const [selectedType, setSelectedType] = useState(searchParams.get('type') || 'All');
-  const [featuredOnly, setFeaturedOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<'featured' | 'name-asc' | 'courses-desc'>('featured');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('q') ?? savedFilters?.searchQuery ?? '');
+  const [selectedCountry, setSelectedCountry] = useState(searchParams.get('country') ?? savedFilters?.selectedCountry ?? 'All');
+  const [selectedState, setSelectedState] = useState(searchParams.get('state') ?? savedFilters?.selectedState ?? 'All');
+  const [selectedCity, setSelectedCity] = useState(searchParams.get('city') ?? savedFilters?.selectedCity ?? 'All');
+  const [selectedDegree, setSelectedDegree] = useState(searchParams.get('degree') ?? savedFilters?.selectedDegree ?? 'All');
+  const [selectedType, setSelectedType] = useState(searchParams.get('type') ?? savedFilters?.selectedType ?? 'All');
+  const [featuredOnly, setFeaturedOnly] = useState<boolean>(savedFilters?.featuredOnly ?? false);
+  const [sortBy, setSortBy] = useState<'featured' | 'name-asc' | 'courses-desc'>(savedFilters?.sortBy ?? 'featured');
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
 
   const targetId = id || searchParams.get('id');
 
-  // Load Colleges
+  // Persist directory filters in sessionStorage so returning to /colleges keeps exact card list
   useEffect(() => {
+    try {
+      sessionStorage.setItem(
+        DIRECTORY_FILTERS_KEY,
+        JSON.stringify({
+          searchQuery,
+          selectedCountry,
+          selectedState,
+          selectedCity,
+          selectedDegree,
+          selectedType,
+          featuredOnly,
+          sortBy
+        })
+      );
+    } catch {
+      // Ignore storage errors
+    }
+  }, [searchQuery, selectedCountry, selectedState, selectedCity, selectedDegree, selectedType, featuredOnly, sortBy]);
+
+  // Load Colleges once or refresh in background without collapsing the DOM
+  useEffect(() => {
+    let isMounted = true;
     const loadData = async () => {
-      setLoading(true);
+      const cached = getCachedColleges();
+      if (!cached || cached.length === 0) {
+        setLoading(true);
+      }
       const data = await fetchColleges();
+      if (!isMounted) return;
       setColleges(data);
       setLoading(false);
-
-      if (targetId) {
-        const found = data.find(c => c.id.toLowerCase() === targetId.toLowerCase());
-        if (found) {
-          setSelectedCollege(found);
-        } else {
-          const single = await fetchCollegeById(targetId);
-          if (single) setSelectedCollege(single);
-        }
-      }
     };
     loadData();
-  }, [targetId]);
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // Resolve specific college when targetId changes & record it for return scroll restoration
+  useEffect(() => {
+    if (!targetId) {
+      setSelectedCollege(null);
+      return;
+    }
+
+    lastTargetIdRef.current = targetId;
+    try {
+      sessionStorage.setItem(RETURN_TO_COLLEGE_KEY, targetId);
+    } catch {
+      // Ignore storage errors
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+
+    const found = colleges.find(c => c.id.toLowerCase() === targetId.toLowerCase());
+    if (found) {
+      setSelectedCollege(found);
+      return;
+    }
+
+    let isMounted = true;
+    fetchCollegeById(targetId).then(single => {
+      if (isMounted && single) {
+        setSelectedCollege(single);
+      }
+    });
+    return () => {
+      isMounted = false;
+    };
+  }, [targetId, colleges]);
 
   // Sync bookmark updates to localStorage
   const toggleSaveCollege = (e: React.MouseEvent, collegeId: string) => {
@@ -178,6 +247,12 @@ export default function Colleges() {
   }, [colleges, searchQuery, selectedCountry, selectedState, selectedCity, selectedType, selectedDegree, featuredOnly, sortBy]);
 
   const handleOpenDetails = (college: College) => {
+    lastTargetIdRef.current = college.id;
+    try {
+      sessionStorage.setItem(RETURN_TO_COLLEGE_KEY, college.id);
+    } catch {
+      // Ignore storage errors
+    }
     navigate(`/colleges/${college.id}`);
   };
 
@@ -198,6 +273,81 @@ export default function Colleges() {
     setFeaturedOnly(false);
     setSearchParams({});
   };
+
+  // Restore scroll position directly to the opened college card when returning to /colleges
+  useEffect(() => {
+    if (targetId || loading || colleges.length === 0) return;
+
+    let returnCollegeId = lastTargetIdRef.current;
+    if (!returnCollegeId) {
+      try {
+        returnCollegeId = sessionStorage.getItem(RETURN_TO_COLLEGE_KEY);
+      } catch {
+        returnCollegeId = null;
+      }
+    }
+
+    if (!returnCollegeId) return;
+
+    const cleanLower = returnCollegeId.toLowerCase();
+    const existsInFiltered = filteredColleges.some(c => c.id.toLowerCase() === cleanLower);
+    const existsInAll = colleges.some(c => c.id.toLowerCase() === cleanLower);
+
+    // If active filters hid the college card we are returning to, clear filters first so the card is visible
+    if (!existsInFiltered && existsInAll) {
+      resetFilters();
+      return;
+    }
+
+    const matchedCollege = filteredColleges.find(c => c.id.toLowerCase() === cleanLower);
+    const cardDomId = matchedCollege ? `college-card-${matchedCollege.id}` : `college-card-${returnCollegeId}`;
+
+    const scrollToCard = () => {
+      const cardEl = document.getElementById(cardDomId);
+      if (cardEl) {
+        const rect = cardEl.getBoundingClientRect();
+        const targetTop = Math.max(0, rect.top + window.scrollY - 115);
+        window.scrollTo({ top: targetTop, left: 0, behavior: 'instant' });
+        return true;
+      }
+      return false;
+    };
+
+    // Execute immediately and reinforce across animation frames to prevent any layout/footer jump
+    scrollToCard();
+    const rafId = requestAnimationFrame(() => {
+      scrollToCard();
+    });
+    const timer1 = setTimeout(scrollToCard, 50);
+    const timer2 = setTimeout(() => {
+      scrollToCard();
+      lastTargetIdRef.current = null;
+      try {
+        sessionStorage.removeItem(RETURN_TO_COLLEGE_KEY);
+      } catch {
+        // Ignore storage errors
+      }
+    }, 150);
+
+    if (matchedCollege) {
+      setHighlightedCollegeId(matchedCollege.id);
+      const highlightTimer = setTimeout(() => {
+        setHighlightedCollegeId(prev => (prev === matchedCollege.id ? null : prev));
+      }, 2400);
+      return () => {
+        cancelAnimationFrame(rafId);
+        clearTimeout(timer1);
+        clearTimeout(timer2);
+        clearTimeout(highlightTimer);
+      };
+    }
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [targetId, loading, colleges, filteredColleges]);
 
   // Render Full-Page Dedicated College View if targetId is present in URL
   if (targetId) {
@@ -234,7 +384,7 @@ export default function Colleges() {
     const isSaved = savedCollegeIds.includes(college.id);
 
     return (
-      <div className="min-h-screen bg-background pb-20 pt-6">
+      <div key="college-detail-view" className="min-h-screen bg-background pb-20 pt-6" style={{ overflowAnchor: 'none' }}>
         <SEOManager
           fallbackTitle={`${college.name} | Forensic Science Colleges`}
           fallbackDescription={college.description}
@@ -572,7 +722,7 @@ export default function Colleges() {
 
   // Render Colleges Directory Page
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div key="college-directory-view" className="min-h-screen bg-background pb-20" style={{ overflowAnchor: 'none' }}>
       <SEOManager 
         fallbackTitle="Forensic Colleges Directory | Forenclue"
         fallbackDescription="Explore top global universities and institutes offering accredited forensic science degree programs, diplomas, and research courses."
@@ -895,18 +1045,26 @@ export default function Colleges() {
               </div>
             ) : (
               /* College Cards Grid */
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6" style={{ overflowAnchor: 'none' }}>
                 {filteredColleges.map((college) => {
                   const isSaved = savedCollegeIds.includes(college.id);
+                  const isHighlighted = highlightedCollegeId === college.id;
 
                   return (
                     <motion.div
                       key={college.id}
+                      id={`college-card-${college.id}`}
+                      data-college-id={college.id}
                       initial={{ opacity: 0, y: 18 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true, margin: "-20px" }}
                       transition={{ duration: 0.45, ease: "easeOut" }}
-                      className="group bg-surface border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-warning/30 transition-all flex flex-col cursor-pointer"
+                      className={cn(
+                        "group bg-surface border rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-warning/30 transition-all flex flex-col cursor-pointer scroll-mt-28",
+                        isHighlighted
+                          ? "border-warning ring-2 ring-warning shadow-xl shadow-warning/15"
+                          : "border-black/5 dark:border-white/10"
+                      )}
                       onClick={() => handleOpenDetails(college)}
                     >
                       {/* Banner / Cover Header */}

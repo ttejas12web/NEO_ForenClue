@@ -5251,6 +5251,12 @@ async function getDeletedCollegeIds(): Promise<Set<string>> {
   return deletedSet;
 }
 
+let cachedColleges: College[] | null = null;
+
+export function getCachedColleges(): College[] | null {
+  return cachedColleges;
+}
+
 export async function fetchColleges(): Promise<College[]> {
   try {
     const q = query(collection(db, COLLEGES_COLLECTION), orderBy('name', 'asc'));
@@ -5293,10 +5299,11 @@ export async function fetchColleges(): Promise<College[]> {
       });
     });
 
+    cachedColleges = fetched;
     return fetched;
   } catch (error) {
     console.warn("Could not fetch colleges from Firestore:", error);
-    return [];
+    return cachedColleges || [];
   }
 }
 
@@ -5304,6 +5311,11 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
   const cleanId = String(id || '').trim();
   if (!cleanId) return null;
   const cleanLower = cleanId.toLowerCase();
+
+  if (cachedColleges) {
+    const fromCache = cachedColleges.find(c => c.id.toLowerCase() === cleanLower);
+    if (fromCache) return fromCache;
+  }
 
   try {
     const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
@@ -5379,6 +5391,7 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
 }
 
 export async function saveCollege(collegeData: Partial<College> & { id?: string }): Promise<string> {
+  cachedColleges = null;
   const isUpdate = !!collegeData.id;
   const targetId = collegeData.id || `college_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const cleanId = targetId.trim();
@@ -5435,6 +5448,7 @@ export async function saveCollege(collegeData: Partial<College> & { id?: string 
 }
 
 export async function deleteCollege(collegeId: string, collegeName?: string): Promise<void> {
+  cachedColleges = null;
   const cleanId = String(collegeId || '').trim();
   if (!cleanId) return;
 
