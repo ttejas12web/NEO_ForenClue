@@ -5204,6 +5204,203 @@ export const SAMPLE_COLLEGES: College[] = [
       'YC-CIII Incubation Center, Digital Library, Campus Hostels & Sports Complex'
     ],
     featured: true
+  },
+  {
+    id: 'sandip-university-nashik',
+    name: 'Sandip University, Nashik',
+    shortName: 'SUN Nashik',
+    country: 'India',
+    state: 'Maharashtra',
+    city: 'Nashik',
+    type: 'Private',
+    website: 'https://www.sandipuniversity.edu.in',
+    logo: 'https://www.sandipuniversity.edu.in/images/logo.png',
+    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    description: 'Established in 2017 under the Maharashtra Self-Financed Universities Act and sprawling across a 250+ acre lush green Wi-Fi enabled campus in Mahiravani, Nashik, Sandip University is a premier UGC-recognized Private University accredited by NAAC with an A Grade. Its School of Science (Department of Forensic Science) offers industry-aligned B.Sc., M.Sc., and Ph.D. programs in Forensic Science and Criminology with hands-on training in crime scene investigation, forensic toxicology, DNA profiling, fingerprint & questioned document examination, and cyber forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (NEP 2020)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (HSC) in Science stream (Physics, Chemistry, and Biology/Mathematics) with minimum 45% aggregate marks (40% for reserved categories) from a recognized board',
+        estimatedFees: '₹95,000 - ₹1,10,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Forensics',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Questioned Documents & Fingerprint Analysis',
+          'Criminal Psychology, Criminology & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or any branch of Science (Physics, Chemistry, Botany, Zoology, Biotechnology, Microbiology, Biochemistry), Medicine, or B.Pharm with minimum 50% aggregate marks (45% for reserved categories)',
+        estimatedFees: '₹80,000 - ₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Digital & Cyber Forensics',
+          'Questioned Documents, Fingerprints & Ballistics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks + SU-PET (Sandip University Ph.D. Entrance Test) / UGC-CSIR NET',
+        estimatedFees: '₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Analytical Toxicology & Trace Evidence',
+          'Digital Forensics & Cyber Crime Investigation',
+          'Forensic Biology & Molecular Diagnostics'
+        ]
+      }
+    ],
+    feesRange: '₹80,000 - ₹1,10,000 / year',
+    admissionProcess: 'SU-JEE (Sandip University Joint Entrance Exam) / Merit-based Admission in Qualifying Examination followed by Personal Interview & Counseling',
+    accreditation: 'UGC Recognized under Section 2(f) | NAAC Accredited A Grade | AIU Member',
+    contactEmail: 'info@sandipuniversity.edu.in',
+    contactPhone: '1800-212-2714 / +91 95454 53092',
+    address: 'Trimbak Road, Mahiravani, Nashik, Maharashtra 422213, India',
+    ranking: 'NAAC A Grade | Top Emerging Private Multidisciplinary University in Maharashtra (250+ Acre Campus)',
+    facilities: [
+      'Dedicated Crime Scene Investigation & Forensic Reconstruction Lab',
+      'Forensic Chemistry, Analytical Toxicology & Instrumentation Laboratory',
+      'Forensic Biology, Serology & DNA Profiling Suite',
+      'Questioned Document Examination, Fingerprint & Cyber Forensics Lab',
+      '250+ Acre Wi-Fi Campus, Central Digital Library, Hostels & Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'shri-shivaji-science-college-amravati',
+    name: 'Shri Shivaji Science College, Amravati',
+    shortName: 'Shivaji Science College Amravati',
+    country: 'India',
+    state: 'Maharashtra',
+    city: 'Amravati',
+    type: 'State',
+    website: 'https://www.shivajiscamt.org',
+    logo: 'https://www.shivajiscamt.org/images/logo.png',
+    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    description: 'Established in 1958 by Shikshan Maharshi Dr. Panjabrao alias Bhausaheb Deshmukh under the Shri Shivaji Education Society and affiliated with Sant Gadge Baba Amravati University (SGBAU), Shri Shivaji Science College, Amravati is an autonomous-grade premier science institution accredited by NAAC with an A+ Grade (CGPA 3.42 in 4th Cycle) and recognized as a UGC College with Potential for Excellence (CPE). Its dedicated Department of Forensic Science (established in 2019) offers specialized B.Sc. in Forensic Science, B.Voc. in Forensic Science, and PG Diploma in Cyber Security programs integrating crime scene investigation, forensic biology, toxicology, ballistics, and digital forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (NEP 2020)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (HSC) in Science stream (Physics, Chemistry, and Biology/Mathematics) from Maharashtra State Board or equivalent recognized board',
+        estimatedFees: '₹12,000 - ₹28,500 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Evidence Collection',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry, Toxicology & Ballistics',
+          'Fingerprint Analysis, Questioned Documents & Digital Forensics'
+        ]
+      },
+      {
+        name: 'B.Voc. (Bachelor of Vocation) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 Years',
+        eligibility: '10+2 (HSC) in Science stream from a recognized board (UGC-approved skill-oriented degree program)',
+        estimatedFees: '₹15,000 - ₹25,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Applied Crime Scene Management & Field Forensics',
+          'Analytical Forensic Instrumentation & Toxicology',
+          'Latent Fingerprint, Document & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Postgraduate Diploma in Cyber Security & Digital Forensics',
+        degreeLevel: 'Diploma',
+        duration: '1 Year',
+        eligibility: 'Bachelor’s Degree in Forensic Science, Computer Science, IT, BCA, Electronics, Physics, Chemistry, Life Sciences, or Law (LL.B.) from a recognized university',
+        estimatedFees: '₹15,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Cyber Crime Investigation & Digital Evidence Recovery',
+          'Network Security, Incident Response & Ethical Hacking'
+        ]
+      }
+    ],
+    feesRange: '₹12,000 - ₹28,500 / year',
+    admissionProcess: 'Merit-based Admission as per Sant Gadge Baba Amravati University (SGBAU) & Government of Maharashtra norms (MahaDBT Scholarships applicable)',
+    accreditation: 'NAAC Accredited A+ Grade (CGPA 3.42, 4th Cycle) | Affiliated to Sant Gadge Baba Amravati University (SGBAU) | UGC-CPE, DST-FIST & DBT-STAR Status',
+    contactEmail: 'shivajiscamt.office@gmail.com',
+    contactPhone: '+91 721 2660855',
+    address: 'Shivaji Nagar, Morshi Road, Amravati, Maharashtra 444603, India',
+    ranking: 'NAAC A+ (CGPA 3.42) | Premier Science & Forensic Institute in Vidarbha Region (NIRF Ranked College)',
+    facilities: [
+      'Department of Forensic Science Crime Scene & Physical Evidence Laboratory',
+      'Forensic Biology, Serology, DNA & Toxicology Analysis Lab',
+      'Cyber Security, Digital Forensics & Bioinformatics Center',
+      'DST-FIST Central Instrumentation Facility & Research Laboratories',
+      'Central Digital Library, Girls Hostel, Botanical Garden & Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'gh-raisoni-nagpur',
+    name: 'G H Raisoni Skill Tech University (GHRSTU), Nagpur',
+    shortName: 'GH Raisoni Nagpur',
+    country: 'India',
+    state: 'Maharashtra',
+    city: 'Nagpur',
+    type: 'Private',
+    website: 'https://ghrstu.edu.in',
+    logo: 'https://blogger.googleusercontent.com/img/a/AVvXsEisGM7zhetx-SuR9KTaDseNKeVgTZtQnmIpTZnZiGXn0GH9S8RGLPdBPDEG_iGHPY-vmaSD9KSV4AXa2UyeGziCJztNNFMXkRE871FPBR1p12AWq8KX5EwnsP6rHr8NKCyt5sgaRWPWEG5A6EB0-s2fY6Z1X1bJL7tcYY5OE_L6narP3rqPF91HGlhPDl4',
+    bannerImage: 'https://blogger.googleusercontent.com/img/a/AVvXsEh1G7NDBa16Pk7pWQMcB0so8AleF_tqq_hLK3qzF6I-urFOUgN__PsJNBroGSPdPFwHYo4r--iaW1bC-wWqrhLkTaMPFLPvMhy3A8HF-jFJyGnYFll5i7rupu_eMtQUDC_lGJPlYxc6XtzDiJHUo3dYdEdiAq1OCITi7r3PS5PSD_IBS967YugjE5ubR0k',
+    description: 'Established under the Maharashtra State Self-Financed Skill University Act and spearheaded by the renowned Raisoni Education Group in Nagpur, G H Raisoni Skill Tech University (GHRSTU), Nagpur offers skill-intensive, NEP 2020-aligned programs in Forensic Science and Digital Forensics. Its curriculum emphasizes practical laboratory mastery in crime scene reconstruction, forensic biology, analytical toxicology, fingerprint & questioned document examination, DNA profiling, and cyber evidence investigation.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (NEP 2020)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (HSC) or equivalent in Science stream (Physics, Chemistry, Biology/Mathematics) with minimum 45% aggregate marks (40% for reserved categories)',
+        estimatedFees: '₹95,000 - ₹1,10,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Reconstruction',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Fingerprint Science, Questioned Documents & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or allied Science discipline (Chemistry, Biology, Biotechnology, Microbiology, Biochemistry, Physics) with minimum 50% aggregate marks (45% for reserved categories)',
+        estimatedFees: '₹85,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Criminalistics & Crime Scene Management',
+          'Forensic Toxicology & Instrumental Chemistry',
+          'Cyber Forensics & Digital Evidence Examination'
+        ]
+      }
+    ],
+    feesRange: '₹85,000 - ₹1,10,000 / year',
+    admissionProcess: 'RUCET (Raisoni University Common Entrance Test) / Merit-based CAP Counseling & Personal Interview',
+    accreditation: 'UGC Recognized Skill Tech University (Government of Maharashtra Act) | Raisoni Education Group (NAAC Accredited Institutions)',
+    contactEmail: 'info@ghrstu.edu.in',
+    contactPhone: '+91 78878 86726 / +91 93079 00682',
+    address: 'Shradha Park, B-37/39, MIDC, Hingna-Wadi Link Road, Nagpur, Maharashtra 440016, India',
+    ranking: 'Leading Skill-Focused Forensic & Technology University in Central India (Raisoni Group, Nagpur)',
+    facilities: [
+      'Forensic Science & Crime Scene Investigation Skill Laboratory',
+      'Forensic Biology, Serology & Analytical Toxicology Lab',
+      'Questioned Document, Latent Fingerprint & Ballistics Examination Unit',
+      'Cyber Forensics, Network Security & Digital Evidence Lab',
+      'Central Library, Innovation Incubation Center, Hostels & Transport Facility'
+    ],
+    featured: true
   }
 ];
 
@@ -5259,18 +5456,24 @@ export function getCachedColleges(): College[] | null {
 
 export async function fetchColleges(): Promise<College[]> {
   try {
-    const q = query(collection(db, COLLEGES_COLLECTION), orderBy('name', 'asc'));
-    const querySnapshot = await getDocs(q);
+    const [deletedSet, querySnapshot] = await Promise.all([
+      getDeletedCollegeIds(),
+      getDocs(query(collection(db, COLLEGES_COLLECTION), orderBy('name', 'asc')))
+    ]);
     
     const fetched: College[] = [];
+    const seenIds = new Set<string>();
+
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
+      const docIdLower = docSnap.id.toLowerCase().trim();
 
       // Skip records marked deleted
-      if (data.isDeleted === true || data.status === 'deleted') {
+      if (data.isDeleted === true || data.status === 'deleted' || deletedSet.has(docIdLower)) {
         return;
       }
 
+      seenIds.add(docIdLower);
       fetched.push({
         id: docSnap.id,
         name: data.name || '',
@@ -5299,6 +5502,27 @@ export async function fetchColleges(): Promise<College[]> {
       });
     });
 
+    // Include any verified directory colleges not yet persisted in Firestore (unless deleted by Admin)
+    for (const sample of SAMPLE_COLLEGES) {
+      const sampleIdLower = sample.id.toLowerCase().trim();
+      if (!seenIds.has(sampleIdLower) && !deletedSet.has(sampleIdLower)) {
+        seenIds.add(sampleIdLower);
+        fetched.push(sample);
+        // Persist in background if authenticated admin session is active
+        setDoc(
+          doc(db, COLLEGES_COLLECTION, sample.id),
+          {
+            ...sample,
+            isDeleted: false,
+            status: 'active',
+            updatedAt: new Date().toISOString()
+          },
+          { merge: true }
+        ).catch(() => {});
+      }
+    }
+
+    fetched.sort((a, b) => a.name.localeCompare(b.name));
     cachedColleges = fetched;
     return fetched;
   } catch (error) {
@@ -5318,6 +5542,9 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
   }
 
   try {
+    const deletedSet = await getDeletedCollegeIds();
+    if (deletedSet.has(cleanLower)) return null;
+
     const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -5383,6 +5610,9 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         };
       }
     }
+
+    const fromSample = SAMPLE_COLLEGES.find(c => c.id.toLowerCase() === cleanLower);
+    if (fromSample) return fromSample;
   } catch (err) {
     console.error("Error loading college by ID:", err);
   }
