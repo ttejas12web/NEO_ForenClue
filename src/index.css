@@ -10,7 +10,8 @@
 
   --color-background: var(--theme-base);
   --color-crust: var(--theme-crust);
-  --color-base: var(--theme-base);
+  --background-color-base: var(--theme-base);
+  --border-color-base: var(--theme-base);
   --color-surface: var(--theme-surface);
   --color-surface-hover: var(--theme-surface-hover);
 

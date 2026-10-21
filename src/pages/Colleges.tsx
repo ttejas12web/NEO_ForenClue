@@ -547,7 +547,7 @@ export default function Colleges() {
                 <h2 className="text-xs font-black uppercase tracking-widest text-warning flex items-center gap-2">
                   <Info size={18} /> Campus Overview & Background
                 </h2>
-                <p className="text-sm sm:text-base text-text-muted leading-relaxed font-medium">
+                <p className="text-sm sm:text-base text-text-main dark:text-white leading-relaxed font-medium">
                   {college.description}
                 </p>
               </div>
