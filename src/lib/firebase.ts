@@ -27,10 +27,12 @@ export const db = initializeFirestore(app, {
 }, dbDatabaseId);
 
 // Initialize Firebase Auth explicitly with browserLocalPersistence and browserSessionPersistence for session continuity.
-export const auth = initializeAuth(app, {
-  persistence: [browserLocalPersistence, browserSessionPersistence],
-  popupRedirectResolver: browserPopupRedirectResolver
-});
+export const auth = typeof window !== 'undefined'
+  ? initializeAuth(app, {
+      persistence: [browserLocalPersistence, browserSessionPersistence],
+      popupRedirectResolver: browserPopupRedirectResolver
+    })
+  : initializeAuth(app);
 export let storage: any;
 try {
   storage = getStorage(app);

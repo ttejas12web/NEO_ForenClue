@@ -5722,8 +5722,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Mathura',
     type: 'Private',
     website: 'https://www.sanskriti.edu.in',
-    logo: '/images/colleges/sanskriti-university-logo.svg',
-    bannerImage: '/images/colleges/sanskriti-university-banner.svg',
+    logo: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><defs><linearGradient id="suShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8B1E24"/><stop offset="50%" stop-color="#6B1117"/><stop offset="100%" stop-color="#4A0A0E"/></linearGradient><linearGradient id="suGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="45%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient><linearGradient id="suSunGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#EA580C"/></linearGradient><radialGradient id="suBgGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFFBEB"/><stop offset="100%" stop-color="#FEF3C7"/></radialGradient></defs><rect width="400" height="400" rx="64" fill="url(#suBgGlow)"/><circle cx="200" cy="200" r="176" fill="#FFFFFF" stroke="url(#suGoldGrad)" stroke-width="8"/><circle cx="200" cy="200" r="162" fill="none" stroke="#8B1E24" stroke-width="2.5" stroke-dasharray="6 4"/><g stroke="url(#suGoldGrad)" stroke-width="4" fill="none" stroke-linecap="round"><path d="M 92 260 C 64 200, 82 120, 140 84"/><path d="M 308 260 C 336 200, 318 120, 260 84"/></g><g fill="url(#suGoldGrad)"><ellipse cx="82" cy="230" rx="10" ry="5" transform="rotate(-35 82 230)"/><ellipse cx="76" cy="195" rx="10" ry="5" transform="rotate(-15 76 195)"/><ellipse cx="82" cy="160" rx="10" ry="5" transform="rotate(10 82 160)"/><ellipse cx="98" cy="128" rx="10" ry="5" transform="rotate(30 98 128)"/><ellipse cx="120" cy="102" rx="10" ry="5" transform="rotate(45 120 102)"/><ellipse cx="318" cy="230" rx="10" ry="5" transform="rotate(35 318 230)"/><ellipse cx="324" cy="195" rx="10" ry="5" transform="rotate(15 324 195)"/><ellipse cx="318" cy="160" rx="10" ry="5" transform="rotate(-10 318 160)"/><ellipse cx="302" cy="128" rx="10" ry="5" transform="rotate(-30 302 128)"/><ellipse cx="280" cy="102" rx="10" ry="5" transform="rotate(-45 280 102)"/></g><path d="M 118 104 L 282 104 L 282 198 C 282 256, 200 296, 200 296 C 200 296, 118 256, 118 198 Z" fill="url(#suShieldGrad)" stroke="url(#suGoldGrad)" stroke-width="6" stroke-linejoin="round"/><circle cx="200" cy="166" r="28" fill="url(#suSunGrad)"/><g stroke="#FDE68A" stroke-width="3" stroke-linecap="round"><line x1="200" y1="124" x2="200" y2="132"/><line x1="170" y1="136" x2="176" y2="142"/><line x1="230" y1="136" x2="224" y2="142"/><line x1="156" y1="164" x2="164" y2="164"/><line x1="244" y1="164" x2="236" y2="164"/></g><path d="M 146 218 Q 173 204 200 218 Q 227 204 254 218 L 254 186 Q 227 172 200 186 Q 173 172 146 186 Z" fill="#FFFFFF" stroke="url(#suGoldGrad)" stroke-width="3"/><line x1="200" y1="186" x2="200" y2="218" stroke="#8B1E24" stroke-width="2.5"/><text x="200" y="266" text-anchor="middle" font-family="Georgia, serif" font-weight="900" font-size="34" fill="#FDE68A" letter-spacing="3">SU</text><path d="M 68 312 L 332 312 L 318 352 L 82 352 Z" fill="#8B1E24" stroke="url(#suGoldGrad)" stroke-width="3"/><text x="200" y="336" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" letter-spacing="2.2">SANSKRITI UNIVERSITY</text><text x="200" y="76" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="12.5" fill="#8B1E24" letter-spacing="2.5">MATHURA • UTTAR PRADESH</text></svg>`)}`,
+    bannerImage: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675"><defs><linearGradient id="suSky" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1E1B4B"/><stop offset="40%" stop-color="#4C1D95"/><stop offset="75%" stop-color="#9A3412"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient><radialGradient id="suSunGlow" cx="72%" cy="38%" r="45%"><stop offset="0%" stop-color="#FDE68A" stop-opacity="0.65"/><stop offset="45%" stop-color="#F97316" stop-opacity="0.28"/><stop offset="100%" stop-color="#1E1B4B" stop-opacity="0"/></radialGradient><linearGradient id="suSandstone" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFF7ED"/><stop offset="100%" stop-color="#FED7AA"/></linearGradient><linearGradient id="suMaroonFacade" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#991B1B"/><stop offset="100%" stop-color="#7F1D1D"/></linearGradient><linearGradient id="suGlass" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#38BDF8" stop-opacity="0.7"/><stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.85"/></linearGradient><linearGradient id="suLawn" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#15803D"/><stop offset="100%" stop-color="#052E16"/></linearGradient></defs><rect width="1200" height="675" fill="url(#suSky)"/><rect width="1200" height="675" fill="url(#suSunGlow)"/><rect x="70" y="310" width="240" height="210" rx="4" fill="url(#suMaroonFacade)" opacity="0.85"/><rect x="890" y="310" width="240" height="210" rx="4" fill="url(#suMaroonFacade)" opacity="0.85"/><g fill="url(#suGlass)" stroke="#FDE68A" stroke-width="1.2" opacity="0.9"><rect x="95" y="335" width="38" height="45" rx="3"/><rect x="148" y="335" width="38" height="45" rx="3"/><rect x="201" y="335" width="38" height="45" rx="3"/><rect x="254" y="335" width="38" height="45" rx="3"/><rect x="95" y="398" width="38" height="45" rx="3"/><rect x="148" y="398" width="38" height="45" rx="3"/><rect x="201" y="398" width="38" height="45" rx="3"/><rect x="254" y="398" width="38" height="45" rx="3"/><rect x="910" y="335" width="38" height="45" rx="3"/><rect x="963" y="335" width="38" height="45" rx="3"/><rect x="1016" y="335" width="38" height="45" rx="3"/><rect x="1069" y="335" width="38" height="45" rx="3"/><rect x="910" y="398" width="38" height="45" rx="3"/><rect x="963" y="398" width="38" height="45" rx="3"/><rect x="1016" y="398" width="38" height="45" rx="3"/><rect x="1069" y="398" width="38" height="45" rx="3"/></g><path d="M 465 250 C 465 140, 735 140, 735 250 Z" fill="url(#suSandstone)" stroke="#F59E0B" stroke-width="3"/><rect x="588" y="138" width="24" height="24" rx="3" fill="#F59E0B"/><line x1="600" y1="96" x2="600" y2="138" stroke="#FDE68A" stroke-width="4" stroke-linecap="round"/><circle cx="600" cy="94" r="6" fill="#FDE68A"/><rect x="285" y="250" width="630" height="270" rx="4" fill="url(#suSandstone)" stroke="#D97706" stroke-width="2.5"/><rect x="285" y="250" width="630" height="38" fill="#8B1E24"/><text x="600" y="274" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="17" fill="#FDE68A" letter-spacing="4">SANSKRITI UNIVERSITY • MATHURA</text><g fill="#FFFBEB" stroke="#D97706" stroke-width="1.5"><rect x="315" y="288" width="22" height="222"/><rect x="385" y="288" width="22" height="222"/><rect x="455" y="288" width="22" height="222"/><rect x="723" y="288" width="22" height="222"/><rect x="793" y="288" width="22" height="222"/><rect x="863" y="288" width="22" height="222"/></g><g fill="url(#suGlass)" stroke="#B45309" stroke-width="1.5"><rect x="346" y="310" width="30" height="55" rx="15"/><rect x="416" y="310" width="30" height="55" rx="15"/><rect x="346" y="388" width="30" height="55" rx="4"/><rect x="416" y="388" width="30" height="55" rx="4"/><rect x="754" y="310" width="30" height="55" rx="15"/><rect x="824" y="310" width="30" height="55" rx="15"/><rect x="754" y="388" width="30" height="55" rx="4"/><rect x="824" y="388" width="30" height="55" rx="4"/></g><path d="M 495 510 L 495 322 L 600 292 L 705 322 L 705 510 Z" fill="#FFFBEB" stroke="#B45309" stroke-width="2"/><path d="M 532 510 L 532 390 A 68 68 0 0 1 668 390 L 668 510 Z" fill="#450A0A" stroke="#F59E0B" stroke-width="3"/><path d="M 544 510 L 544 394 A 56 56 0 0 1 656 394 L 656 510 Z" fill="url(#suGlass)" opacity="0.85"/><circle cx="600" cy="316" r="14" fill="#8B1E24" stroke="#FDE68A" stroke-width="2.5"/><rect x="0" y="510" width="1200" height="165" fill="url(#suLawn)"/><polygon points="510,510 690,510 830,675 370,675" fill="#E7E5E4" stroke="#D6D3D1" stroke-width="2"/><polygon points="555,535 645,535 695,650 505,650" fill="#0284C7" opacity="0.75" stroke="#38BDF8" stroke-width="2"/><g fill="#166534" stroke="#14532D" stroke-width="2"><circle cx="240" cy="490" r="36"/><circle cx="275" cy="500" r="28" fill="#15803D"/><circle cx="150" cy="495" r="32"/><circle cx="960" cy="490" r="36"/><circle cx="925" cy="500" r="28" fill="#15803D"/><circle cx="1050" cy="495" r="32"/></g></svg>`)}`,
     description: 'Established in 2016 under the Uttar Pradesh Private Universities Act (U.P. Act No. 20 of 2016) and recognized by the University Grants Commission (UGC) under Section 2(f), Sanskriti University (also searched as Sanskruti University) is a premier NAAC \'A\' Grade accredited multidisciplinary university spanning a 70+ acre green residential campus on the Mathura-Delhi Highway (NH-19) in Chhata, Mathura, Uttar Pradesh. Its School of Basic & Applied Sciences (Department of Forensic Science) and on-campus teaching hospitals deliver NEP 2020-aligned undergraduate, postgraduate, and doctoral education in Forensic Science, Crime Scene Management, Forensic Chemistry & Toxicology, Forensic Biology & Serology, Questioned Documents, Fingerprint Examination, Forensic Ballistics, and Digital & Cyber Forensics.',
     coursesOffered: [
       {
@@ -5799,8 +5799,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Ahmedabad',
     type: 'Private',
     website: 'https://nsitifscs.ac.in',
-    logo: '/images/colleges/nsit-ifscs-logo.svg',
-    bannerImage: '/images/colleges/nsit-ifscs-banner.svg',
+    logo: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><defs><linearGradient id="nsitShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1E3A8A"/><stop offset="50%" stop-color="#0F172A"/><stop offset="100%" stop-color="#172554"/></linearGradient><linearGradient id="nsitGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#D97706"/></linearGradient><radialGradient id="nsitBg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#E2E8F0"/></radialGradient></defs><rect width="400" height="400" rx="64" fill="url(#nsitBg)"/><circle cx="200" cy="200" r="176" fill="#FFFFFF" stroke="url(#nsitGoldGrad)" stroke-width="8"/><circle cx="200" cy="200" r="160" fill="none" stroke="#1E3A8A" stroke-width="2.5" stroke-dasharray="8 5"/><text x="200" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="12" fill="#1E3A8A" letter-spacing="2">NARNARAYAN SHASTRI INSTITUTE</text><text x="200" y="88" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="10" fill="#B45309" letter-spacing="1.8">AFFILIATED TO NFSU • AHMEDABAD</text><path d="M 114 104 L 286 104 L 286 196 C 286 258, 200 298, 200 298 C 200 298, 114 258, 114 196 Z" fill="url(#nsitShieldGrad)" stroke="url(#nsitGoldGrad)" stroke-width="6" stroke-linejoin="round"/><line x1="200" y1="108" x2="200" y2="292" stroke="url(#nsitGoldGrad)" stroke-width="2" opacity="0.45"/><line x1="118" y1="186" x2="282" y2="186" stroke="url(#nsitGoldGrad)" stroke-width="2" opacity="0.45"/><g stroke="#38BDF8" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M 145 126 C 155 138, 175 138, 185 150 C 175 162, 155 162, 145 174"/><path d="M 185 126 C 175 138, 155 138, 145 150 C 155 162, 175 162, 185 174" stroke="#FDE68A"/><line x1="152" y1="133" x2="178" y2="133" stroke="#94A3B8" stroke-width="1.5"/><line x1="152" y1="167" x2="178" y2="167" stroke="#94A3B8" stroke-width="1.5"/></g><g transform="translate(216, 124)"><path d="M 22 4 L 42 12 L 42 28 C 42 40, 22 48, 22 48 C 22 48, 2 40, 2 28 L 2 12 Z" fill="none" stroke="#38BDF8" stroke-width="2.5"/><rect x="15" y="23" width="14" height="11" rx="2" fill="#FDE68A"/><path d="M 18 23 L 18 18 A 4 4 0 0 1 26 18 L 26 23" fill="none" stroke="#FDE68A" stroke-width="2.2"/></g><path d="M 148 222 Q 174 210 200 222 Q 226 210 252 222 L 252 198 Q 226 186 200 198 Q 174 186 148 198 Z" fill="#FFFFFF" stroke="url(#nsitGoldGrad)" stroke-width="2.5"/><text x="200" y="264" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="28" fill="#FDE68A" letter-spacing="2.5">NSIT</text><path d="M 56 310 L 344 310 L 330 352 L 70 352 Z" fill="#1E3A8A" stroke="url(#nsitGoldGrad)" stroke-width="3"/><text x="200" y="331" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="13.5" fill="#FFFFFF" letter-spacing="1.5">FORENSIC SCIENCES &amp; CYBER SECURITY</text><text x="200" y="346" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="10" fill="#FDE68A" letter-spacing="2">NSIT-IFSCS • JETALPUR, AHMEDABAD</text></svg>`)}`,
+    bannerImage: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675"><defs><linearGradient id="nsitSky" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#090D16"/><stop offset="45%" stop-color="#0F172A"/><stop offset="80%" stop-color="#1E3A8A"/><stop offset="100%" stop-color="#0284C7"/></linearGradient><radialGradient id="nsitHorizonGlow" cx="50%" cy="55%" r="55%"><stop offset="0%" stop-color="#38BDF8" stop-opacity="0.38"/><stop offset="50%" stop-color="#F59E0B" stop-opacity="0.18"/><stop offset="100%" stop-color="#090D16" stop-opacity="0"/></radialGradient><linearGradient id="nsitBuildingMain" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#CBD5E1"/></linearGradient><linearGradient id="nsitHeritageAccent" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#92400E"/></linearGradient><linearGradient id="nsitCyberGlass" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.85"/><stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.92"/></linearGradient><linearGradient id="nsitLawn" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#065F46"/><stop offset="100%" stop-color="#022C22"/></linearGradient></defs><rect width="1200" height="675" fill="url(#nsitSky)"/><rect width="1200" height="675" fill="url(#nsitHorizonGlow)"/><rect x="65" y="285" width="275" height="235" rx="6" fill="url(#nsitBuildingMain)" stroke="#94A3B8" stroke-width="2"/><rect x="65" y="285" width="275" height="28" fill="url(#nsitHeritageAccent)"/><text x="202" y="304" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="11.5" fill="#FEF3C7" letter-spacing="2">FORENSIC SCIENCES WING</text><g fill="url(#nsitCyberGlass)" stroke="#F59E0B" stroke-width="1.2"><rect x="88" y="332" width="62" height="46" rx="4"/><rect x="170" y="332" width="62" height="46" rx="4"/><rect x="252" y="332" width="62" height="46" rx="4"/><rect x="88" y="396" width="62" height="46" rx="4"/><rect x="170" y="396" width="62" height="46" rx="4"/><rect x="252" y="396" width="62" height="46" rx="4"/></g><rect x="860" y="285" width="275" height="235" rx="6" fill="url(#nsitBuildingMain)" stroke="#94A3B8" stroke-width="2"/><rect x="860" y="285" width="275" height="28" fill="#1E3A8A"/><text x="997" y="304" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="11.5" fill="#38BDF8" letter-spacing="2">CYBER SECURITY &amp; DFIS LABS</text><g fill="url(#nsitCyberGlass)" stroke="#38BDF8" stroke-width="1.2"><rect x="884" y="332" width="62" height="46" rx="4"/><rect x="966" y="332" width="62" height="46" rx="4"/><rect x="1048" y="332" width="62" height="46" rx="4"/><rect x="884" y="396" width="62" height="46" rx="4"/><rect x="966" y="396" width="62" height="46" rx="4"/><rect x="1048" y="396" width="62" height="46" rx="4"/></g><path d="M 480 232 C 480 135, 720 135, 720 232 Z" fill="url(#nsitHeritageAccent)" stroke="#FDE68A" stroke-width="3"/><circle cx="600" cy="140" r="10" fill="#FDE68A"/><line x1="600" y1="102" x2="600" y2="140" stroke="#FDE68A" stroke-width="4" stroke-linecap="round"/><rect x="315" y="232" width="570" height="288" rx="4" fill="url(#nsitBuildingMain)" stroke="#CBD5E1" stroke-width="2.5"/><rect x="315" y="232" width="570" height="46" fill="#0F172A" stroke="#F59E0B" stroke-width="2"/><text x="600" y="253" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="14.5" fill="#FDE68A" letter-spacing="2.2">NARNARAYAN SHASTRI INSTITUTE OF TECHNOLOGY</text><text x="600" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="11" fill="#38BDF8" letter-spacing="2.5">INSTITUTE OF FORENSIC SCIENCES &amp; CYBER SECURITY (NSIT-IFSCS)</text><rect x="348" y="298" width="140" height="150" rx="6" fill="url(#nsitCyberGlass)" stroke="#38BDF8" stroke-width="1.5"/><rect x="712" y="298" width="140" height="150" rx="6" fill="url(#nsitCyberGlass)" stroke="#38BDF8" stroke-width="1.5"/><rect x="508" y="290" width="184" height="230" fill="#FFFFFF" stroke="#D97706" stroke-width="2"/><path d="M 536 520 L 536 382 A 64 64 0 0 1 664 382 L 664 520 Z" fill="#0F172A" stroke="#F59E0B" stroke-width="3"/><path d="M 548 520 L 548 386 A 52 52 0 0 1 652 386 L 652 520 Z" fill="url(#nsitCyberGlass)"/><text x="600" y="314" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="11" fill="#1E3A8A" letter-spacing="1.8">AFFILIATED TO NFSU</text><rect x="0" y="520" width="1200" height="155" fill="url(#nsitLawn)"/><polygon points="505,520 695,520 845,675 355,675" fill="#CBD5E1" stroke="#94A3B8" stroke-width="2"/><line x1="600" y1="530" x2="600" y2="675" stroke="#F59E0B" stroke-width="3" stroke-dasharray="14 10"/><g fill="#047857" stroke="#064E3B" stroke-width="2"><circle cx="290" cy="502" r="34"/><circle cx="250" cy="510" r="28" fill="#059669"/><circle cx="910" cy="502" r="34"/><circle cx="950" cy="510" r="28" fill="#059669"/></g></svg>`)}`,
     description: 'Established in 2008 under the aegis of Shree Swaminarayan Vividh Sewaniketan Trust at Jetalpur, Ahmedabad, Narnarayan Shastri Institute of Technology - Institute of Forensic Sciences and Cyber Security (NSIT-IFSCS, also popularly searched as Narayan Shastri / Naryan Shastri Institute of Forensic Science and Cybersecurity) is India’s premier dedicated college formally affiliated with the National Forensic Sciences University (NFSU, An Institution of National Importance under the Ministry of Home Affairs, Government of India). Following the official NFSU curriculum and academic standards, NSIT-IFSCS delivers specialized integrated and postgraduate programs in Forensic Science, Cyber Security, Digital Forensics & Information Security (DFIS), and Forensic Accounting & Fraud Investigation backed by AI/VR-enabled crime scene simulation suites, advanced chemical/biological instrumentation, and state-of-the-art cyber defense laboratories.',
     coursesOffered: [
       {
@@ -6082,14 +6082,23 @@ export async function fetchColleges(): Promise<College[]> {
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const docIdLower = docSnap.id.toLowerCase().trim();
+      const canonicalId = SLUG_ALIASES[docIdLower] || docIdLower;
 
       // Skip records marked deleted or already seen
-      if (data.isDeleted === true || data.status === 'deleted' || deletedSet.has(docIdLower) || seenIds.has(docIdLower)) {
+      if (
+        data.isDeleted === true ||
+        data.status === 'deleted' ||
+        deletedSet.has(docIdLower) ||
+        deletedSet.has(canonicalId) ||
+        seenIds.has(canonicalId) ||
+        seenIds.has(docIdLower)
+      ) {
         return;
       }
 
+      seenIds.add(canonicalId);
       seenIds.add(docIdLower);
-      const sampleFallback = sampleMap.get(docIdLower);
+      const sampleFallback = sampleMap.get(canonicalId) || sampleMap.get(docIdLower);
 
       // Enrich courses if an older Firestore doc lacked specializations or newer courses from verified sample
       let coursesOffered = Array.isArray(data.coursesOffered) && data.coursesOffered.length > 0
@@ -6108,18 +6117,18 @@ export async function fetchColleges(): Promise<College[]> {
           }
           return course;
         });
-        if ((docIdLower === 'amity-aifs' || docIdLower === 'nsit-ifscs-ahmedabad' || docIdLower === 'sanskriti-university-mathura') && coursesOffered.length < sampleFallback.coursesOffered.length) {
+        if ((canonicalId === 'amity-aifs' || canonicalId === 'nsit-ifscs-ahmedabad' || canonicalId === 'sanskriti-university-mathura') && coursesOffered.length < sampleFallback.coursesOffered.length) {
           coursesOffered = sampleFallback.coursesOffered;
         }
       }
 
       const preferSampleAssets =
-        (docIdLower === 'nsit-ifscs-ahmedabad' || docIdLower === 'sanskriti-university-mathura') &&
+        (canonicalId === 'nsit-ifscs-ahmedabad' || canonicalId === 'sanskriti-university-mathura') &&
         sampleFallback &&
-        (!data.logo || String(data.logo).includes('nsitgurukul.com'));
+        (!data.logo || String(data.logo).includes('nsitgurukul.com') || String(data.logo).startsWith('/images/colleges/'));
 
       fetched.push({
-        id: docSnap.id,
+        id: canonicalId,
         name: (preferSampleAssets && sampleFallback) ? sampleFallback.name : (data.name || sampleFallback?.name || ''),
         shortName: (preferSampleAssets && sampleFallback) ? sampleFallback.shortName : (data.shortName || sampleFallback?.shortName || ''),
         country: data.country || sampleFallback?.country || 'India',
@@ -6129,7 +6138,7 @@ export async function fetchColleges(): Promise<College[]> {
         website: (preferSampleAssets && sampleFallback) ? sampleFallback.website : (data.website || sampleFallback?.website || ''),
         logo: (preferSampleAssets && sampleFallback) ? sampleFallback.logo : (data.logo || sampleFallback?.logo || ''),
         bannerImage: (preferSampleAssets && sampleFallback) ? sampleFallback.bannerImage : (data.bannerImage || sampleFallback?.bannerImage || ''),
-        description: ((docIdLower === 'amity-aifs' || preferSampleAssets) && sampleFallback) ? sampleFallback.description : (data.description || sampleFallback?.description || ''),
+        description: ((canonicalId === 'amity-aifs' || preferSampleAssets) && sampleFallback) ? sampleFallback.description : (data.description || sampleFallback?.description || ''),
         coursesOffered,
         feesRange: data.feesRange || sampleFallback?.feesRange || '',
         admissionProcess: data.admissionProcess || sampleFallback?.admissionProcess || '',
@@ -6147,17 +6156,41 @@ export async function fetchColleges(): Promise<College[]> {
     });
 
     // Include any verified directory colleges not yet persisted in Firestore (unless deleted by Admin)
+    const missingFromFirestore: College[] = [];
     for (const sample of SAMPLE_COLLEGES) {
       const sampleIdLower = sample.id.toLowerCase().trim();
-      if (!seenIds.has(sampleIdLower) && !deletedSet.has(sampleIdLower)) {
+      const sampleCanonical = SLUG_ALIASES[sampleIdLower] || sampleIdLower;
+      if (
+        !seenIds.has(sampleCanonical) &&
+        !seenIds.has(sampleIdLower) &&
+        !deletedSet.has(sampleIdLower) &&
+        !deletedSet.has(sampleCanonical)
+      ) {
+        seenIds.add(sampleCanonical);
         seenIds.add(sampleIdLower);
         fetched.push(sample);
+        missingFromFirestore.push(sample);
       }
     }
 
-    fetched.sort((a, b) => a.name.localeCompare(b.name));
-    cachedColleges = fetched;
-    return fetched;
+    if (missingFromFirestore.length > 0) {
+      void syncCollegesBatchToFirestore(missingFromFirestore);
+    }
+
+    // Deduplicate fetched array strictly by canonical ID
+    const finalMap = new Map<string, College>();
+    for (const c of fetched) {
+      const k = (c.id || '').toLowerCase().trim();
+      const canonicalK = SLUG_ALIASES[k] || k;
+      if (canonicalK && !finalMap.has(canonicalK)) {
+        finalMap.set(canonicalK, { ...c, id: canonicalK });
+      }
+    }
+
+    const uniqueFetched = Array.from(finalMap.values());
+    uniqueFetched.sort((a, b) => a.name.localeCompare(b.name));
+    cachedColleges = uniqueFetched;
+    return uniqueFetched;
   } catch (error) {
     console.warn("Could not fetch colleges from Firestore, using verified local directory:", error);
     const fallback = cachedColleges && cachedColleges.length > 0
@@ -6382,4 +6415,77 @@ export async function deleteCollege(collegeId: string, collegeName?: string): Pr
     console.warn("Server API college deletion notice:", apiErr);
   }
 }
+
+export async function syncCollegesBatchToFirestore(collegesToSync: College[]): Promise<number> {
+  if (!Array.isArray(collegesToSync) || collegesToSync.length === 0) return 0;
+
+  let synced = 0;
+  const nowIso = new Date().toISOString();
+  const batchSize = 15;
+
+  for (let i = 0; i < collegesToSync.length; i += batchSize) {
+    const chunk = collegesToSync.slice(i, i + batchSize);
+    await Promise.all(
+      chunk.map(async (college) => {
+        const cleanId = String(college.id || '').trim();
+        if (!cleanId) return;
+        try {
+          const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
+          await setDoc(
+            docRef,
+            {
+              name: college.name || 'Untitled College',
+              shortName: college.shortName || '',
+              country: college.country || 'India',
+              state: college.state || '',
+              city: college.city || '',
+              type: college.type || 'Government',
+              website: college.website || '',
+              logo: college.logo || '',
+              bannerImage: college.bannerImage || '',
+              description: college.description || '',
+              coursesOffered: college.coursesOffered || [],
+              feesRange: college.feesRange || '',
+              admissionProcess: college.admissionProcess || '',
+              accreditation: college.accreditation || '',
+              contactEmail: college.contactEmail || '',
+              contactPhone: college.contactPhone || '',
+              address: college.address || '',
+              ranking: college.ranking || '',
+              facilities: college.facilities || [],
+              featured: !!college.featured,
+              isDeleted: false,
+              status: 'active',
+              updatedAt: nowIso
+            },
+            { merge: true }
+          );
+          synced++;
+        } catch (err) {
+          console.warn(`Could not sync college ${cleanId} to Firestore:`, err);
+        }
+      })
+    );
+  }
+  return synced;
+}
+
+export async function syncAllCollegesToFirestore(): Promise<{ syncedCount: number; totalCount: number }> {
+  const deletedSet = await getDeletedCollegeIds();
+  const uniqueColleges: College[] = [];
+  const seen = new Set<string>();
+
+  for (const c of SAMPLE_COLLEGES) {
+    const key = c.id.toLowerCase().trim();
+    if (!deletedSet.has(key) && !seen.has(key)) {
+      seen.add(key);
+      uniqueColleges.push(c);
+    }
+  }
+
+  const syncedCount = await syncCollegesBatchToFirestore(uniqueColleges);
+  cachedColleges = null;
+  return { syncedCount, totalCount: uniqueColleges.length };
+}
+
 

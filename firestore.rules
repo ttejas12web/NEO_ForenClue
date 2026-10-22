@@ -440,10 +440,26 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    function isValidCollege(data) {
+      return data.keys().hasAll(['name', 'country', 'state', 'city', 'type'])
+        && data.name is string && data.name.size() >= 2 && data.name.size() <= 500
+        && data.country is string && data.country.size() <= 100
+        && data.state is string && data.state.size() <= 100
+        && data.city is string && data.city.size() <= 100
+        && data.type is string && data.type.size() <= 100
+        && (!('isDeleted' in data) || data.isDeleted == false)
+        && (!('status' in data) || data.status == 'active');
+    }
+
     // Colleges & Universities Directory
     match /colleges/{collegeId} {
       allow read: if true;
-      allow create, update, delete: if isAdmin();
+      allow create, update: if isAdmin() || (
+        isValidId(collegeId)
+        && isValidCollege(incoming())
+        && (resource == null || !('isDeleted' in resource.data) || resource.data.isDeleted != true)
+      );
+      allow delete: if isAdmin();
     }
 
     // LinkedIn Posts Collection

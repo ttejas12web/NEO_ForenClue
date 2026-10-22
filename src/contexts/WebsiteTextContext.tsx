@@ -852,12 +852,12 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
 
         snapshot.forEach((docSnap) => {
           const data = docSnap.data();
-          if (data && typeof data.text === 'string') {
+          if (data && (typeof data.text === 'string' || data.isDeleted || data.iconDeleted)) {
             const item: WebsiteTextItem = {
               id: docSnap.id,
-              text: data.text,
+              text: data.text || '',
               mobileText: data.mobileText || '',
-              desktopText: data.desktopText !== undefined ? data.desktopText : data.text,
+              desktopText: data.desktopText !== undefined ? data.desktopText : (data.text || ''),
               originalText: data.originalText,
               domSelector: data.domSelector || '',
               page: data.page,
