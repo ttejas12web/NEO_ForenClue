@@ -181,7 +181,8 @@ function AppMain() {
 }
 
 export default function App() {
-  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [isOffline, setIsOffline] = useState<boolean>(false);
+  const [reconnectedToast, setReconnectedToast] = useState<boolean>(false);
   const [maintenanceConfig, setMaintenanceConfig] = useState<MaintenanceConfig>(getCachedMaintenanceConfig());
   const [isMaintenanceActive, setIsMaintenanceActive] = useState<boolean>(() => getCachedMaintenanceConfig().isActive);
   const [isBypassed, setIsBypassed] = useState(() => {
@@ -203,16 +204,135 @@ export default function App() {
     return () => unsub();
   }, []);
 
+  // Reliable network connectivity management:
+  // Never rely solely on unverified initial navigator.onLine or single API request errors.
+  // Confirm actual network loss via browser events + lightweight same-origin reachability probe.
   useEffect(() => {
-    const handleOnline = () => setIsOffline(false);
-    const handleOffline = () => setIsOffline(true);
+    let isMounted = true;
+    let offlineConfirmTimer: ReturnType<typeof setTimeout> | null = null;
+    let reconnectToastTimer: ReturnType<typeof setTimeout> | null = null;
+    let recoveryPollInterval: ReturnType<typeof setInterval> | null = null;
+    let activeAbortController: AbortController | null = null;
+
+    const probeConnectivity = async (): Promise<boolean> => {
+      if (typeof window === 'undefined') return true;
+      if (activeAbortController) {
+        activeAbortController.abort();
+      }
+      const controller = new AbortController();
+      activeAbortController = controller;
+      const timeoutId = setTimeout(() => controller.abort(), 4500);
+
+      try {
+        // Any HTTP response (even 3xx/4xx/5xx) proves the client has active network reachability to origin
+        const response = await fetch(`${window.location.origin}/? _net_probe=${Date.now()}`, {
+          method: 'HEAD',
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+        return response.status > 0;
+      } catch (err: any) {
+        clearTimeout(timeoutId);
+        if (err?.name === 'AbortError') {
+          // Timeout alone is not definitive proof of offline if navigator.onLine is true
+          return navigator.onLine;
+        }
+        return false;
+      }
+    };
+
+    const markOnline = () => {
+      if (!isMounted) return;
+      if (offlineConfirmTimer) {
+        clearTimeout(offlineConfirmTimer);
+        offlineConfirmTimer = null;
+      }
+      setIsOffline((prevOffline) => {
+        if (prevOffline) {
+          setReconnectedToast(true);
+          if (reconnectToastTimer) clearTimeout(reconnectToastTimer);
+          reconnectToastTimer = setTimeout(() => {
+            if (isMounted) setReconnectedToast(false);
+          }, 3000);
+        }
+        return false;
+      });
+    };
+
+    const verifyAndUpdateConnectivity = async () => {
+      if (!isMounted) return;
+      if (navigator.onLine) {
+        markOnline();
+        return;
+      }
+      // Browser reports offline; confirm with a lightweight probe after a brief debounce to prevent flicker
+      if (offlineConfirmTimer) clearTimeout(offlineConfirmTimer);
+      offlineConfirmTimer = setTimeout(async () => {
+        if (!isMounted) return;
+        if (navigator.onLine) {
+          markOnline();
+          return;
+        }
+        const reachable = await probeConnectivity();
+        if (!isMounted) return;
+        if (reachable || navigator.onLine) {
+          markOnline();
+        } else {
+          setIsOffline(true);
+        }
+      }, 1200);
+    };
+
+    const handleOnline = () => {
+      markOnline();
+    };
+
+    const handleOffline = () => {
+      verifyAndUpdateConnectivity();
+    };
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        if (navigator.onLine) {
+          markOnline();
+        } else {
+          verifyAndUpdateConnectivity();
+        }
+      }
+    };
+
+    // Initial check on mount (only if navigator.onLine is false)
+    if (!navigator.onLine) {
+      verifyAndUpdateConnectivity();
+    }
 
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+
+    // Periodic recovery check only while marked offline
+    recoveryPollInterval = setInterval(async () => {
+      if (!isMounted) return;
+      if (navigator.onLine) {
+        markOnline();
+      } else {
+        const reachable = await probeConnectivity();
+        if (reachable) markOnline();
+      }
+    }, 10000);
 
     return () => {
+      isMounted = false;
+      if (offlineConfirmTimer) clearTimeout(offlineConfirmTimer);
+      if (reconnectToastTimer) clearTimeout(reconnectToastTimer);
+      if (recoveryPollInterval) clearInterval(recoveryPollInterval);
+      if (activeAbortController) activeAbortController.abort();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
     };
   }, []);
 
@@ -257,13 +377,40 @@ export default function App() {
         <AnimatePresence>
           {isOffline && (
             <motion.div 
+              role="status"
+              aria-live="assertive"
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -50, opacity: 0 }}
-              className="fixed top-0 left-0 right-0 z-[9999] bg-red-600 border-b border-red-500/50 flex items-center justify-center py-2 px-4 gap-3 shadow-lg"
+              className="fixed top-0 left-0 right-0 z-[9999] bg-red-600 text-white border-b border-red-500/50 flex items-center justify-center py-2 px-4 gap-3 shadow-lg"
             >
-              <WifiOff size={16} className="text-text-main" />
-              <span className="text-xs font-black uppercase tracking-widest text-text-main">Connection Lost. Operating in offline mode.</span>
+              <WifiOff size={16} className="text-white shrink-0" />
+              <span className="text-xs font-black uppercase tracking-widest text-white">
+                Connection Lost. Operating in offline mode.
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsOffline(false)}
+                className="ml-2 px-2 py-0.5 rounded bg-white/15 hover:bg-white/25 text-[10px] font-bold uppercase tracking-wider text-white transition-colors"
+                aria-label="Dismiss offline notice"
+              >
+                Dismiss
+              </button>
+            </motion.div>
+          )}
+          {!isOffline && reconnectedToast && (
+            <motion.div
+              role="status"
+              aria-live="polite"
+              initial={{ y: -50, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: -50, opacity: 0 }}
+              className="fixed top-0 left-0 right-0 z-[9999] bg-emerald-600 text-white border-b border-emerald-500/50 flex items-center justify-center py-2 px-4 gap-2 shadow-lg"
+            >
+              <span className="inline-block w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span className="text-xs font-black uppercase tracking-widest text-white">
+                Connection Restored. You are back online.
+              </span>
             </motion.div>
           )}
         </AnimatePresence>

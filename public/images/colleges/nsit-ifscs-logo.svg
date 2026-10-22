@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <linearGradient id="nsitShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E3A8A" />
+      <stop offset="50%" stop-color="#0F172A" />
+      <stop offset="100%" stop-color="#172554" />
+    </linearGradient>
+    <linearGradient id="nsitGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A" />
+      <stop offset="50%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <linearGradient id="nsitCyanGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#0284C7" />
+    </linearGradient>
+    <radialGradient id="nsitBg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#F8FAFC" />
+      <stop offset="100%" stop-color="#E2E8F0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Outer Seal Frame -->
+  <rect width="400" height="400" rx="64" fill="url(#nsitBg)" />
+  <circle cx="200" cy="200" r="176" fill="#FFFFFF" stroke="url(#nsitGoldGrad)" stroke-width="8" />
+  <circle cx="200" cy="200" r="160" fill="none" stroke="#1E3A8A" stroke-width="2.5" stroke-dasharray="8 5" />
+
+  <!-- Top Curved Institutional Header Text -->
+  <text x="200" y="70" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="800" font-size="12" fill="#1E3A8A" letter-spacing="2">NARNARAYAN SHASTRI INSTITUTE</text>
+  <text x="200" y="88" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="700" font-size="10" fill="#B45309" letter-spacing="1.8">AFFILIATED TO NFSU • AHMEDABAD</text>
+
+  <!-- Central Forensic & Cyber Security Shield -->
+  <path d="M 114 104 L 286 104 L 286 196 C 286 258, 200 298, 200 298 C 200 298, 114 258, 114 196 Z" fill="url(#nsitShieldGrad)" stroke="url(#nsitGoldGrad)" stroke-width="6" stroke-linejoin="round" />
+
+  <!-- Shield Quadrant Divider -->
+  <line x1="200" y1="108" x2="200" y2="292" stroke="url(#nsitGoldGrad)" stroke-width="2" opacity="0.45" />
+  <line x1="118" y1="186" x2="282" y2="186" stroke="url(#nsitGoldGrad)" stroke-width="2" opacity="0.45" />
+
+  <!-- Top-Left Quadrant: Forensic DNA Helix & Magnifier -->
+  <g stroke="#38BDF8" stroke-width="2.5" fill="none" stroke-linecap="round">
+    <path d="M 145 126 C 155 138, 175 138, 185 150 C 175 162, 155 162, 145 174" />
+    <path d="M 185 126 C 175 138, 155 138, 145 150 C 155 162, 175 162, 185 174" stroke="#FDE68A" />
+    <line x1="152" y1="133" x2="178" y2="133" stroke="#94A3B8" stroke-width="1.5" />
+    <line x1="152" y1="167" x2="178" y2="167" stroke="#94A3B8" stroke-width="1.5" />
+  </g>
+
+  <!-- Top-Right Quadrant: Cyber Security Shield & Lock Node -->
+  <g transform="translate(216, 124)">
+    <path d="M 22 4 L 42 12 L 42 28 C 42 40, 22 48, 22 48 C 22 48, 2 40, 2 28 L 2 12 Z" fill="none" stroke="#38BDF8" stroke-width="2.5" />
+    <rect x="15" y="23" width="14" height="11" rx="2" fill="#FDE68A" />
+    <path d="M 18 23 L 18 18 A 4 4 0 0 1 26 18 L 26 23" fill="none" stroke="#FDE68A" stroke-width="2.2" />
+  </g>
+
+  <!-- Lower Shield: Open Book of Knowledge & NSIT Monogram -->
+  <path d="M 148 222 Q 174 210 200 222 Q 226 210 252 222 L 252 198 Q 226 186 200 198 Q 174 186 148 198 Z" fill="#FFFFFF" stroke="url(#nsitGoldGrad)" stroke-width="2.5" />
+  <text x="200" y="264" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="900" font-size="28" fill="#FDE68A" letter-spacing="2.5">NSIT</text>
+
+  <!-- Bottom Ribbon Banner -->
+  <path d="M 56 310 L 344 310 L 330 352 L 70 352 Z" fill="#1E3A8A" stroke="url(#nsitGoldGrad)" stroke-width="3" />
+  <text x="200" y="331" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="800" font-size="13.5" fill="#FFFFFF" letter-spacing="1.5">FORENSIC SCIENCES &amp; CYBER SECURITY</text>
+  <text x="200" y="346" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="700" font-size="10" fill="#FDE68A" letter-spacing="2">NSIT-IFSCS • JETALPUR, AHMEDABAD</text>
+</svg>

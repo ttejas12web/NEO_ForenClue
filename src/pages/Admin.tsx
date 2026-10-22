@@ -10,8 +10,10 @@ import {
   Users, RefreshCw, ShieldCheck, Database, Fingerprint, ClipboardList,
   Star, Building2, MapPin, Eye, EyeOff, Wrench, Power, Clock, ShieldAlert, AlertTriangle,
   Trophy, CreditCard, Copy, Check, Shuffle, Search, Filter, Zap,
-  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb, RotateCcw, Pin, Save
+  X, Download, UserX, UserCheck, Calendar, Image as ImageIcon, Lightbulb, RotateCcw, Pin, Save,
+  Monitor, Smartphone, Palette
 } from 'lucide-react';
+import { BASIC_TEXT_COLORS, FONT_SIZE_PRESETS, FONT_WEIGHT_PRESETS } from '@/components/admin/AdminLiveEditor';
 import { db, storage, handleFirestoreError, OperationType } from '@/lib/firebase';
 import { collection, addDoc, getDocs, deleteDoc, doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -300,6 +302,15 @@ export default function Admin() {
   const [copiedTexts, setCopiedTexts] = useState<any[]>([]);
   const [textKey, setTextKey] = useState('');
   const [textVal, setTextVal] = useState('');
+  const [textMobileVal, setTextMobileVal] = useState('');
+  const [textDesktopColor, setTextDesktopColor] = useState('');
+  const [textMobileColor, setTextMobileColor] = useState('');
+  const [textDesktopFontSize, setTextDesktopFontSize] = useState('');
+  const [textMobileFontSize, setTextMobileFontSize] = useState('');
+  const [textDesktopFontWeight, setTextDesktopFontWeight] = useState('');
+  const [textMobileFontWeight, setTextMobileFontWeight] = useState('');
+  const [textDesktopAlign, setTextDesktopAlign] = useState('');
+  const [textMobileAlign, setTextMobileAlign] = useState('');
   const [textPageRoute, setTextPageRoute] = useState('/');
   const [textFilterSearch, setTextFilterSearch] = useState('');
   const [textPageFilter, setTextPageFilter] = useState('all');
@@ -2298,28 +2309,55 @@ export default function Admin() {
     }
   };
 
-  // Edit / Add Website text general
+  // Edit / Add Website text general (Desktop & Mobile text, colors, and typography)
   const handleUpdateWebsiteText = async (key: string, val: string, pageRoute: string = '/') => {
     setSuccessMsg('');
     setErrMsg('');
 
     if (!key.trim() || !val.trim()) {
-      setErrMsg('Please enter a valid key and paragraph text value.');
+      setErrMsg('Please enter a valid key and desktop text value.');
       return;
     }
 
     try {
       const trimmedKey = key.trim();
+      const desktopStyleObj: Record<string, any> = {};
+      if (textDesktopColor) desktopStyleObj.color = textDesktopColor;
+      if (textDesktopFontSize) desktopStyleObj.fontSize = textDesktopFontSize;
+      if (textDesktopFontWeight) desktopStyleObj.fontWeight = textDesktopFontWeight;
+      if (textDesktopAlign) desktopStyleObj.textAlign = textDesktopAlign;
+
+      const mobileStyleObj: Record<string, any> = {};
+      if (textMobileColor) mobileStyleObj.color = textMobileColor;
+      if (textMobileFontSize) mobileStyleObj.fontSize = textMobileFontSize;
+      if (textMobileFontWeight) mobileStyleObj.fontWeight = textMobileFontWeight;
+      if (textMobileAlign) mobileStyleObj.textAlign = textMobileAlign;
+
       const payload: any = {
         text: val.trim(),
+        desktopText: val.trim(),
+        mobileText: textMobileVal.trim(),
+        desktopColor: textDesktopColor,
+        mobileColor: textMobileColor,
+        desktopStyle: desktopStyleObj,
+        mobileStyle: mobileStyleObj,
         page: pageRoute || '/',
         updatedAt: new Date().toISOString(),
         updatedBy: user?.email || 'admin'
       };
       await setDoc(doc(db, 'websiteTexts', trimmedKey), payload, { merge: true });
-      setSuccessMsg(`Website text override for "${trimmedKey}" saved live!`);
+      setSuccessMsg(`Website text & color override for "${trimmedKey}" saved live for Desktop & Mobile!`);
       setTextKey('');
       setTextVal('');
+      setTextMobileVal('');
+      setTextDesktopColor('');
+      setTextMobileColor('');
+      setTextDesktopFontSize('');
+      setTextMobileFontSize('');
+      setTextDesktopFontWeight('');
+      setTextMobileFontWeight('');
+      setTextDesktopAlign('');
+      setTextMobileAlign('');
       setEditingTextDoc(null);
       fetchCollections();
     } catch (err: any) {
@@ -3506,13 +3544,36 @@ export default function Admin() {
                           </div>
                         </div>
 
-                        {/* Add / Update Manual Text Override Form */}
-                        <div className="mb-6 p-5 rounded-xl bg-base border border-black/5 dark:border-white/5 space-y-4">
-                          <h3 className="text-sm font-heading font-black uppercase tracking-wider text-text-main flex items-center gap-2">
-                            <Plus size={16} className="text-warning" /> Add or Update Website Text Override
-                          </h3>
+                        {/* Add / Update Manual Text Override Form (Desktop & Mobile + Basic Colors) */}
+                        <div className="mb-6 p-5 rounded-xl bg-base border border-black/5 dark:border-white/5 space-y-5">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <h3 className="text-sm font-heading font-black uppercase tracking-wider text-text-main flex items-center gap-2">
+                              <Plus size={16} className="text-warning" /> Add or Update Website Text & Color Override (Desktop & Mobile)
+                            </h3>
+                            {textKey && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setTextKey('');
+                                  setTextVal('');
+                                  setTextMobileVal('');
+                                  setTextDesktopColor('');
+                                  setTextMobileColor('');
+                                  setTextDesktopFontSize('');
+                                  setTextMobileFontSize('');
+                                  setTextDesktopFontWeight('');
+                                  setTextMobileFontWeight('');
+                                  setTextDesktopAlign('');
+                                  setTextMobileAlign('');
+                                }}
+                                className="text-[10px] font-mono text-text-muted hover:text-warning cursor-pointer"
+                              >
+                                Clear Form
+                              </button>
+                            )}
+                          </div>
 
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <div>
                               <label className="text-[10px] font-mono font-bold uppercase text-text-muted block mb-1">
                                 Text Key or Identifier:
@@ -3542,18 +3603,197 @@ export default function Admin() {
                                 ))}
                               </select>
                             </div>
+                          </div>
 
-                            <div className="md:col-span-3">
-                              <label className="text-[10px] font-mono font-bold uppercase text-text-muted block mb-1">
-                                Customized Live Text:
-                              </label>
+                          {/* Desktop vs Mobile Text Content */}
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-3.5 rounded-xl bg-surface border border-cyan-500/20 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-mono font-bold uppercase text-cyan-400 flex items-center gap-1.5">
+                                  <Monitor size={13} /> Desktop Screen Text & Options (≥768px) *
+                                </label>
+                              </div>
                               <textarea
                                 value={textVal}
                                 onChange={(e) => setTextVal(e.target.value)}
                                 rows={3}
-                                placeholder="Enter customized text content to display live on the website..."
-                                className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-lg p-3 text-xs text-text-main focus:outline-none focus:border-warning font-sans leading-relaxed"
+                                placeholder="Enter text content for Desktop screens..."
+                                className="w-full bg-base border border-black/10 dark:border-white/10 rounded-lg p-3 text-xs text-text-main focus:outline-none focus:border-warning font-sans leading-relaxed"
                               />
+
+                              {/* Desktop Basic Text Colors */}
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-mono font-bold uppercase text-text-muted flex items-center gap-1">
+                                    <Palette size={11} className="text-cyan-400" /> Desktop Basic Text Color:
+                                  </span>
+                                  {textDesktopColor && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setTextDesktopColor('')}
+                                      className="text-[9px] font-mono text-red-400 hover:underline cursor-pointer"
+                                    >
+                                      Reset
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1">
+                                  {BASIC_TEXT_COLORS.map((c) => (
+                                    <button
+                                      key={`d_${c.label}`}
+                                      type="button"
+                                      onClick={() => setTextDesktopColor(c.value)}
+                                      className={`flex items-center gap-1 px-1.5 py-1 rounded border text-[9px] font-mono font-bold cursor-pointer ${
+                                        (textDesktopColor || '').toLowerCase() === c.value.toLowerCase()
+                                          ? 'border-warning bg-warning/15 text-text-main'
+                                          : 'border-black/10 dark:border-white/10 bg-base text-text-muted hover:text-text-main'
+                                      }`}
+                                    >
+                                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 border ${c.swatch} ${c.border || 'border-white/20'}`} />
+                                      <span className="truncate">{c.label}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Desktop Size / Weight / Align */}
+                              <div className="grid grid-cols-3 gap-2 pt-1">
+                                <div>
+                                  <label className="block text-[9px] font-mono uppercase text-text-muted mb-0.5">Desktop Size</label>
+                                  <select
+                                    value={textDesktopFontSize}
+                                    onChange={(e) => setTextDesktopFontSize(e.target.value)}
+                                    className="w-full bg-base border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] font-mono text-text-main"
+                                  >
+                                    {FONT_SIZE_PRESETS.map(s => <option key={s.label} value={s.value}>{s.label}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-[9px] font-mono uppercase text-text-muted mb-0.5">Desktop Weight</label>
+                                  <select
+                                    value={textDesktopFontWeight}
+                                    onChange={(e) => setTextDesktopFontWeight(e.target.value)}
+                                    className="w-full bg-base border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] font-mono text-text-main"
+                                  >
+                                    {FONT_WEIGHT_PRESETS.map(w => <option key={w.label} value={w.value}>{w.label}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-[9px] font-mono uppercase text-text-muted mb-0.5">Desktop Align</label>
+                                  <select
+                                    value={textDesktopAlign}
+                                    onChange={(e) => setTextDesktopAlign(e.target.value)}
+                                    className="w-full bg-base border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] font-mono text-text-main"
+                                  >
+                                    <option value="">Default</option>
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                    <option value="justify">Justify</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="p-3.5 rounded-xl bg-surface border border-amber-500/20 space-y-3">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[10px] font-mono font-bold uppercase text-amber-400 flex items-center gap-1.5">
+                                  <Smartphone size={13} /> Mobile Screen Text & Options (&lt;768px)
+                                </label>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setTextMobileVal(textVal);
+                                    setTextMobileColor(textDesktopColor);
+                                    setTextMobileFontSize(textDesktopFontSize);
+                                    setTextMobileFontWeight(textDesktopFontWeight);
+                                    setTextMobileAlign(textDesktopAlign);
+                                  }}
+                                  className="text-[9px] font-mono text-warning hover:underline cursor-pointer"
+                                >
+                                  Copy from Desktop
+                                </button>
+                              </div>
+                              <textarea
+                                value={textMobileVal}
+                                onChange={(e) => setTextMobileVal(e.target.value)}
+                                rows={3}
+                                placeholder="Optional custom text for Mobile screens (leave blank to use Desktop text)..."
+                                className="w-full bg-base border border-black/10 dark:border-white/10 rounded-lg p-3 text-xs text-text-main focus:outline-none focus:border-warning font-sans leading-relaxed"
+                              />
+
+                              {/* Mobile Basic Text Colors */}
+                              <div className="space-y-1.5">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[10px] font-mono font-bold uppercase text-text-muted flex items-center gap-1">
+                                    <Palette size={11} className="text-amber-400" /> Mobile Basic Text Color:
+                                  </span>
+                                  {textMobileColor && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setTextMobileColor('')}
+                                      className="text-[9px] font-mono text-red-400 hover:underline cursor-pointer"
+                                    >
+                                      Reset
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-4 sm:grid-cols-5 gap-1">
+                                  {BASIC_TEXT_COLORS.map((c) => (
+                                    <button
+                                      key={`m_${c.label}`}
+                                      type="button"
+                                      onClick={() => setTextMobileColor(c.value)}
+                                      className={`flex items-center gap-1 px-1.5 py-1 rounded border text-[9px] font-mono font-bold cursor-pointer ${
+                                        (textMobileColor || '').toLowerCase() === c.value.toLowerCase()
+                                          ? 'border-warning bg-warning/15 text-text-main'
+                                          : 'border-black/10 dark:border-white/10 bg-base text-text-muted hover:text-text-main'
+                                      }`}
+                                    >
+                                      <span className={`w-2.5 h-2.5 rounded-full shrink-0 border ${c.swatch} ${c.border || 'border-white/20'}`} />
+                                      <span className="truncate">{c.label}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Mobile Size / Weight / Align */}
+                              <div className="grid grid-cols-3 gap-2 pt-1">
+                                <div>
+                                  <label className="block text-[9px] font-mono uppercase text-text-muted mb-0.5">Mobile Size</label>
+                                  <select
+                                    value={textMobileFontSize}
+                                    onChange={(e) => setTextMobileFontSize(e.target.value)}
+                                    className="w-full bg-base border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] font-mono text-text-main"
+                                  >
+                                    {FONT_SIZE_PRESETS.map(s => <option key={s.label} value={s.value}>{s.label}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-[9px] font-mono uppercase text-text-muted mb-0.5">Mobile Weight</label>
+                                  <select
+                                    value={textMobileFontWeight}
+                                    onChange={(e) => setTextMobileFontWeight(e.target.value)}
+                                    className="w-full bg-base border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] font-mono text-text-main"
+                                  >
+                                    {FONT_WEIGHT_PRESETS.map(w => <option key={w.label} value={w.value}>{w.label}</option>)}
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-[9px] font-mono uppercase text-text-muted mb-0.5">Mobile Align</label>
+                                  <select
+                                    value={textMobileAlign}
+                                    onChange={(e) => setTextMobileAlign(e.target.value)}
+                                    className="w-full bg-base border border-black/10 dark:border-white/10 rounded px-2 py-1 text-[10px] font-mono text-text-main"
+                                  >
+                                    <option value="">Default</option>
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                    <option value="justify">Justify</option>
+                                  </select>
+                                </div>
+                              </div>
                             </div>
                           </div>
 
@@ -3564,7 +3804,7 @@ export default function Admin() {
                               className="px-5 py-2 bg-warning hover:bg-warning/90 text-crust font-black text-xs uppercase tracking-wider rounded-lg shadow transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                               <Save size={13} />
-                              <span>Save Text Override Live</span>
+                              <span>Save Desktop & Mobile Override Live</span>
                             </button>
                           </div>
                         </div>
@@ -3633,6 +3873,26 @@ export default function Admin() {
                                         Route: {item.page}
                                       </span>
                                     )}
+                                    {(item.desktopColor || item.desktopStyle?.color) && (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                                        <Monitor size={10} />
+                                        <span
+                                          className="w-2.5 h-2.5 rounded-full border border-white/20"
+                                          style={{ backgroundColor: item.desktopColor || item.desktopStyle?.color }}
+                                        />
+                                        <span>{item.desktopColor || item.desktopStyle?.color}</span>
+                                      </span>
+                                    )}
+                                    {(item.mobileColor || item.mobileStyle?.color) && (
+                                      <span className="inline-flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                                        <Smartphone size={10} />
+                                        <span
+                                          className="w-2.5 h-2.5 rounded-full border border-white/20"
+                                          style={{ backgroundColor: item.mobileColor || item.mobileStyle?.color }}
+                                        />
+                                        <span>{item.mobileColor || item.mobileStyle?.color}</span>
+                                      </span>
+                                    )}
                                   </div>
 
                                   {item.updatedAt && (
@@ -3649,23 +3909,47 @@ export default function Admin() {
                                   </div>
                                 )}
 
-                                <div className="text-xs text-text-main font-sans leading-relaxed bg-surface p-3 rounded-lg border border-black/5 dark:border-white/5">
-                                  <strong className="text-[10px] uppercase font-mono text-warning block mb-0.5">Live Override:</strong>
-                                  "{item.text}"
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                  <div className="text-xs text-text-main font-sans leading-relaxed bg-surface p-3 rounded-lg border border-cyan-500/20">
+                                    <strong className="text-[10px] uppercase font-mono text-cyan-400 flex items-center gap-1 mb-0.5">
+                                      <Monitor size={11} /> Desktop Text:
+                                    </strong>
+                                    <span style={{ color: item.desktopColor || item.desktopStyle?.color || undefined }}>
+                                      "{item.desktopText || item.text}"
+                                    </span>
+                                  </div>
+
+                                  <div className="text-xs text-text-main font-sans leading-relaxed bg-surface p-3 rounded-lg border border-amber-500/20">
+                                    <strong className="text-[10px] uppercase font-mono text-amber-400 flex items-center gap-1 mb-0.5">
+                                      <Smartphone size={11} /> Mobile Text:
+                                    </strong>
+                                    <span style={{ color: item.mobileColor || item.mobileStyle?.color || item.desktopColor || undefined }}>
+                                      "{item.mobileText || item.desktopText || item.text}"
+                                    </span>
+                                  </div>
                                 </div>
 
                                 <div className="flex items-center justify-end gap-2 pt-2 border-t border-black/5 dark:border-white/5">
                                   <button
                                     onClick={() => {
                                       setTextKey(item.id);
-                                      setTextVal(item.text);
+                                      setTextVal(item.desktopText || item.text || '');
+                                      setTextMobileVal(item.mobileText || '');
+                                      setTextDesktopColor(item.desktopColor || item.desktopStyle?.color || '');
+                                      setTextMobileColor(item.mobileColor || item.mobileStyle?.color || '');
+                                      setTextDesktopFontSize(item.desktopStyle?.fontSize || '');
+                                      setTextMobileFontSize(item.mobileStyle?.fontSize || '');
+                                      setTextDesktopFontWeight(item.desktopStyle?.fontWeight || '');
+                                      setTextMobileFontWeight(item.mobileStyle?.fontWeight || '');
+                                      setTextDesktopAlign(item.desktopStyle?.textAlign || '');
+                                      setTextMobileAlign(item.mobileStyle?.textAlign || '');
                                       if (item.page) setTextPageRoute(item.page);
                                       window.scrollTo({ top: 300, behavior: 'smooth' });
                                     }}
                                     className="px-3 py-1 bg-black/5 dark:bg-white/5 hover:bg-warning/20 hover:text-warning text-text-main rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer"
                                   >
                                     <Edit3 size={12} />
-                                    <span>Edit</span>
+                                    <span>Edit Desktop & Mobile</span>
                                   </button>
 
                                   <button

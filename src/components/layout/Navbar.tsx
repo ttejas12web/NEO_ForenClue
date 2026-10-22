@@ -36,7 +36,6 @@ const directLinks = [
 const resourcesDropdown = [
   { name: 'Quizzes & Challenges', path: '/quizzes', icon: Trophy },
   { name: 'E-Library', path: '/ebooks', icon: BookOpen },
-  { name: 'Podcast', path: '/podcast', icon: Mic },
   { name: 'Webinars', path: '/webinar', icon: Video },
   { name: 'Simulations', path: '/simulations', icon: Microscope },
 ];
@@ -77,7 +76,7 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (['/quizzes', '/ebooks', '/podcast', '/webinar', '/simulations'].includes(location.pathname)) {
+    if (['/quizzes', '/ebooks', '/webinar', '/simulations'].includes(location.pathname)) {
       setIsMobileResourcesOpen(true);
     }
     if (['/certificate', '/employees'].includes(location.pathname)) {
@@ -87,6 +86,19 @@ export function Navbar() {
       setIsMobileTeamOpen(true);
     }
   }, [location.pathname]);
+
+  const toggleTheme = () => {
+    const root = document.documentElement;
+    root.classList.add('theme-transitioning');
+    setIsDark(prev => !prev);
+    
+    if ((window as any).__themeTransitionTimer) {
+      clearTimeout((window as any).__themeTransitionTimer);
+    }
+    (window as any).__themeTransitionTimer = window.setTimeout(() => {
+      root.classList.remove('theme-transitioning');
+    }, 450);
+  };
 
   useEffect(() => {
     if (isDark) {
@@ -100,7 +112,7 @@ export function Navbar() {
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth >= 768) {
+      if (window.innerWidth >= 1024) {
         setIsOpen(false);
       }
     };
@@ -143,26 +155,20 @@ export function Navbar() {
           </button>
         </div>
       )}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
-          <div className="flex items-center gap-2">
+      <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-3 h-20">
+          <div className="flex items-center gap-2 min-w-0">
             {/* Logo */}
             <Link 
-              to={location.pathname === '/podcast' ? "/podcast" : "/"} 
-              className="group flex flex-col justify-center shrink-0 py-1"
+              to="/" 
+              className="group flex flex-col justify-center min-w-0 py-1 focus:outline-none"
             >
-              {location.pathname === '/podcast' ? (
-                 <div className="flex items-center gap-3">
-                   <span className="font-black text-xl tracking-tight text-text-main group-hover:text-warning transition-colors">Podcast</span>
-                 </div>
-              ) : (
-                <div className="flex flex-col items-start">
-                  <Logo />
-                  <span className="text-[10px] sm:text-[11px] text-text-muted uppercase tracking-widest mt-1 font-bold group-hover:text-warning transition-colors whitespace-nowrap">
-                    Your Partner in Forensic Precision
-                  </span>
-                </div>
-              )}
+              <div className="flex flex-col items-start min-w-0">
+                <Logo imgClassName="h-9 xs:h-10 sm:h-12 lg:h-14 transition-transform duration-200 group-hover:scale-[1.01]" />
+                <span className="text-[8px] xs:text-[9px] sm:text-[10.5px] lg:text-[11px] text-text-muted uppercase tracking-wider xs:tracking-widest mt-0.5 sm:mt-1 font-bold group-hover:text-warning transition-colors whitespace-nowrap select-none">
+                  Your Partner in Forensic Precision
+                </span>
+              </div>
             </Link>
           </div>
 
@@ -317,11 +323,27 @@ export function Navbar() {
             </Link>
 
             <button
-              onClick={() => setIsDark(!isDark)}
-              className="p-2 ml-2 rounded-full text-text-muted hover:text-warning hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-              aria-label="Toggle theme"
+              onClick={toggleTheme}
+              className="p-2 ml-2 rounded-full text-text-muted hover:text-warning hover:bg-black/5 dark:hover:bg-white/5 transition-colors relative overflow-hidden"
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={isDark ? 'dark' : 'light'}
+                  initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  exit={{ rotate: 90, scale: 0.6, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="flex items-center justify-center"
+                >
+                  {isDark ? (
+                    <Sun size={18} className="text-amber-400 hover:text-amber-300" />
+                  ) : (
+                    <Moon size={18} className="text-sky-500 hover:text-sky-600" />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </button>
 
             {user ? (
@@ -369,20 +391,66 @@ export function Navbar() {
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="lg:hidden flex items-center gap-2">
+          {/* Mobile & Tablet action controls */}
+          <div
+            data-admin-editor-ignore="true"
+            className="flex lg:hidden items-center gap-1.5 xs:gap-2 shrink-0 ml-auto"
+          >
+            {/* Theme Toggle Button */}
             <button
-              onClick={() => setIsDark(!isDark)}
-              className="p-2 rounded-md text-text-muted hover:text-warning hover:bg-black/10 dark:hover:bg-black/5 dark:bg-white/10 transition-colors"
-              aria-label="Toggle theme"
+              type="button"
+              onClick={toggleTheme}
+              className="w-9 h-9 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl text-text-main hover:text-warning bg-surface/80 hover:bg-surface border border-black/10 dark:border-white/10 hover:border-warning/40 transition-all duration-200 cursor-pointer relative overflow-hidden flex items-center justify-center shrink-0 active:scale-95 shadow-xs touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-warning"
+              aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+              title={isDark ? "Switch to light mode" : "Switch to dark mode"}
             >
-              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={isDark ? 'dark' : 'light'}
+                  initial={{ rotate: -90, scale: 0.6, opacity: 0 }}
+                  animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                  exit={{ rotate: 90, scale: 0.6, opacity: 0 }}
+                  transition={{ duration: 0.25, ease: 'easeOut' }}
+                  className="flex items-center justify-center"
+                >
+                  {isDark ? (
+                    <Sun className="w-4.5 h-4.5 xs:w-5 xs:h-5 sm:w-5.5 sm:h-5.5 text-amber-400" />
+                  ) : (
+                    <Moon className="w-4.5 h-4.5 xs:w-5 xs:h-5 sm:w-5.5 sm:h-5.5 text-sky-500" />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </button>
+
+            {/* Mobile Menu Hamburger Toggle */}
             <button
+              type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-md text-text-main dark:text-white hover:text-warning hover:bg-black/10 dark:hover:bg-black/5 dark:bg-white/10 transition-colors"
+              aria-label={isOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isOpen}
+              className={cn(
+                "w-9 h-9 xs:w-10 xs:h-10 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl transition-all duration-200 flex items-center justify-center shrink-0 cursor-pointer active:scale-95 shadow-xs touch-manipulation focus:outline-none focus-visible:ring-2 focus-visible:ring-warning",
+                isOpen 
+                  ? "bg-warning text-black border border-warning font-bold shadow-md shadow-warning/20" 
+                  : "bg-surface/80 hover:bg-surface text-text-main hover:text-warning border border-black/10 dark:border-white/10 hover:border-warning/40"
+              )}
             >
-              {isOpen ? <X size={24} /> : <Menu size={24} />}
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={isOpen ? 'open' : 'closed'}
+                  initial={{ rotate: -45, opacity: 0, scale: 0.8 }}
+                  animate={{ rotate: 0, opacity: 1, scale: 1 }}
+                  exit={{ rotate: 45, opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.18, ease: 'easeOut' }}
+                  className="flex items-center justify-center"
+                >
+                  {isOpen ? (
+                    <X className="w-5 h-5 xs:w-5.5 xs:h-5.5 text-black" strokeWidth={2.5} />
+                  ) : (
+                    <Menu className="w-5 h-5 xs:w-5.5 xs:h-5.5" strokeWidth={2.2} />
+                  )}
+                </motion.div>
+              </AnimatePresence>
             </button>
           </div>
         </div>
@@ -395,9 +463,11 @@ export function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-crust border-b border-black/10 dark:border-white/10 overflow-y-auto max-h-[calc(100dvh-80px)]"
+            transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="lg:hidden bg-crust/98 backdrop-blur-xl border-b border-black/10 dark:border-white/10 overflow-y-auto overscroll-contain max-h-[calc(100dvh-4rem)] sm:max-h-[calc(100dvh-5rem)] shadow-2xl"
+            style={{ WebkitOverflowScrolling: 'touch' }}
           >
-            <div className="px-4 py-4 space-y-1">
+            <div className="px-3 xs:px-4 py-3 sm:py-4 space-y-1 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
               {directLinks.map((link) => {
                 const active = isActiveRoute(link.path);
                 return (
@@ -406,13 +476,16 @@ export function Navbar() {
                     to={link.path}
                     onClick={() => setIsOpen(false)}
                     className={cn(
-                      "block px-4 py-3 font-medium transition-colors rounded-md",
+                      "flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold transition-all rounded-lg sm:rounded-xl",
                       active
-                        ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
+                        ? "text-warning font-bold bg-warning/15 border-l-4 border-warning shadow-xs"
                         : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                     )}
                   >
-                    {link.name}
+                    <span>{link.name}</span>
+                    {active && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+                    )}
                   </Link>
                 );
               })}
@@ -422,14 +495,14 @@ export function Navbar() {
                 <button
                   onClick={() => setIsMobileResourcesOpen(!isMobileResourcesOpen)}
                   className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 font-medium transition-colors text-left rounded-md",
+                    "w-full flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold transition-all text-left rounded-lg sm:rounded-xl",
                     isResourcesActive
-                      ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
+                      ? "text-warning font-bold bg-warning/10 border-l-4 border-warning/60"
                       : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                   )}
                 >
                   <span>Resources</span>
-                  <ChevronDown size={18} className={cn("transition-transform duration-200", isMobileResourcesOpen && "rotate-180")} />
+                  <ChevronDown size={17} className={cn("transition-transform duration-200 text-text-muted", isMobileResourcesOpen && "rotate-180 text-warning")} />
                 </button>
                 
                 <AnimatePresence initial={false}>
@@ -438,7 +511,7 @@ export function Navbar() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="pl-4 space-y-1 overflow-hidden"
+                      className="pl-3 xs:pl-4 space-y-1 overflow-hidden"
                     >
                       {resourcesDropdown.map((link) => {
                         const Icon = link.icon;
@@ -449,13 +522,13 @@ export function Navbar() {
                             to={link.path}
                             onClick={() => setIsOpen(false)}
                             className={cn(
-                              "flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors rounded-md",
+                              "flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium transition-colors rounded-lg",
                               active
-                                ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
-                                : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
+                                ? "text-warning font-bold bg-warning/10"
+                                : "text-text-muted hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                             )}
                           >
-                            <Icon size={16} className={active ? "text-warning" : "text-warning/80"} />
+                            <Icon size={15} className={active ? "text-warning" : "text-warning/70"} />
                             <span>{link.name}</span>
                           </Link>
                         );
@@ -470,14 +543,14 @@ export function Navbar() {
                 <button
                   onClick={() => setIsMobileVerifyOpen(!isMobileVerifyOpen)}
                   className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 font-medium transition-colors text-left rounded-md",
+                    "w-full flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold transition-all text-left rounded-lg sm:rounded-xl",
                     isVerifyActive
-                      ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
+                      ? "text-warning font-bold bg-warning/10 border-l-4 border-warning/60"
                       : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                   )}
                 >
                   <span>Verify</span>
-                  <ChevronDown size={18} className={cn("transition-transform duration-200", isMobileVerifyOpen && "rotate-180")} />
+                  <ChevronDown size={17} className={cn("transition-transform duration-200 text-text-muted", isMobileVerifyOpen && "rotate-180 text-warning")} />
                 </button>
                 
                 <AnimatePresence initial={false}>
@@ -486,7 +559,7 @@ export function Navbar() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="pl-4 space-y-1 overflow-hidden"
+                      className="pl-3 xs:pl-4 space-y-1 overflow-hidden"
                     >
                       {verifyDropdown.map((link) => {
                         const Icon = link.icon;
@@ -497,13 +570,13 @@ export function Navbar() {
                             to={link.path}
                             onClick={() => setIsOpen(false)}
                             className={cn(
-                              "flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors rounded-md",
+                              "flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium transition-colors rounded-lg",
                               active
-                                ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
-                                : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
+                                ? "text-warning font-bold bg-warning/10"
+                                : "text-text-muted hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                             )}
                           >
-                            <Icon size={16} className={active ? "text-warning" : "text-warning/80"} />
+                            <Icon size={15} className={active ? "text-warning" : "text-warning/70"} />
                             <span>{link.name}</span>
                           </Link>
                         );
@@ -518,14 +591,14 @@ export function Navbar() {
                 <button
                   onClick={() => setIsMobileTeamOpen(!isMobileTeamOpen)}
                   className={cn(
-                    "w-full flex items-center justify-between px-4 py-3 font-medium transition-colors text-left rounded-md",
+                    "w-full flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold transition-all text-left rounded-lg sm:rounded-xl",
                     isTeamActive
-                      ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
+                      ? "text-warning font-bold bg-warning/10 border-l-4 border-warning/60"
                       : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                   )}
                 >
                   <span>Team</span>
-                  <ChevronDown size={18} className={cn("transition-transform duration-200", isMobileTeamOpen && "rotate-180")} />
+                  <ChevronDown size={17} className={cn("transition-transform duration-200 text-text-muted", isMobileTeamOpen && "rotate-180 text-warning")} />
                 </button>
                 
                 <AnimatePresence initial={false}>
@@ -534,7 +607,7 @@ export function Navbar() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="pl-4 space-y-1 overflow-hidden"
+                      className="pl-3 xs:pl-4 space-y-1 overflow-hidden"
                     >
                       {teamDropdown.map((link) => {
                         const Icon = link.icon;
@@ -545,13 +618,13 @@ export function Navbar() {
                             to={link.path}
                             onClick={() => setIsOpen(false)}
                             className={cn(
-                              "flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium transition-colors rounded-md",
+                              "flex items-center gap-2.5 px-3 py-2 text-xs sm:text-sm font-medium transition-colors rounded-lg",
                               active
-                                ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
+                                ? "text-warning font-bold bg-warning/10"
                                 : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                             )}
                           >
-                            <Icon size={16} className={active ? "text-warning" : "text-warning/80"} />
+                            <Icon size={15} className={active ? "text-warning" : "text-warning/70"} />
                             <span>{link.name}</span>
                           </Link>
                         );
@@ -566,62 +639,67 @@ export function Navbar() {
                 to="/about"
                 onClick={() => setIsOpen(false)}
                 className={cn(
-                  "block px-4 py-3 font-medium transition-colors rounded-md",
+                  "flex items-center justify-between px-3.5 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base font-semibold transition-all rounded-lg sm:rounded-xl",
                   isActiveRoute('/about')
-                    ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
+                    ? "text-warning font-bold bg-warning/15 border-l-4 border-warning shadow-xs"
                     : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                 )}
               >
-                About Us
+                <span>About Us</span>
+                {isActiveRoute('/about') && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-warning animate-pulse" />
+                )}
               </Link>
 
               {user ? (
-                 <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10">
-                   <Link 
-                     to="/dashboard"
-                     onClick={() => setIsOpen(false)}
-                     className="flex items-center gap-3 px-4 mb-4 group"
-                   >
-                     {user.photoURL ? (
-                        <img src={user.photoURL} alt={user.displayName || 'User'} className="w-10 h-10 rounded-full" />
-                     ) : (
-                        <div className="w-10 h-10 rounded-full bg-surface flex items-center justify-center">
-                           <UserIcon size={20} className="text-text-muted transition-colors group-hover:text-warning" />
-                        </div>
-                     )}
-                     <div>
-                       <p className="text-sm font-medium text-text-main group-hover:text-warning transition-colors">{user.displayName || 'User'}</p>
-                       <p className="text-[10px] text-text-muted uppercase tracking-widest">Dashboard</p>
-                     </div>
-                   </Link>
-                   <Link
-                     to="/profile"
-                     onClick={() => setIsOpen(false)}
-                     className="block px-4 py-3 mb-2 font-medium text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-md"
-                   >
-                     View Profile
-                   </Link>
-                   <button 
-                     onClick={async () => { 
-                       await logout(); 
-                       setIsOpen(false); 
-                       navigate('/');
-                     }}
-                     className="w-full flex items-center justify-center gap-2 px-5 py-3 text-text-muted font-bold hover:text-text-main transition-colors hover:bg-black/5 dark:hover:bg-white/5 rounded-md"
-                   >
-                     <LogOut size={18} />
-                     Sign Out
-                   </button>
-                 </div>
+                <div className="mt-4 pt-4 border-t border-black/10 dark:border-white/10 space-y-2">
+                  <Link 
+                    to="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-3 p-3 rounded-xl bg-surface/60 hover:bg-surface border border-black/5 dark:border-white/5 transition-all group"
+                  >
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.displayName || 'User'} className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-warning/30" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-surface-hover flex items-center justify-center shrink-0 border border-black/10 dark:border-white/10">
+                        <UserIcon size={20} className="text-text-muted transition-colors group-hover:text-warning" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-text-main group-hover:text-warning transition-colors truncate">{user.displayName || 'User'}</p>
+                      <p className="text-[10px] text-text-muted uppercase tracking-widest font-mono">View Dashboard &rarr;</p>
+                    </div>
+                  </Link>
+                  <Link
+                    to="/profile"
+                    onClick={() => setIsOpen(false)}
+                    className="block px-3.5 py-2.5 font-medium text-sm text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5 transition-colors rounded-lg"
+                  >
+                    User Profile
+                  </Link>
+                  <button 
+                    onClick={async () => { 
+                      await logout(); 
+                      setIsOpen(false); 
+                      navigate('/');
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-text-muted font-bold text-sm hover:text-red-400 hover:bg-red-500/10 transition-colors rounded-lg cursor-pointer"
+                  >
+                    <LogOut size={16} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
               ) : (
+                <div className="pt-2">
                   <Link
                     to="/login"
                     onClick={() => setIsOpen(false)}
-                    className="w-full flex items-center justify-center gap-2 mt-4 px-5 py-3 bg-warning text-black font-extrabold text-xs uppercase tracking-wider rounded-lg hover:bg-warning-dark transition-all shadow-md whitespace-nowrap cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-warning text-black font-extrabold text-xs uppercase tracking-wider rounded-xl hover:bg-warning-dark active:scale-[0.98] transition-all shadow-md shadow-warning/20 whitespace-nowrap cursor-pointer"
                   >
                     <LogIn size={16} className="shrink-0" />
                     <span>Sign In / Log In</span>
                   </Link>
+                </div>
               )}
             </div>
           </motion.div>

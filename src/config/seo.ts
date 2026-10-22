@@ -262,6 +262,15 @@ export const ROUTE_SEO_CONFIG: Record<string, RouteSEOConfig> = {
     type: 'website',
     badge: 'Verified Credential Portfolio',
     tag: 'SPECIALIST PROFILE'
+  },
+  '/colleges': {
+    title: 'Forensic Science Colleges & Universities Directory | ForenClue',
+    description: 'Explore top accredited universities, National Forensic Sciences University (NFSU) campuses, government institutes, and private colleges offering B.Sc., M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, Cyber Forensics, and Criminology.',
+    keywords: 'forensic science colleges in india, forensic universities directory, nfsu campuses, bsc forensic science colleges, msc forensic science universities, government forensic colleges, amity aifs, forenclue colleges',
+    image: 'https://forenclue.in/images/og/colleges.png',
+    type: 'website',
+    badge: 'Verified Forensic Institutions',
+    tag: 'COLLEGES DIRECTORY'
   }
 };
 

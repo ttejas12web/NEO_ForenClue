@@ -1,8 +1,16 @@
 import { initializeApp } from 'firebase/app';
 import { initializeAuth, browserLocalPersistence, browserSessionPersistence, browserPopupRedirectResolver, signOut } from 'firebase/auth';
-import { initializeFirestore } from 'firebase/firestore';
+import { initializeFirestore, setLogLevel } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 import firebaseConfig from '../../firebase-applet-config.json';
+
+// Suppress internal @firebase/firestore transient WebChannel/network retry error logs
+// while application-level handlers continue to manage errors gracefully.
+try {
+  setLogLevel('silent');
+} catch {
+  // Ignore if unsupported in current environment
+}
 
 // Initialize Firebase config from auto-generated applet settings
 const getRuntimeConfig = () => {
@@ -15,7 +23,7 @@ const getRuntimeConfig = () => {
 const app = initializeApp(getRuntimeConfig());
 const dbDatabaseId = (firebaseConfig as any).firestoreDatabaseId;
 export const db = initializeFirestore(app, {
-  experimentalAutoDetectLongPolling: true
+  experimentalForceLongPolling: true,
 }, dbDatabaseId);
 
 // Initialize Firebase Auth explicitly with browserLocalPersistence and browserSessionPersistence for session continuity.

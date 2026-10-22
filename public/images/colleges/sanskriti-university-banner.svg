@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675">
+  <defs>
+    <!-- Golden Hour Academic Sky Gradient -->
+    <linearGradient id="suSky" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E1B4B" />
+      <stop offset="40%" stop-color="#4C1D95" />
+      <stop offset="75%" stop-color="#9A3412" />
+      <stop offset="100%" stop-color="#F59E0B" />
+    </linearGradient>
+    <radialGradient id="suSunGlow" cx="72%" cy="38%" r="45%">
+      <stop offset="0%" stop-color="#FDE68A" stop-opacity="0.65" />
+      <stop offset="45%" stop-color="#F97316" stop-opacity="0.28" />
+      <stop offset="100%" stop-color="#1E1B4B" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="suSandstone" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FFF7ED" />
+      <stop offset="100%" stop-color="#FED7AA" />
+    </linearGradient>
+    <linearGradient id="suMaroonFacade" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#991B1B" />
+      <stop offset="100%" stop-color="#7F1D1D" />
+    </linearGradient>
+    <linearGradient id="suGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.7" />
+      <stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.85" />
+    </linearGradient>
+    <linearGradient id="suLawn" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#15803D" />
+      <stop offset="100%" stop-color="#052E16" />
+    </linearGradient>
+  </defs>
+
+  <!-- Sky & Warm Horizon Glow -->
+  <rect width="1200" height="675" fill="url(#suSky)" />
+  <rect width="1200" height="675" fill="url(#suSunGlow)" />
+
+  <!-- Subtle Architectural Grid Overlay -->
+  <g stroke="#FFFFFF" stroke-opacity="0.06" stroke-width="1">
+    <line x1="0" y1="150" x2="1200" y2="150" />
+    <line x1="0" y1="300" x2="1200" y2="300" />
+    <line x1="0" y1="450" x2="1200" y2="450" />
+    <line x1="300" y1="0" x2="300" y2="675" />
+    <line x1="600" y1="0" x2="600" y2="675" />
+    <line x1="900" y1="0" x2="900" y2="675" />
+  </g>
+
+  <!-- Distant Campus Academic Wings -->
+  <rect x="70" y="310" width="240" height="210" rx="4" fill="url(#suMaroonFacade)" opacity="0.85" />
+  <rect x="890" y="310" width="240" height="210" rx="4" fill="url(#suMaroonFacade)" opacity="0.85" />
+
+  <!-- Left Wing Windows (Applied Sciences & Forensic Labs) -->
+  <g fill="url(#suGlass)" stroke="#FDE68A" stroke-width="1.2" opacity="0.9">
+    <rect x="95" y="335" width="38" height="45" rx="3" />
+    <rect x="148" y="335" width="38" height="45" rx="3" />
+    <rect x="201" y="335" width="38" height="45" rx="3" />
+    <rect x="254" y="335" width="38" height="45" rx="3" />
+    <rect x="95" y="398" width="38" height="45" rx="3" />
+    <rect x="148" y="398" width="38" height="45" rx="3" />
+    <rect x="201" y="398" width="38" height="45" rx="3" />
+    <rect x="254" y="398" width="38" height="45" rx="3" />
+  </g>
+
+  <!-- Right Wing Windows (Research & Central Instrumentation Block) -->
+  <g fill="url(#suGlass)" stroke="#FDE68A" stroke-width="1.2" opacity="0.9">
+    <rect x="910" y="335" width="38" height="45" rx="3" />
+    <rect x="963" y="335" width="38" height="45" rx="3" />
+    <rect x="1016" y="335" width="38" height="45" rx="3" />
+    <rect x="1069" y="335" width="38" height="45" rx="3" />
+    <rect x="910" y="398" width="38" height="45" rx="3" />
+    <rect x="963" y="398" width="38" height="45" rx="3" />
+    <rect x="1016" y="398" width="38" height="45" rx="3" />
+    <rect x="1069" y="398" width="38" height="45" rx="3" />
+  </g>
+
+  <!-- Grand Central Administrative & Academic Rotunda (Sanskriti University Main Block) -->
+  <!-- Central Dome -->
+  <path d="M 465 250 C 465 140, 735 140, 735 250 Z" fill="url(#suSandstone)" stroke="#F59E0B" stroke-width="3" />
+  <path d="M 520 250 C 520 165, 680 165, 680 250" fill="none" stroke="#B45309" stroke-width="1.5" opacity="0.45" />
+  <!-- Spire Finial -->
+  <rect x="588" y="138" width="24" height="24" rx="3" fill="#F59E0B" />
+  <line x1="600" y1="96" x2="600" y2="138" stroke="#FDE68A" stroke-width="4" stroke-linecap="round" />
+  <circle cx="600" cy="94" r="6" fill="#FDE68A" />
+
+  <!-- Main Building Body -->
+  <rect x="285" y="250" width="630" height="270" rx="4" fill="url(#suSandstone)" stroke="#D97706" stroke-width="2.5" />
+  <!-- Maroon Architectural Frieze & Header Band -->
+  <rect x="285" y="250" width="630" height="38" fill="#8B1E24" />
+  <text x="600" y="274" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, sans-serif" font-weight="800" font-size="17" fill="#FDE68A" letter-spacing="4">SANSKRITI UNIVERSITY • MATHURA</text>
+
+  <!-- Classical Academic Colonnade Pillars -->
+  <g fill="#FFFBEB" stroke="#D97706" stroke-width="1.5">
+    <rect x="315" y="288" width="22" height="222" />
+    <rect x="385" y="288" width="22" height="222" />
+    <rect x="455" y="288" width="22" height="222" />
+    <rect x="723" y="288" width="22" height="222" />
+    <rect x="793" y="288" width="22" height="222" />
+    <rect x="863" y="288" width="22" height="222" />
+  </g>
+
+  <!-- Windows Between Pillars -->
+  <g fill="url(#suGlass)" stroke="#B45309" stroke-width="1.5">
+    <rect x="346" y="310" width="30" height="55" rx="15" />
+    <rect x="416" y="310" width="30" height="55" rx="15" />
+    <rect x="346" y="388" width="30" height="55" rx="4" />
+    <rect x="416" y="388" width="30" height="55" rx="4" />
+
+    <rect x="754" y="310" width="30" height="55" rx="15" />
+    <rect x="824" y="310" width="30" height="55" rx="15" />
+    <rect x="754" y="388" width="30" height="55" rx="4" />
+    <rect x="824" y="388" width="30" height="55" rx="4" />
+  </g>
+
+  <!-- Central Grand Archway & Portico -->
+  <path d="M 495 510 L 495 322 L 600 292 L 705 322 L 705 510 Z" fill="#FFFBEB" stroke="#B45309" stroke-width="2" />
+  <path d="M 532 510 L 532 390 A 68 68 0 0 1 668 390 L 668 510 Z" fill="#450A0A" stroke="#F59E0B" stroke-width="3" />
+  <!-- Glass Atrium Inside Archway -->
+  <path d="M 544 510 L 544 394 A 56 56 0 0 1 656 394 L 656 510 Z" fill="url(#suGlass)" opacity="0.85" />
+  <line x1="600" y1="338" x2="600" y2="510" stroke="#FDE68A" stroke-width="2" opacity="0.7" />
+  <line x1="544" y1="430" x2="656" y2="430" stroke="#FDE68A" stroke-width="2" opacity="0.7" />
+
+  <!-- University Crest Emblem Above Arch -->
+  <circle cx="600" cy="316" r="14" fill="#8B1E24" stroke="#FDE68A" stroke-width="2.5" />
+
+  <!-- Manicured Green Campus Lawns & Promenade -->
+  <rect x="0" y="510" width="1200" height="165" fill="url(#suLawn)" />
+  <!-- Central Walkway & Reflection Fountain -->
+  <polygon points="510,510 690,510 830,675 370,675" fill="#E7E5E4" stroke="#D6D3D1" stroke-width="2" />
+  <polygon points="555,535 645,535 695,650 505,650" fill="#0284C7" opacity="0.75" stroke="#38BDF8" stroke-width="2" />
+
+  <!-- Lush Campus Trees -->
+  <g fill="#166534" stroke="#14532D" stroke-width="2">
+    <circle cx="240" cy="490" r="36" />
+    <circle cx="275" cy="500" r="28" fill="#15803D" />
+    <circle cx="150" cy="495" r="32" />
+    <circle cx="960" cy="490" r="36" />
+    <circle cx="925" cy="500" r="28" fill="#15803D" />
+    <circle cx="1050" cy="495" r="32" />
+  </g>
+</svg>

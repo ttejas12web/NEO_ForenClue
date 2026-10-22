@@ -2074,82 +2074,150 @@ export const SAMPLE_COLLEGES: College[] = [
     website: 'https://amity.edu/aifs',
     logo: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=300',
     bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
-    description: 'Leading private institute in North India offering comprehensive hands-on training in forensic biology, questioned documents, and digital intelligence.',
+    description: 'Amity Institute of Forensic Sciences (AIFS) at Amity University, Sector 125, Noida is a leading private forensic science institute in North India offering comprehensive hands-on training and academic research in crime scene investigation, forensic biology & DNA profiling, questioned documents, fingerprint science, analytical toxicology, and cyber/digital intelligence.',
     coursesOffered: [
       {
         name: 'B.Sc. (Honours) Forensic Science',
         degreeLevel: 'Bachelor',
-        duration: '3 Years',
+        duration: '3 / 4 Years (NEP 2020)',
         eligibility: '10+2 with PCB/PCM (Min 55%)',
         estimatedFees: '₹1,20,000 / year',
-        mode: 'Full-time'
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Toxicology',
+          'Questioned Documents & Fingerprint Examination',
+          'Digital & Cyber Forensics'
+        ]
       },
       {
         name: 'M.Sc. Forensic Science',
         degreeLevel: 'Master',
         duration: '2 Years',
-        eligibility: 'B.Sc. Forensic Science / Chemistry / Zoology / Physics (Min 50%)',
+        eligibility: 'B.Sc. Forensic Science / Chemistry / Zoology / Physics / Life Sciences (Min 50%)',
         estimatedFees: '₹1,40,000 / year',
-        mode: 'Full-time'
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Instrumental Chemical Analysis',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Document Examination & Fingerprint Science',
+          'Cyber Forensics, Ballistics & Crime Scene Reconstruction'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree in Forensic Science or allied Science discipline with minimum 55% aggregate marks + Amity Ph.D. Entrance Test (PET) / UGC-CSIR NET + Interview',
+        estimatedFees: '₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Analytical Toxicology & Trace Evidence Chemistry',
+          'Forensic Genetics, Serology & Anthropology',
+          'Questioned Documents, Biometrics & Digital Forensics'
+        ]
       }
     ],
     feesRange: '₹1,20,000 - ₹1,50,000 / year',
-    admissionProcess: 'Amity University Direct Test / Interview & 10+2 Academic Merit.',
-    accreditation: 'NAAC A+ Grade | UGC Approved',
+    admissionProcess: 'Amity University Direct Test / Personal Interview & 10+2 / Graduation Academic Merit (CUET scores also accepted).',
+    accreditation: 'NAAC A+ Grade | UGC Approved | AIU & ACU Member',
     contactEmail: 'aifs@amity.edu',
     contactPhone: '+91 120 4392000',
-    address: 'Sector 125, Noida, Uttar Pradesh 201313',
-    ranking: 'Top Private Forensic College in North India',
-    facilities: ['Automated Fingerprint Scanner Lab', 'Mock Crime Scene House', 'Toxicology HPLC & GC-MS Suite'],
+    address: 'Block J-1, Amity University Campus, Sector 125, Noida, Uttar Pradesh 201313, India',
+    ranking: 'Top Private Forensic Science Institute in North India | NIRF Top 35 University',
+    facilities: [
+      'Automated Fingerprint Scanner & Impression Evidence Lab',
+      'Dedicated Mock Crime Scene Investigation House',
+      'Toxicology & Analytical Instrumentation Suite (HPLC, GC-MS, FTIR, UV-Vis)',
+      'Forensic Biology, Serology & PCR/DNA Profiling Laboratory',
+      'Questioned Documents, Stereomicroscopy & Ballistics Examination Unit',
+      'Central Amity Library, Moot Court Hall & 1000-Acre Smart Residential Campus'
+    ],
     featured: true
   },
   {
     id: 'ifs-mumbai',
     name: 'Institute of Forensic Science, Mumbai',
-    shortName: 'IFS Mumbai',
+    shortName: 'IFSC Mumbai',
     country: 'India',
     state: 'Maharashtra',
     city: 'Mumbai',
     type: 'Government',
-    website: 'https://ifsc.ac.in',
+    website: 'https://ifscmumbai.in',
     logo: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&q=80&w=300',
     bannerImage: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&q=80&w=1200',
-    description: 'Government of Maharashtra flagship institute established under the Higher & Technical Education Dept to train forensic scientists.',
+    description: 'Institute of Forensic Science, Mumbai (IFSC Mumbai), established in 2009 by the Department of Higher & Technical Education, Government of Maharashtra and affiliated to the University of Mumbai, is a premier state government forensic science institution located at the historic Institute of Science campus in Fort, Mumbai.',
     coursesOffered: [
       {
         name: 'B.Sc. Forensic Science',
         degreeLevel: 'Bachelor',
-        duration: '3 Years',
-        eligibility: '10+2 Science stream (Higher Secondary Board Merit)',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 Science stream (Higher Secondary Board Merit as per Govt. of Maharashtra norms)',
         estimatedFees: '₹12,000 / year',
-        mode: 'Full-time'
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Science & Crime Scene Investigation',
+          'Forensic Chemistry & Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Physics, Ballistics & Digital Forensics',
+          'Forensic Psychology & Criminal Law'
+        ]
       },
       {
         name: 'M.Sc. Forensic Science',
         degreeLevel: 'Master',
         duration: '2 Years',
-        eligibility: 'B.Sc. Forensic Science (Min 55%)',
+        eligibility: 'B.Sc. Forensic Science from a recognized university (Min 55% aggregate marks)',
         estimatedFees: '₹18,000 / year',
-        mode: 'Full-time'
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents & Fingerprint Examination',
+          'Digital & Cyber Forensics'
+        ]
       },
       {
-        name: 'PG Diploma in Cyber Crime & Digital Forensics',
+        name: 'PG Diploma in Digital and Cyber Forensics and Related Law (PGDCL)',
         degreeLevel: 'Diploma',
         duration: '1 Year',
-        eligibility: 'Graduate in Science / IT / Engineering / Law',
+        eligibility: 'Graduate in Science / Forensic Science / IT / Computer Science / Engineering / Law',
         estimatedFees: '₹15,000 / year',
-        mode: 'Part-time'
+        mode: 'Full-time',
+        specializations: [
+          'Cyber Crime Investigation & Digital Evidence Recovery',
+          'Network Security, Mobile Forensics & IT Act Jurisprudence'
+        ]
+      },
+      {
+        name: 'PG Diploma in Forensic Science and Related Law (PGDFSL)',
+        degreeLevel: 'Diploma',
+        duration: '1 Year',
+        eligibility: 'Bachelor’s degree in Science, Medicine, Pharmacy, Forensic Science, or Law',
+        estimatedFees: '₹15,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Management & Physical Evidence',
+          'Forensic Toxicology, Medico-Legal Jurisprudence & Evidence Law'
+        ]
       }
     ],
     feesRange: '₹10,000 - ₹20,000 / year',
-    admissionProcess: 'Government Merit List based on 10+2 & B.Sc. aggregate percentage.',
-    accreditation: 'Government of Maharashtra | Mumbai University Affiliated',
-    contactEmail: 'director@ifsc.ac.in',
+    admissionProcess: 'Government Merit List based on 10+2 HSC & B.Sc. aggregate percentage via University of Mumbai / Maharashtra CET Cell.',
+    accreditation: 'Government of Maharashtra | Affiliated to University of Mumbai | NAAC Accredited',
+    contactEmail: 'director@ifscmumbai.in',
     contactPhone: '+91 22 22817581',
-    address: '15, Madame Cama Road, Fort, Mumbai, Maharashtra 400032',
-    ranking: '#1 Govt Institute in Maharashtra for Forensic Science',
-    facilities: ['Digital Evidence Recovery Suite', 'Spectrophotometry Suite', 'Crime Library'],
-    featured: false
+    address: '15, Madame Cama Road, Fort, Mumbai, Maharashtra 400032, India',
+    ranking: '#1 Government Institute in Mumbai & Konkan Region for Forensic Science',
+    facilities: [
+      'Digital Evidence Recovery & Cyber Forensics Suite',
+      'Forensic Chemistry, Toxicology & Spectrophotometry Laboratory',
+      'Forensic Biology, Serology & Microscopy Laboratory',
+      'Questioned Documents, Fingerprint Science & Crime Scene Simulation Unit',
+      'Heritage Fort Campus Reference Library & Seminar Hall'
+    ],
+    featured: true
   },
   {
     id: 'gifsa-chhatrapati-sambhajinagar',
@@ -3941,72 +4009,6 @@ export const SAMPLE_COLLEGES: College[] = [
     featured: true
   },
   {
-    id: 'nsit-ifscs-ahmedabad',
-    name: 'Narnarayan Shastri Institute of Technology - Institute of Forensic Sciences & Cyber Security (NSIT-IFSCS), Ahmedabad',
-    shortName: 'NSIT-IFSCS Jetalpur',
-    country: 'India',
-    state: 'Gujarat',
-    city: 'Ahmedabad',
-    type: 'Private',
-    website: 'https://www.nsitgurukul.com',
-    logo: 'https://www.nsitgurukul.com/images/logo.png',
-    bannerImage: 'https://www.nsitgurukul.com/images/about/about-us_1.jpg',
-    description: 'Located in Jetalpur, Ahmedabad under the Swaminarayan Vividh Seva Niketan Trust, Narnarayan Shastri Institute of Technology - Institute of Forensic Sciences & Cyber Security (NSIT-IFSCS) is India’s first private institute affiliated with the National Forensic Sciences University (NFSU), Gandhinagar (an Institution of National Importance under MHA, Govt. of India). NSIT-IFSCS integrates NFSU’s curriculum with AI/XR-enabled EON Reality virtual crime scene simulation and specialized forensic laboratories.',
-    coursesOffered: [
-      {
-        name: 'B.Sc.-M.Sc. Forensic Science (5-Year Integrated - Affiliated to NFSU)',
-        degreeLevel: 'Master',
-        duration: '5 Years',
-        eligibility: '10+2 in Science stream (Physics, Chemistry, Biology/Mathematics) with minimum 60% marks (55% for SC/ST/PwD)',
-        estimatedFees: '₹1,00,000 / year',
-        mode: 'Full-time',
-        specializations: ['Crime Scene Investigation & Physical Forensics', 'Forensic Chemistry & Toxicology', 'Forensic Biology, DNA & Cyber Forensics']
-      },
-      {
-        name: 'M.Sc. in Forensic Science (Affiliated to NFSU)',
-        degreeLevel: 'Master',
-        duration: '2 Years',
-        eligibility: 'B.Sc. in Forensic Science or Basic/Applied Sciences, Medicine, Pharmacy, or Engineering with minimum 55% aggregate marks',
-        estimatedFees: '₹1,20,000 / year',
-        mode: 'Full-time',
-        specializations: ['Forensic Chemistry & Toxicology', 'Forensic Biology, Serology & DNA Profiling', 'Questioned Documents, Fingerprints & Ballistics']
-      },
-      {
-        name: 'M.Sc. in Cyber Security / Digital Forensics and Information Security (Affiliated to NFSU)',
-        degreeLevel: 'Master',
-        duration: '2 Years',
-        eligibility: 'B.E./B.Tech (CSE/IT/ECE) or B.Sc. (CS/IT/Cyber Security/Forensic Science) or BCA with minimum 55% aggregate marks',
-        estimatedFees: '₹1,20,000 / year',
-        mode: 'Full-time',
-        specializations: ['Digital Evidence Recovery & Network Forensics', 'Vulnerability Assessment, Penetration Testing & Malware Analysis']
-      },
-      {
-        name: 'B.Tech.-M.Tech. in Computer Science & Engineering (Cyber Security - Affiliated to NFSU)',
-        degreeLevel: 'Master',
-        duration: '5 Years',
-        eligibility: '10+2 (PCM) with minimum 60% aggregate marks (55% for SC/ST/PwD) + JEE Main / NFAT / GUJCET',
-        estimatedFees: '₹1,30,000 / year',
-        mode: 'Full-time',
-        specializations: ['Cyber Security & Digital Forensics', 'Cloud Security, Cryptography & Ethical Hacking']
-      }
-    ],
-    feesRange: '₹1,00,000 - ₹1,30,000 / year',
-    admissionProcess: 'National Forensic Admission Test (NFAT) / NFSU & NSIT Merit Counseling',
-    accreditation: 'Affiliated to National Forensic Sciences University (NFSU), Gandhinagar | AICTE Approved | Recognized by Govt. of Gujarat',
-    contactEmail: 'info@nsitgurukul.com',
-    contactPhone: '+91 99099 76268',
-    address: 'Jetalpur, Daskroi, National Highway No. 8, Ahmedabad, Gujarat 382426, India',
-    ranking: 'First Private Institute Affiliated to National Forensic Sciences University (NFSU) in India',
-    facilities: [
-      'EON Reality AI & XR Virtual Crime Scene Reconstruction Center',
-      'Forensic Chemistry, Analytical Toxicology & Instrumentation Lab',
-      'Forensic Biology, Serology & Questioned Document Examination Lab',
-      'Advanced Cyber Security, Digital Forensics & Ethical Hacking Lab',
-      'Lush Green Jetalpur Gurukul Campus with Library, Auditorium & Transport'
-    ],
-    featured: true
-  },
-  {
     id: 'gujarat-university-ahmedabad',
     name: 'Gujarat University (Department of Forensic Science, School of Sciences), Ahmedabad',
     shortName: 'Gujarat University',
@@ -5401,6 +5403,505 @@ export const SAMPLE_COLLEGES: College[] = [
       'Central Library, Innovation Incubation Center, Hostels & Transport Facility'
     ],
     featured: true
+  },
+  {
+    id: 'nims-university-jaipur',
+    name: 'NIMS University Rajasthan, Jaipur (Axel Pries Institute of Allied Medical Science & Technology)',
+    shortName: 'NIMS University Jaipur',
+    country: 'India',
+    state: 'Rajasthan',
+    city: 'Jaipur',
+    type: 'Private',
+    website: 'https://www.nimsuniversity.org',
+    logo: 'https://www.nimsuniversity.org/images/logo.png',
+    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    description: 'Established under the NIMS University Rajasthan, Jaipur Act, 2008 and accredited by NAAC with an A+ Grade, NIMS University is one of North India’s largest self-financed health, technical, and science universities spanning a 250+ acre campus on the Jaipur-Delhi Highway (NH-11C). Through the Axel Pries Institute of Allied Medical Science & Technology, NIMS offers NEP 2020-aligned B.Sc. / B.Sc. (Hons.), M.Sc., and Ph.D. programs in Forensic Science, combining crime scene investigation, forensic toxicology, DNA profiling, and digital forensics with direct clinical and medico-legal autopsy exposure at the 1,400+ bed NIMS Super-Specialty Hospital.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. / B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (or equivalent) in Science stream with Physics, Chemistry, and Biology/Mathematics with minimum 50% aggregate marks from a recognized board',
+        estimatedFees: '₹82,500 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Documentation & Physical Evidence Handling',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry, Analytical Toxicology & Instrumentation',
+          'Questioned Documents, Fingerprints & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or allied Science discipline (Biology, Chemistry, Biotechnology, Microbiology, Biochemistry, Life Sciences) with minimum 50% aggregate marks + NIMSEE',
+        estimatedFees: '₹70,000 - ₹85,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents, Fingerprints & Forensic Ballistics',
+          'Digital Forensics & Cyber Crime Investigation'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks + NIMS Ph.D. Entrance Examination / UGC-CSIR NET',
+        estimatedFees: '₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Clinical Pharmacology',
+          'Molecular Forensics, Serology & DNA Profiling',
+          'Trace Evidence, Biometrics & Digital Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹70,000 - ₹1,00,000 / year',
+    admissionProcess: 'NIMSEE (NIMS Entrance Examination) / CUET Merit followed by Counseling (NEXT Merit Scholarships from 15% to 50% available)',
+    accreditation: 'NAAC Accredited A+ Grade | UGC Recognized under Section 2(f) | NMC, DCI, PCI, INC & BCI Approved',
+    contactEmail: 'admissions@nimsuniversity.org',
+    contactPhone: '1800-120-1020 / +91 91160 10414',
+    address: 'Jaipur-Delhi Highway (NH-11C), Chandwaji, Jaipur, Rajasthan 303121, India',
+    ranking: 'NAAC A+ Grade | Largest Multidisciplinary Medical & Science University in Rajasthan (250+ Acre Campus)',
+    facilities: [
+      'Forensic Science Crime Scene Simulation & Reconstruction Laboratory',
+      'Forensic Chemistry, Analytical Toxicology & Central Instrumentation Lab',
+      'Forensic Biology, Serology & Molecular Diagnostics Laboratory',
+      'Medico-Legal & Autopsy Exposure at 1,400+ Bed NIMS Super-Specialty Teaching Hospital',
+      '250+ Acre Residential Campus with Central Library, Hostels, Sports Complex & Innovation Hub'
+    ],
+    featured: true
+  },
+  {
+    id: 'bamu-chhatrapati-sambhajinagar',
+    name: 'Dr. Babasaheb Ambedkar Marathwada University (BAMU), Chhatrapati Sambhajinagar',
+    shortName: 'BAMU Chhatrapati Sambhajinagar (Aurangabad)',
+    country: 'India',
+    state: 'Maharashtra',
+    city: 'Chhatrapati Sambhajinagar',
+    type: 'State',
+    website: 'https://www.bamu.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Dr._Babasaheb_Ambedkar_Marathwada_University_logo.png',
+    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    description: 'Established in August 1958 and named after Bharat Ratna Dr. Babasaheb Ambedkar, Dr. Babasaheb Ambedkar Marathwada University (BAMU) is a premier Maharashtra State Public University spanning a historic 725-acre campus near the Soneri Mahal and Aurangabad Caves in Chhatrapati Sambhajinagar (formerly Aurangabad). Accredited by NAAC and recognized under UGC 2(f) & 12(B), BAMU houses a dedicated University Department of Forensic Science (established in 2021) alongside its affiliated Government Institute of Forensic Science (GIFSA), offering NEP 2020-aligned B.Sc., M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, DNA Profiling, Forensic Anthropology, Toxicology, and Digital Forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (NEP 2020)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (HSC) in Science stream (Physics, Chemistry, and Biology/Mathematics) with minimum 50% aggregate marks (45% for reserved categories as per Govt. of Maharashtra norms)',
+        estimatedFees: '₹30,785 / year (₹22,000 tuition + ₹8,000 laboratory fee)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Forensics',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Digital & Cyber Forensics, Forensic Psychology & Criminal Law (BNS)'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or allied Science discipline from a recognized university + BAMU PG Entrance Examination / Merit',
+        estimatedFees: '₹15,000 - ₹30,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Analytical Toxicology',
+          'DNA Profiling, Forensic Biology & Forensic Anthropology',
+          'Digital Forensics & Cyber Crime Investigation',
+          'Questioned Documents, Fingerprints & Forensic Psychology'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks (50% for reserved categories) + BAMU PET / UGC-CSIR NET / MH-SET',
+        estimatedFees: '₹12,000 - ₹18,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Toxicology & Trace Evidence Analysis',
+          'Forensic Biology, DNA Fingerprinting & Serology',
+          'Digital Forensics, Biometrics & Cyber Security'
+        ]
+      }
+    ],
+    feesRange: '₹15,000 - ₹30,785 / year',
+    admissionProcess: 'Centralized Online Admission & BAMU PG-CET / PET Merit Counseling via official university portal (MahaDBT Government Scholarships applicable)',
+    accreditation: 'Maharashtra State Public University | NAAC Accredited | UGC 2(f) & 12(B) Recognized | AIU Member',
+    contactEmail: 'registrar@bamu.ac.in',
+    contactPhone: '+91 240 2403399 / +91 240 2403400',
+    address: 'University Campus, Near Soneri Mahal, Jaisingpura, Chhatrapati Sambhajinagar (Aurangabad), Maharashtra 431004, India',
+    ranking: 'Premier State Public University in Marathwada Region (NIRF Ranked State University, 725-Acre Campus)',
+    facilities: [
+      'University Department of Forensic Science Crime Scene & Criminalistics Lab',
+      'Forensic Chemistry, Toxicology & Central Instrumentation Facility (CIF)',
+      'DNA Profiling, Molecular Biology & Forensic Anthropology Laboratory',
+      'Digital Forensics, Cyber Security & Questioned Document Examination Unit',
+      'Knowledge Resource Center (Barrister Shamrao Kakade Central Library), University Hostels & Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'holkar-science-college-indore',
+    name: 'Government Holkar (Model, Autonomous) Science College, Indore',
+    shortName: 'Holkar Science College Indore',
+    country: 'India',
+    state: 'Madhya Pradesh',
+    city: 'Indore',
+    type: 'Government',
+    website: 'https://www.collegeholkar.org',
+    logo: 'https://www.collegeholkar.org/images/logo.png',
+    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    description: 'Established on June 10, 1891 by Maharaja Shivajirao Holkar of the erstwhile Holkar State and affiliated with Devi Ahilya Vishwavidyalaya (DAVV), Indore, Government Holkar (Model, Autonomous) Science College, Indore is Central India’s most prestigious government science institution, accredited by NAAC with the highest A++ Grade (CGPA 3.64). Its dedicated Department of Forensic Science offers NEP 2020-aligned B.Sc., M.Sc., and Doctoral research programs in Forensic Science, Crime Scene Investigation, Analytical Toxicology, Forensic Biology & Serology, Questioned Documents, Fingerprint Examination, and Cyber Forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (NEP 2020)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (Higher Secondary) in Science stream with Physics, Chemistry, and Biology/Mathematics from MPBSE / CBSE or recognized board via MP Higher Education e-Pravesh merit counseling',
+        estimatedFees: '₹18,200 - ₹24,500 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence Management',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Fingerprint Science & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry, Biology, Physics, Biotechnology, or allied Science discipline with minimum 50% aggregate marks via MP Higher Education e-Pravesh counseling',
+        estimatedFees: '₹28,500 - ₹34,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Instrumental Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Document Examination, Fingerprints & Ballistics',
+          'Digital Forensics & Cyber Crime Investigation'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic & Allied Chemical / Biological Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s degree in Forensic Science, Chemistry, Biotechnology, or Life Sciences with minimum 55% aggregate marks + DAVV Doctoral Entrance Test (DET) / UGC-CSIR NET',
+        estimatedFees: '₹22,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Analytical Toxicology & Trace Evidence Chemistry',
+          'Forensic Molecular Biology, DNA Barcoding & Serology',
+          'Cyber Forensics & Questioned Document Analysis'
+        ]
+      }
+    ],
+    feesRange: '₹18,200 - ₹34,000 / year',
+    admissionProcess: 'Centralized Online Merit Counseling via Department of Higher Education, Government of Madhya Pradesh (MP Online e-Pravesh Portal); DAVV DET / UGC-CSIR NET for Ph.D. (Medhavi Vidyarthi & MP Govt. Scholarships applicable)',
+    accreditation: 'NAAC Accredited A++ Grade (CGPA 3.64) | Autonomous Model Government Science College (Govt. of MP) | Affiliated to Devi Ahilya Vishwavidyalaya (DAVV), Indore | UGC-CPE',
+    contactEmail: 'principal@collegeholkar.org',
+    contactPhone: '+91 731 2464074 / +91 731 2764027',
+    address: 'A.B. Road, Near Bhawarkua Square, Indore, Madhya Pradesh 452001, India',
+    ranking: 'NAAC A++ (CGPA 3.64) | #1 Autonomous Government Science & Forensic College in Madhya Pradesh (Est. 1891)',
+    facilities: [
+      'Department of Forensic Science Crime Scene Reconstruction & Criminalistics Lab',
+      'Forensic Chemistry, Toxicology & Central Instrumentation Facility',
+      'Forensic Biology, Serology, Molecular Biology & Bioinformatics Lab',
+      'Questioned Documents, Latent Fingerprint & Cyber Forensics Examination Suite',
+      '35-Acre Heritage Campus with Digital Library, Yashwant Hall, Hostels & Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'manipal-university',
+    name: 'Manipal University (Manipal Academy of Higher Education - MAHE & Manipal University Jaipur)',
+    shortName: 'Manipal University (MAHE / MUJ)',
+    country: 'India',
+    state: 'Karnataka',
+    city: 'Manipal (Udupi) & Jaipur',
+    type: 'Deemed',
+    website: 'https://www.manipal.edu',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/0/02/Manipal_Academy_of_Higher_Education_logo.png',
+    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    description: 'Manipal University—comprising Manipal Academy of Higher Education (MAHE, Manipal, Karnataka), an Institution of Eminence Deemed-to-be University accredited with NAAC A++ Grade (CGPA 3.65) and ranked #4 among Universities in India by NIRF, alongside Manipal University Jaipur (MUJ, NAAC A+ Grade)—is one of India’s premier multidisciplinary higher education ecosystems. Through Kasturba Medical College (Department of Forensic Medicine & Toxicology), Manipal School of Life Sciences, and the School of Basic Sciences, Manipal offers comprehensive B.Sc. (Hons.), M.Sc. in Forensic Science, M.D. in Forensic Medicine & Toxicology, M.Tech./M.Sc. in Cyber Security & Digital Forensics, and Ph.D. programs backed by clinical mortuary complexes, poison detection centers, and international research collaborations.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science (NEP 2020)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 / PUC or equivalent with Physics, Chemistry, and Biology/Mathematics with minimum 50% aggregate marks from a recognized board + MET / Merit',
+        estimatedFees: '₹1,25,000 - ₹1,75,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence Reconstruction',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Questioned Documents, Fingerprint Science & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science, Life Sciences, Chemistry, Biotechnology, Microbiology, Biochemistry, or Allied Health Sciences with minimum 50%-55% aggregate marks + Manipal Entrance Test (MET)',
+        estimatedFees: '₹1,65,000 - ₹2,10,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Clinical Poisoning & Instrumental Chemistry',
+          'Forensic Biology, Serology, Odontology & DNA Fingerprinting',
+          'Questioned Documents, Fingerprints & Crime Scene Management',
+          'Digital Forensics & Cyber Crime Investigation'
+        ]
+      },
+      {
+        name: 'M.D. in Forensic Medicine and Toxicology (Kasturba Medical College - KMC Manipal & Mangalore)',
+        degreeLevel: 'Doctorate',
+        duration: '3 Years',
+        eligibility: 'MBBS degree recognized by the National Medical Commission (NMC) + Qualifying NEET-PG Rank',
+        estimatedFees: '₹7,50,000 - ₹14,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Medico-Legal Autopsy, Histopathology & Forensic Pathology',
+          'Clinical Toxicology, Analytical Poisoning & Drug Abuse Profiling',
+          'Forensic Anthropology, Osteology, Odontology & Medical Jurisprudence'
+        ]
+      },
+      {
+        name: 'M.Tech. / M.Sc. in Cyber Security and Digital Forensics',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.E. / B.Tech. in CSE / IT / ECE or BCA / B.Sc. (Computer Science / IT / Cyber Security / Forensic Science) with minimum 50% aggregate marks + MET / GATE',
+        estimatedFees: '₹1,95,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Digital Evidence Acquisition, Network, Mobile & Cloud Forensics',
+          'Vulnerability Assessment, Malware Analysis & Incident Response'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science, Toxicology & Forensic Medicine',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s degree in Forensic Science, Life Sciences, Chemistry, Cyber Security, or M.D. Forensic Medicine with minimum 55% aggregate marks + MAHE / MUJ All India Ph.D. Entrance Test / UGC-CSIR NET',
+        estimatedFees: '₹59,000 - ₹75,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Analytical & Clinical Toxicology, GC-MS/LC-MS Profiling',
+          'Forensic Genetics, Molecular Biology, Anthropology & Odontology',
+          'Digital Forensics, Biometrics & Cyber Security'
+        ]
+      }
+    ],
+    feesRange: '₹1,25,000 - ₹2,10,000 / year',
+    admissionProcess: 'Manipal Entrance Test (MET) / CUET Merit Counseling (NEET-PG Medical Counseling for M.D. Forensic Medicine & Toxicology; MAHE All India Ph.D. Entrance Test for Doctoral programs)',
+    accreditation: 'Institution of Eminence (IoE, Govt. of India) | NAAC Accredited A++ Grade (CGPA 3.65) | UGC Category-I Deemed-to-be University & State Private University (MUJ) | NMC Approved',
+    contactEmail: 'admissions@manipal.edu',
+    contactPhone: '+91 92437 77733 / +91 820 2571201',
+    address: 'Madhav Nagar, Manipal, Udupi District, Karnataka 576104 & Dehmi Kalan, Jaipur-Ajmer Expressway, Jaipur, Rajasthan 303007, India',
+    ranking: 'NIRF #4 University in India (MAHE) | Institution of Eminence (IoE) | NAAC A++ (CGPA 3.65)',
+    facilities: [
+      'Department of Forensic Medicine & Toxicology Autopsy Complex & Poison Detection Centre (Kasturba Hospital)',
+      'Famous KMC Forensic Pathology, Osteology, Ballistics & Toxicology Museum (1,000+ Wet & Dry Specimens)',
+      'Manipal School of Life Sciences DNA Sequencing, Genomics & Proteomics Laboratories',
+      'Dedicated Crime Scene Simulation, Questioned Document, Fingerprint & Cyber Forensics Labs',
+      '600+ Acre Eco-Friendly University Township with Health Sciences Library, Marena Indoor Sports Complex & Hostels'
+    ],
+    featured: true
+  },
+  {
+    id: 'sanskriti-university-mathura',
+    name: 'Sanskriti University (Sanskruti University), Mathura',
+    shortName: 'Sanskriti University Mathura',
+    country: 'India',
+    state: 'Uttar Pradesh',
+    city: 'Mathura',
+    type: 'Private',
+    website: 'https://www.sanskriti.edu.in',
+    logo: '/images/colleges/sanskriti-university-logo.svg',
+    bannerImage: '/images/colleges/sanskriti-university-banner.svg',
+    description: 'Established in 2016 under the Uttar Pradesh Private Universities Act (U.P. Act No. 20 of 2016) and recognized by the University Grants Commission (UGC) under Section 2(f), Sanskriti University (also searched as Sanskruti University) is a premier NAAC \'A\' Grade accredited multidisciplinary university spanning a 70+ acre green residential campus on the Mathura-Delhi Highway (NH-19) in Chhata, Mathura, Uttar Pradesh. Its School of Basic & Applied Sciences (Department of Forensic Science) and on-campus teaching hospitals deliver NEP 2020-aligned undergraduate, postgraduate, and doctoral education in Forensic Science, Crime Scene Management, Forensic Chemistry & Toxicology, Forensic Biology & Serology, Questioned Documents, Fingerprint Examination, Forensic Ballistics, and Digital & Cyber Forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science (NEP 2020)',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 (Intermediate) or equivalent from a recognized board with Physics, Chemistry, and Biology / Mathematics / Biotechnology with minimum 50%-60% aggregate marks (5% relaxation for reserved categories)',
+        estimatedFees: '₹64,000 - ₹69,700 / year (approx ₹32,000 / semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Management & Reconstruction',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Fingerprint Examination & Questioned Documents',
+          'Digital & Cyber Forensics, Network Security & Cryptography',
+          'Forensic Ballistics & Criminal Law (BNS)'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Physics, Chemistry, Biology, Biotechnology, Microbiology, Biochemistry, or allied Life/Medical Sciences with minimum 50%-55% aggregate marks',
+        estimatedFees: '₹70,000 - ₹80,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Narcotics & Instrumental Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Document & Latent Fingerprint Examination',
+          'Cyber Forensics & Digital Evidence Investigation'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic & Applied Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s degree in Forensic Science or allied Physical / Life Sciences with minimum 55% aggregate marks + SUNET (Ph.D.) / UGC-CSIR NET + Personal Interview',
+        estimatedFees: '₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Analytical Toxicology & Trace Evidence Chemistry',
+          'Forensic Molecular Biology & Serological Identification',
+          'Digital Forensics, Biometrics & Questioned Documents'
+        ]
+      }
+    ],
+    feesRange: '₹64,000 - ₹80,000 / year',
+    admissionProcess: 'SUNET (Sanskriti University National Entrance Test) / CUET UG & PG scores or direct merit-based admission on qualifying 10+2 / Graduation percentage followed by university counseling (Chancellor’s Merit Scholarships available).',
+    accreditation: 'NAAC \'A\' Grade Accredited | UGC Recognized under Section 2(f) | AIU Member | Approved by BCI, PCI, INC, NCTE & NCISM',
+    contactEmail: 'admission@sanskriti.edu.in',
+    contactPhone: '+91 93585 12345 / 1800-120-2880',
+    address: '28 K.M. Stone, Mathura - Delhi Highway (NH-19), Chhata, Mathura, Uttar Pradesh 281401, India',
+    ranking: 'NAAC \'A\' Grade Accredited | Top Emerging Multidisciplinary University in North India (70+ Acre Smart Campus)',
+    facilities: [
+      'Dedicated Forensic Science & Crime Scene Management Simulation Lab',
+      'Forensic Chemistry, Toxicology & Central Instrumentation Lab (HPLC, UV-Vis, FTIR)',
+      'Forensic Biology, Serology & Molecular Biotechnology Laboratory',
+      'Questioned Documents, Handwriting & Latent Fingerprint Examination Unit',
+      'Digital & Cyber Forensics, Cryptography & Ethical Hacking Computer Lab',
+      'Forensic Ballistics & Comparison Microscopy Unit',
+      'On-Campus Teaching Hospitals for Medico-Legal & Clinical Toxicology Exposure',
+      'Central Automated Library with DELNET, E-Journals & Forensic Reference Volumes',
+      '70+ Acre Wi-Fi Enabled Green Campus with Separate Boys & Girls Hostels, Sports Complex & Transport Fleet'
+    ],
+    featured: true
+  },
+  {
+    id: 'nsit-ifscs-ahmedabad',
+    name: 'Narnarayan Shastri Institute of Technology - Institute of Forensic Sciences and Cyber Security (NSIT-IFSCS), Ahmedabad',
+    shortName: 'NSIT-IFSCS Ahmedabad (Narayan Shastri Institute - NFSU Affiliated)',
+    country: 'India',
+    state: 'Gujarat',
+    city: 'Ahmedabad',
+    type: 'Private',
+    website: 'https://nsitifscs.ac.in',
+    logo: '/images/colleges/nsit-ifscs-logo.svg',
+    bannerImage: '/images/colleges/nsit-ifscs-banner.svg',
+    description: 'Established in 2008 under the aegis of Shree Swaminarayan Vividh Sewaniketan Trust at Jetalpur, Ahmedabad, Narnarayan Shastri Institute of Technology - Institute of Forensic Sciences and Cyber Security (NSIT-IFSCS, also popularly searched as Narayan Shastri / Naryan Shastri Institute of Forensic Science and Cybersecurity) is India’s premier dedicated college formally affiliated with the National Forensic Sciences University (NFSU, An Institution of National Importance under the Ministry of Home Affairs, Government of India). Following the official NFSU curriculum and academic standards, NSIT-IFSCS delivers specialized integrated and postgraduate programs in Forensic Science, Cyber Security, Digital Forensics & Information Security (DFIS), and Forensic Accounting & Fraud Investigation backed by AI/VR-enabled crime scene simulation suites, advanced chemical/biological instrumentation, and state-of-the-art cyber defense laboratories.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. - M.Sc. Forensic Science (5-Year Integrated - NFSU Affiliated)',
+        degreeLevel: 'Bachelor',
+        duration: '5 Years (Integrated)',
+        eligibility: '10+2 (or equivalent) in Science stream with Physics, Chemistry, and Biology / Mathematics with minimum 60% aggregate marks (55% for SC/ST/PwD candidates) as per NFSU norms',
+        estimatedFees: '₹1,74,000 / year (approx ₹8.70 Lakhs total for 5 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & AI/VR Simulation',
+          'Forensic Chemistry, Narcotics & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Handwriting & Fingerprint Science',
+          'Forensic Physics, Ballistics & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. Forensic Science (NFSU Affiliated)',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'Bachelor’s degree in Science / Forensic Science / Medicine / Engineering / Pharmacy with minimum 55% aggregate marks (50% for SC/ST/PwD categories) + NFAT / NFSU Merit',
+        estimatedFees: '₹1,74,000 / year (approx ₹3,48,000 total)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents & Fingerprint Examination',
+          'Forensic Ballistics & Physical Evidence'
+        ]
+      },
+      {
+        name: 'M.Sc. Cyber Security (NFSU Affiliated)',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.E. / B.Tech. in CSE / IT / ECE or B.Sc. (Computer Science / IT / Cyber Security / Forensic Science) or BCA with minimum 55% aggregate marks (50% for SC/ST/PwD) + NFAT / Merit',
+        estimatedFees: '₹2,24,000 / year (approx ₹4,48,000 total)',
+        mode: 'Full-time',
+        specializations: [
+          'Vulnerability Assessment, Penetration Testing (VAPT) & Ethical Hacking',
+          'Malware Analysis, Threat Intelligence & SOC Operations',
+          'Network, Cloud & Critical Infrastructure Security'
+        ]
+      },
+      {
+        name: 'M.Sc. Digital Forensics and Information Security (DFIS - NFSU Affiliated)',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.E. / B.Tech. in CSE / IT / ECE or B.Sc. (Computer Science / IT / Electronics / Forensic Science) or BCA with minimum 55% aggregate marks (50% for SC/ST/PwD) + NFAT / Merit',
+        estimatedFees: '₹2,24,000 / year (approx ₹4,48,000 total)',
+        mode: 'Full-time',
+        specializations: [
+          'Disk, Memory, Mobile & Cloud Forensics',
+          'Incident Response, E-Discovery & Cybercrime Investigation',
+          'Cryptography, Steganography & Information Assurance'
+        ]
+      },
+      {
+        name: 'B.Tech. - M.Tech. Computer Science & Engineering (Cyber Security - 5-Year Integrated)',
+        degreeLevel: 'Bachelor',
+        duration: '5 Years (Integrated)',
+        eligibility: '10+2 with Physics, Mathematics, and Chemistry / Computer Science with minimum 60% aggregate marks (55% for SC/ST/PwD) + NFAT / JEE Main / GUJCET',
+        estimatedFees: '₹1,75,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Cyber Security & Secure Software Engineering',
+          'Digital Forensics, AI in Cyber Defense & Network Security'
+        ]
+      },
+      {
+        name: 'BBA - MBA (5-Year Integrated) in Forensic Accounting and Fraud Investigation',
+        degreeLevel: 'Bachelor',
+        duration: '5 Years (Integrated)',
+        eligibility: '10+2 in any stream (Science / Commerce / Arts) with minimum 60% aggregate marks (55% for SC/ST/PwD) + NFAT / Merit',
+        estimatedFees: '₹1,50,000 / year (approx ₹7,50,000 total)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Accounting, Corporate Fraud Investigation & Anti-Money Laundering',
+          'Financial Management & Regulatory Compliance',
+          'Business Analytics, Cyber Risk & Hospital/Healthcare Management'
+        ]
+      }
+    ],
+    feesRange: '₹1,50,000 - ₹2,24,000 / year',
+    admissionProcess: 'Admission through National Forensic Admission Test (NFAT) conducted by National Forensic Sciences University (NFSU) / NFSU & Institute Merit Counseling.',
+    accreditation: 'Affiliated to National Forensic Sciences University (NFSU, Ministry of Home Affairs, Govt. of India) | AICTE Approved | Shree Swaminarayan Vividh Sewaniketan Trust',
+    contactEmail: 'info@nsitifscs.ac.in',
+    contactPhone: '+91 63514 82838 / +91 98258 33001',
+    address: 'Swaminarayan Gurukul Campus, At & Post: Jetalpur, Taluka: Daskroi, District: Ahmedabad, Gujarat 382426, India',
+    ranking: 'Premier NFSU-Affiliated Forensic Science & Cyber Security Institute in India (Est. 2008)',
+    facilities: [
+      'AI & Virtual Reality (EON-XR) Enabled Simulated Crime Scene Investigation Lab',
+      'Forensic Chemistry, Analytical Toxicology & Instrumentation Laboratory',
+      'Forensic Biology, Serology, Odontology & DNA Profiling Lab',
+      'Questioned Documents, Handwriting, Fingerprints & Forensic Ballistics Lab',
+      'High-Performance Cyber Security, SOC Simulation & Digital Forensics (DFIS) Lab',
+      'Forensic Psychology, Polygraph & Brain Electrical Oscillation Signature (BEOS) Exposure',
+      'Central Digital Library with Access to NFSU & International Forensic Research Databases',
+      'Lush Green Swaminarayan Gurukul Residential Campus with AC Classrooms, Hostels, Mess & Transport across Ahmedabad'
+    ],
+    featured: true
   }
 ];
 
@@ -5450,16 +5951,130 @@ async function getDeletedCollegeIds(): Promise<Set<string>> {
 
 let cachedColleges: College[] | null = null;
 
+function getLocalDeletedSet(): Set<string> {
+  const deletedSet = new Set<string>();
+  try {
+    const local = localStorage.getItem(DELETED_COLLEGES_KEY);
+    if (local) {
+      const arr = JSON.parse(local);
+      if (Array.isArray(arr)) {
+        arr.forEach(id => {
+          if (typeof id === 'string') {
+            deletedSet.add(id.toLowerCase().trim());
+          }
+        });
+      }
+    }
+  } catch (_) {}
+  return deletedSet;
+}
+
+function getFallbackSampleColleges(deletedSet?: Set<string>): College[] {
+  const del = deletedSet || getLocalDeletedSet();
+  const seen = new Set<string>();
+  const uniqueColleges: College[] = [];
+  for (const c of SAMPLE_COLLEGES) {
+    const key = c.id.toLowerCase().trim();
+    if (!del.has(key) && !seen.has(key)) {
+      seen.add(key);
+      uniqueColleges.push(c);
+    }
+  }
+  return uniqueColleges.sort((a, b) => a.name.localeCompare(b.name));
+}
+
+const SLUG_ALIASES: Record<string, string> = {
+  'amity': 'amity-aifs',
+  'amity-university': 'amity-aifs',
+  'amity-noida': 'amity-aifs',
+  'sandip-university': 'sandip-university-nashik',
+  'shri-shivaji-science-college': 'shri-shivaji-science-college-amravati',
+  'shivaji-science-college': 'shri-shivaji-science-college-amravati',
+  'gh-raisoni': 'gh-raisoni-nagpur',
+  'ghrstu': 'gh-raisoni-nagpur',
+  'nims': 'nims-university-jaipur',
+  'nims-university': 'nims-university-jaipur',
+  'nims-jaipur': 'nims-university-jaipur',
+  'bamu': 'bamu-chhatrapati-sambhajinagar',
+  'bamu-aurangabad': 'bamu-chhatrapati-sambhajinagar',
+  'dr-babasaheb-ambedkar-marathwada-university': 'bamu-chhatrapati-sambhajinagar',
+  'holkar': 'holkar-science-college-indore',
+  'holkar-science-college': 'holkar-science-college-indore',
+  'govt-holkar-science-college': 'holkar-science-college-indore',
+  'manipal': 'manipal-university',
+  'mahe': 'manipal-university',
+  'manipal-academy-of-higher-education': 'manipal-university',
+  'manipal-university-jaipur': 'manipal-university',
+  'ifsc-mumbai': 'ifs-mumbai',
+  'gifsa': 'gifsa-chhatrapati-sambhajinagar',
+  'gifsa-aurangabad': 'gifsa-chhatrapati-sambhajinagar',
+  'nfsu': 'nfsu-gandhinagar',
+  'rru': 'rru-gandhinagar',
+  'lpu': 'lovely-professional-university',
+  'cu': 'chandigarh-university',
+  'sanskriti': 'sanskriti-university-mathura',
+  'sanskriti-university': 'sanskriti-university-mathura',
+  'sanskruti': 'sanskriti-university-mathura',
+  'sanskruti-university': 'sanskriti-university-mathura',
+  'sanskruti-university-mathura': 'sanskriti-university-mathura',
+  'nsit': 'nsit-ifscs-ahmedabad',
+  'nsit-ifscs': 'nsit-ifscs-ahmedabad',
+  'nsit-ahmedabad': 'nsit-ifscs-ahmedabad',
+  'narnarayan-shastri-institute': 'nsit-ifscs-ahmedabad',
+  'narayan-shastri-institute': 'nsit-ifscs-ahmedabad',
+  'naryan-shastri-institute': 'nsit-ifscs-ahmedabad',
+  'naryan-shastri-institute-of-forensic-science-and-cybersecurity': 'nsit-ifscs-ahmedabad',
+  'narayan-shastri-institute-of-forensic-science-and-cybersecurity': 'nsit-ifscs-ahmedabad',
+};
+
+export function matchCollegeBySlug(collegesList: College[], rawSlug: string): College | undefined {
+  const clean = String(rawSlug || '').trim().toLowerCase().replace(/^\/+|\/+$/g, '');
+  if (!clean) return undefined;
+
+  const aliased = SLUG_ALIASES[clean] || clean;
+
+  // 1. Exact ID match
+  const exact = collegesList.find(c => c.id.toLowerCase() === aliased || c.id.toLowerCase() === clean);
+  if (exact) return exact;
+
+  // 2. Slugified name or shortName match
+  const toSlug = (str?: string) =>
+    (str || '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+  const byNameSlug = collegesList.find(
+    c => toSlug(c.name) === clean || toSlug(c.shortName) === clean
+  );
+  if (byNameSlug) return byNameSlug;
+
+  // 3. Prefix / partial ID match (e.g. 'sandip-university' matching 'sandip-university-nashik')
+  return collegesList.find(
+    c => c.id.toLowerCase().startsWith(`${clean}-`) || clean.startsWith(`${c.id.toLowerCase()}-`)
+  );
+}
+
 export function getCachedColleges(): College[] | null {
-  return cachedColleges;
+  if (cachedColleges && cachedColleges.length > 0) {
+    return cachedColleges;
+  }
+  return getFallbackSampleColleges();
 }
 
 export async function fetchColleges(): Promise<College[]> {
+  let deletedSet = getLocalDeletedSet();
   try {
-    const [deletedSet, querySnapshot] = await Promise.all([
+    const sampleMap = new Map<string, College>();
+    for (const s of SAMPLE_COLLEGES) {
+      sampleMap.set(s.id.toLowerCase().trim(), s);
+    }
+
+    const [resolvedDeletedSet, querySnapshot] = await Promise.all([
       getDeletedCollegeIds(),
       getDocs(query(collection(db, COLLEGES_COLLECTION), orderBy('name', 'asc')))
     ]);
+    deletedSet = resolvedDeletedSet;
     
     const fetched: College[] = [];
     const seenIds = new Set<string>();
@@ -5468,34 +6083,63 @@ export async function fetchColleges(): Promise<College[]> {
       const data = docSnap.data();
       const docIdLower = docSnap.id.toLowerCase().trim();
 
-      // Skip records marked deleted
-      if (data.isDeleted === true || data.status === 'deleted' || deletedSet.has(docIdLower)) {
+      // Skip records marked deleted or already seen
+      if (data.isDeleted === true || data.status === 'deleted' || deletedSet.has(docIdLower) || seenIds.has(docIdLower)) {
         return;
       }
 
       seenIds.add(docIdLower);
+      const sampleFallback = sampleMap.get(docIdLower);
+
+      // Enrich courses if an older Firestore doc lacked specializations or newer courses from verified sample
+      let coursesOffered = Array.isArray(data.coursesOffered) && data.coursesOffered.length > 0
+        ? data.coursesOffered
+        : (sampleFallback?.coursesOffered || []);
+
+      if (sampleFallback && coursesOffered.length > 0) {
+        coursesOffered = coursesOffered.map((course: any) => {
+          if (!course.specializations || course.specializations.length === 0) {
+            const matchingSampleCourse = sampleFallback.coursesOffered.find(
+              sc => sc.degreeLevel === course.degreeLevel || sc.name.toLowerCase() === String(course.name || '').toLowerCase()
+            );
+            if (matchingSampleCourse?.specializations) {
+              return { ...course, specializations: matchingSampleCourse.specializations };
+            }
+          }
+          return course;
+        });
+        if ((docIdLower === 'amity-aifs' || docIdLower === 'nsit-ifscs-ahmedabad' || docIdLower === 'sanskriti-university-mathura') && coursesOffered.length < sampleFallback.coursesOffered.length) {
+          coursesOffered = sampleFallback.coursesOffered;
+        }
+      }
+
+      const preferSampleAssets =
+        (docIdLower === 'nsit-ifscs-ahmedabad' || docIdLower === 'sanskriti-university-mathura') &&
+        sampleFallback &&
+        (!data.logo || String(data.logo).includes('nsitgurukul.com'));
+
       fetched.push({
         id: docSnap.id,
-        name: data.name || '',
-        shortName: data.shortName || '',
-        country: data.country || 'India',
-        state: data.state || '',
-        city: data.city || '',
-        type: data.type || 'Government',
-        website: data.website || '',
-        logo: data.logo || '',
-        bannerImage: data.bannerImage || '',
-        description: data.description || '',
-        coursesOffered: Array.isArray(data.coursesOffered) ? data.coursesOffered : [],
-        feesRange: data.feesRange || '',
-        admissionProcess: data.admissionProcess || '',
-        accreditation: data.accreditation || '',
-        contactEmail: data.contactEmail || '',
-        contactPhone: data.contactPhone || '',
-        address: data.address || '',
-        ranking: data.ranking || '',
-        facilities: Array.isArray(data.facilities) ? data.facilities : [],
-        featured: !!data.featured,
+        name: (preferSampleAssets && sampleFallback) ? sampleFallback.name : (data.name || sampleFallback?.name || ''),
+        shortName: (preferSampleAssets && sampleFallback) ? sampleFallback.shortName : (data.shortName || sampleFallback?.shortName || ''),
+        country: data.country || sampleFallback?.country || 'India',
+        state: data.state || sampleFallback?.state || '',
+        city: data.city || sampleFallback?.city || '',
+        type: data.type || sampleFallback?.type || 'Government',
+        website: (preferSampleAssets && sampleFallback) ? sampleFallback.website : (data.website || sampleFallback?.website || ''),
+        logo: (preferSampleAssets && sampleFallback) ? sampleFallback.logo : (data.logo || sampleFallback?.logo || ''),
+        bannerImage: (preferSampleAssets && sampleFallback) ? sampleFallback.bannerImage : (data.bannerImage || sampleFallback?.bannerImage || ''),
+        description: ((docIdLower === 'amity-aifs' || preferSampleAssets) && sampleFallback) ? sampleFallback.description : (data.description || sampleFallback?.description || ''),
+        coursesOffered,
+        feesRange: data.feesRange || sampleFallback?.feesRange || '',
+        admissionProcess: data.admissionProcess || sampleFallback?.admissionProcess || '',
+        accreditation: data.accreditation || sampleFallback?.accreditation || '',
+        contactEmail: data.contactEmail || sampleFallback?.contactEmail || '',
+        contactPhone: data.contactPhone || sampleFallback?.contactPhone || '',
+        address: data.address || sampleFallback?.address || '',
+        ranking: data.ranking || sampleFallback?.ranking || '',
+        facilities: (Array.isArray(data.facilities) && data.facilities.length > 3) ? data.facilities : (sampleFallback?.facilities || (Array.isArray(data.facilities) ? data.facilities : [])),
+        featured: data.featured !== undefined ? !!data.featured : !!sampleFallback?.featured,
         createdBy: data.createdBy || 'ForenClue Admin',
         createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString(),
         updatedAt: data.updatedAt ? (data.updatedAt.seconds ? new Date(data.updatedAt.seconds * 1000).toISOString() : data.updatedAt) : new Date().toISOString()
@@ -5508,17 +6152,6 @@ export async function fetchColleges(): Promise<College[]> {
       if (!seenIds.has(sampleIdLower) && !deletedSet.has(sampleIdLower)) {
         seenIds.add(sampleIdLower);
         fetched.push(sample);
-        // Persist in background if authenticated admin session is active
-        setDoc(
-          doc(db, COLLEGES_COLLECTION, sample.id),
-          {
-            ...sample,
-            isDeleted: false,
-            status: 'active',
-            updatedAt: new Date().toISOString()
-          },
-          { merge: true }
-        ).catch(() => {});
       }
     }
 
@@ -5526,8 +6159,12 @@ export async function fetchColleges(): Promise<College[]> {
     cachedColleges = fetched;
     return fetched;
   } catch (error) {
-    console.warn("Could not fetch colleges from Firestore:", error);
-    return cachedColleges || [];
+    console.warn("Could not fetch colleges from Firestore, using verified local directory:", error);
+    const fallback = cachedColleges && cachedColleges.length > 0
+      ? cachedColleges
+      : getFallbackSampleColleges(deletedSet);
+    cachedColleges = fallback;
+    return fallback;
   }
 }
 
@@ -5535,53 +6172,56 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
   const cleanId = String(id || '').trim();
   if (!cleanId) return null;
   const cleanLower = cleanId.toLowerCase();
+  const resolvedSlug = SLUG_ALIASES[cleanLower] || cleanLower;
 
-  if (cachedColleges) {
-    const fromCache = cachedColleges.find(c => c.id.toLowerCase() === cleanLower);
+  if (cachedColleges && cachedColleges.length > 0) {
+    const fromCache = matchCollegeBySlug(cachedColleges, resolvedSlug);
     if (fromCache) return fromCache;
   }
 
+  let deletedSet = getLocalDeletedSet();
   try {
-    const deletedSet = await getDeletedCollegeIds();
-    if (deletedSet.has(cleanLower)) return null;
+    deletedSet = await getDeletedCollegeIds();
+    if (deletedSet.has(cleanLower) || deletedSet.has(resolvedSlug)) return null;
 
-    const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
+    const docRef = doc(db, COLLEGES_COLLECTION, resolvedSlug);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
       if (data.isDeleted === true || data.status === 'deleted') {
         return null;
       }
+      const sampleFallback = SAMPLE_COLLEGES.find(s => s.id.toLowerCase() === docSnap.id.toLowerCase());
       return {
         id: docSnap.id,
-        name: data.name || '',
-        shortName: data.shortName || '',
-        country: data.country || 'India',
-        state: data.state || '',
-        city: data.city || '',
-        type: data.type || 'Government',
-        website: data.website || '',
-        logo: data.logo || '',
-        bannerImage: data.bannerImage || '',
-        description: data.description || '',
-        coursesOffered: Array.isArray(data.coursesOffered) ? data.coursesOffered : [],
-        feesRange: data.feesRange || '',
-        admissionProcess: data.admissionProcess || '',
-        accreditation: data.accreditation || '',
-        contactEmail: data.contactEmail || '',
-        contactPhone: data.contactPhone || '',
-        address: data.address || '',
-        ranking: data.ranking || '',
-        facilities: Array.isArray(data.facilities) ? data.facilities : [],
-        featured: !!data.featured,
+        name: data.name || sampleFallback?.name || '',
+        shortName: data.shortName || sampleFallback?.shortName || '',
+        country: data.country || sampleFallback?.country || 'India',
+        state: data.state || sampleFallback?.state || '',
+        city: data.city || sampleFallback?.city || '',
+        type: data.type || sampleFallback?.type || 'Government',
+        website: data.website || sampleFallback?.website || '',
+        logo: data.logo || sampleFallback?.logo || '',
+        bannerImage: data.bannerImage || sampleFallback?.bannerImage || '',
+        description: data.description || sampleFallback?.description || '',
+        coursesOffered: (Array.isArray(data.coursesOffered) && data.coursesOffered.length > 0) ? data.coursesOffered : (sampleFallback?.coursesOffered || []),
+        feesRange: data.feesRange || sampleFallback?.feesRange || '',
+        admissionProcess: data.admissionProcess || sampleFallback?.admissionProcess || '',
+        accreditation: data.accreditation || sampleFallback?.accreditation || '',
+        contactEmail: data.contactEmail || sampleFallback?.contactEmail || '',
+        contactPhone: data.contactPhone || sampleFallback?.contactPhone || '',
+        address: data.address || sampleFallback?.address || '',
+        ranking: data.ranking || sampleFallback?.ranking || '',
+        facilities: (Array.isArray(data.facilities) && data.facilities.length > 0) ? data.facilities : (sampleFallback?.facilities || []),
+        featured: data.featured !== undefined ? !!data.featured : !!sampleFallback?.featured,
         createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString()
       };
     }
 
-    // Also check case-insensitive match from collection
+    // Also check case-insensitive or slug match from collection
     const snap = await getDocs(collection(db, COLLEGES_COLLECTION));
     for (const d of snap.docs) {
-      if (d.id.toLowerCase() === cleanLower) {
+      if (d.id.toLowerCase() === resolvedSlug || d.id.toLowerCase() === cleanLower) {
         const data = d.data();
         if (data.isDeleted === true || data.status === 'deleted') return null;
         return {
@@ -5610,11 +6250,16 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         };
       }
     }
-
-    const fromSample = SAMPLE_COLLEGES.find(c => c.id.toLowerCase() === cleanLower);
-    if (fromSample) return fromSample;
   } catch (err) {
-    console.error("Error loading college by ID:", err);
+    console.warn("Firestore lookup fallback for college ID:", cleanId, err);
+  }
+
+  // Always check verified SAMPLE_COLLEGES if not deleted
+  if (!deletedSet.has(cleanLower) && !deletedSet.has(resolvedSlug)) {
+    const fromSample = matchCollegeBySlug(SAMPLE_COLLEGES, resolvedSlug);
+    if (fromSample && !deletedSet.has(fromSample.id.toLowerCase())) {
+      return fromSample;
+    }
   }
   
   return null;

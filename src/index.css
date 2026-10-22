@@ -5,6 +5,7 @@
 @custom-variant dark (&:where(:root:not(.light), :root:not(.light) *));
 
 @theme {
+  --breakpoint-xs: 380px;
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-heading: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
 
@@ -22,6 +23,48 @@
   --color-text-muted: var(--theme-text-muted);
 }
 
+/* Smooth Theme Transitions System */
+@property --theme-crust {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #040814;
+}
+@property --theme-base {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #060b19;
+}
+@property --theme-surface {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #0c152e;
+}
+@property --theme-surface-hover {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #132247;
+}
+@property --theme-warning {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #00f0ff;
+}
+@property --theme-warning-dark {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #00b3cc;
+}
+@property --theme-text-main {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #f8fafc;
+}
+@property --theme-text-muted {
+  syntax: '<color>';
+  inherits: true;
+  initial-value: #94a3b8;
+}
+
 @layer base {
   :root {
     --theme-crust: #040814;
@@ -37,6 +80,14 @@
     --theme-scrollbar: rgba(255, 255, 255, 0.1);
     --theme-scrollbar-hover: rgba(255, 255, 255, 0.2);
     color-scheme: dark;
+    transition: --theme-crust 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                --theme-base 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                --theme-surface 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                --theme-surface-hover 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                --theme-warning 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                --theme-warning-dark 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                --theme-text-main 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                --theme-text-muted 300ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .light {
@@ -55,12 +106,54 @@
     color-scheme: light;
   }
 
+  /* Temporary transition booster applied during active theme toggling */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                fill 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                stroke 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                text-decoration-color 300ms cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition-delay: 0s !important;
+  }
+
   body {
-    @apply bg-base text-text-main font-sans antialiased overflow-x-hidden transition-colors duration-200;
+    @apply bg-base text-text-main font-sans antialiased overflow-x-hidden;
+    transition: background-color 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                color 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  header,
+  nav,
+  footer,
+  .bg-surface,
+  .bg-base,
+  .bg-crust,
+  .bg-surface-hover {
+    transition: background-color 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                border-color 350ms cubic-bezier(0.4, 0, 0.2, 1),
+                color 300ms cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 350ms cubic-bezier(0.4, 0, 0.2, 1);
   }
   
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.theme-transitioning,
+    html.theme-transitioning *,
+    html.theme-transitioning *::before,
+    html.theme-transitioning *::after {
+      transition: none !important;
+    }
+    :root {
+      transition: none !important;
+    }
   }
 }
 
@@ -229,3 +322,49 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-
   background-color: rgba(16, 185, 129, 0.18) !important;
   transition: all 0.3s ease-in-out !important;
 }
+
+@keyframes collegeTitleShimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes collegeBeamSweep {
+  0% {
+    transform: translateX(-120%) skewX(-18deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.65;
+  }
+  80% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(220%) skewX(-18deg);
+    opacity: 0;
+  }
+}
+
+.animate-college-title-gradient {
+  background-size: 220% auto;
+  animation: collegeTitleShimmer 7s ease-in-out infinite;
+}
+
+.animate-college-beam {
+  animation: collegeBeamSweep 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-college-title-gradient,
+  .animate-college-beam {
+    animation: none !important;
+  }
+}
+

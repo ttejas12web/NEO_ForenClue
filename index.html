@@ -19,6 +19,14 @@
     <script>
       (function () {
         document.documentElement.classList.add('js');
+        try {
+          var savedTheme = localStorage.getItem('theme');
+          if (savedTheme === 'light') {
+            document.documentElement.classList.add('light');
+          } else {
+            document.documentElement.classList.remove('light');
+          }
+        } catch (e) {}
         if (typeof window !== 'undefined' && typeof window.WebSocket === 'function') {
           var NativeWebSocket = window.WebSocket;
           var WrappedWebSocket = function (url, protocols) {

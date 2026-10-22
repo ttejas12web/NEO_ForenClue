@@ -386,13 +386,16 @@ export default function Webinar() {
   };
 
   return (
-    <div className="min-h-screen bg-base py-6 sm:py-16 px-3.5 sm:px-6 relative overflow-hidden text-text-main">
+    <div className="min-h-screen bg-slate-50/90 dark:bg-base py-6 sm:py-16 px-3.5 sm:px-6 relative overflow-hidden text-slate-900 dark:text-text-main">
+      {/* Subtle top atmospheric wash for light and dark mode */}
+      <div className="absolute inset-x-0 top-0 h-[32rem] bg-gradient-to-b from-sky-100/60 via-slate-100/40 to-transparent dark:from-cyan-950/20 dark:via-transparent dark:to-transparent pointer-events-none -z-10" />
+
       {/* Decorative cyber grid overlay */}
-      <div className="absolute inset-0 bg-grid-white/[0.01] bg-[size:32px_32px] pointer-events-none -z-10" />
+      <div className="absolute inset-0 bg-grid-pattern opacity-60 dark:opacity-20 pointer-events-none -z-10" />
 
       {/* Ambient background lights */}
-      <div className="absolute top-1/4 left-1/4 w-[35rem] h-[35rem] bg-warning/5 rounded-full blur-[140px] -z-10 animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] bg-amber-500/5 rounded-full blur-[140px] -z-10 animate-pulse" />
+      <div className="absolute top-1/4 left-1/4 w-[35rem] h-[35rem] bg-sky-400/12 dark:bg-warning/5 rounded-full blur-[140px] -z-10 animate-pulse" />
+      <div className="absolute bottom-1/4 right-1/4 w-[35rem] h-[35rem] bg-amber-400/12 dark:bg-amber-500/5 rounded-full blur-[140px] -z-10 animate-pulse" />
 
       <AnimatePresence mode="wait">
         {currentEvent ? (
@@ -425,10 +428,10 @@ export default function Webinar() {
             />
 
             {/* Premium Sticky-Ready Header Nav bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-black/10 dark:border-white/10 pb-4 sm:pb-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200 dark:border-white/10 pb-4 sm:pb-6">
               <button
                 onClick={() => selectEvent(null)}
-                className="inline-flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-warning hover:text-white transition-colors bg-surface border border-warning/20 hover:border-warning/50 px-3.5 py-2.5 rounded-xl cursor-pointer shadow-sm active:scale-95 w-full sm:w-auto"
+                className="inline-flex items-center justify-center gap-2 text-xs font-black uppercase tracking-widest text-sky-800 dark:text-warning hover:text-white dark:hover:text-crust bg-white dark:bg-surface hover:bg-sky-700 dark:hover:bg-warning border border-sky-300 dark:border-warning/30 hover:border-sky-700 dark:hover:border-warning px-3.5 py-2.5 rounded-xl cursor-pointer shadow-sm active:scale-95 transition-all w-full sm:w-auto"
               >
                 <ArrowLeft size={14} />
                 <span>Return to Webinars</span>
@@ -441,13 +444,13 @@ export default function Webinar() {
                     e.preventDefault();
                     document.getElementById('session-feedback-form')?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="inline-flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider text-black bg-warning hover:bg-warning/90 px-3.5 py-2.5 rounded-xl cursor-pointer shadow-md shadow-warning/10 active:scale-95 transition-all flex-1 sm:flex-initial"
+                  className="inline-flex items-center justify-center gap-1.5 text-xs font-black uppercase tracking-wider text-white dark:text-black bg-sky-700 hover:bg-sky-800 dark:bg-warning dark:hover:bg-warning-dark px-3.5 py-2.5 rounded-xl cursor-pointer shadow-md shadow-sky-700/15 dark:shadow-warning/15 active:scale-95 transition-all flex-1 sm:flex-initial"
                 >
                   <MessageSquare size={14} />
                   <span>Give Session Feedback</span>
                 </a>
 
-                <span className="text-[10px] font-mono bg-warning/10 border border-warning/30 text-warning px-3 py-2 rounded-xl sm:rounded-full font-bold uppercase tracking-wider text-center">
+                <span className="text-[10px] font-mono bg-sky-100 dark:bg-warning/10 border border-sky-300 dark:border-warning/30 text-sky-900 dark:text-warning px-3 py-2 rounded-xl sm:rounded-full font-extrabold uppercase tracking-wider text-center shadow-2xs">
                   Session {currentEvent.sequence}
                 </span>
               </div>
@@ -460,28 +463,42 @@ export default function Webinar() {
               <div className="lg:col-span-2 space-y-6 sm:space-y-8">
                 
                 {/* Webinar Narrative Details */}
-                <div className="bg-crust border border-black/10 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-4 sm:space-y-6 shadow-xl">
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                    {currentEvent.tags.map((tag, idx) => (
-                      <span key={idx} className="text-[9px] sm:text-[10px] font-mono font-black uppercase bg-surface border border-black/15 dark:border-white/10 px-2.5 py-1 rounded-lg text-text-muted">
-                        #{tag}
-                      </span>
-                    ))}
+                <div className="bg-white dark:bg-crust border border-slate-200/95 dark:border-white/5 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-4 sm:space-y-5 shadow-[0_4px_24px_-4px_rgba(15,23,42,0.07)] dark:shadow-xl">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                      {currentEvent.tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="text-[9px] sm:text-[10px] font-mono font-extrabold uppercase bg-sky-50 dark:bg-surface border border-sky-200/90 dark:border-white/10 px-2.5 py-1 rounded-lg text-sky-900 dark:text-text-muted"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold text-sky-800 dark:text-warning bg-sky-50/90 dark:bg-warning/10 border border-sky-200 dark:border-warning/20 px-2.5 py-1 rounded-lg">
+                      <Calendar size={11} />
+                      <span>{currentEvent.date} &bull; {currentEvent.time}</span>
+                    </div>
                   </div>
 
                   <div className="space-y-2 sm:space-y-3">
-                    <h1 className="text-lg sm:text-2xl font-black text-text-main uppercase tracking-tight leading-snug break-words">
+                    <h1 className="text-lg sm:text-2xl font-black text-slate-900 dark:text-text-main uppercase tracking-tight leading-snug break-words">
                       Webinar {currentEvent.sequence}: {currentEvent.title}
                     </h1>
+                    {currentEvent.subtitle && (
+                      <p className="text-xs sm:text-sm text-slate-700 dark:text-text-muted font-medium leading-relaxed">
+                        {currentEvent.subtitle}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 {/* Widescreen YouTube Video Player with Custom Border Accent */}
-                <div className="bg-crust border border-warning/20 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-warning via-amber-500 to-warning" />
+                <div className="bg-white dark:bg-crust border border-slate-200/95 dark:border-warning/20 rounded-2xl sm:rounded-3xl p-2.5 sm:p-4 shadow-[0_8px_30px_-4px_rgba(15,23,42,0.09)] dark:shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-sky-600 via-amber-500 to-sky-600 dark:from-warning dark:via-amber-500 dark:to-warning" />
                   
                   {/* YouTube Embed Container or Poster */}
-                  <div className={`w-full rounded-xl sm:rounded-2xl overflow-hidden bg-black relative border border-black/30 flex items-center justify-center group ${
+                  <div className={`w-full rounded-xl sm:rounded-2xl overflow-hidden bg-slate-950 relative border border-slate-200 dark:border-black/30 flex items-center justify-center group ${
                     currentEvent.youtubeId 
                       ? 'aspect-video' 
                       : 'min-h-[460px] sm:min-h-[380px] sm:aspect-video'
@@ -495,7 +512,7 @@ export default function Webinar() {
                         allowFullScreen
                       ></iframe>
                     ) : currentEvent.isUpcoming ? (
-                      <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-black min-h-[460px] sm:min-h-[380px]">
+                      <div className="relative w-full h-full flex items-center justify-center overflow-hidden bg-slate-950 min-h-[460px] sm:min-h-[380px]">
                         <img 
                           src={currentEvent.poster} 
                           alt={`Upcoming ForenClue Webinar: ${currentEvent.title}`} 
@@ -512,7 +529,7 @@ export default function Webinar() {
                             <h3 className="text-base sm:text-2xl font-black text-white uppercase tracking-tight font-heading leading-snug">
                               {currentEvent.title}
                             </h3>
-                            <p className="text-xs sm:text-sm text-warning font-mono font-semibold">
+                            <p className="text-xs sm:text-sm text-cyan-400 font-mono font-semibold">
                               {currentEvent.date} &bull; {currentEvent.time}
                             </p>
                           </div>
@@ -532,12 +549,12 @@ export default function Webinar() {
                               <span>YouTube Channel</span>
                               <ExternalLink size={11} className="shrink-0" />
                             </a>
-                            <span className="w-full sm:w-auto inline-flex items-center justify-center text-[10px] sm:text-[11px] font-mono text-zinc-300 bg-white/10 border border-white/15 px-3 py-2 rounded-xl">
+                            <span className="w-full sm:w-auto inline-flex items-center justify-center text-[10px] sm:text-[11px] font-mono text-zinc-200 bg-white/10 border border-white/15 px-3 py-2 rounded-xl">
                               Google Meet & Online
                             </span>
                           </div>
 
-                          <p className="text-[10px] sm:text-xs text-zinc-400 font-mono tracking-wide max-w-md px-2 leading-relaxed">
+                          <p className="text-[10px] sm:text-xs text-zinc-300 font-mono tracking-wide max-w-md px-2 leading-relaxed">
                             🔴 Live stream & recording access will be enabled right here during broadcast.
                           </p>
                         </div>
@@ -547,11 +564,11 @@ export default function Webinar() {
                         <img 
                           src={currentEvent.poster} 
                           alt={`ForenClue Webinar: ${currentEvent.title}`} 
-                          className="w-full h-full object-cover opacity-80"
+                          className="w-full h-full object-cover opacity-95 dark:opacity-80"
                           referrerPolicy="no-referrer"
                         />
                         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                          <span className="bg-warning text-crust font-bold px-4 py-2 rounded-lg text-sm uppercase tracking-wider">
+                          <span className="bg-sky-700 dark:bg-warning text-white dark:text-crust font-bold px-4 py-2 rounded-lg text-sm uppercase tracking-wider shadow-md">
                             Recent Event
                           </span>
                         </div>
@@ -560,10 +577,10 @@ export default function Webinar() {
                   </div>
 
                   {/* Operational strip banner */}
-                  <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 px-1 text-[9px] font-mono text-text-muted tracking-widest uppercase">
+                  <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-3 py-2 bg-slate-50 dark:bg-transparent border border-slate-200/80 dark:border-transparent rounded-xl text-[10px] font-mono text-slate-700 dark:text-text-muted tracking-widest uppercase">
                     <span className="flex items-center gap-1.5">
-                      <span className={`w-1.5 h-1.5 rounded-full animate-pulse shrink-0 ${currentEvent.isUpcoming ? 'bg-amber-400' : 'bg-emerald-500'}`}></span>
-                      <span className="truncate">
+                      <span className={`w-2 h-2 rounded-full animate-pulse shrink-0 ${currentEvent.isUpcoming ? 'bg-amber-500' : 'bg-emerald-600 dark:bg-emerald-500'}`}></span>
+                      <span className="truncate font-bold text-slate-800 dark:text-text-muted">
                         {currentEvent.isUpcoming 
                           ? 'Status: Live Stream Scheduled • YouTube Link: Coming Soon' 
                           : 'Status: High Definition Playback Enabled'}
@@ -575,26 +592,26 @@ export default function Webinar() {
                           href={`https://youtu.be/${currentEvent.youtubeId}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-[9px] text-red-400 hover:text-red-300 font-bold transition-colors uppercase py-0.5 px-2 bg-red-950/40 border border-red-500/30 rounded-md"
+                          className="inline-flex items-center gap-1.5 text-[10px] text-red-700 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-extrabold transition-colors uppercase py-1 px-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-500/30 rounded-lg shadow-2xs"
                         >
-                          <Youtube size={11} className="text-red-500" />
+                          <Youtube size={12} className="text-red-600 dark:text-red-500" />
                           <span>Watch on YouTube</span>
-                          <ExternalLink size={9} />
+                          <ExternalLink size={10} />
                         </a>
                       )}
-                      <span className="shrink-0 font-bold text-warning sm:text-text-muted">Session {currentEvent.sequence}</span>
+                      <span className="shrink-0 font-extrabold text-sky-800 dark:text-text-muted">Session {currentEvent.sequence}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* INTERACTIVE SESSION FEEDBACK SUBMISSION FORM */}
-                <div id="session-feedback-form" className="bg-crust border border-warning/30 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-5 sm:space-y-6 shadow-2xl relative overflow-hidden">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border-b border-black/10 dark:border-white/10 pb-4">
+                <div id="session-feedback-form" className="bg-white dark:bg-crust border border-slate-200/95 dark:border-warning/30 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-5 sm:space-y-6 shadow-[0_4px_24px_-4px_rgba(15,23,42,0.07)] dark:shadow-2xl relative overflow-hidden">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border-b border-slate-200 dark:border-white/10 pb-4">
                     <div className="space-y-1">
-                      <h3 className="text-base sm:text-lg font-black uppercase text-text-main tracking-tight">
+                      <h3 className="text-base sm:text-lg font-black uppercase text-slate-900 dark:text-text-main tracking-tight">
                         Session Feedback
                       </h3>
-                      <p className="text-xs text-text-muted">
+                      <p className="text-xs text-slate-600 dark:text-text-muted font-medium">
                         Have you attended or watched "{currentEvent.title}"?
                       </p>
                     </div>
@@ -604,15 +621,15 @@ export default function Webinar() {
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-5 sm:p-6 bg-surface/80 border border-black/10 dark:border-white/10 rounded-2xl text-center space-y-3"
+                      className="p-5 sm:p-6 bg-slate-50/90 dark:bg-surface/80 border border-slate-200 dark:border-white/10 rounded-2xl text-center space-y-3"
                     >
-                      <div className="w-12 h-12 bg-warning/15 text-warning rounded-full flex items-center justify-center mx-auto shadow-inner">
+                      <div className="w-12 h-12 bg-sky-100 dark:bg-warning/15 text-sky-700 dark:text-warning border border-sky-200 dark:border-transparent rounded-full flex items-center justify-center mx-auto shadow-inner">
                         <Clock size={24} />
                       </div>
-                      <h4 className="font-black text-sm sm:text-base text-text-main uppercase tracking-wider">
+                      <h4 className="font-black text-sm sm:text-base text-slate-900 dark:text-text-main uppercase tracking-wider">
                         Session Feedback Form Closed
                       </h4>
-                      <p className="text-xs text-text-muted max-w-md mx-auto leading-relaxed">
+                      <p className="text-xs text-slate-700 dark:text-text-muted max-w-md mx-auto leading-relaxed font-medium">
                         Feedback submissions for "{currentEvent.title}" (Session {currentEvent.sequence}) are now closed. Thank you to all participants who submitted their feedback!
                       </p>
                     </motion.div>
@@ -620,15 +637,15 @@ export default function Webinar() {
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="p-5 sm:p-6 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl text-center space-y-3"
+                      className="p-5 sm:p-6 bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/30 rounded-2xl text-center space-y-3"
                     >
-                      <div className="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto">
+                      <div className="w-12 h-12 bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 rounded-full flex items-center justify-center mx-auto">
                         <Check size={24} />
                       </div>
-                      <h4 className="font-extrabold text-sm sm:text-base text-emerald-400 uppercase tracking-wider">
+                      <h4 className="font-extrabold text-sm sm:text-base text-emerald-800 dark:text-emerald-400 uppercase tracking-wider">
                         Thank You! Feedback Submitted for Review
                       </h4>
-                      <p className="text-xs text-text-muted max-w-md mx-auto">
+                      <p className="text-xs text-slate-700 dark:text-text-muted max-w-md mx-auto font-medium">
                         Your review for "{currentEvent.title}" has been submitted to the admin team. It will appear publicly on this page once verified and approved.
                       </p>
                     </motion.div>
@@ -636,8 +653,8 @@ export default function Webinar() {
                     <form onSubmit={handleFeedbackSubmit} className="space-y-4 sm:space-y-5">
                       {/* Interactive Rating Selector */}
                       <div className="space-y-2">
-                        <label className="block text-xs font-mono uppercase tracking-wider text-text-muted">
-                          Rate This Session <span className="text-warning">*</span>
+                        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-text-muted">
+                          Rate This Session <span className="text-sky-700 dark:text-warning">*</span>
                         </label>
                         <div className="flex items-center gap-1.5 sm:gap-2">
                           {[1, 2, 3, 4, 5].map((star) => (
@@ -655,12 +672,12 @@ export default function Webinar() {
                                 className={
                                   star <= (hoverRating || newFeedback.rating)
                                     ? "fill-amber-400 text-amber-400"
-                                    : "text-zinc-600"
+                                    : "text-slate-300 dark:text-zinc-600"
                                 } 
                               />
                             </button>
                           ))}
-                          <span className="text-xs font-mono text-warning font-bold ml-2">
+                          <span className="text-xs font-mono text-sky-800 dark:text-warning font-bold ml-2 bg-sky-50 dark:bg-transparent border border-sky-200 dark:border-transparent px-2.5 py-0.5 rounded-md">
                             {hoverRating || newFeedback.rating} / 5 Stars
                           </span>
                         </div>
@@ -669,8 +686,8 @@ export default function Webinar() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         {/* Full Name */}
                         <div className="space-y-1.5">
-                          <label className="block text-xs font-mono uppercase tracking-wider text-text-muted">
-                            Full Name <span className="text-warning">*</span>
+                          <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-text-muted">
+                            Full Name <span className="text-sky-700 dark:text-warning">*</span>
                           </label>
                           <input
                             type="text"
@@ -678,13 +695,13 @@ export default function Webinar() {
                             value={newFeedback.name}
                             onChange={(e) => setNewFeedback({ ...newFeedback, name: e.target.value })}
                             placeholder="e.g. Dr. Priya Sharma"
-                            className="w-full bg-surface border border-black/15 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-text-main focus:border-warning focus:outline-none transition-colors"
+                            className="w-full bg-slate-50/90 focus:bg-white dark:bg-surface border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-text-main placeholder:text-slate-400 dark:placeholder:text-text-muted/60 focus:border-sky-600 dark:focus:border-warning focus:ring-2 focus:ring-sky-500/15 dark:focus:ring-0 focus:outline-none transition-all"
                           />
                         </div>
 
                         {/* College / Organization */}
                         <div className="space-y-1.5">
-                          <label className="block text-xs font-mono uppercase tracking-wider text-text-muted">
+                          <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-text-muted">
                             University / Organization / Role
                           </label>
                           <input
@@ -692,15 +709,15 @@ export default function Webinar() {
                             value={newFeedback.role}
                             onChange={(e) => setNewFeedback({ ...newFeedback, role: e.target.value })}
                             placeholder="e.g. NFSU Gandhinagar / Student"
-                            className="w-full bg-surface border border-black/15 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-text-main focus:border-warning focus:outline-none transition-colors"
+                            className="w-full bg-slate-50/90 focus:bg-white dark:bg-surface border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-text-main placeholder:text-slate-400 dark:placeholder:text-text-muted/60 focus:border-sky-600 dark:focus:border-warning focus:ring-2 focus:ring-sky-500/15 dark:focus:ring-0 focus:outline-none transition-all"
                           />
                         </div>
                       </div>
 
                       {/* Feedback Comment */}
                       <div className="space-y-1.5">
-                        <label className="block text-xs font-mono uppercase tracking-wider text-text-muted">
-                          Your Session Feedback & Takeaways <span className="text-warning">*</span>
+                        <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-800 dark:text-text-muted">
+                          Your Session Feedback & Takeaways <span className="text-sky-700 dark:text-warning">*</span>
                         </label>
                         <textarea
                           required
@@ -708,18 +725,18 @@ export default function Webinar() {
                           value={newFeedback.text}
                           onChange={(e) => setNewFeedback({ ...newFeedback, text: e.target.value })}
                           placeholder="Share your thoughts on speaker insights, key learnings, or feedback on this masterclass..."
-                          className="w-full bg-surface border border-black/15 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-text-main focus:border-warning focus:outline-none transition-colors resize-none leading-relaxed"
+                          className="w-full bg-slate-50/90 focus:bg-white dark:bg-surface border border-slate-300 dark:border-white/10 rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-text-main placeholder:text-slate-400 dark:placeholder:text-text-muted/60 focus:border-sky-600 dark:focus:border-warning focus:ring-2 focus:ring-sky-500/15 dark:focus:ring-0 focus:outline-none transition-all resize-none leading-relaxed"
                         />
                       </div>
 
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                        <span className="text-[10px] text-text-muted font-mono">
+                        <span className="text-[10px] text-slate-600 dark:text-text-muted font-mono font-medium">
                           * Submissions are verified and displayed publicly.
                         </span>
                         <button
                           type="submit"
                           disabled={submittingFeedback}
-                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-warning hover:bg-warning/90 disabled:opacity-50 text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 shadow-lg shadow-warning/15 cursor-pointer"
+                          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 bg-sky-700 hover:bg-sky-800 dark:bg-warning dark:hover:bg-warning-dark disabled:opacity-50 text-white dark:text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all duration-200 active:scale-95 shadow-lg shadow-sky-700/15 dark:shadow-warning/15 cursor-pointer"
                         >
                           <Send size={14} />
                           <span>{submittingFeedback ? 'Submitting...' : 'Submit Session Feedback'}</span>
@@ -731,9 +748,9 @@ export default function Webinar() {
 
                 {/* FEEDBACKS AND TESTIMONIALS SECTION */}
                 <div className="space-y-4 sm:space-y-6">
-                  <div className="flex items-center gap-2 border-b border-black/10 dark:border-white/10 pb-3 sm:pb-4">
-                    <MessageSquare className="text-warning w-5 h-5 shrink-0" />
-                    <h2 className="text-sm sm:text-base font-black uppercase text-text-main tracking-wider">
+                  <div className="flex items-center gap-2 border-b border-slate-200 dark:border-white/10 pb-3 sm:pb-4">
+                    <MessageSquare className="text-sky-700 dark:text-warning w-5 h-5 shrink-0" />
+                    <h2 className="text-sm sm:text-base font-black uppercase text-slate-900 dark:text-text-main tracking-wider">
                       Participant Feedbacks & Reviews ({currentEvent.feedbacks.length})
                     </h2>
                   </div>
@@ -741,14 +758,14 @@ export default function Webinar() {
                   {/* Reviews List - Horizontal Modern Slider */}
                   <div className="relative space-y-3 sm:space-y-4">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono text-text-muted uppercase tracking-widest font-bold">
+                      <span className="text-[10px] font-mono text-slate-600 dark:text-text-muted uppercase tracking-widest font-bold">
                         Slide or swipe to read reviews
                       </span>
                       <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={scrollLeft}
-                          className="p-2 sm:p-1.5 rounded-lg bg-surface hover:bg-warning/10 border border-black/15 dark:border-white/10 text-text-main hover:text-warning transition-colors active:scale-95 cursor-pointer touch-manipulation"
+                          className="p-2 sm:p-1.5 rounded-lg bg-white hover:bg-sky-50 dark:bg-surface dark:hover:bg-warning/10 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-text-main hover:text-sky-700 dark:hover:text-warning transition-colors active:scale-95 cursor-pointer touch-manipulation shadow-xs"
                           aria-label="Previous Review"
                         >
                           <ChevronLeft size={16} />
@@ -756,7 +773,7 @@ export default function Webinar() {
                         <button
                           type="button"
                           onClick={scrollRight}
-                          className="p-2 sm:p-1.5 rounded-lg bg-surface hover:bg-warning/10 border border-black/15 dark:border-white/10 text-text-main hover:text-warning transition-colors active:scale-95 cursor-pointer touch-manipulation"
+                          className="p-2 sm:p-1.5 rounded-lg bg-white hover:bg-sky-50 dark:bg-surface dark:hover:bg-warning/10 border border-slate-300 dark:border-white/10 text-slate-800 dark:text-text-main hover:text-sky-700 dark:hover:text-warning transition-colors active:scale-95 cursor-pointer touch-manipulation shadow-xs"
                           aria-label="Next Review"
                         >
                           <ChevronRight size={16} />
@@ -772,15 +789,15 @@ export default function Webinar() {
                       {currentEvent.feedbacks.map((item) => (
                         <div 
                           key={item.id}
-                          className={`w-[82vw] max-w-[320px] sm:w-[350px] shrink-0 snap-start bg-crust rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4 relative overflow-hidden flex flex-col justify-between transition-all shadow-lg ${
+                          className={`w-[82vw] max-w-[320px] sm:w-[350px] shrink-0 snap-start bg-white dark:bg-crust rounded-2xl p-4 sm:p-5 space-y-3 sm:space-y-4 relative overflow-hidden flex flex-col justify-between transition-all shadow-md dark:shadow-lg ${
                             item.pinned 
-                              ? 'border-2 border-warning/80 bg-gradient-to-b from-warning/10 via-crust to-crust shadow-warning/10 ring-1 ring-warning/30' 
-                              : 'border border-black/10 dark:border-white/5 hover:border-warning/30'
+                              ? 'border-2 border-sky-600/80 dark:border-warning/80 bg-gradient-to-b from-sky-50/90 via-white to-white dark:from-warning/10 dark:via-crust dark:to-crust shadow-sky-600/10 dark:shadow-warning/10 ring-1 ring-sky-500/20 dark:ring-warning/30' 
+                              : 'border border-slate-200/95 dark:border-white/5 hover:border-sky-400 dark:hover:border-warning/40'
                           }`}
                         >
                           {/* Pinned Tag */}
                           {item.pinned && (
-                            <div className="absolute top-0 right-0 bg-warning text-crust px-2.5 py-0.5 rounded-bl-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
+                            <div className="absolute top-0 right-0 bg-sky-700 dark:bg-warning text-white dark:text-crust px-2.5 py-0.5 rounded-bl-xl text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-sm">
                               <Pin size={10} className="fill-current" />
                               <span>Pinned</span>
                             </div>
@@ -790,11 +807,11 @@ export default function Webinar() {
                           <div className="space-y-2.5 sm:space-y-3">
                             <div className="flex items-start justify-between gap-2">
                               <div className={`space-y-0.5 min-w-0 ${item.pinned ? 'pr-14' : ''}`}>
-                                <h4 className="text-xs font-black text-text-main uppercase line-clamp-1">{item.name}</h4>
-                                <p className="text-[10px] font-mono text-warning font-semibold line-clamp-1">{item.role}</p>
+                                <h4 className="text-xs font-black text-slate-900 dark:text-text-main uppercase line-clamp-1">{item.name}</h4>
+                                <p className="text-[10px] font-mono text-sky-700 dark:text-warning font-bold line-clamp-1">{item.role}</p>
                               </div>
                               {item.verified && (
-                                <span className="text-[7px] tracking-wider font-mono bg-emerald-500/10 border border-emerald-500/25 text-emerald-500 px-1.5 py-0.5 rounded font-bold uppercase shrink-0">
+                                <span className="text-[8px] tracking-wider font-mono bg-emerald-100/80 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/25 text-emerald-800 dark:text-emerald-400 px-1.5 py-0.5 rounded font-extrabold uppercase shrink-0">
                                   VERIFIED
                                 </span>
                               )}
@@ -806,18 +823,18 @@ export default function Webinar() {
                                 <Star 
                                   key={idx} 
                                   size={11} 
-                                  className={idx < item.rating ? "fill-amber-400 text-amber-400" : "text-zinc-600"} 
+                                  className={idx < item.rating ? "fill-amber-400 text-amber-400" : "text-slate-300 dark:text-zinc-600"} 
                                 />
                               ))}
                             </div>
 
-                            <p className="text-xs text-text-muted leading-relaxed font-sans italic line-clamp-5">
+                            <p className="text-xs text-slate-700 dark:text-text-muted leading-relaxed font-sans italic line-clamp-5">
                               "{item.text}"
                             </p>
                           </div>
 
                           {/* Footer details: Date */}
-                          <div className="flex justify-between items-center border-t border-black/5 dark:border-white/5 pt-3 text-[9px] font-mono text-text-muted">
+                          <div className="flex justify-between items-center border-t border-slate-200/80 dark:border-white/5 pt-3 text-[9px] font-mono text-slate-600 dark:text-text-muted font-semibold">
                             <span>Participant Feedback</span>
                             <span>{item.date}</span>
                           </div>
@@ -834,16 +851,16 @@ export default function Webinar() {
               <div className="space-y-6 sm:space-y-8">
                 
                 {/* Distinguished Speaker Details */}
-                <div className="bg-crust border border-black/10 dark:border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-5 sm:space-y-6 shadow-xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-24 h-24 bg-warning/5 rounded-full blur-2xl pointer-events-none" />
+                <div className="bg-white dark:bg-crust border border-slate-200/95 dark:border-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-8 space-y-5 sm:space-y-6 shadow-[0_4px_24px_-4px_rgba(15,23,42,0.07)] dark:shadow-xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-24 h-24 bg-sky-400/15 dark:bg-warning/5 rounded-full blur-2xl pointer-events-none" />
                   
                   <div className="text-center space-y-3 sm:space-y-4">
-                    <span className="inline-block text-[9px] font-mono bg-warning/10 border border-warning/20 text-warning px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-widest">
+                    <span className="inline-block text-[9px] font-mono bg-sky-100 dark:bg-warning/10 border border-sky-300 dark:border-warning/25 text-sky-900 dark:text-warning px-2.5 py-0.5 rounded-full font-extrabold uppercase tracking-widest">
                       Speaker Profile
                     </span>
 
                     {/* Speaker Avatar */}
-                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-2xl overflow-hidden border-2 border-warning/30 bg-surface shadow-md">
+                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto rounded-2xl overflow-hidden border-2 border-sky-500/40 dark:border-warning/30 bg-slate-100 dark:bg-surface shadow-md">
                       <img
                         src={currentEvent.speaker.avatar}
                         alt={currentEvent.speaker.name}
@@ -853,16 +870,16 @@ export default function Webinar() {
                     </div>
 
                     <div className="space-y-1">
-                      <h4 className="text-base font-extrabold text-text-main uppercase break-words">
+                      <h4 className="text-base font-extrabold text-slate-900 dark:text-text-main uppercase break-words">
                         {currentEvent.speaker.name}
                       </h4>
-                      <p className="text-[11px] font-mono text-warning leading-snug break-words">
+                      <p className="text-[11px] font-mono text-sky-700 dark:text-warning font-bold leading-snug break-words">
                         {currentEvent.speaker.role}
                       </p>
                     </div>
                   </div>
 
-                  <p className="text-xs text-text-muted leading-relaxed font-sans text-center italic border-t border-black/5 dark:border-white/5 pt-4">
+                  <p className="text-xs text-slate-700 dark:text-text-muted leading-relaxed font-sans text-center italic border-t border-slate-200 dark:border-white/5 pt-4 font-medium">
                     "{currentEvent.speaker.bio}"
                   </p>
 
@@ -883,10 +900,10 @@ export default function Webinar() {
 
                 {/* Visual Cover Poster Thumbnail */}
                 <div className="space-y-2">
-                  <span className="block text-[10px] font-mono text-text-muted uppercase tracking-widest font-bold">
+                  <span className="block text-[10px] font-mono text-slate-700 dark:text-text-muted uppercase tracking-widest font-bold">
                     Official Session Poster
                   </span>
-                  <div className="relative rounded-2xl overflow-hidden border border-warning/20 bg-black/40 shadow-xl">
+                  <div className="relative rounded-2xl overflow-hidden border border-slate-200/95 dark:border-warning/20 bg-white dark:bg-black/40 shadow-md dark:shadow-xl">
                     <img 
                       src={currentEvent.poster} 
                       alt={`${currentEvent.title} Promotional Poster`}
@@ -902,8 +919,8 @@ export default function Webinar() {
 
             {/* Quick Explore Navigation Footer to other webinars */}
             {localEvents.filter(ev => ev.id !== currentEvent.id).length > 0 && (
-              <div className="space-y-4 pt-6 sm:pt-8 border-t border-black/10 dark:border-white/10">
-                <h3 className="text-xs font-mono uppercase tracking-widest text-warning font-black">
+              <div className="space-y-4 pt-6 sm:pt-8 border-t border-slate-200 dark:border-white/10">
+                <h3 className="text-xs font-mono uppercase tracking-widest text-sky-800 dark:text-warning font-black">
                   Explore Other Recorded Masterclasses
                 </h3>
                 
@@ -912,27 +929,27 @@ export default function Webinar() {
                     <div
                       key={ev.id}
                       onClick={() => selectEvent(ev.id)}
-                      className="bg-crust border border-black/15 dark:border-white/10 rounded-2xl p-5 hover:border-warning/40 hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between"
+                      className="bg-white dark:bg-crust border border-slate-200/95 dark:border-white/10 rounded-2xl p-5 hover:border-sky-500/60 dark:hover:border-warning/50 hover:shadow-lg transition-all cursor-pointer group flex flex-col justify-between shadow-sm"
                     >
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-warning">
-                          <span className="font-bold">WEBINAR {ev.sequence}</span>
-                          <span>{ev.date}</span>
+                        <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-sky-700 dark:text-warning font-bold">
+                          <span className="bg-sky-50 dark:bg-transparent border border-sky-200 dark:border-transparent px-2 py-0.5 dark:p-0 rounded font-extrabold">WEBINAR {ev.sequence}</span>
+                          <span className="text-slate-600 dark:text-warning">{ev.date}</span>
                         </div>
-                        <h4 className="text-xs sm:text-sm font-black text-text-main uppercase group-hover:text-warning transition-colors line-clamp-1">
+                        <h4 className="text-xs sm:text-sm font-black text-slate-900 dark:text-text-main uppercase group-hover:text-sky-700 dark:group-hover:text-warning transition-colors line-clamp-1">
                           {ev.title}
                         </h4>
-                        <p className="text-xs text-text-muted line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-text-muted line-clamp-2 leading-relaxed font-medium">
                           {ev.description}
                         </p>
                       </div>
 
-                      <div className="border-t border-black/5 dark:border-white/5 pt-3 mt-4 flex items-center justify-between">
-                        <span className="text-[10px] text-text-muted font-mono">
+                      <div className="border-t border-slate-200/80 dark:border-white/5 pt-3 mt-4 flex items-center justify-between">
+                        <span className="text-[10px] text-slate-700 dark:text-text-muted font-mono font-semibold">
                           Host: {ev.speaker.name}
                         </span>
-                        <span className="text-[10px] font-black text-warning uppercase tracking-wider flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                          Explore <Play size={10} className="fill-warning" />
+                        <span className="text-[10px] font-black text-sky-700 dark:text-warning uppercase tracking-wider flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                          Explore <Play size={10} className="fill-sky-700 dark:fill-warning" />
                         </span>
                       </div>
                     </div>
@@ -952,7 +969,7 @@ export default function Webinar() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full max-w-5xl mx-auto space-y-12 relative z-10"
+            className="w-full max-w-5xl mx-auto space-y-10 sm:space-y-12 relative z-10"
           >
             <SEOManager 
               collectionName="webinars"
@@ -978,77 +995,77 @@ export default function Webinar() {
               <div className="relative flex items-center justify-center gap-4 sm:gap-8 w-full max-w-3xl mb-4">
                 
                 {/* Left Sound Wave Graphic */}
-                <div className="hidden md:flex items-end gap-1.5 h-16 opacity-60">
-                  <span className="w-[3px] h-4 bg-cyan-500/40 rounded-full animate-pulse"></span>
-                  <span className="w-[3px] h-8 bg-cyan-500/60 rounded-full animate-pulse delay-75"></span>
-                  <span className="w-[3px] h-14 bg-cyan-400 rounded-full animate-pulse delay-150"></span>
-                  <span className="w-[3px] h-8 bg-cyan-500/60 rounded-full animate-pulse delay-300"></span>
-                  <span className="w-[3px] h-4 bg-cyan-500/40 rounded-full animate-pulse delay-500"></span>
+                <div className="hidden md:flex items-end gap-1.5 h-16 opacity-95 dark:opacity-60">
+                  <span className="w-[3.5px] h-4 bg-sky-600/60 dark:bg-cyan-500/40 rounded-full animate-pulse"></span>
+                  <span className="w-[3.5px] h-8 bg-sky-600/85 dark:bg-cyan-500/60 rounded-full animate-pulse delay-75"></span>
+                  <span className="w-[3.5px] h-14 bg-sky-700 dark:bg-cyan-400 rounded-full animate-pulse delay-150"></span>
+                  <span className="w-[3.5px] h-8 bg-sky-600/85 dark:bg-cyan-500/60 rounded-full animate-pulse delay-300"></span>
+                  <span className="w-[3.5px] h-4 bg-sky-600/60 dark:bg-cyan-500/40 rounded-full animate-pulse delay-500"></span>
                 </div>
 
-                {/* WEBINARS text with back-glow and light-blue gradient */}
-                <h1 className="text-3xl min-[420px]:text-4xl sm:text-7xl md:text-8xl font-black tracking-wider sm:tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-white via-cyan-100 to-cyan-300 select-none relative z-10 drop-shadow-[0_0_20px_rgba(6,182,212,0.2)] font-sans">
+                {/* WEBINARS text with ultra-high-contrast gradient in light mode and neon glow in dark mode */}
+                <h1 className="text-3xl min-[420px]:text-4xl sm:text-7xl md:text-8xl font-black tracking-wider sm:tracking-widest text-transparent bg-clip-text bg-gradient-to-b from-slate-950 via-slate-900 to-sky-700 dark:from-white dark:via-cyan-100 dark:to-cyan-300 select-none relative z-10 drop-shadow-[0_2px_10px_rgba(2,132,199,0.16)] dark:drop-shadow-[0_0_20px_rgba(6,182,212,0.2)] font-sans">
                   WEBINARS
                 </h1>
 
                 {/* Right Sound Wave Graphic */}
-                <div className="hidden md:flex items-end gap-1.5 h-16 opacity-60">
-                  <span className="w-[3px] h-4 bg-cyan-500/40 rounded-full animate-pulse delay-500"></span>
-                  <span className="w-[3px] h-8 bg-cyan-500/60 rounded-full animate-pulse delay-300"></span>
-                  <span className="w-[3px] h-14 bg-cyan-400 rounded-full animate-pulse delay-150"></span>
-                  <span className="w-[3px] h-8 bg-cyan-500/60 rounded-full animate-pulse delay-75"></span>
-                  <span className="w-[3px] h-4 bg-cyan-500/40 rounded-full animate-pulse"></span>
+                <div className="hidden md:flex items-end gap-1.5 h-16 opacity-95 dark:opacity-60">
+                  <span className="w-[3.5px] h-4 bg-sky-600/60 dark:bg-cyan-500/40 rounded-full animate-pulse delay-500"></span>
+                  <span className="w-[3.5px] h-8 bg-sky-600/85 dark:bg-cyan-500/60 rounded-full animate-pulse delay-300"></span>
+                  <span className="w-[3.5px] h-14 bg-sky-700 dark:bg-cyan-400 rounded-full animate-pulse delay-150"></span>
+                  <span className="w-[3.5px] h-8 bg-sky-600/85 dark:bg-cyan-500/60 rounded-full animate-pulse delay-75"></span>
+                  <span className="w-[3.5px] h-4 bg-sky-600/60 dark:bg-cyan-500/40 rounded-full animate-pulse"></span>
                 </div>
                 
                 {/* Subtle blue light flare behind the heading */}
-                <div className="absolute inset-0 bg-cyan-500/10 blur-3xl rounded-full -z-10 w-2/3 mx-auto"></div>
+                <div className="absolute inset-0 bg-sky-500/12 dark:bg-cyan-500/10 blur-3xl rounded-full -z-10 w-2/3 mx-auto"></div>
               </div>
 
-              {/* Thin neon light separator */}
-              <div className="w-full max-w-xs sm:max-w-xl h-[2px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent relative mb-6 sm:mb-8">
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-cyan-400 rounded-full blur-[6px]" />
+              {/* Thin accent separator */}
+              <div className="w-full max-w-xs sm:max-w-xl h-[2px] bg-gradient-to-r from-transparent via-sky-600/80 dark:via-cyan-500/50 to-transparent relative mb-6 sm:mb-8">
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-sky-600 dark:bg-cyan-400 rounded-full blur-[5px]" />
               </div>
 
               {/* Sleek Horizontal Category Liner */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-6 w-full max-w-5xl mb-2 border-y border-cyan-500/10 py-4 sm:py-6 bg-cyan-950/5 backdrop-blur-sm px-3.5 sm:px-4 rounded-xl sm:rounded-2xl">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl mb-2 border border-slate-200/95 dark:border-x-0 dark:border-y dark:border-cyan-500/10 py-4 sm:py-6 bg-white dark:bg-cyan-950/5 backdrop-blur-sm px-4 sm:px-6 rounded-2xl shadow-[0_6px_24px_-4px_rgba(15,23,42,0.06)] dark:shadow-none">
                 
                 {/* SESSIONS */}
                 <div className="flex items-start gap-3 sm:gap-3.5 text-left group">
-                  <div className="relative p-2 sm:p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.1)] group-hover:border-cyan-400/40 shrink-0 transition-colors">
-                    <Play className="relative text-cyan-400 w-4 h-4 fill-cyan-400/20" />
+                  <div className="relative p-2.5 rounded-xl bg-sky-100/80 dark:bg-cyan-950/30 border border-sky-200 dark:border-cyan-500/20 shadow-2xs dark:shadow-[0_0_15px_rgba(6,182,212,0.1)] group-hover:bg-sky-600 group-hover:border-sky-600 dark:group-hover:bg-cyan-950/50 dark:group-hover:border-cyan-400/40 shrink-0 transition-all">
+                    <Play className="relative text-sky-700 group-hover:text-white dark:text-cyan-400 dark:group-hover:text-cyan-400 w-4 h-4 fill-sky-700/20 group-hover:fill-white/30 dark:fill-cyan-400/20 transition-colors" />
                   </div>
                   <div className="space-y-0.5 sm:space-y-1">
-                    <h3 className="text-xs font-mono font-extrabold uppercase tracking-widest text-white group-hover:text-cyan-400 transition-colors">
+                    <h3 className="text-xs font-mono font-extrabold uppercase tracking-widest text-slate-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-cyan-400 transition-colors">
                       Sessions
                     </h3>
-                    <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                    <p className="text-[11px] sm:text-xs text-slate-700 dark:text-zinc-400 leading-relaxed font-sans font-medium">
                       Live expert sessions covering industry insights, case studies, and emerging trends.
                     </p>
                   </div>
                 </div>
 
                 {/* WORKSHOPS */}
-                <div className="flex items-start gap-3 sm:gap-3.5 text-left group border-t md:border-t-0 md:border-x border-cyan-500/10 pt-3.5 md:pt-0 md:px-6">
-                  <div className="relative p-2 sm:p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.1)] group-hover:border-cyan-400/40 shrink-0 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400 animate-[spin_15s_linear_infinite]">
+                <div className="flex items-start gap-3 sm:gap-3.5 text-left group border-t md:border-t-0 md:border-x border-slate-200 dark:border-cyan-500/10 pt-3.5 md:pt-0 md:px-6">
+                  <div className="relative p-2.5 rounded-xl bg-sky-100/80 dark:bg-cyan-950/30 border border-sky-200 dark:border-cyan-500/20 shadow-2xs dark:shadow-[0_0_15px_rgba(6,182,212,0.1)] group-hover:bg-sky-600 group-hover:border-sky-600 dark:group-hover:bg-cyan-950/50 dark:group-hover:border-cyan-400/40 shrink-0 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-sky-700 group-hover:text-white dark:text-cyan-400 dark:group-hover:text-cyan-400 animate-[spin_15s_linear_infinite] transition-colors">
                       <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.1a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
                       <circle cx="12" cy="12" r="3" />
                     </svg>
                   </div>
                   <div className="space-y-0.5 sm:space-y-1">
-                    <h3 className="text-xs font-mono font-extrabold uppercase tracking-widest text-white group-hover:text-cyan-400 transition-colors">
+                    <h3 className="text-xs font-mono font-extrabold uppercase tracking-widest text-slate-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-cyan-400 transition-colors">
                       Workshops
                     </h3>
-                    <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                    <p className="text-[11px] sm:text-xs text-slate-700 dark:text-zinc-400 leading-relaxed font-sans font-medium">
                       Hands-on interactive workshops designed to build practical skills and real-world expertise.
                     </p>
                   </div>
                 </div>
 
                 {/* SEMINARS */}
-                <div className="flex items-start gap-3 sm:gap-3.5 text-left group border-t md:border-t-0 border-cyan-500/10 pt-3.5 md:pt-0">
-                  <div className="relative p-2 sm:p-2.5 rounded-xl bg-cyan-950/30 border border-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.1)] group-hover:border-cyan-400/40 shrink-0 transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-cyan-400">
+                <div className="flex items-start gap-3 sm:gap-3.5 text-left group border-t md:border-t-0 border-slate-200 dark:border-cyan-500/10 pt-3.5 md:pt-0">
+                  <div className="relative p-2.5 rounded-xl bg-sky-100/80 dark:bg-cyan-950/30 border border-sky-200 dark:border-cyan-500/20 shadow-2xs dark:shadow-[0_0_15px_rgba(6,182,212,0.1)] group-hover:bg-sky-600 group-hover:border-sky-600 dark:group-hover:bg-cyan-950/50 dark:group-hover:border-cyan-400/40 shrink-0 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-sky-700 group-hover:text-white dark:text-cyan-400 dark:group-hover:text-cyan-400 transition-colors">
                       <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
                       <circle cx="9" cy="7" r="4" />
                       <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -1056,10 +1073,10 @@ export default function Webinar() {
                     </svg>
                   </div>
                   <div className="space-y-0.5 sm:space-y-1">
-                    <h3 className="text-xs font-mono font-extrabold uppercase tracking-widest text-white group-hover:text-cyan-400 transition-colors">
+                    <h3 className="text-xs font-mono font-extrabold uppercase tracking-widest text-slate-900 dark:text-white group-hover:text-sky-700 dark:group-hover:text-cyan-400 transition-colors">
                       Seminars
                     </h3>
-                    <p className="text-[11px] text-zinc-400 leading-normal font-sans">
+                    <p className="text-[11px] sm:text-xs text-slate-700 dark:text-zinc-400 leading-relaxed font-sans font-medium">
                       In-depth seminars on forensic science, technology, and professional development.
                     </p>
                   </div>
@@ -1072,28 +1089,28 @@ export default function Webinar() {
             {/* structured webinars listing card blocks */}
             <div className="space-y-6 sm:space-y-8" id="webinars-listing-block">
               {/* Redesigned grid with exact Webinar numbering formatting */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                 {localEvents.map((item) => (
                   <div
                     key={item.id}
                     onClick={() => selectEvent(item.id)}
-                    className="bg-crust border border-black/15 dark:border-white/10 rounded-2xl p-4 sm:p-5 hover:border-warning/40 hover:shadow-xl hover:shadow-warning/[0.02] transition-all duration-300 group cursor-pointer flex flex-col justify-between"
+                    className="bg-white dark:bg-crust border border-slate-200/95 dark:border-white/10 rounded-2xl p-4 sm:p-5 hover:border-sky-500/70 dark:hover:border-warning/50 shadow-[0_4px_20px_-2px_rgba(15,23,42,0.07)] hover:shadow-[0_14px_32px_-4px_rgba(2,132,199,0.16)] dark:shadow-none dark:hover:shadow-warning/[0.02] transition-all duration-300 group cursor-pointer flex flex-col justify-between"
                   >
-                    <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-3.5 sm:space-y-4">
                       
                       {/* Image Thumbnail inside grid card */}
-                      <div className="aspect-[16/10] w-full bg-surface rounded-xl overflow-hidden border border-black/10 dark:border-white/5 relative flex items-center justify-center">
+                      <div className="aspect-[16/10] w-full bg-slate-100 dark:bg-surface rounded-xl overflow-hidden border border-slate-200 dark:border-white/5 relative flex items-center justify-center">
                         <img 
                           src={item.poster}
                           alt={item.title}
-                          className="w-full h-full object-cover opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
+                          className="w-full h-full object-cover opacity-100 dark:opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
                           referrerPolicy="no-referrer"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent dark:from-black/75 dark:via-transparent dark:to-transparent" />
 
                         {/* Webinar Sequence Number Overlay & Upcoming Badge */}
                         <div className="absolute top-2.5 left-2.5 flex items-center gap-2">
-                          <span className="text-[9px] font-mono font-black uppercase bg-warning text-crust px-2.5 py-1 rounded-md shadow">
+                          <span className="text-[9px] font-mono font-black uppercase bg-sky-700 dark:bg-warning text-white dark:text-crust px-2.5 py-1 rounded-md shadow-md">
                             WEBINAR {item.sequence}
                           </span>
                           {item.isUpcoming && (
@@ -1106,19 +1123,19 @@ export default function Webinar() {
                       </div>
 
                       {/* Info text block */}
-                      <div className="space-y-1.5 sm:space-y-2">
-                        <div className="flex items-center gap-1 text-[9px] font-mono text-warning">
-                          <Calendar size={11} />
+                      <div className="space-y-2">
+                        <div className="inline-flex items-center gap-1.5 text-[10px] font-mono text-sky-800 dark:text-warning font-bold bg-sky-50 dark:bg-transparent border border-sky-200/80 dark:border-transparent px-2.5 py-1 dark:p-0 rounded-md">
+                          <Calendar size={11} className="text-sky-700 dark:text-warning shrink-0" />
                           <span>{item.date}</span>
-                          <span className="text-text-muted">&bull;</span>
+                          <span className="text-slate-400 dark:text-text-muted">&bull;</span>
                           <span>{item.time}</span>
                         </div>
 
-                        <h3 className="text-sm font-extrabold text-text-main group-hover:text-warning transition-colors uppercase line-clamp-2 leading-snug">
+                        <h3 className="text-sm sm:text-[15px] font-extrabold text-slate-900 dark:text-text-main group-hover:text-sky-700 dark:group-hover:text-warning transition-colors uppercase line-clamp-2 leading-snug">
                           {item.title}
                         </h3>
 
-                        <p className="text-xs text-text-muted line-clamp-2 leading-relaxed">
+                        <p className="text-xs text-slate-600 dark:text-text-muted line-clamp-2 leading-relaxed font-medium">
                           {item.description}
                         </p>
                       </div>
@@ -1126,23 +1143,23 @@ export default function Webinar() {
                     </div>
 
                     {/* Footer strip details inside card */}
-                    <div className="border-t border-black/5 dark:border-white/5 pt-3.5 mt-4 flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-1 min-w-0">
-                        <User size={11} className="text-text-muted shrink-0" />
-                        <span className="text-[10px] text-text-muted font-mono truncate max-w-[100px] sm:max-w-[130px]">
+                    <div className="border-t border-slate-200/90 dark:border-white/5 pt-3.5 mt-4 flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <User size={12} className="text-sky-700 dark:text-text-muted shrink-0" />
+                        <span className="text-[11px] text-slate-700 dark:text-text-muted font-mono font-semibold truncate max-w-[120px] sm:max-w-[150px]">
                           {item.speaker.name}
                         </span>
                       </div>
 
                       <div className="flex items-center gap-2 shrink-0">
                         {item.isUpcoming && (
-                          <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded flex items-center gap-1">
+                          <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-400/10 border border-amber-200 dark:border-amber-400/20 px-2 py-0.5 rounded flex items-center gap-1">
                             <Youtube size={10} className="text-red-500" />
                             Coming Soon
                           </span>
                         )}
-                        <span className="text-[9px] font-black uppercase tracking-wider text-warning flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                          Explore <Play size={10} className="fill-warning" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-sky-700 group-hover:text-white bg-sky-50 group-hover:bg-sky-700 dark:bg-transparent dark:group-hover:bg-transparent dark:text-warning dark:group-hover:text-warning border border-sky-200 group-hover:border-sky-700 dark:border-transparent px-2.5 py-1 dark:p-0 rounded-lg flex items-center gap-1 transition-all">
+                          Explore <Play size={10} className="fill-current" />
                         </span>
                       </div>
                     </div>
