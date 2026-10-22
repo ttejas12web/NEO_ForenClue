@@ -346,9 +346,26 @@
         "verified": { "type": "boolean" }
       },
       "required": ["eventId", "name", "text", "createdAt"]
+    },
+    "NewsletterSubscriber": {
+      "title": "Newsletter Subscriber",
+      "description": "Email subscribers for forensic updates, case alerts, and webinar notifications",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "status": { "type": "string", "enum": ["active", "unsubscribed"] },
+        "source": { "type": "string" },
+        "userId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "status", "createdAt"]
     }
   },
   "firestore": {
+    "/newsletter_subscribers/{subscriberId}": {
+      "schema": "NewsletterSubscriber",
+      "description": "User email subscriptions for platform updates and alerts"
+    },
     "/webinar_feedbacks/{feedbackId}": {
       "schema": "WebinarFeedback",
       "description": "Participant seminar feedbacks with admin review and pinning controls"

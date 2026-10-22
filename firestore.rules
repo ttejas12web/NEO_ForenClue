@@ -223,6 +223,17 @@ service cloud.firestore {
         && data.status in ['pending', 'approved', 'rejected'];
     }
 
+    function isValidNewsletterSubscriber(data) {
+      return data.keys().hasAll(['email', 'status', 'createdAt'])
+        && data.keys().hasOnly(['email', 'status', 'source', 'userId', 'createdAt'])
+        && data.email is string && data.email.size() >= 5 && data.email.size() <= 254
+        && data.email.matches('^[a-zA-Z0-9._%+\\-]+@[a-zA-Z0-9.\\-]+\\.[a-zA-Z]{2,}$')
+        && data.status in ['active', 'unsubscribed']
+        && (!('source' in data) || (data.source is string && data.source.size() <= 64))
+        && (!('userId' in data) || data.userId == null || (isSignedIn() && data.userId == request.auth.uid))
+        && data.createdAt is timestamp;
+    }
+
     // --- Cases ---
     match /cases/{caseId} {
       allow read: if true;
@@ -445,6 +456,12 @@ service cloud.firestore {
     match /system_settings/{settingId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
+    }
+
+    // Newsletter Subscribers Rule (PII Protected: Public/User Create, Admin Read/Manage)
+    match /newsletter_subscribers/{subscriberId} {
+      allow create: if isValidId(subscriberId) && isValidNewsletterSubscriber(incoming()) && incoming().status == 'active' && incoming().createdAt == request.time;
+      allow read, update, delete: if isAdmin();
     }
 
     // Cloud Blobs & PDF Storage Collection (Cross-device cloud binary synchronization)

@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Mail, MapPin, Youtube, Linkedin, Instagram, ArrowRight, ExternalLink } from 'lucide-react';
+import { Mail, MapPin, Youtube, Linkedin, Instagram, ExternalLink } from 'lucide-react';
 import { Logo } from '@/components/ui/Logo';
+import { NewsletterSignup } from '@/components/layout/NewsletterSignup';
 
 export function Footer() {
   const location = useLocation();
@@ -13,6 +14,9 @@ export function Footer() {
     <footer className="print:hidden bg-crust border-t border-black/10 dark:border-white/10 pt-16 pb-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        {/* Newsletter Subscription Banner */}
+        <NewsletterSignup />
+
         {/* Main Grid Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8 mb-16">
           
