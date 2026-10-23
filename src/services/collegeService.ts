@@ -3634,8 +3634,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Gandhinagar',
     type: 'Central',
     website: 'https://rru.ac.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Rashtriya_Raksha_University_logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/b/bc/Rashtriya_Raksha_University_logo.png',
+    bannerImage: 'https://content.jdmagicbox.com/comp/dehgam/h1/9999pxx79.xx79.220316231335.h3h1/catalogue/rashtriya-raksha-university-rru-vasna-rathore-dehgam-universities-PfiJ0BLm2o.jpg',
     description: 'Established as an Institution of National Importance under the Ministry of Home Affairs, Government of India (Act No. 31 of 2020), Rashtriya Raksha University (RRU) headquartered at Lavad, Dahegam, Gandhinagar is India’s pioneering National Security and Police University. Its School of Behavioural Sciences and Forensic Investigations (SBSFI) and School of Information Technology, Artificial Intelligence and Cyber Security (SITAICS) provide advanced education and operational research in Forensic Science, Forensic Psychology, Forensic Accounting, and Cyber Forensics.',
     coursesOffered: [
       {
@@ -3717,9 +3717,9 @@ export const SAMPLE_COLLEGES: College[] = [
     state: 'Arunachal Pradesh',
     city: 'Pasighat',
     type: 'Central',
-    website: 'https://rru.ac.in/pasighat-campus/',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Rashtriya_Raksha_University_logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200',
+    website: 'https://rru.ac.in/arunachal-pradesh-campus/',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/b/bc/Rashtriya_Raksha_University_logo.png',
+    bannerImage: 'https://wsrv.nl/?url=https://image-static.collegedunia.com/public/college_data/images/campusimage/1682510898Gate-of-AP-2-scaled.jpg',
     description: 'Rashtriya Raksha University (RRU) Pasighat Campus in East Siang district, Arunachal Pradesh is the North-Eastern regional campus of RRU (an Institution of National Importance under the Ministry of Home Affairs, Govt. of India). The campus specializes in Cyber Security and Digital Forensics, Police Administration, Criminology, and Border & Internal Security Management for the North-East region.',
     coursesOffered: [
       {
@@ -3773,9 +3773,9 @@ export const SAMPLE_COLLEGES: College[] = [
     state: 'Uttar Pradesh',
     city: 'Lucknow',
     type: 'Central',
-    website: 'https://rru.ac.in/lucknow-campus/',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Rashtriya_Raksha_University_logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    website: 'https://rru.ac.in/uttar-pradesh-campus/',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/b/bc/Rashtriya_Raksha_University_logo.png',
+    bannerImage: 'https://wsrv.nl/?url=https://legacy.rru.ac.in/wp-content/uploads/2025/05/Academic-Building.jpg',
     description: 'Rashtriya Raksha University (RRU) Lucknow Campus, operating under the Ministry of Home Affairs, Government of India, is a dedicated regional center of excellence in Uttar Pradesh focusing on Cyber Security and Digital Forensics, Forensic Psychology, Police Science, and Criminal Justice Investigation.',
     coursesOffered: [
       {
@@ -3839,8 +3839,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Puducherry',
     type: 'Central',
     website: 'https://rru.ac.in/puducherry-campus/',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Rashtriya_Raksha_University_logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/b/bc/Rashtriya_Raksha_University_logo.png',
+    bannerImage: 'https://content.jdmagicbox.com/v2/comp/pondicherry/q3/0413px413.x413.251010190733.g7q3/catalogue/rashtriya-raksha-university-puducherry-campus-pillaichavady-pondicherry-universities-9h26lvhlgq.jpg',
     description: 'Rashtriya Raksha University (RRU) Puducherry Campus, established under the Ministry of Home Affairs, Government of India, serves Southern India with specialized academic and training programs in Criminology, Forensic & Clinical Psychology, Cyber Security and Digital Forensics, and Corporate Intelligence.',
     coursesOffered: [
       {
@@ -3894,9 +3894,9 @@ export const SAMPLE_COLLEGES: College[] = [
     state: 'Karnataka',
     city: 'Shivamogga',
     type: 'Central',
-    website: 'https://rru.ac.in/shivamogga-campus/',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Rashtriya_Raksha_University_logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    website: 'https://rru.ac.in/shivamogga-campus-karnataka/',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/b/bc/Rashtriya_Raksha_University_logo.png',
+    bannerImage: 'https://wsrv.nl/?url=https://legacy.rru.ac.in/wp-content/uploads/2023/03/IMG-20230324-WA0045.jpg',
     description: 'Inaugurated under the Ministry of Home Affairs, Government of India, Rashtriya Raksha University (RRU) Shivamogga Campus in Karnataka offers specialized postgraduate, undergraduate, and diploma programs in Criminology & Forensic Science, Cyber Security & Digital Forensics, and Defence & Strategic Studies.',
     coursesOffered: [
       {
@@ -5405,6 +5405,163 @@ export const SAMPLE_COLLEGES: College[] = [
     featured: true
   },
   {
+    id: 'gh-raisoni-amravati',
+    name: 'G H Raisoni University (GHRU), Amravati',
+    shortName: 'GH Raisoni Amravati',
+    country: 'India',
+    state: 'Maharashtra',
+    city: 'Amravati',
+    type: 'Private',
+    website: 'https://ghrua.edu.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/f/f5/G.H._Raisoni_University_logo.png',
+    bannerImage: 'https://ghrus.s3.ap-south-1.amazonaws.com/ghru/images/campus/ghrua.png',
+    description: 'Established by the Government of Maharashtra (Act No. XXIX of 2018) and part of the Raisoni Education Group, G H Raisoni University (GHRU), Amravati is a multidisciplinary private university located on Anjangaon Bari Road, Amravati. Through its School of Science, GHRU Amravati offers industry-aligned undergraduate and postgraduate programs in Forensic Science focusing on crime scene investigation, forensic biology & DNA profiling, forensic chemistry & toxicology, questioned documents, ballistics, and cyber/digital forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (HSC) or equivalent examination in Science stream (Physics, Chemistry, Biology/Mathematics) from a recognized board with minimum 45% aggregate marks (40% for reserved categories)',
+        estimatedFees: '₹65,000 - ₹85,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Criminalistics',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Toxicology',
+          'Fingerprint Science, Questioned Documents & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or Bachelor’s degree in Basic/Applied Sciences (Chemistry, Biology, Biotechnology, Microbiology, Physics, Biochemistry) from a recognized university with minimum 50% aggregate marks (45% for reserved categories)',
+        estimatedFees: '₹61,000 - ₹75,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents, Fingerprints & Cyber Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹61,000 - ₹85,000 / year',
+    admissionProcess: 'RUCET (Raisoni University Common Entrance Test) / Academic Merit & Personal Interview',
+    accreditation: 'UGC Recognized (2(f)) | Established under Maharashtra Govt. Act No. XXIX of 2018 | AIU Member',
+    contactEmail: 'info@ghrua.edu.in',
+    contactPhone: '+91 92265 12383 / +91 93079 00682',
+    address: 'G H Raisoni Nagar, Anjangaon Bari Road, Amravati, Maharashtra 444701, India',
+    ranking: 'Premier Multidisciplinary Private University in Vidarbha Region (Raisoni Group, Amravati)',
+    facilities: [
+      'Dedicated Forensic Science & Crime Scene Reconstruction Laboratories',
+      'Forensic Chemistry, Toxicology & Biological Evidence Analysis Lab',
+      'Questioned Documents, Fingerprint & Ballistics Examination Facility',
+      'Computer & Digital Forensics Lab with High-Speed Campus Wi-Fi',
+      'Central Library, Separate Boys & Girls Hostels, Sports Complex & Campus Transport'
+    ],
+    featured: true
+  },
+  {
+    id: 'invertis-university-bareilly',
+    name: 'Invertis University, Bareilly',
+    shortName: 'Invertis University Bareilly',
+    country: 'India',
+    state: 'Uttar Pradesh',
+    city: 'Bareilly',
+    type: 'Private',
+    website: 'https://www.invertisuniversity.ac.in',
+    logo: 'https://wsrv.nl/?url=https://www.invertisuniversity.ac.in/public/frontend/assets/images/logo.png',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Invertis_University_gate_01.jpg',
+    description: 'Established by the Uttar Pradesh State Legislature (U.P. Act No. 22 of 2010) and accredited by NAAC, Invertis University, Bareilly is a prominent private university located on the Delhi–Lucknow National Highway (NH-24). Through its Faculty of Science (Department of Applied Sciences / Biosciences & Biotechnology), Invertis University offers a comprehensive B.Sc. (Hons.) in Forensic Science program covering crime scene management, forensic biology & serology, forensic chemistry & toxicology, fingerprint & questioned document analysis, ballistics, and cyber forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 Years',
+        eligibility: '10+2 (Intermediate) in Science stream (Physics, Chemistry, Biology/Mathematics) from a recognized board with minimum 50% aggregate marks (45% for SC/ST categories)',
+        estimatedFees: '₹80,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Questioned Documents, Fingerprints & Cyber Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹80,000 - ₹1,00,000 / year',
+    admissionProcess: 'IUCET (Invertis University Common Entrance Test) / CUET (UG) / Merit in 10+2 Qualifying Examination',
+    accreditation: 'NAAC Accredited | UGC Recognized (2(f)) | AIU Member | Approved by Govt. of Uttar Pradesh',
+    contactEmail: 'info@invertis.org',
+    contactPhone: '+91 96909 55599 / +91 581 2460442',
+    address: 'Invertis Village, Delhi Lucknow Highway NH-24, Bareilly, Uttar Pradesh 243123, India',
+    ranking: 'NAAC Accredited Leading Private University in Rohilkhand Region, Uttar Pradesh',
+    facilities: [
+      'Forensic Science, Crime Scene Reconstruction & Criminalistics Lab',
+      'Biosciences, Biotechnology & Analytical Chemistry Laboratories',
+      'Questioned Documents, Fingerprint & Microscopic Examination Unit',
+      'Central Digital Library, Abhivyakti Auditorium & Smart Classrooms',
+      'On-Campus Boys & Girls Hostels, Sports Complex, Cafeteria & Transport Fleet'
+    ],
+    featured: true
+  },
+  {
+    id: 'banaras-hindu-university-varanasi',
+    name: 'Banaras Hindu University, Varanasi (Institute of Science - Department of Chemistry)',
+    shortName: 'BHU Varanasi',
+    country: 'India',
+    state: 'Uttar Pradesh',
+    city: 'Varanasi',
+    type: 'Central',
+    website: 'https://www.bhu.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/c/ca/Banaras_Hindu_University_Emblem_Seal_Transparent.png',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/b/b8/BHU_Main_Gate%2C_Banaras_Hindu_University_enhanced.jpg',
+    description: 'Established in 1916 by Pandit Madan Mohan Malaviya, Banaras Hindu University (BHU) in Varanasi is an internationally renowned Central University and Institution of Eminence (IoE). Through the Department of Chemistry under the Institute of Science (in academic collaboration with the Institute of Medical Sciences and Law School), BHU offers a prestigious M.Sc. in Forensic Science (Special Course of Study) along with doctoral research, focusing on forensic chemistry, toxicology, DNA profiling, questioned documents, and crime scene investigation.',
+    coursesOffered: [
+      {
+        name: 'M.Sc. in Forensic Science (Special Course of Study)',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. / B.Sc. (Hons.) under 10+2+3 pattern in any Science stream (Chemistry, Botany, Zoology, Physics, Mathematics, Forensic Science, Biotechnology, Biochemistry, Microbiology, Genetics, Computer Science, Psychology) or equivalent degree with minimum 50% aggregate marks and CUET (PG) qualification.',
+        estimatedFees: '₹80,000 - ₹85,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Fingerprints & Trace Evidence',
+          'Crime Scene Investigation & Digital Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science / Forensic Medicine',
+        degreeLevel: 'Doctorate',
+        duration: '3 Years',
+        eligibility: 'Master\'s degree in Forensic Science or allied Science/Medical disciplines with minimum 55% aggregate marks; admission via UGC-NET / CSIR-NET / JRF or BHU RET & Interview.',
+        estimatedFees: '₹15,000 - ₹25,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Forensic Toxicology & Instrumental Analysis',
+          'Forensic Medicine, Pathology & Molecular Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹15,000 - ₹85,000 / year',
+    admissionProcess: 'NTA CUET (PG) Score followed by BHU Combined Allotment Program (CAP PG) Counselling / UGC-NET / CSIR-NET for Ph.D.',
+    accreditation: 'NAAC Grade A | Institution of Eminence (IoE) | NIRF Top 5 University in India | Central University',
+    contactEmail: 'head_chem@bhu.ac.in',
+    contactPhone: '+91 542 2307000 / +91 542 2368558',
+    address: 'Institute of Science, Banaras Hindu University, Ajagara, Varanasi, Uttar Pradesh 221005, India',
+    ranking: 'NIRF Ranked #5 University in India | Institution of Eminence (IoE)',
+    facilities: [
+      'Forensic Chemistry, Toxicology & Trace Evidence Analysis Laboratories (Institute of Science)',
+      'SATHI (Sophisticated Analytical & Technical Help Institute) & Central Discovery Centre (CDC)',
+      'Forensic Medicine & Autopsy Training Facilities at Institute of Medical Sciences (IMS-BHU)',
+      'Sayaji Rao Gaekwad Central Library & Cyber Library (24x7 Digital Access)',
+      '1,300-Acre Residential Campus with 75+ Hostels, Sir Sunderlal Hospital & Sports Stadiums'
+    ],
+    featured: true
+  },
+  {
     id: 'nims-university-jaipur',
     name: 'NIMS University Rajasthan, Jaipur (Axel Pries Institute of Allied Medical Science & Technology)',
     shortName: 'NIMS University Jaipur',
@@ -5722,8 +5879,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Mathura',
     type: 'Private',
     website: 'https://www.sanskriti.edu.in',
-    logo: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><defs><linearGradient id="suShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#8B1E24"/><stop offset="50%" stop-color="#6B1117"/><stop offset="100%" stop-color="#4A0A0E"/></linearGradient><linearGradient id="suGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="45%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#B45309"/></linearGradient><linearGradient id="suSunGrad" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FBBF24"/><stop offset="100%" stop-color="#EA580C"/></linearGradient><radialGradient id="suBgGlow" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#FFFBEB"/><stop offset="100%" stop-color="#FEF3C7"/></radialGradient></defs><rect width="400" height="400" rx="64" fill="url(#suBgGlow)"/><circle cx="200" cy="200" r="176" fill="#FFFFFF" stroke="url(#suGoldGrad)" stroke-width="8"/><circle cx="200" cy="200" r="162" fill="none" stroke="#8B1E24" stroke-width="2.5" stroke-dasharray="6 4"/><g stroke="url(#suGoldGrad)" stroke-width="4" fill="none" stroke-linecap="round"><path d="M 92 260 C 64 200, 82 120, 140 84"/><path d="M 308 260 C 336 200, 318 120, 260 84"/></g><g fill="url(#suGoldGrad)"><ellipse cx="82" cy="230" rx="10" ry="5" transform="rotate(-35 82 230)"/><ellipse cx="76" cy="195" rx="10" ry="5" transform="rotate(-15 76 195)"/><ellipse cx="82" cy="160" rx="10" ry="5" transform="rotate(10 82 160)"/><ellipse cx="98" cy="128" rx="10" ry="5" transform="rotate(30 98 128)"/><ellipse cx="120" cy="102" rx="10" ry="5" transform="rotate(45 120 102)"/><ellipse cx="318" cy="230" rx="10" ry="5" transform="rotate(35 318 230)"/><ellipse cx="324" cy="195" rx="10" ry="5" transform="rotate(15 324 195)"/><ellipse cx="318" cy="160" rx="10" ry="5" transform="rotate(-10 318 160)"/><ellipse cx="302" cy="128" rx="10" ry="5" transform="rotate(-30 302 128)"/><ellipse cx="280" cy="102" rx="10" ry="5" transform="rotate(-45 280 102)"/></g><path d="M 118 104 L 282 104 L 282 198 C 282 256, 200 296, 200 296 C 200 296, 118 256, 118 198 Z" fill="url(#suShieldGrad)" stroke="url(#suGoldGrad)" stroke-width="6" stroke-linejoin="round"/><circle cx="200" cy="166" r="28" fill="url(#suSunGrad)"/><g stroke="#FDE68A" stroke-width="3" stroke-linecap="round"><line x1="200" y1="124" x2="200" y2="132"/><line x1="170" y1="136" x2="176" y2="142"/><line x1="230" y1="136" x2="224" y2="142"/><line x1="156" y1="164" x2="164" y2="164"/><line x1="244" y1="164" x2="236" y2="164"/></g><path d="M 146 218 Q 173 204 200 218 Q 227 204 254 218 L 254 186 Q 227 172 200 186 Q 173 172 146 186 Z" fill="#FFFFFF" stroke="url(#suGoldGrad)" stroke-width="3"/><line x1="200" y1="186" x2="200" y2="218" stroke="#8B1E24" stroke-width="2.5"/><text x="200" y="266" text-anchor="middle" font-family="Georgia, serif" font-weight="900" font-size="34" fill="#FDE68A" letter-spacing="3">SU</text><path d="M 68 312 L 332 312 L 318 352 L 82 352 Z" fill="#8B1E24" stroke="url(#suGoldGrad)" stroke-width="3"/><text x="200" y="336" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="16" fill="#FFFFFF" letter-spacing="2.2">SANSKRITI UNIVERSITY</text><text x="200" y="76" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="12.5" fill="#8B1E24" letter-spacing="2.5">MATHURA • UTTAR PRADESH</text></svg>`)}`,
-    bannerImage: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675"><defs><linearGradient id="suSky" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1E1B4B"/><stop offset="40%" stop-color="#4C1D95"/><stop offset="75%" stop-color="#9A3412"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient><radialGradient id="suSunGlow" cx="72%" cy="38%" r="45%"><stop offset="0%" stop-color="#FDE68A" stop-opacity="0.65"/><stop offset="45%" stop-color="#F97316" stop-opacity="0.28"/><stop offset="100%" stop-color="#1E1B4B" stop-opacity="0"/></radialGradient><linearGradient id="suSandstone" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FFF7ED"/><stop offset="100%" stop-color="#FED7AA"/></linearGradient><linearGradient id="suMaroonFacade" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#991B1B"/><stop offset="100%" stop-color="#7F1D1D"/></linearGradient><linearGradient id="suGlass" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#38BDF8" stop-opacity="0.7"/><stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.85"/></linearGradient><linearGradient id="suLawn" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#15803D"/><stop offset="100%" stop-color="#052E16"/></linearGradient></defs><rect width="1200" height="675" fill="url(#suSky)"/><rect width="1200" height="675" fill="url(#suSunGlow)"/><rect x="70" y="310" width="240" height="210" rx="4" fill="url(#suMaroonFacade)" opacity="0.85"/><rect x="890" y="310" width="240" height="210" rx="4" fill="url(#suMaroonFacade)" opacity="0.85"/><g fill="url(#suGlass)" stroke="#FDE68A" stroke-width="1.2" opacity="0.9"><rect x="95" y="335" width="38" height="45" rx="3"/><rect x="148" y="335" width="38" height="45" rx="3"/><rect x="201" y="335" width="38" height="45" rx="3"/><rect x="254" y="335" width="38" height="45" rx="3"/><rect x="95" y="398" width="38" height="45" rx="3"/><rect x="148" y="398" width="38" height="45" rx="3"/><rect x="201" y="398" width="38" height="45" rx="3"/><rect x="254" y="398" width="38" height="45" rx="3"/><rect x="910" y="335" width="38" height="45" rx="3"/><rect x="963" y="335" width="38" height="45" rx="3"/><rect x="1016" y="335" width="38" height="45" rx="3"/><rect x="1069" y="335" width="38" height="45" rx="3"/><rect x="910" y="398" width="38" height="45" rx="3"/><rect x="963" y="398" width="38" height="45" rx="3"/><rect x="1016" y="398" width="38" height="45" rx="3"/><rect x="1069" y="398" width="38" height="45" rx="3"/></g><path d="M 465 250 C 465 140, 735 140, 735 250 Z" fill="url(#suSandstone)" stroke="#F59E0B" stroke-width="3"/><rect x="588" y="138" width="24" height="24" rx="3" fill="#F59E0B"/><line x1="600" y1="96" x2="600" y2="138" stroke="#FDE68A" stroke-width="4" stroke-linecap="round"/><circle cx="600" cy="94" r="6" fill="#FDE68A"/><rect x="285" y="250" width="630" height="270" rx="4" fill="url(#suSandstone)" stroke="#D97706" stroke-width="2.5"/><rect x="285" y="250" width="630" height="38" fill="#8B1E24"/><text x="600" y="274" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="17" fill="#FDE68A" letter-spacing="4">SANSKRITI UNIVERSITY • MATHURA</text><g fill="#FFFBEB" stroke="#D97706" stroke-width="1.5"><rect x="315" y="288" width="22" height="222"/><rect x="385" y="288" width="22" height="222"/><rect x="455" y="288" width="22" height="222"/><rect x="723" y="288" width="22" height="222"/><rect x="793" y="288" width="22" height="222"/><rect x="863" y="288" width="22" height="222"/></g><g fill="url(#suGlass)" stroke="#B45309" stroke-width="1.5"><rect x="346" y="310" width="30" height="55" rx="15"/><rect x="416" y="310" width="30" height="55" rx="15"/><rect x="346" y="388" width="30" height="55" rx="4"/><rect x="416" y="388" width="30" height="55" rx="4"/><rect x="754" y="310" width="30" height="55" rx="15"/><rect x="824" y="310" width="30" height="55" rx="15"/><rect x="754" y="388" width="30" height="55" rx="4"/><rect x="824" y="388" width="30" height="55" rx="4"/></g><path d="M 495 510 L 495 322 L 600 292 L 705 322 L 705 510 Z" fill="#FFFBEB" stroke="#B45309" stroke-width="2"/><path d="M 532 510 L 532 390 A 68 68 0 0 1 668 390 L 668 510 Z" fill="#450A0A" stroke="#F59E0B" stroke-width="3"/><path d="M 544 510 L 544 394 A 56 56 0 0 1 656 394 L 656 510 Z" fill="url(#suGlass)" opacity="0.85"/><circle cx="600" cy="316" r="14" fill="#8B1E24" stroke="#FDE68A" stroke-width="2.5"/><rect x="0" y="510" width="1200" height="165" fill="url(#suLawn)"/><polygon points="510,510 690,510 830,675 370,675" fill="#E7E5E4" stroke="#D6D3D1" stroke-width="2"/><polygon points="555,535 645,535 695,650 505,650" fill="#0284C7" opacity="0.75" stroke="#38BDF8" stroke-width="2"/><g fill="#166534" stroke="#14532D" stroke-width="2"><circle cx="240" cy="490" r="36"/><circle cx="275" cy="500" r="28" fill="#15803D"/><circle cx="150" cy="495" r="32"/><circle cx="960" cy="490" r="36"/><circle cx="925" cy="500" r="28" fill="#15803D"/><circle cx="1050" cy="495" r="32"/></g></svg>`)}`,
+    logo: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&q=80&w=300',
+    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
     description: 'Established in 2016 under the Uttar Pradesh Private Universities Act (U.P. Act No. 20 of 2016) and recognized by the University Grants Commission (UGC) under Section 2(f), Sanskriti University (also searched as Sanskruti University) is a premier NAAC \'A\' Grade accredited multidisciplinary university spanning a 70+ acre green residential campus on the Mathura-Delhi Highway (NH-19) in Chhata, Mathura, Uttar Pradesh. Its School of Basic & Applied Sciences (Department of Forensic Science) and on-campus teaching hospitals deliver NEP 2020-aligned undergraduate, postgraduate, and doctoral education in Forensic Science, Crime Scene Management, Forensic Chemistry & Toxicology, Forensic Biology & Serology, Questioned Documents, Fingerprint Examination, Forensic Ballistics, and Digital & Cyber Forensics.',
     coursesOffered: [
       {
@@ -5799,8 +5956,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Ahmedabad',
     type: 'Private',
     website: 'https://nsitifscs.ac.in',
-    logo: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400"><defs><linearGradient id="nsitShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#1E3A8A"/><stop offset="50%" stop-color="#0F172A"/><stop offset="100%" stop-color="#172554"/></linearGradient><linearGradient id="nsitGoldGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="50%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#D97706"/></linearGradient><radialGradient id="nsitBg" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#E2E8F0"/></radialGradient></defs><rect width="400" height="400" rx="64" fill="url(#nsitBg)"/><circle cx="200" cy="200" r="176" fill="#FFFFFF" stroke="url(#nsitGoldGrad)" stroke-width="8"/><circle cx="200" cy="200" r="160" fill="none" stroke="#1E3A8A" stroke-width="2.5" stroke-dasharray="8 5"/><text x="200" y="70" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="12" fill="#1E3A8A" letter-spacing="2">NARNARAYAN SHASTRI INSTITUTE</text><text x="200" y="88" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="10" fill="#B45309" letter-spacing="1.8">AFFILIATED TO NFSU • AHMEDABAD</text><path d="M 114 104 L 286 104 L 286 196 C 286 258, 200 298, 200 298 C 200 298, 114 258, 114 196 Z" fill="url(#nsitShieldGrad)" stroke="url(#nsitGoldGrad)" stroke-width="6" stroke-linejoin="round"/><line x1="200" y1="108" x2="200" y2="292" stroke="url(#nsitGoldGrad)" stroke-width="2" opacity="0.45"/><line x1="118" y1="186" x2="282" y2="186" stroke="url(#nsitGoldGrad)" stroke-width="2" opacity="0.45"/><g stroke="#38BDF8" stroke-width="2.5" fill="none" stroke-linecap="round"><path d="M 145 126 C 155 138, 175 138, 185 150 C 175 162, 155 162, 145 174"/><path d="M 185 126 C 175 138, 155 138, 145 150 C 155 162, 175 162, 185 174" stroke="#FDE68A"/><line x1="152" y1="133" x2="178" y2="133" stroke="#94A3B8" stroke-width="1.5"/><line x1="152" y1="167" x2="178" y2="167" stroke="#94A3B8" stroke-width="1.5"/></g><g transform="translate(216, 124)"><path d="M 22 4 L 42 12 L 42 28 C 42 40, 22 48, 22 48 C 22 48, 2 40, 2 28 L 2 12 Z" fill="none" stroke="#38BDF8" stroke-width="2.5"/><rect x="15" y="23" width="14" height="11" rx="2" fill="#FDE68A"/><path d="M 18 23 L 18 18 A 4 4 0 0 1 26 18 L 26 23" fill="none" stroke="#FDE68A" stroke-width="2.2"/></g><path d="M 148 222 Q 174 210 200 222 Q 226 210 252 222 L 252 198 Q 226 186 200 198 Q 174 186 148 198 Z" fill="#FFFFFF" stroke="url(#nsitGoldGrad)" stroke-width="2.5"/><text x="200" y="264" text-anchor="middle" font-family="Arial, sans-serif" font-weight="900" font-size="28" fill="#FDE68A" letter-spacing="2.5">NSIT</text><path d="M 56 310 L 344 310 L 330 352 L 70 352 Z" fill="#1E3A8A" stroke="url(#nsitGoldGrad)" stroke-width="3"/><text x="200" y="331" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="13.5" fill="#FFFFFF" letter-spacing="1.5">FORENSIC SCIENCES &amp; CYBER SECURITY</text><text x="200" y="346" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="10" fill="#FDE68A" letter-spacing="2">NSIT-IFSCS • JETALPUR, AHMEDABAD</text></svg>`)}`,
-    bannerImage: `data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="1200" height="675"><defs><linearGradient id="nsitSky" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#090D16"/><stop offset="45%" stop-color="#0F172A"/><stop offset="80%" stop-color="#1E3A8A"/><stop offset="100%" stop-color="#0284C7"/></linearGradient><radialGradient id="nsitHorizonGlow" cx="50%" cy="55%" r="55%"><stop offset="0%" stop-color="#38BDF8" stop-opacity="0.38"/><stop offset="50%" stop-color="#F59E0B" stop-opacity="0.18"/><stop offset="100%" stop-color="#090D16" stop-opacity="0"/></radialGradient><linearGradient id="nsitBuildingMain" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#F8FAFC"/><stop offset="100%" stop-color="#CBD5E1"/></linearGradient><linearGradient id="nsitHeritageAccent" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#D97706"/><stop offset="100%" stop-color="#92400E"/></linearGradient><linearGradient id="nsitCyberGlass" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0EA5E9" stop-opacity="0.85"/><stop offset="100%" stop-color="#1E3A8A" stop-opacity="0.92"/></linearGradient><linearGradient id="nsitLawn" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#065F46"/><stop offset="100%" stop-color="#022C22"/></linearGradient></defs><rect width="1200" height="675" fill="url(#nsitSky)"/><rect width="1200" height="675" fill="url(#nsitHorizonGlow)"/><rect x="65" y="285" width="275" height="235" rx="6" fill="url(#nsitBuildingMain)" stroke="#94A3B8" stroke-width="2"/><rect x="65" y="285" width="275" height="28" fill="url(#nsitHeritageAccent)"/><text x="202" y="304" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="11.5" fill="#FEF3C7" letter-spacing="2">FORENSIC SCIENCES WING</text><g fill="url(#nsitCyberGlass)" stroke="#F59E0B" stroke-width="1.2"><rect x="88" y="332" width="62" height="46" rx="4"/><rect x="170" y="332" width="62" height="46" rx="4"/><rect x="252" y="332" width="62" height="46" rx="4"/><rect x="88" y="396" width="62" height="46" rx="4"/><rect x="170" y="396" width="62" height="46" rx="4"/><rect x="252" y="396" width="62" height="46" rx="4"/></g><rect x="860" y="285" width="275" height="235" rx="6" fill="url(#nsitBuildingMain)" stroke="#94A3B8" stroke-width="2"/><rect x="860" y="285" width="275" height="28" fill="#1E3A8A"/><text x="997" y="304" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="11.5" fill="#38BDF8" letter-spacing="2">CYBER SECURITY &amp; DFIS LABS</text><g fill="url(#nsitCyberGlass)" stroke="#38BDF8" stroke-width="1.2"><rect x="884" y="332" width="62" height="46" rx="4"/><rect x="966" y="332" width="62" height="46" rx="4"/><rect x="1048" y="332" width="62" height="46" rx="4"/><rect x="884" y="396" width="62" height="46" rx="4"/><rect x="966" y="396" width="62" height="46" rx="4"/><rect x="1048" y="396" width="62" height="46" rx="4"/></g><path d="M 480 232 C 480 135, 720 135, 720 232 Z" fill="url(#nsitHeritageAccent)" stroke="#FDE68A" stroke-width="3"/><circle cx="600" cy="140" r="10" fill="#FDE68A"/><line x1="600" y1="102" x2="600" y2="140" stroke="#FDE68A" stroke-width="4" stroke-linecap="round"/><rect x="315" y="232" width="570" height="288" rx="4" fill="url(#nsitBuildingMain)" stroke="#CBD5E1" stroke-width="2.5"/><rect x="315" y="232" width="570" height="46" fill="#0F172A" stroke="#F59E0B" stroke-width="2"/><text x="600" y="253" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="14.5" fill="#FDE68A" letter-spacing="2.2">NARNARAYAN SHASTRI INSTITUTE OF TECHNOLOGY</text><text x="600" y="270" text-anchor="middle" font-family="Arial, sans-serif" font-weight="700" font-size="11" fill="#38BDF8" letter-spacing="2.5">INSTITUTE OF FORENSIC SCIENCES &amp; CYBER SECURITY (NSIT-IFSCS)</text><rect x="348" y="298" width="140" height="150" rx="6" fill="url(#nsitCyberGlass)" stroke="#38BDF8" stroke-width="1.5"/><rect x="712" y="298" width="140" height="150" rx="6" fill="url(#nsitCyberGlass)" stroke="#38BDF8" stroke-width="1.5"/><rect x="508" y="290" width="184" height="230" fill="#FFFFFF" stroke="#D97706" stroke-width="2"/><path d="M 536 520 L 536 382 A 64 64 0 0 1 664 382 L 664 520 Z" fill="#0F172A" stroke="#F59E0B" stroke-width="3"/><path d="M 548 520 L 548 386 A 52 52 0 0 1 652 386 L 652 520 Z" fill="url(#nsitCyberGlass)"/><text x="600" y="314" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="11" fill="#1E3A8A" letter-spacing="1.8">AFFILIATED TO NFSU</text><rect x="0" y="520" width="1200" height="155" fill="url(#nsitLawn)"/><polygon points="505,520 695,520 845,675 355,675" fill="#CBD5E1" stroke="#94A3B8" stroke-width="2"/><line x1="600" y1="530" x2="600" y2="675" stroke="#F59E0B" stroke-width="3" stroke-dasharray="14 10"/><g fill="#047857" stroke="#064E3B" stroke-width="2"><circle cx="290" cy="502" r="34"/><circle cx="250" cy="510" r="28" fill="#059669"/><circle cx="910" cy="502" r="34"/><circle cx="950" cy="510" r="28" fill="#059669"/></g></svg>`)}`,
+    logo: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=300',
+    bannerImage: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&q=80&w=1200',
     description: 'Established in 2008 under the aegis of Shree Swaminarayan Vividh Sewaniketan Trust at Jetalpur, Ahmedabad, Narnarayan Shastri Institute of Technology - Institute of Forensic Sciences and Cyber Security (NSIT-IFSCS, also popularly searched as Narayan Shastri / Naryan Shastri Institute of Forensic Science and Cybersecurity) is India’s premier dedicated college formally affiliated with the National Forensic Sciences University (NFSU, An Institution of National Importance under the Ministry of Home Affairs, Government of India). Following the official NFSU curriculum and academic standards, NSIT-IFSCS delivers specialized integrated and postgraduate programs in Forensic Science, Cyber Security, Digital Forensics & Information Security (DFIS), and Forensic Accounting & Fraud Investigation backed by AI/VR-enabled crime scene simulation suites, advanced chemical/biological instrumentation, and state-of-the-art cyber defense laboratories.',
     coursesOffered: [
       {
@@ -5902,6 +6059,1531 @@ export const SAMPLE_COLLEGES: College[] = [
       'Lush Green Swaminarayan Gurukul Residential Campus with AC Classrooms, Hostels, Mess & Transport across Ahmedabad'
     ],
     featured: true
+  },
+  {
+    id: 'iilm-university-greater-noida',
+    name: 'IILM University, Greater Noida & Gurugram (School of Sciences / Forensic Science)',
+    shortName: 'IILM University',
+    country: 'India',
+    state: 'Uttar Pradesh',
+    city: 'Greater Noida',
+    type: 'Private',
+    website: 'https://iilm.edu',
+    logo: 'https://iilm.edu/wp-content/uploads/2025/12/logo.png',
+    bannerImage: 'https://iilm.edu/wp-content/uploads/2026/01/iilmu-placement-banner_11zon-2.jpg',
+    description: 'Established under the Uttar Pradesh Private Universities Act (with campuses in Greater Noida and Gurugram) and backed by over 30 years of legacy of the IILM Educational Group, IILM University offers a multidisciplinary, NEP-2020 aligned B.Sc. (Hons.) in Forensic Science and M.Sc. in Forensic Science. The curriculum blends hands-on crime scene investigation, forensic toxicology, DNA profiling, fingerprint & questioned document analysis, digital/cyber forensics, and criminal law with intensive laboratory training and forensic internships.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (or equivalent) from a recognized board in Science stream (Physics, Chemistry, and Biology/Mathematics) with minimum 50% aggregate marks',
+        estimatedFees: '₹1,60,000 / year (approx ₹4,80,000 for 3 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence Management',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Fingerprint Science & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or Bachelor’s degree in relevant Basic/Applied Sciences from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹1,50,000 - ₹1,70,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Instrumental Chemical Analysis',
+          'Forensic Biology, Serology & Molecular Diagnostics',
+          'Digital Forensics, Cyber Crime & Questioned Documents'
+        ]
+      }
+    ],
+    feesRange: '₹1,50,000 - ₹1,70,000 / year',
+    admissionProcess: 'CUET (UG/PG) / IILM University Merit Evaluation followed by Personal Interaction & Counselling',
+    accreditation: 'UGC Recognized | AICTE Approved | AIU Member | NAAC Accredited Legacy Institution',
+    contactEmail: 'admissions.gn@iilm.edu',
+    contactPhone: '+91 88606 06667 / +91 120 2328000',
+    address: 'Plot No. 16-18, Knowledge Park II, Greater Noida, Uttar Pradesh 201306 (Also Campus at Sector 53, Golf Course Road, Gurugram, Haryana 122003), India',
+    ranking: 'Leading Multidisciplinary Private University in Delhi-NCR (Knowledge Park II, Greater Noida & Gurugram)',
+    facilities: [
+      'Forensic Science, Crime Scene Simulation & Criminalistics Laboratory',
+      'Forensic Chemistry, Analytical Toxicology & Biotechnology Labs',
+      'Digital Forensics, Cyber Security & AI Innovation Centre',
+      'Moot Court Hall for Expert Witness & Courtroom Testimony Training',
+      'Central Digital Library, AC On-Campus Hostels, Sports Complex & Metro Connectivity'
+    ],
+    featured: true
+  },
+  {
+    id: 'madurai-kamaraj-university',
+    name: 'Madurai Kamaraj University (MKU), Madurai',
+    shortName: 'MKU Madurai',
+    country: 'India',
+    state: 'Tamil Nadu',
+    city: 'Madurai',
+    type: 'State',
+    website: 'https://mkuniversity.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/8/85/Madurai_Kamaraj_University_logo.jpg',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/a/ad/Madhurai_kamaraj_university_front_view.JPG',
+    description: 'Established in 1966 by an Act of the Tamil Nadu Legislative Assembly and accredited with NAAC A++ Grade (4th Cycle), Madurai Kamaraj University (MKU) is a premier State Public University on a 750-acre campus at Palkalai Nagar, Madurai. Through its Department of Sociology / School of Social Sciences and constituent/affiliated colleges, MKU offers postgraduate, undergraduate, and doctoral programs in Criminology and Criminal Justice Administration, Forensic Science & Criminology, and PG Diploma courses.',
+    coursesOffered: [
+      {
+        name: 'M.Sc. in Criminology and Criminal Justice',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'Bachelor’s degree in any discipline (Science, Arts, Commerce, Law, Social Sciences) from a recognized university with qualifying aggregate marks',
+        estimatedFees: '₹13,860 / year (approx ₹27,720 total for 2 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Criminology, Penology & Victimology',
+          'Forensic Science Fundamentals & Crime Scene Investigation',
+          'Criminal Justice Administration, Police Science & Cyber Law',
+          'Human Rights, Juvenile Justice & Correctional Administration'
+        ]
+      },
+      {
+        name: 'B.Sc. in Forensic Science and Criminology (MKU Affiliated Colleges)',
+        degreeLevel: 'Bachelor',
+        duration: '3 Years',
+        eligibility: '10+2 (Higher Secondary) with Physics, Chemistry, and Biology/Mathematics/Computer Science from a recognized board',
+        estimatedFees: '₹35,000 - ₹65,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Biology, Serology & Crime Scene Management',
+          'Forensic Chemistry, Toxicology & Questioned Documents',
+          'Criminology, Criminal Law & Police Administration'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science and Criminology (MKU Affiliated Colleges)',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science, Chemistry, Botany, Zoology, Biotechnology, Physics, Computer Science, Psychology, or allied Science discipline recognized by Madurai Kamaraj University',
+        estimatedFees: '₹40,000 - ₹75,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Criminalistics, Fingerprint & Document Examination',
+          'Forensic Toxicology, Serology & DNA Analysis',
+          'Cyber Forensics & Criminal Psychology'
+        ]
+      },
+      {
+        name: 'PG Diploma in Criminology and Police Administration',
+        degreeLevel: 'Certificate/Diploma',
+        duration: '1 Year',
+        eligibility: 'Bachelor’s degree in any stream from a recognized university',
+        estimatedFees: '₹8,000 - ₹12,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Police Administration & Investigative Procedures',
+          'Forensic Evidence & Criminal Jurisprudence'
+        ]
+      }
+    ],
+    feesRange: '₹8,000 - ₹75,000 / year',
+    admissionProcess: 'Merit-based Admission & University Counselling conducted by Madurai Kamaraj University (SC/ST Tuition Fee Exemptions as per Govt. of Tamil Nadu norms)',
+    accreditation: 'NAAC A++ Grade | UGC 12(B) & 2(f) State Public University | University with Potential for Excellence (UPE) | NIRF Top 65 University',
+    contactEmail: 'registrar@mkuniversity.ac.in',
+    contactPhone: '+91 452 2458471 / +91 452 2459185',
+    address: 'Palkalai Nagar, Madurai, Tamil Nadu 625021, India',
+    ranking: 'NAAC A++ Accredited | NIRF Ranked #63 University in India',
+    facilities: [
+      'School of Social Sciences Criminology & Criminal Justice Research Unit',
+      'USIC (University Science Instrumentation Centre) & Advanced Genomic/Biological Labs',
+      'Dr. T.P.M. Central Library with Digital Repository & INFLIBNET Access',
+      '750-Acre Palkalai Nagar Campus with 8 Hostels, Health Centre, Post Office & Bank',
+      'Dedicated Placement Cell, Police & Correctional Institutional Field Visit Programs'
+    ],
+    featured: true
+  },
+  {
+    id: 'ajk-college-coimbatore',
+    name: 'AJK College of Arts and Science (AJKCAS), Coimbatore',
+    shortName: 'AJKCAS Coimbatore',
+    country: 'India',
+    state: 'Tamil Nadu',
+    city: 'Coimbatore',
+    type: 'Autonomous',
+    website: 'https://ajkcas.ac.in',
+    logo: 'https://ajkcas.ac.in/wp-content/uploads/2026/09/AJKCollegeOf-Arts-And-Science.webp',
+    bannerImage: 'https://ajkcas.ac.in/wp-content/uploads/2026/03/slider2.jpg',
+    description: 'Established in 2007 at Navakkarai on the Coimbatore–Palakkad National Highway, AJK College of Arts and Science (AJKCAS) is a premier NAAC A+ accredited Autonomous institution affiliated with Bharathiar University, Coimbatore and ISO 21001:2018 certified. Pioneering specialized cyber-forensic education in Tamil Nadu, AJKCAS offers an industry-integrated B.Sc. in Digital and Cyber Forensic Science focused on digital evidence recovery, ethical hacking, network security, malware analysis, crime scene investigation, and cyber law.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Digital and Cyber Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 Years',
+        eligibility: '10+2 (Higher Secondary) or equivalent from a recognized board with Mathematics / Computer Science / Physics / Chemistry / Biology',
+        estimatedFees: '₹60,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Digital Evidence Acquisition, Disk & Mobile Device Forensics',
+          'Ethical Hacking, Vulnerability Assessment & Penetration Testing (VAPT)',
+          'Network Security, Incident Response & Malware Analysis',
+          'Crime Scene Investigation Fundamentals, Cyber Law & IT Act Compliance'
+        ]
+      }
+    ],
+    feesRange: '₹60,000 - ₹1,00,000 / year',
+    admissionProcess: 'Merit-based Admission on 10+2 Qualifying Examination Marks & Institutional Counselling as per Bharathiar University / TANSCHE norms',
+    accreditation: 'NAAC A+ Accredited | Autonomous Institution Affiliated to Bharathiar University | UGC 2(f) & 12(B) | ISO 21001:2018 Certified',
+    contactEmail: 'ajkcas@ajkcas.com',
+    contactPhone: '+91 422 2363400 / +91 90476 96969',
+    address: 'Palakkad Main Road, Navakkarai, Coimbatore, Tamil Nadu 641105, India',
+    ranking: 'NAAC A+ Grade Autonomous College | First Arts & Science College in Tamil Nadu to Pioneer Dedicated Digital & Cyber Forensic Science',
+    facilities: [
+      'Advanced Digital & Cyber Forensic Science Lab with Write-Blockers & Forensic Workstations',
+      'Ethical Hacking, Penetration Testing & Network Security Simulation Lab',
+      'Crime Scene Investigation & Physical Evidence Demonstration Unit',
+      'AR/VR Experiential Learning Studio, Digital Library & Smart Wi-Fi Campus',
+      'Separate Boys & Girls Hostels, College Bus Fleet across Coimbatore & Kerala Border'
+    ],
+    featured: true
+  },
+  {
+    id: 'university-of-delhi',
+    name: 'University of Delhi (Department of Anthropology - Faculty of Science)',
+    shortName: 'Delhi University (DU)',
+    country: 'India',
+    state: 'Delhi',
+    city: 'New Delhi',
+    type: 'Central',
+    website: 'https://www.du.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/b/b6/Delhi_University.svg',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/5/59/Delhiuni.jpg',
+    description: 'Established in 1922 by an Act of the Central Legislative Assembly, the University of Delhi (DU) is one of India’s most prestigious Central Universities and an Institution of Eminence (IoE) accredited with NAAC A++ Grade. Through its renowned Department of Anthropology (Faculty of Science, North Campus) and Sri Guru Tegh Bahadur Khalsa College (for Certificate/Diploma tracks), DU offers a highly sought-after M.Sc. in Forensic Science and Ph.D. research program covering forensic anthropology, dermatoglyphics, DNA profiling, forensic toxicology, ballistics, and questioned documents.',
+    coursesOffered: [
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'Bachelor’s degree in Sciences (B.Sc. in Forensic Science, Anthropology, Chemistry, Physics, Botany, Zoology, Biochemistry, Biophysics, Biotechnology, Genetics, Microbiology, Mathematical Sciences) or B.Pharm / B.Tech / MBBS / BDS from a recognized university with minimum 55% aggregate marks + CUET (PG) Code SCQP13',
+        estimatedFees: '₹20,144 / year (approx ₹40,288 total for 2 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Anthropology, Osteology, Odontology & Facial Reconstruction',
+          'Forensic Biology, Serology, DNA Profiling & Dermatoglyphics',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics',
+          'Questioned Documents, Fingerprint Science, Ballistics & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Anthropology (Forensic Science / Forensic Anthropology Specialization)',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s degree in Forensic Science or Anthropology with minimum 55% aggregate marks + UGC-NET / CSIR-NET / JRF + Department Interview',
+        estimatedFees: '₹12,000 - ₹20,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Skeletal Biology, Somatometry & Human Identification',
+          'Molecular Anthropology, Population Genetics & Forensic DNA Typing',
+          'Dermatoglyphics, Trace Evidence & Crime Scene Reconstruction'
+        ]
+      },
+      {
+        name: 'Certificate Course in Forensic Science (SGTB Khalsa College, DU)',
+        degreeLevel: 'Certificate',
+        duration: '6 Months - 1 Year',
+        eligibility: '10+2 (Senior Secondary) from a recognized board (open to DU undergraduate students and eligible candidates)',
+        estimatedFees: '₹15,000 - ₹20,000 total',
+        mode: 'Part-time',
+        specializations: [
+          'Fundamentals of Criminalistics & Crime Scene Investigation',
+          'Fingerprints, Questioned Documents & Medico-Legal Evidence'
+        ]
+      }
+    ],
+    feesRange: '₹12,000 - ₹20,144 / year',
+    admissionProcess: 'National Testing Agency (NTA) CUET-PG (Paper Code SCQP13) followed by University of Delhi Common Seat Allocation System (CSAS PG) Counselling (approx. 48 seats)',
+    accreditation: 'NAAC A++ Grade (CGPA 3.55) | Institution of Eminence (IoE) | Central University | NIRF Top 10 University in India',
+    contactEmail: 'head@anthro.du.ac.in',
+    contactPhone: '+91 11 27667329 / +91 11 27006900',
+    address: 'Department of Anthropology, Faculty of Science, University of Delhi (North Campus), Hansraj Marg, Delhi 110007, India',
+    ranking: 'NIRF Ranked #6 University in India | QS World Ranked Top Indian Central University | Institution of Eminence',
+    facilities: [
+      'Forensic Science & Forensic Osteology/Anthropology Museum & Laboratories (North Campus)',
+      'DNA Profiling, Molecular Genetics & Serology Research Laboratory',
+      'Questioned Documents, Dermatoglyphics (Fingerprint) & Toxicology Lab',
+      'University Science Instrumentation Centre (USIC) & Central Reference Library',
+      'Historic DU North Campus Hostels, Sports Complex, WUS Health Centre & Metro Access'
+    ],
+    featured: true
+  },
+  {
+    id: 'adamas-university-kolkata',
+    name: 'Adamas University, Kolkata (School of Basic and Applied Sciences)',
+    shortName: 'Adamas University Kolkata',
+    country: 'India',
+    state: 'West Bengal',
+    city: 'Kolkata',
+    type: 'Private',
+    website: 'https://adamasuniversity.ac.in',
+    logo: 'https://ricedigitals3bucket.s3.ap-south-1.amazonaws.com/AUPortalContent/2022/04/21114809/AU-Main-Logof.png',
+    bannerImage: 'https://s3-ap-south-1.amazonaws.com/ricedigitals3bucket/AUPortalContent/2023/11/07154110/ACRE-GREEN-CAMPUS.webp',
+    description: 'Established in 2014 under the Adamas University Act (West Bengal Act IV of 2014) by the RICE Group and accredited with NAAC Grade A, Adamas University is Situated on a 120-acre green campus at Barasat, Kolkata. Its Department of Forensic Science under the School of Basic and Applied Sciences is one of Eastern India’s premier forensic training centers, offering NEP-aligned 4-year B.Sc. (Hons.), 2-year M.Sc., and Ph.D. programs in Forensic Science with dedicated laboratories for crime scene reconstruction, toxicology, DNA forensics, ballistics, and cyber forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '4 Years (NEP 2020)',
+        eligibility: '10+2 (or equivalent) from a recognized board with Physics, Chemistry, and Biology/Mathematics with minimum 50% aggregate marks',
+        estimatedFees: '₹1,15,000 - ₹1,37,000 / year (approx ₹4.60 - ₹5.51 Lakhs total)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & Physical Evidence',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry, Analytical Toxicology & Arson Analysis',
+          'Questioned Documents, Fingerprint Science & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or Bachelor’s degree in Science / Medicine / Engineering / Pharmacy from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹1,17,000 - ₹1,50,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents, Fingerprint Examination & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks + Adamas RET / UGC-NET / CSIR-NET + Interview',
+        estimatedFees: '₹80,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Trace Evidence & Nanoforensics',
+          'Forensic Anthropology, Serology & Crime Scene Reconstruction'
+        ]
+      }
+    ],
+    feesRange: '₹80,000 - ₹1,50,000 / year',
+    admissionProcess: 'Adamas University Admission Test (AUAT) / CUET (UG/PG) / Academic Merit & Personal Interview',
+    accreditation: 'NAAC Grade A Accredited | UGC Recognized (2(f)) | AIU Member | DSIR Recognized SIRO',
+    contactEmail: 'admissions@adamasuniversity.ac.in',
+    contactPhone: '+91 1800 419 7423 / +91 90733 64739',
+    address: 'Adamas Knowledge City, Barasat - Barrackpore Road, Jagannathpur, Kolkata, West Bengal 700126, India',
+    ranking: 'NAAC Grade A Accredited | Premier Private University for Forensic Science in Eastern India',
+    facilities: [
+      'Dedicated Crime Scene Investigation House & Outdoor Simulation Ground',
+      'Forensic Chemistry, Toxicology & Central Instrumentation Facility',
+      'Forensic Biology, Serology, Anthropology & Microscopy Lab',
+      'Questioned Documents, Latent Fingerprint & Ballistics Examination Lab',
+      '120-Acre Smart Campus at Barasat with AC/Non-AC Hostels, Central Library & Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'chaitanya-university-hyderabad',
+    name: 'Chaitanya (Deemed to be University), Hyderabad & Hanamkonda',
+    shortName: 'Chaitanya University Hyderabad',
+    country: 'India',
+    state: 'Telangana',
+    city: 'Hyderabad',
+    type: 'Deemed University',
+    website: 'https://www.chaitanya.edu.in',
+    logo: 'https://www.chaitanya.edu.in/logo-nobg.png',
+    bannerImage: 'https://www.chaitanya.edu.in/images/hero/welcome.jpg',
+    description: 'Established in 1991 and conferred Deemed-to-be-University status under Section 3 of the UGC Act, 1956 by the Ministry of Education, Government of India, Chaitanya (Deemed to be University) operates vibrant campuses in Hyderabad (Himayatnagar, Moinabad) and Hanamkonda (Warangal), Telangana. Under its Faculty of Science, Chaitanya University offers specialized B.Sc. and M.Sc. programs in Forensic Science combining analytical chemistry, molecular biology, toxicology, crime scene management, and digital forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Intermediate) or equivalent in Science stream (Physics, Chemistry, and Biology/Mathematics) from a recognized board with minimum 50% aggregate marks',
+        estimatedFees: '₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence Analysis',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Questioned Documents, Fingerprints & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science, Chemistry, Botany, Zoology, Microbiology, Biochemistry, Biotechnology, Genetics, or Physics from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹1,00,000 - ₹1,20,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemical Sciences & Toxicology',
+          'Forensic Biological Sciences & DNA Typing',
+          'Criminalistics, Document Examination & Digital Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹90,000 - ₹1,20,000 / year',
+    admissionProcess: 'Direct Merit-based Admission / Chaitanya University Entrance & Scholarship Test (Up to 100% Merit Tuition Waivers available)',
+    accreditation: 'Deemed-to-be-University (Section 3 of UGC Act, 1956) | NAAC Grade A Accredited | AICTE & PCI Approved',
+    contactEmail: 'admissions@chaitanya.edu.in',
+    contactPhone: '+91 95427 76666 / +91 870 2455555',
+    address: 'Himayatnagar Village, Moinabad Mandal, Ranga Reddy District, Hyderabad, Telangana 500075 (Also Campus at Kishanpura, Hanamkonda 506001), India',
+    ranking: 'NAAC Grade A Accredited Deemed University in Telangana (Hyderabad & Warangal Campuses)',
+    facilities: [
+      'Forensic Science & Crime Scene Investigation Laboratory',
+      'Advanced Microbiology, Biotechnology, Biochemistry & Analytical Chemistry Labs',
+      'Digital Forensics & High-Performance Computing Laboratories',
+      'Central Digital Library with INFLIBNET & E-Journals',
+      'On-Campus Boys & Girls Hostels, Transport Fleet across Hyderabad & Sports Facilities'
+    ],
+    featured: true
+  },
+  {
+    id: 'rimt-university-punjab',
+    name: 'RIMT University, Mandi Gobindgarh (School of Basic and Applied Sciences)',
+    shortName: 'RIMT University Punjab',
+    country: 'India',
+    state: 'Punjab',
+    city: 'Mandi Gobindgarh',
+    type: 'Private',
+    website: 'https://rimt.ac.in',
+    logo: 'https://rimt.ac.in/wp-content/uploads/2024/01/RIMT-LOGO.jpg',
+    bannerImage: 'https://rimt.ac.in/wp-content/uploads/2026/03/Slider-01.png',
+    description: 'Established under the Punjab State Legislature Act (Punjab Act No. 31 of 2015) and recognized by the UGC, RIMT University is located on the Delhi–Jalandhar National Highway (NH-44) at Mandi Gobindgarh, Fatehgarh Sahib, Punjab. Through its School of Basic and Applied Sciences / Health Sciences, RIMT University offers practical, laboratory-intensive B.Sc., M.Sc., and Ph.D. programs in Forensic Science focusing on crime scene management, forensic toxicology, serology, DNA profiling, ballistics, and questioned documents.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 Years (6 Semesters)',
+        eligibility: '10+2 (Medical or Non-Medical) with Physics, Chemistry, and Biology/Mathematics from a recognized board with minimum 50% aggregate marks (45% for SC/ST/PwD)',
+        estimatedFees: '₹1,15,000 - ₹1,25,000 / year (approx ₹3.50 - ₹3.80 Lakhs total)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry, Narcotics & Toxicology',
+          'Questioned Documents, Fingerprints & Forensic Ballistics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science / Medical / Non-Medical / Life Sciences / B.Pharm / BDS / MBBS or equivalent science degree with minimum 50% aggregate marks (45% for reserved categories)',
+        estimatedFees: '₹1,20,000 / year (₹60,000 / semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents, Fingerprint Science & Cyber Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹1,15,000 - ₹1,25,000 / year',
+    admissionProcess: 'Merit-based Admission on Qualifying Exam Scores / CUET (UG/PG) with up to 30% Merit Tuition Scholarships',
+    accreditation: 'UGC Recognized (2(f)) | AICTE, PCI, BCI & COA Approved | AIU Member | Established under Punjab Govt. Act No. 31 of 2015',
+    contactEmail: 'info@rimt.ac.in',
+    contactPhone: '+91 1800 137 0007 / +91 97812 97547',
+    address: 'Delhi-Jalandhar GT Road (NH-44), Sirhind Side, Mandi Gobindgarh, District Fatehgarh Sahib, Punjab 147301, India',
+    ranking: 'Premier Multidisciplinary Private University in Punjab on NH-44 Corridor',
+    facilities: [
+      'Forensic Science, Crime Scene Investigation & Criminalistics Laboratory',
+      'Forensic Chemistry, Analytical Toxicology & Instrumentation Lab',
+      'Forensic Biology, Serology, Anthropometry & Microscopy Lab',
+      'Questioned Documents, Latent Fingerprint & Ballistics Examination Unit',
+      'Sprawling Wi-Fi Campus with AC/Non-AC Hostels, Multi-Specialty Hospital, Gym & Transport'
+    ],
+    featured: true
+  },
+  {
+    id: 'teerthanker-mahaveer-university-moradabad',
+    name: 'Teerthanker Mahaveer University (TMU), Moradabad (College of Paramedical Sciences)',
+    shortName: 'TMU Moradabad',
+    country: 'India',
+    state: 'Uttar Pradesh',
+    city: 'Moradabad',
+    type: 'Private',
+    website: 'https://www.tmu.ac.in',
+    logo: 'https://www.tmu.ac.in/logo.png',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/b/bb/SE_College_Engg_TMU_Moradabad_Apr25_A7CR_05554.jpg',
+    description: 'Established in 2008 by Act No. 30 of 2008 of the Government of Uttar Pradesh and accredited with the prestigious NAAC Grade A, Teerthanker Mahaveer University (TMU) is situated on a 140-acre campus on NH-9 at Moradabad. Through its College of Paramedical Sciences and integrated 1,000+ bed Teerthanker Mahaveer Medical College & Research Centre, TMU offers NEP-2020 aligned B.Sc. (Hons. / Hons. with Research), M.Sc., and Ph.D. programs in Forensic Science with real-world exposure to medico-legal autopsies, clinical toxicology, crime scene investigation, and FSL internships.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (Honours / Honours with Research)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 in Science stream with Physics, Chemistry, and Biology/Mathematics (PCBM) from a recognized board with minimum 50% aggregate marks',
+        estimatedFees: '₹73,800 / year (₹31,500 tuition + ₹5,400 exam fee per semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & Physical Evidence',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics',
+          'Forensic Biology, Serology, DNA Profiling & Medico-Legal Autopsy Exposure',
+          'Questioned Documents, Fingerprint Analysis, Ballistics & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. in any relevant Science stream from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹75,450 - ₹80,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Pharmacology & Instrumental Analysis',
+          'Forensic Biology, Serology & Molecular Forensics',
+          'Questioned Documents, Fingerprints & Crime Scene Management'
+        ]
+      }
+    ],
+    feesRange: '₹73,800 - ₹80,000 / year',
+    admissionProcess: 'Merit-based Admission on Qualifying Exam Scores / CUET (UG/PG) & University Counselling (Up to 50% Merit & Jain Minority Scholarships)',
+    accreditation: 'NAAC Grade A Accredited | UGC 12(B) & 2(f) Recognized | NMC, BCI, PCI, INC & AICTE Approved | AIU Member',
+    contactEmail: 'admission@tmu.ac.in',
+    contactPhone: '1800 270 1490 / +91 98379 25721',
+    address: 'Delhi Road (NH-9), Bagarpur, Moradabad, Uttar Pradesh 244001, India',
+    ranking: 'NAAC Grade A Accredited | NIRF Innovation Ranked | 140-Acre Medical & Multidisciplinary University Campus',
+    facilities: [
+      'Dedicated Forensic Science, Crime Scene Simulation & Criminalistics Laboratories',
+      '1,000+ Bed Teerthanker Mahaveer Medical College Hospital & Mortuary for Medico-Legal Exposure',
+      'Forensic Toxicology, Serology, Histopathology & Central Diagnostic Laboratories',
+      'Moot Court (College of Law & Legal Studies) for Expert Testimony Training',
+      '140-Acre Residential Campus with Indoor/Outdoor Stadiums, 5 Hostels & Central Digital Library'
+    ],
+    featured: true
+  },
+  {
+    id: 'silver-oak-university-ahmedabad',
+    name: 'Silver Oak University, Ahmedabad (Silver Oak Institute of Science)',
+    shortName: 'Silver Oak University Ahmedabad',
+    country: 'India',
+    state: 'Gujarat',
+    city: 'Ahmedabad',
+    type: 'Private',
+    website: 'https://silveroakuni.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/f/f5/Silver_Oak_University_logo.png',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Campus_Landmark_at_Silver_Oak_University.jpg',
+    description: 'Established in 2019 under the Gujarat Private Universities Act (building on the legacy of Silver Oak Group of Institutes founded in 2009) and accredited by NAAC, Silver Oak University in Gota, Ahmedabad is a rapidly growing urban multidisciplinary university. Through the Silver Oak Institute of Science and College of Computer Application, the university offers industry-focused B.Sc. in Forensic Science and M.Sc. in Cyber Security & Forensic Science with state-of-the-art crime scene, biotechnology, and cyber defense laboratories.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (Hons.)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (HSC) in Science stream (A, B, or AB Group — Physics, Chemistry, and Mathematics/Biology) from GSEB, CBSE, ICSE, or recognized board',
+        estimatedFees: '₹80,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence Analysis',
+          'Forensic Chemistry, Toxicology & Instrumental Methods',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Fingerprints & Digital Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Cyber Security and Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. (Forensic Science / IT / Computer Science / Physics / Chemistry / Electronics / Biotechnology) or BCA / B.E. / B.Tech from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹90,000 - ₹95,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Digital Forensics, Incident Response & Cyber Crime Investigation',
+          'Vulnerability Assessment, Penetration Testing (VAPT) & Network Defense',
+          'Forensic Evidence Preservation, Cryptography & Cyber Law'
+        ]
+      }
+    ],
+    feesRange: '₹80,000 - ₹95,000 / year',
+    admissionProcess: 'Merit-based Admission via Silver Oak University Admission Portal / GUJCET / CUET Scores',
+    accreditation: 'NAAC Accredited | UGC Recognized | AICTE, PCI, INC & BCI Approved | Established under Gujarat Private Universities Act',
+    contactEmail: 'info@silveroakuni.ac.in',
+    contactPhone: '+91 79 66046300 / +91 90990 63464',
+    address: '352/353, Near Bhavik Publications, Opp. Bhagwat Vidyapith, S.G. Highway, Gota, Ahmedabad, Gujarat 382481, India',
+    ranking: 'Leading Industry-Integrated Private University in Ahmedabad, Gujarat',
+    facilities: [
+      'Forensic Science, Crime Scene Investigation & Biotechnology Laboratories',
+      'Advanced Cyber Security, SOC Simulation & Digital Forensics Lab',
+      'Analytical Chemistry, Microbiology & Molecular Diagnostics Facility',
+      'Ignite Incubation Center, Apple Lab, Robotics Center & Central Library',
+      'Prime S.G. Highway Urban Campus in Ahmedabad with Boys & Girls Hostels'
+    ],
+    featured: true
+  },
+  {
+    id: 'kr-mangalam-university-gurugram',
+    name: 'K.R. Mangalam University, Gurugram (School of Basic and Applied Sciences)',
+    shortName: 'K.R. Mangalam University',
+    country: 'India',
+    state: 'Haryana',
+    city: 'Gurugram',
+    type: 'Private',
+    website: 'https://www.krmangalam.edu.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/3/38/K.R._Mangalam_University_logo.svg',
+    bannerImage: 'https://www.krmangalam.edu.in/modules/header/campus/campus.png',
+    description: 'Established in 2013 under the Haryana Private Universities Act and accredited with NAAC Grade A, K.R. Mangalam University (KRMU) is located on a scenic 26-acre campus on Sohna Road, Gurugram (Delhi-NCR). Its School of Basic and Applied Sciences is a major hub for forensic education in North India, offering B.Sc. (Hons. / Hons. with Research) in Forensic Science, 5-year Integrated B.Sc.-M.Sc. in Forensic Science, M.Sc. in Forensic Science, and Ph.D. programs with dedicated crime scene rooms, FSL visits, and cyber forensic training.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons. / Hons. with Research) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 or equivalent examination from any recognized board/university with Physics, Chemistry, Mathematics/Biology (PCM/PCB) with minimum 50% aggregate marks',
+        estimatedFees: '₹1,30,000 - ₹1,45,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & Physical Evidence',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics',
+          'Forensic Biology, Serology, Anthropology & DNA Profiling',
+          'Questioned Documents, Fingerprint Science & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Integrated / Dual Degree B.Sc. - M.Sc. (Forensic Science)',
+        degreeLevel: 'Bachelor',
+        duration: '5 Years (Integrated)',
+        eligibility: '10+2 or equivalent from a recognized board with Science stream (Physics, Chemistry, and Biology/Mathematics) with minimum 50% aggregate marks',
+        estimatedFees: '₹1,45,000 - ₹1,55,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Integrated Criminalistics, Crime Scene Management & Ballistics',
+          'Advanced Forensic Toxicology, Serology & DNA Fingerprinting',
+          'Digital Forensics, Cyber Crime Investigation & Forensic Psychology'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or Bachelor’s degree in any Science stream from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹1,36,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Fingerprints & Digital Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s degree in Forensic Science or allied Science discipline with minimum 55% aggregate marks + KRMU Ph.D. Entrance Test / UGC-NET + Interview',
+        estimatedFees: '₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Trace Evidence, Toxicology & Questioned Document Examination',
+          'Forensic Biology, Wildlife Forensics & Cyber Crime Investigation'
+        ]
+      }
+    ],
+    feesRange: '₹90,000 - ₹1,55,000 / year',
+    admissionProcess: 'K.R. Mangalam University Entrance Examination (KRMUEE) / CUET (UG/PG) followed by Faculty Interaction & Merit Scholarship Evaluation',
+    accreditation: 'NAAC Grade A Accredited | UGC Recognized (2(f)) | AICTE, BCI, PCI, COA & NCTE Approved | AIU Member',
+    contactEmail: 'welcome@krmangalam.edu.in',
+    contactPhone: '+91 93114 11717 / +91 88006 97010',
+    address: 'Sohna Road, Gurugram, Haryana 122103 (Delhi-NCR), India',
+    ranking: 'NAAC Grade A Accredited | Premier Private University for Forensic Science in Gurugram (Delhi-NCR)',
+    facilities: [
+      'Dedicated Forensic Science Lab, Darkroom & Simulated Indoor/Outdoor Crime Scene House',
+      'Forensic Chemistry, Toxicology & Central Instrumentation Facility',
+      'Forensic Biology, Serology, Osteology & Microscopic Analysis Lab',
+      'Cyber Security, Digital Forensics & IOS/AI Development Center',
+      '26-Acre Aravalli Foothills Campus with AC Hostels, Sports Arenas & NCR Bus Connectivity'
+    ],
+    featured: true
+  },
+  {
+    id: 'vikram-university-ujjain',
+    name: 'Vikram University, Ujjain (School of Studies in Forensic Science)',
+    shortName: 'Vikram University Ujjain',
+    country: 'India',
+    state: 'Madhya Pradesh',
+    city: 'Ujjain',
+    type: 'State',
+    website: 'https://vikramuniv.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/8/83/Vikram_University_logo.jpg',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/2/2f/Swarnagate.jpg',
+    description: 'Established in 1957 by an Act of the Madhya Pradesh Legislature and named after the legendary ruler Vikramaditya, Vikram University in Ujjain is a historic NAAC Grade A accredited State Public University. Through its dedicated School of Studies in Forensic Science, the university offers affordable, government-subsidized B.Sc. (Hons.) and M.Sc. programs in Forensic Science with comprehensive training in crime scene investigation, forensic biology, toxicology, ballistics, and questioned documents.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) in Science stream with PCM, PCB, or PCMB from a recognized board with minimum 50% aggregate marks (relaxation for SC/ST/OBC of MP)',
+        estimatedFees: '₹29,960 / year (₹14,980 / semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation & Physical Evidence',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Forensic Chemistry & Analytical Toxicology',
+          'Questioned Documents, Fingerprints & Ballistics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or Bachelor’s degree in any Science discipline (Physics, Chemistry, Biology, Biotechnology, Microbiology, Biochemistry) or B.Pharm/B.Tech with minimum 50% aggregate marks',
+        estimatedFees: '₹43,580 / year (₹21,790 / semester)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Narcotics & Toxicology',
+          'Forensic Biology, Serology & DNA Analysis',
+          'Questioned Documents, Fingerprint Science & Cyber Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹29,960 - ₹43,580 / year',
+    admissionProcess: 'CUET (UG/PG) / MPOnline Vikram University Centralized Merit Counselling (80 Seats in B.Sc. Hons. & 20 Seats in M.Sc. Forensic Science)',
+    accreditation: 'NAAC Grade A Accredited | UGC 12(B) & 2(f) State Government University | Govt. of Madhya Pradesh',
+    contactEmail: 'vuvcujjain@gmail.com',
+    contactPhone: '+91 734 2514270 / +91 734 2514277',
+    address: 'School of Studies in Forensic Science, Vikram University, University Road, Madhav Bhavan, Near Kothi Palace, Ujjain, Madhya Pradesh 456010, India',
+    ranking: 'NAAC Grade A State Public University | Premier Government Forensic Science Program in Malwa Region, MP',
+    facilities: [
+      'School of Studies in Forensic Science Crime Scene & Criminalistics Laboratories',
+      'Forensic Chemistry, Toxicology, Zoology & Biotechnology Research Labs',
+      'Questioned Documents, Fingerprint & Microscopic Examination Facility',
+      'Maharaja Jiwajirao Library (Central Digital Library) & Computer Center',
+      'Historic Campus with 4 Boys Hostels, Girls Hostel, Sports Complex & Health Center'
+    ],
+    featured: true
+  },
+  {
+    id: 'dr-harisingh-gour-vishwavidyalaya-sagar',
+    name: 'Dr. Harisingh Gour Vishwavidyalaya, Sagar (Department of Criminology and Forensic Science)',
+    shortName: 'DHSGSU Sagar (Sagar University)',
+    country: 'India',
+    state: 'Madhya Pradesh',
+    city: 'Sagar',
+    type: 'Central',
+    website: 'https://dhsgsu.edu.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/a/ad/Dr._Hari_Singh_Gour_University_Logo.png',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/9/9b/Entry_gate_of_sagar_university.jpg',
+    description: 'Founded in 1946 by the great jurist, educationist, and philanthropist Sir Dr. Hari Singh Gour (originally as the University of Saugar) and elevated to a Central University in 2009, Dr. Harisingh Gour Vishwavidyalaya in Sagar, Madhya Pradesh is home to India’s oldest and most historic Department of Criminology and Forensic Science (established in 1959). Situated on the scenic 1,312-acre Patharia Hills campus, this pioneering department has trained generations of Directors and Scientists of Central and State Forensic Science Laboratories (CFSLs/SFSLs) and offers highly prestigious, ultra-affordable B.Sc., M.Sc., M.A., and Ph.D. programs.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. / B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 in Science stream (PCM / PCB) from a recognized board with minimum 45% aggregate marks (40% for SC/ST/PwD) + CUET (UG)',
+        estimatedFees: '₹7,500 - ₹8,500 / year (approx ₹22,000 - ₹25,000 total for 3 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence & Criminalistics',
+          'Forensic Chemistry, Narcotics & Analytical Toxicology',
+          'Forensic Biology, Serology, Anthropology & DNA Profiling',
+          'Questioned Documents, Fingerprint Science & Forensic Ballistics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or any relevant Science discipline from a recognized university with minimum 45% aggregate marks (40% for SC/ST/PwD) + CUET (PG)',
+        estimatedFees: '₹18,000 - ₹20,000 / year (approx ₹36,000 - ₹40,000 total for 2 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Ballistics, Physics & Toolmark Examination',
+          'Forensic Toxicology, Chemistry & Instrumental Analysis',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Document Examination & Fingerprint Science'
+        ]
+      },
+      {
+        name: 'M.A. in Criminology',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'Bachelor’s degree in any discipline (B.A. / B.Sc. / B.Com. / LL.B.) from a recognized university with minimum 45% aggregate marks (40% for SC/ST/PwD) + CUET (PG)',
+        estimatedFees: '₹2,800 - ₹3,000 / year (approx ₹5,600 - ₹6,000 total for 2 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Criminological Theories, Penology & Correctional Administration',
+          'Victimology, Juvenile Justice & Police Science',
+          'Criminal Law, Cyber Crime & Forensic Evidence'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science / Criminology',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s degree in Forensic Science or Criminology with minimum 55% aggregate marks + UGC-NET / CSIR-NET / JRF or University Ph.D. Entrance Test + Interview',
+        estimatedFees: '₹12,000 - ₹18,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Ballistics, Toxicology, DNA Forensics & Questioned Documents',
+          'Applied Criminology, Victimology & Criminal Justice Policy'
+        ]
+      }
+    ],
+    feesRange: '₹2,800 - ₹20,000 / year',
+    admissionProcess: 'National Testing Agency (NTA) CUET-UG (for B.Sc.) and CUET-PG (Paper Code SCQP13 for M.Sc. Forensic Science / SCQP10 for M.A. Criminology) followed by Samarth Central University Counselling',
+    accreditation: 'NAAC Grade A+ Accredited | Central University (Act of Parliament, 2009) | Oldest University in Madhya Pradesh (Est. 1946)',
+    contactEmail: 'headcriminology@dhsgsu.edu.in',
+    contactPhone: '+91 7582 265833 / +91 7582 264796',
+    address: 'Department of Criminology and Forensic Science, School of Applied Sciences, Dr. Harisingh Gour Vishwavidyalaya, Patharia Hills, Sagar, Madhya Pradesh 470003, India',
+    ranking: 'India’s Oldest & Most Historic Department of Criminology and Forensic Science (Est. 1959) | Central University',
+    facilities: [
+      'Historic Forensic Ballistics, Firearms Museum & Toolmark Examination Laboratory',
+      'Forensic Toxicology, Chemistry & Sophisticated Analytical Instrument Center (SAIF/CIL)',
+      'Forensic Biology, Serology, Osteology & DNA Profiling Lab',
+      'Questioned Documents, Handwriting, Latent Fingerprint & Photography Darkroom',
+      'Jawaharlal Nehru Central Library (3.5+ Lakh Books) on 1,312-Acre Patharia Hills Campus with Hostels'
+    ],
+    featured: true
+  },
+  {
+    id: 'sangolli-rayanna-first-grade-college-belagavi',
+    name: 'Sangolli Rayanna First Grade Constituent College (SRFGCC), Rani Channamma University, Belagavi',
+    shortName: 'SRFGCC Belagavi (RCUB)',
+    country: 'India',
+    state: 'Karnataka',
+    city: 'Belagavi',
+    type: 'Government',
+    website: 'https://www.srfgcc.ac.in',
+    logo: 'https://wsrv.nl/?url=https://srfgcc.ac.in/assets/img/srfgc-logo.png',
+    bannerImage: 'https://wsrv.nl/?url=https://srfgcc.ac.in/assets/img/index/rcubslider2.jpg',
+    description: 'Sangolli Rayanna First Grade Constituent College (SRFGCC), Belagavi is the premier direct Government Constituent College of Rani Channamma University, Belagavi (RCUB), Karnataka, accredited with NAAC B+ Grade. Named after the legendary freedom fighter Krantiveera Sangolli Rayanna, the college features a dedicated Department of Criminology and Forensic Science offering undergraduate B.Sc. and B.A. degree programs in Criminology and Forensic Science, along with alignment to Rani Channamma University’s postgraduate M.A./M.Sc. in Criminology and Forensic Science.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Criminology and Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (SEP / NEP Karnataka)',
+        eligibility: '10+2 (PUC II / Higher Secondary) in Science stream from Karnataka PU Board or recognized board',
+        estimatedFees: '₹8,000 - ₹15,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Science Fundamentals, Crime Scene Investigation & Physical Evidence',
+          'Forensic Biology, Serology, Dermatoglyphics (Fingerprints) & Questioned Documents',
+          'Criminology, Criminal Law (BNS/BNSS/BSA) & Police Science'
+        ]
+      },
+      {
+        name: 'B.A. in Criminology and Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (SEP / NEP Karnataka)',
+        eligibility: '10+2 (PUC II / Higher Secondary) in Arts, Science, or Commerce stream from a recognized board',
+        estimatedFees: '₹6,000 - ₹12,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Criminology, Penology, Victimology & Juvenile Justice',
+          'Forensic Criminalistics, Fingerprint Examination & Crime Scene Management',
+          'Police Administration, Human Rights & Correctional Systems'
+        ]
+      },
+      {
+        name: 'M.A. / M.Sc. in Criminology and Forensic Science (Rani Channamma University PG Department)',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.A. / B.Sc. with Criminology / Forensic Science or allied degree from a recognized university with minimum 45% aggregate marks (40% for SC/ST/Cat-I of Karnataka)',
+        estimatedFees: '₹12,000 - ₹22,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Criminalistics, Toxicology, Ballistics & Questioned Documents',
+          'Advanced Criminology, Cyber Crime & Criminal Justice Administration'
+        ]
+      }
+    ],
+    feesRange: '₹6,000 - ₹22,000 / year',
+    admissionProcess: 'Merit-based Admission via Unified University & College Management System (UUCMS), Government of Karnataka & Rani Channamma University Counselling',
+    accreditation: 'NAAC Accredited | Constituent College of Rani Channamma University, Belagavi (State Public University, Govt. of Karnataka) | UGC Recognized',
+    contactEmail: 'principalsrfgcc@gmail.com',
+    contactPhone: '+91 831 2472225 / +91 831 2565201',
+    address: 'CTS No. 4832/B2, Near Kolhapur Circle, NH-4 Bypass Road, Mahantesh Nagar / Sadashiv Nagar, Belagavi, Karnataka 590016, India',
+    ranking: 'Premier Government Constituent College of Rani Channamma University for Criminology & Forensic Science in North Karnataka',
+    facilities: [
+      'Department of Criminology and Forensic Science Practical & Fingerprint Lab',
+      'Questioned Documents, Crime Scene Modelling & Forensic Photography Equipment',
+      'Digital Library with INFLIBNET N-LIST, Computer Labs & Smart Classrooms',
+      'NSS, NCC, Red Cross Units, Sports Ground & Karnataka Govt. SC/ST/OBC Scholarship Cell',
+      'Direct Academic Access to Rani Channamma University (Vidya Sangama) PG Research Facilities'
+    ],
+    featured: true
+  },
+  {
+    id: 'skd-university-hanumangarh',
+    name: 'Shri Khushal Das University (SKD University)',
+    shortName: 'SKDU Hanumangarh',
+    country: 'India',
+    state: 'Rajasthan',
+    city: 'Hanumangarh',
+    type: 'Private',
+    website: 'https://www.skduniversity.com',
+    logo: 'https://www.skduniversity.com/assets/skdImages/download.webp',
+    bannerImage: 'https://www.skduniversity.com/assets/skdImages/skdu-full-image.png',
+    description: 'Shri Khushal Das University (SKD University / SKDU), Hanumangarh is a prominent UGC-recognized state private university in Rajasthan established by Shri Guru Gobind Singh Charitable Trust under the Shri Khushal Das University, Pilibanga, Act, 2018 (Act No. 11 of 2018 of the Rajasthan State Legislature). Spread across an 82-acre eco-friendly campus on Suratgarh Road, Hanumangarh Junction, the Faculty of Basic & Applied Sciences (Department of Forensic Science) offers NEP 2020-aligned B.Sc. (Hons./Research), M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, actively hosting the National Forensic Science Week and providing hands-on crime scene investigation, questioned document examination, fingerprint analysis, forensic toxicology, and cyber forensics training.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons. / Hons. with Research) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Senior Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from RBSE, CBSE, or recognized board with minimum 45%-50% aggregate marks',
+        estimatedFees: '₹53,500 - ₹70,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence & Forensic Photography',
+          'Questioned Documents, Handwriting & Latent Fingerprint Examination',
+          'Forensic Chemistry, Toxicology, Serology & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science, Physical Sciences, Life Sciences, Chemistry, Zoology, Botany, Biotechnology, or allied science stream from a recognized university',
+        estimatedFees: '₹97,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Narcotics & Analytical Toxicology',
+          'Forensic Biology, DNA Fingerprinting & Serology',
+          'Questioned Documents, Dermatoglyphics & Digital Forensics'
+        ]
+      },
+      {
+        name: 'PG Diploma / Certificate in Forensic Science (Cyber Forensics, Questioned Documents & Fingerprint Analysis)',
+        degreeLevel: 'Diploma',
+        duration: '6 Months - 1 Year',
+        eligibility: '10+2 / Graduation in Science, Law, Criminology, or Computer Applications from a recognized institution',
+        estimatedFees: '₹18,500 - ₹78,500 (Total Program Fee)',
+        mode: 'Full-time',
+        specializations: [
+          'Cyber Forensics & Digital Evidence Recovery',
+          'Questioned Document Examination & Fingerprint Profiling'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks (50% for reserved categories) + SKDU Research Entrance Test / UGC-NET + Interview',
+        estimatedFees: '₹75,000 - ₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Environmental Forensics',
+          'Questioned Documents, Biometrics & Crime Scene Reconstruction'
+        ]
+      }
+    ],
+    feesRange: '₹53,500 - ₹97,000 / year',
+    admissionProcess: 'SKDU Admission Portal Application / CUET (UG/PG) / Merit-based Counselling & Document Verification',
+    accreditation: 'UGC Recognized (Section 2(f)) | Established under Rajasthan State Legislature Act No. 11 of 2018 | AIU Member | BCI, PCI & NCTE Approved',
+    contactEmail: 'info@skduniversity.com',
+    contactPhone: '+91 88751 12211 / +91 97838 29999',
+    address: 'Chak 7 STG, Khushal Nagar, Near Toll Plaza, Suratgarh Road, Hanumangarh Junction, Rajasthan 335801, India',
+    ranking: 'ASSOCHAM Awarded Best Emerging University in North India | Leading Forensic Science Hub in Northern Rajasthan',
+    facilities: [
+      'Department of Forensic Science Crime Scene & Physical Evidence Lab',
+      'Forensic Chemistry, Toxicology, Biology & Fingerprint Examination Laboratories',
+      'Annual National Forensic Science Week Workshops & Mock Crime Scene Drills',
+      '82-Acre Wi-Fi Campus with Central Library, International Standard Sports Complex, Shooting Range & Hostels'
+    ],
+    featured: true
+  },
+  {
+    id: 'anjaneya-university-raipur',
+    name: 'Anjaneya University',
+    shortName: 'Anjaneya University Raipur',
+    country: 'India',
+    state: 'Chhattisgarh',
+    city: 'Raipur',
+    type: 'Private',
+    website: 'https://www.anjaneyauniversity.ac.in',
+    logo: 'https://www.anjaneyauniversity.ac.in/uploads/51ba570fe68fc088e0a942bdf8700cdce7eb8b1d/1677909673favicons.png',
+    bannerImage: 'https://www.anjaneyauniversity.ac.in/uploads/51ba570fe68fc088e0a942bdf8700cdce7eb8b1d/1778652004AJ.webp',
+    description: 'Anjaneya University, Raipur is a dynamic UGC-recognized state private university in Chhattisgarh established under the Chhattisgarh Private Universities (Establishment and Operation) Act and sponsored by SBA Education Society. Located on a sprawling 25-acre modern green campus at Vidhan Sabha Road, Naradha, Raipur, its Faculty of Science (Department of Forensic Science) offers industry-oriented B.Sc., M.Sc., and Ph.D. programs in Forensic Science featuring dedicated crime scene simulation zones, forensic chemistry and toxicology labs, fingerprint and questioned document analysis, and forensic biology research.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from CGBSE, CBSE, or recognized board with minimum 45% aggregate marks',
+        estimatedFees: '₹44,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Management, Evidence Collection & Reconstruction',
+          'Forensic Chemistry, Toxicology & Trace Evidence Analysis',
+          'Questioned Documents, Fingerprint Science & Forensic Biology'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry, Biology, Biotechnology, Microbiology, Physics, or allied sciences from a recognized university with minimum 45%-50% aggregate marks',
+        estimatedFees: '₹46,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Narcotics & Instrumental Chemical Profiling',
+          'Forensic Biology, Serology & DNA Analysis',
+          'Questioned Documents, Ballistics & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science / Applied Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks + Anjaneya University Research Entrance Test / UGC-NET + Interview',
+        estimatedFees: '₹65,000 - ₹80,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Analytical Chemistry',
+          'Forensic Serology, Genetics & Criminalistics'
+        ]
+      }
+    ],
+    feesRange: '₹44,000 - ₹80,000 / year',
+    admissionProcess: 'Direct Merit-based Admission / Anjaneya University Admission Portal & Personal Counselling',
+    accreditation: 'UGC Recognized (Section 2(f)) | Chhattisgarh Private University Regulatory Commission (CGPURC) Approved | BCI, PCI & AICTE Approved',
+    contactEmail: 'info@anjaneyauniversity.ac.in',
+    contactPhone: '+91 88897 22225 / +91 95993 29228',
+    address: 'Knowledge Village Naradha, Near Vidhan Sabha Road, Raipur, Chhattisgarh 493111, India',
+    ranking: 'Leading Emerging Multidisciplinary Private University for Forensic & Applied Sciences in Chhattisgarh',
+    facilities: [
+      'Department of Forensic Science Crime Scene Investigation & Criminalistics Lab',
+      'Forensic Chemistry, Toxicology, Biology & Fingerprint Examination Labs',
+      'Central Digital Library, Moot Court Hall, Computer Center & Innovation Cell',
+      '25-Acre Wi-Fi Enabled Campus with Separate Boys & Girls Hostels, Transport & Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'bharti-vishwavidyalaya-durg',
+    name: 'Bharti Vishwavidyalaya, Durg',
+    shortName: 'Bharti Vishwavidyalaya Durg',
+    country: 'India',
+    state: 'Chhattisgarh',
+    city: 'Durg',
+    type: 'Private',
+    website: 'https://bhartiuniversity.org',
+    logo: 'https://wsrv.nl/?url=bhartiuniversity.org/img/logo.webp',
+    bannerImage: 'https://wsrv.nl/?url=bhartiuniversity.org/img/campus_main.webp',
+    description: 'Bharti Vishwavidyalaya, Durg is a UGC-recognized state private university in Chhattisgarh established in 2021 under the Chhattisgarh Private Universities (Establishment and Operation) (Amendment) Act, 2021 (Act No. 13 of 2021). Located at Chandkhuri on Balod Road in the twin-city educational hub of Durg-Bhilai, its Faculty of Science offers comprehensive undergraduate, postgraduate, and doctoral programs in Forensic Science with hands-on practical training in crime scene investigation, forensic biology, serology, toxicology, fingerprint examination, and questioned document verification.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from CGBSE, CBSE, or recognized board with minimum 45% aggregate marks',
+        estimatedFees: '₹35,000 - ₹50,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence & Forensic Photography',
+          'Forensic Biology, Serology & Fingerprint Analysis',
+          'Forensic Chemistry, Toxicology & Questioned Documents'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry, Botany, Zoology, Microbiology, Biotechnology, Physics, or allied sciences from a recognized university',
+        estimatedFees: '₹50,000 - ₹60,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Toxicology & Trace Evidence',
+          'Forensic Serology, DNA Profiling & Biological Evidence',
+          'Questioned Documents, Fingerprints & Forensic Ballistics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science / Applied Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks + Bharti Vishwavidyalaya Ph.D. Entrance Test / UGC-NET + Interview',
+        estimatedFees: '₹65,000 - ₹80,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology & Chemical Instrumentation',
+          'Forensic Biology & Criminalistics'
+        ]
+      }
+    ],
+    feesRange: '₹35,000 - ₹80,000 / year',
+    admissionProcess: 'Merit-based Admission / Bharti Vishwavidyalaya Entrance & Counselling Portal',
+    accreditation: 'UGC Recognized (Section 2(f)) | Chhattisgarh Private University Regulatory Commission (CGPURC) Approved | AIU Member | PCI, BCI, AICTE & NCTE Approved',
+    contactEmail: 'info@bhartiuniversity.org',
+    contactPhone: '+91 62322 21101 / +91 97555 83333',
+    address: 'Pulgaon Chowk, Balod Road, Chandkhuri, Durg, Chhattisgarh 491001, India',
+    ranking: 'Major Multidisciplinary Private University in the Durg-Bhilai Education Hub of Chhattisgarh',
+    facilities: [
+      'Forensic Science & Criminalistics Practical Laboratories',
+      'Forensic Chemistry, Biology, Microbiology & Instrumentation Labs',
+      'Central Library with Digital E-Journals, Smart Classrooms & Moot Court',
+      'Lush Green Campus with Hostels, Fleet of Buses across Durg-Bhilai-Raipur & Sports Grounds'
+    ],
+    featured: true
+  },
+  {
+    id: 'renaissance-university-indore',
+    name: 'Renaissance University, Indore',
+    shortName: 'RU Indore',
+    country: 'India',
+    state: 'Madhya Pradesh',
+    city: 'Indore',
+    type: 'Private',
+    website: 'https://renaissance.ac.in',
+    logo: 'https://renaissance.ac.in/favicon.png',
+    bannerImage: 'https://renaissance.ac.in/_next/static/media/campus_one.039zbmagumowj.jpg',
+    description: 'Renaissance University, Indore is a premier UGC-recognized state private university in Madhya Pradesh established in 2017 under the Madhya Pradesh Niji Vishwavidyalaya (Sthapana Avam Sanchalan) Adhiniyam. Situated on a lush green campus at Gram Revti behind Aurobindo Hospital on Sanwer-Ujjain Road in Indore, the School of Science (Department of Forensic Science) offers industry-aligned B.Sc. and M.Sc. programs in Forensic Science combining crime scene reconstruction, forensic toxicology, questioned document examination, latent fingerprint analysis, cyber forensics, and criminal law moots with its renowned School of Law.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from MPBSE, CBSE, or recognized board with minimum 50% aggregate marks (45% for reserved categories)',
+        estimatedFees: '₹63,000 - ₹65,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Forensic Photography & Physical Evidence',
+          'Forensic Chemistry, Toxicology & Questioned Documents',
+          'Forensic Biology, Serology, Fingerprint Science & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. in Chemistry, Physics, Botany, Zoology, Biotechnology, Microbiology, or allied sciences from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹65,000 - ₹75,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Narcotics & Chemical Analysis',
+          'Questioned Documents, Handwriting & Fingerprint Examination',
+          'Forensic Biology, DNA Profiling & Digital Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹63,000 - ₹75,000 / year',
+    admissionProcess: 'Merit-based Admission & Personal Interview via Renaissance University Admissions Cell, Indore',
+    accreditation: 'UGC Recognized (Section 2(f)) | M.P. Private University Regulatory Commission (MPPURC) Approved | BCI, PCI & INC Approved',
+    contactEmail: 'admissions@renaissance.ac.in',
+    contactPhone: '+91 89820 42211 / +91 731 4262100',
+    address: 'Gram Revti, Behind Aurobindo Hospital, Sanwer-Ujjain Road, Indore, Madhya Pradesh 453555, India',
+    ranking: 'Leading Experiential Learning & Multidisciplinary Private University in Central India (Indore)',
+    facilities: [
+      'School of Science Forensic Criminalistics, Toxicology & Biology Laboratories',
+      'Crime Scene Simulation & Evidence Documentation Studio',
+      'Interdisciplinary Moot Court & Medico-Legal Jurisprudence Training with School of Law',
+      'Central Library, Amphitheatre, Harvard-Style Lecture Theatres, Sports Arena & Hostels'
+    ],
+    featured: true
+  },
+  {
+    id: 'ts-mishra-university-lucknow',
+    name: 'T.S. Mishra University',
+    shortName: 'TSMU Lucknow',
+    country: 'India',
+    state: 'Uttar Pradesh',
+    city: 'Lucknow',
+    type: 'Private',
+    website: 'https://tsm.edu.in',
+    logo: 'https://tsm.edu.in/assets/images/logo.png',
+    bannerImage: 'https://tsm.edu.in/assets/images/slider/drone.jpeg',
+    description: 'T.S. Mishra University (TSMU), Lucknow is a premier multidisciplinary medical and professional state private university in Uttar Pradesh established under the Uttar Pradesh Private Universities Act (U.P. Act No. 12 of 2019 / 2023 notification) and recognized by the UGC and NMC. Anchored by the 900+ bed T.S. Mishra Medical College & Hospital opposite Amausi Railway Station in Lucknow, the university provides a major clinical and medico-legal advantage for its B.Sc. and M.Sc. Forensic Science and MD Forensic Medicine programs through real-world autopsy exposure, clinical toxicology, forensic serology, histopathology, and crime scene investigation.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Intermediate) in Science stream (Physics, Chemistry, Biology / Mathematics) from UP Board, CBSE, ISC, or recognized board with minimum 50% aggregate marks',
+        estimatedFees: '₹59,000 - ₹92,500 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Forensic Medicine & Medico-Legal Autopsy Basics',
+          'Forensic Chemistry, Clinical Toxicology & Pharmacology',
+          'Forensic Biology, Serology, Questioned Documents & Fingerprint Analysis'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. in Life Sciences, Chemistry, Biotechnology, Microbiology, Medical Lab Technology, or allied sciences with minimum 50% aggregate marks',
+        estimatedFees: '₹75,000 - ₹95,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Analytical Chemistry & Poison Identification',
+          'Forensic Serology, Molecular Biology & DNA Profiling',
+          'Questioned Documents, Fingerprints & Medico-Legal Criminalistics'
+        ]
+      },
+      {
+        name: 'MD in Forensic Medicine & Toxicology (T.S. Mishra Medical College)',
+        degreeLevel: 'Master',
+        duration: '3 Years',
+        eligibility: 'MBBS degree recognized by NMC + NEET-PG qualification & UP NEET PG Counselling',
+        estimatedFees: '₹10,00,000 - ₹14,00,000 / year (As per UP DGME Fee Fixation)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Pathology, Medico-Legal Autopsy & Clinical Forensic Medicine',
+          'Medical Jurisprudence, Clinical & Analytical Toxicology'
+        ]
+      }
+    ],
+    feesRange: '₹59,000 - ₹95,000 / year (B.Sc./M.Sc.)',
+    admissionProcess: 'TSMU Entrance / Merit-based Admission & Counselling (NEET-PG for MD Forensic Medicine)',
+    accreditation: 'UGC Recognized | NMC (National Medical Commission) Approved Medical College | PCI, BCI & INC Approved | Govt. of Uttar Pradesh Private University',
+    contactEmail: 'info@tsm.edu.in',
+    contactPhone: '+91 92199 95224 / +91 75700 09937',
+    address: 'Opposite Amausi Railway Station, Anora, Kanpur Road, Lucknow, Uttar Pradesh 226008, India',
+    ranking: 'Premier Medical & Applied Sciences University in Lucknow Capital Region with 900+ Bed Teaching Hospital',
+    facilities: [
+      'Department of Forensic Science & Department of Forensic Medicine & Toxicology Labs',
+      '900+ Bed T.S. Mishra Medical College & Hospital with Mortuary, Autopsy & Clinical Toxicology Units',
+      'Central Molecular Biology, Serology, Histopathology & Analytical Instrumentation Labs',
+      'Central Digital Library, AC Lecture Theatres, Hostels & Campus Metro/Airport Connectivity'
+    ],
+    featured: true
+  },
+  {
+    id: 'shri-davara-university-raipur',
+    name: 'Shri Davara University',
+    shortName: 'SDU Raipur',
+    country: 'India',
+    state: 'Chhattisgarh',
+    city: 'Raipur',
+    type: 'Private',
+    website: 'https://sdu.ac.in',
+    logo: 'https://sdu.ac.in/wp-content/themes/new/assets/SDU-NEW-LOGO.jpg',
+    bannerImage: 'https://sdu.ac.in/wp-content/uploads/2026/05/slider1-1.webp',
+    description: 'Shri Davara University (SDU), Raipur is a UGC-recognized state private university in Chhattisgarh established under the Chhattisgarh Private Universities Act. Located at Atal Nagar (Naya Raipur) / Siltara region of Raipur, the Faculty of Science & Technology offers NEP 2020-aligned B.Sc. (Plain / Hons. / Hons. with Research) and M.Sc. programs in Forensic Science designed to train students in crime scene management, physical evidence analysis, forensic chemistry, toxicology, questioned documents, fingerprint science, and digital forensics at an affordable fee structure.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Plain / Hons. / Hons. with Research) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from CGBSE, CBSE, or recognized board',
+        estimatedFees: '₹37,000 - ₹42,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Evidence Collection & Reconstruction',
+          'Forensic Chemistry, Toxicology & Biological Serology',
+          'Questioned Documents, Fingerprint Examination & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. in Chemistry, Zoology, Botany, Biotechnology, Microbiology, Physics, or allied sciences from a recognized university',
+        estimatedFees: '₹45,000 - ₹52,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Narcotics & Instrumental Analysis',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Fingerprints & Digital Evidence'
+        ]
+      }
+    ],
+    feesRange: '₹37,000 - ₹52,000 / year',
+    admissionProcess: 'Direct Merit-based Admission & Personal Counselling via Shri Davara University Admission Cell, Raipur',
+    accreditation: 'UGC Recognized (Section 2(f)) | Chhattisgarh Private University Regulatory Commission (CGPURC) Approved | AIU Member',
+    contactEmail: 'info@sdu.ac.in',
+    contactPhone: '+91 771 3500600 / +91 93039 03111',
+    address: 'NH-30, Bilaspur Road, Dhaneli, Raipur, Chhattisgarh 492001, India',
+    ranking: 'Fast-Growing Multidisciplinary State Private University in Raipur, Chhattisgarh',
+    facilities: [
+      'Forensic Science & Criminalistics Laboratory',
+      'Chemistry, Biology, Biotechnology & Computer Forensics Labs',
+      'Central Library, Smart Classrooms, Seminar Halls & Skill Development Cell',
+      'Campus Transport across Raipur-Bilaspur Road, Hostels & Sports Facilities'
+    ],
+    featured: true
+  },
+  {
+    id: 'apg-shimla-university',
+    name: 'Alakh Prakash Goyal Shimla University',
+    shortName: 'APG Shimla University',
+    country: 'India',
+    state: 'Himachal Pradesh',
+    city: 'Shimla',
+    type: 'Private',
+    website: 'https://www.agu.edu.in',
+    logo: 'https://www.agu.edu.in/assets/img/main/logo.png',
+    bannerImage: 'https://www.agu.edu.in/assets/img/main/about_hp.jpg',
+    description: 'Alakh Prakash Goyal (APG) Shimla University is a premier UGC-recognized state private university located in the scenic Himalayan foothills of Mehli-Shoghi Bypass Road, Shimla, Himachal Pradesh. Established in 2012 under the APG Shimla University (Establishment and Regulation) Act, 2012 (Act No. 20 of 2012 of the Himachal Pradesh State Legislature), its School of Sciences (Department of Forensic Science) offers well-established B.Sc., M.Sc., and Ph.D. programs in Forensic Science with practical training in crime scene management, forensic toxicology, serology, DNA profiling, questioned document examination, fingerprint analysis, and cyber forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Senior Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from HPBOSE, CBSE, ICSE, or recognized board with minimum 50% aggregate marks (45% for reserved categories)',
+        estimatedFees: '₹63,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Forensic Photography & Physical Evidence',
+          'Forensic Chemistry, Toxicology & Trace Evidence Analysis',
+          'Forensic Biology, Serology, Questioned Documents & Fingerprint Examination'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry, Botany, Zoology, Biotechnology, Microbiology, Biochemistry, Physics, or allied sciences with minimum 50% aggregate marks',
+        estimatedFees: '₹70,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Narcotics & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents, Latent Fingerprints & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks + APG Shimla University Ph.D. Entrance Test / UGC-NET + Interview',
+        estimatedFees: '₹80,000 - ₹95,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Environmental Forensics & High-Altitude Taphonomy',
+          'Questioned Documents, Biometrics & Digital Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹63,000 - ₹95,000 / year',
+    admissionProcess: 'Merit-based Admission / CUET (UG/PG) / APG Shimla University Counselling & Document Verification',
+    accreditation: 'UGC Recognized (Section 2(f)) | Himachal Pradesh Private Educational Institutions Regulatory Commission (HPPEIRC) Approved | AIU Member | BCI & AICTE Approved',
+    contactEmail: 'info@agu.edu.in',
+    contactPhone: '+91 98166 55555 / +91 94180 65151',
+    address: 'Mehli-Shoghi Bypass Road, Near Panthaghati, Shimla, Himachal Pradesh 171013, India',
+    ranking: 'NAAC Accredited | Best Private University in the Hills (ASSOCHAM) | Top Private University for Forensic Science in Himachal Pradesh',
+    facilities: [
+      'Department of Forensic Science Crime Scene, Toxicology & Biology Laboratories',
+      'Questioned Documents, Fingerprint Comparison & Ballistics Study Units',
+      'Moot Court Hall (School of Legal Studies), Central Library & High-Speed Wi-Fi Campus',
+      'Scenic Himalayan Residential Hostels, Fleet of Buses across Shimla & Sports Arena'
+    ],
+    featured: true
+  },
+  {
+    id: 'indian-academy-group-of-institutions-bengaluru',
+    name: 'Indian Academy Group of Institutions (Indian Academy Degree College Autonomous)',
+    shortName: 'IAGI / IADC Bengaluru',
+    country: 'India',
+    state: 'Karnataka',
+    city: 'Bengaluru',
+    type: 'Private',
+    website: 'https://indianacademy.edu.in',
+    logo: 'https://indianacademy.edu.in/wp-content/uploads/2025/08/IAGI_Main-1.svg',
+    bannerImage: 'https://indianacademy.edu.in/wp-content/uploads/2025/07/IADC-A.webp',
+    description: 'Indian Academy Group of Institutions (Indian Academy Degree College - Autonomous), Bengaluru is a prestigious NAAC \'A++\' Grade accredited autonomous institution established in 1994 by the Indian Academy Education Trust and permanently affiliated to Bengaluru North University / Bangalore University (recognized by UGC under Sections 2(f) and 12(B)). Located in Hennur Cross, Kalyan Nagar, Bengaluru, the institution offers sought-after undergraduate programs in Forensic Science alongside Chemistry, Genetics, Biotechnology, and Microbiology, backed by DSIR-recognized research centres, modern analytical instrumentation, and crime scene investigation labs.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science / B.Sc. (Forensic Science, Chemistry & Genetics)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (SEP / NEP Karnataka Autonomous Curriculum)',
+        eligibility: '10+2 (PUC II / Higher Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from a recognized board with minimum 50% aggregate marks',
+        estimatedFees: '₹55,000 - ₹87,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Criminalistics & Physical Evidence',
+          'Forensic Genetics, Molecular Biology, Serology & DNA Profiling',
+          'Forensic Chemistry, Analytical Toxicology, Questioned Documents & Fingerprints'
+        ]
+      },
+      {
+        name: 'M.Sc. in Applied Genetics / Biochemistry / Microbiology (Forensic & Molecular Diagnostics Electives)',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Life Sciences, Forensic Science, Genetics, Biotechnology, Chemistry, or Microbiology with minimum 50% aggregate marks',
+        estimatedFees: '₹65,000 - ₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Molecular Diagnostics, Human Genetics & DNA Fingerprinting',
+          'Analytical Biochemistry, Toxicology & Microbial Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹55,000 - ₹90,000 / year',
+    admissionProcess: 'Merit-based Admission & Personal Interview via Indian Academy Admissions Office, Hennur Cross, Bengaluru',
+    accreditation: 'NAAC \'A++\' Grade Accredited (CGPA 3.56) | UGC Autonomous Status (Sections 2(f) & 12(B)) | Affiliated to Bengaluru North University / Bangalore University | DSIR Recognized SIRO',
+    contactEmail: 'admissions@indianacademy.edu.in',
+    contactPhone: '+91 80 6745 8900 / +91 99011 10757',
+    address: 'Hennur Main Road, Hennur Cross, Kalyan Nagar, Bengaluru, Karnataka 560043, India',
+    ranking: 'NAAC \'A++\' Grade Autonomous College | Ranked Among Top Science Colleges in Bengaluru & India',
+    facilities: [
+      'Dedicated Forensic Science, Chemistry, Genetics & Molecular Biology Laboratories',
+      'DSIR-Recognized Scientific & Industrial Research Organization (SIRO) Instrumentation Facility',
+      'Digital Library with INFLIBNET, E-Journals, Smart Auditoriums & Incubation Centre (IAIF)',
+      'Separate Boys & Girls Hostels in Kalyan Nagar, International Student Cell & Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'assam-royal-global-university-guwahati',
+    name: 'The Assam Royal Global University',
+    shortName: 'RGU Guwahati',
+    country: 'India',
+    state: 'Assam',
+    city: 'Guwahati',
+    type: 'Private',
+    website: 'https://rgu.ac',
+    logo: 'https://rgu.ac/new-web/assets/img/logo/light-logo.png',
+    bannerImage: 'https://rgu.ac/new-web/assets/index/about/about-web.png',
+    description: 'The Assam Royal Global University (RGU), Guwahati is Northeast India\'s premier NAAC \'A+\' Grade accredited state private university established under The Assam Royal Global University Act, 2013 (notified by the Government of Assam) and recognized by the UGC under Section 2(f). Located on a sprawling, state-of-the-art 30+ acre campus on NH-37 at Betkuchi, Guwahati, its Royal School of Life Sciences / Applied & Pure Sciences (Department of Forensic Science) offers comprehensive B.Sc. (Hons./Research), M.Sc., and Ph.D. programs in Forensic Science with specialized laboratories for crime scene reconstruction, questioned documents, latent fingerprints, forensic toxicology, serology, and digital forensics.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons. / Hons. with Research) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) in Science stream from AHSEC, CBSE, ISC, or recognized board with minimum 50% aggregate marks (45% for SC/ST/OBC)',
+        estimatedFees: '₹85,000 / year (Tuition Fee)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Forensic Photography & Physical Evidence',
+          'Forensic Chemistry, Toxicology & Trace Evidence Analysis',
+          'Forensic Biology, Serology, Questioned Documents & Fingerprint Science'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. in Zoology, Botany, Chemistry, Physics, Biotechnology, Microbiology, Biochemistry, or allied sciences with minimum 50% aggregate marks (45% for reserved categories)',
+        estimatedFees: '₹85,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Narcotics & Analytical Toxicology',
+          'Forensic Biology, Serology & DNA Profiling',
+          'Questioned Documents, Dermatoglyphics, Ballistics & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science or allied Science discipline with minimum 55% aggregate marks + RGU Ph.D. Entrance Test / UGC-NET + Personal Interview',
+        estimatedFees: '₹80,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Wildlife Forensics & Ethno-Botanical Poisons of Northeast India',
+          'Forensic Genetics, Questioned Documents & Digital Forensics'
+        ]
+      }
+    ],
+    feesRange: '₹85,000 - ₹1,00,000 / year',
+    admissionProcess: 'RGU Selection Process (R-JEE / CUET Score / Qualifying Exam Merit + Personal Interview)',
+    accreditation: 'NAAC \'A+\' Grade Accredited | UGC Recognized (Section 2(f)) | AIU Member | Established under Assam Act No. XXIII of 2013',
+    contactEmail: 'admissions@rgu.ac',
+    contactPhone: '+91 361 2270100 / +91 88765 08000',
+    address: 'Betkuchi, Opposite Tirupati Balaji Temple, NH-37, Guwahati, Assam 781035, India',
+    ranking: 'NAAC \'A+\' Grade | #1 Multidisciplinary Private University in Northeast India',
+    facilities: [
+      'Royal School of Sciences Forensic Criminalistics, Toxicology & Serology Laboratories',
+      'Simulated Crime Scene Investigation Room, Fingerprint & Questioned Document Unit',
+      'Central Instrumentation Facility, Moot Court (Royal School of Law) & Digital Library',
+      'Centrally Air-Conditioned Academic Blocks, Luxury On-Campus Hostels, Indoor Stadium & Medical Centre'
+    ],
+    featured: true
+  },
+  {
+    id: 'sgc-college-mohali',
+    name: 'SGC College, Mohali (Saraswati Group of Colleges)',
+    shortName: 'SGC Gharuan Mohali',
+    country: 'India',
+    state: 'Punjab',
+    city: 'Mohali',
+    type: 'Private',
+    website: 'https://sgcollege.edu.in',
+    logo: 'https://sgcollege.edu.in/wp-content/uploads/2024/03/SGC-Logo-1024x295.png',
+    bannerImage: 'https://sgcollege.edu.in/wp-content/uploads/2026/01/img-001.png',
+    description: 'SGC College, Mohali (Saraswati Group of Colleges), located on the Chandigarh-Ludhiana National Highway (NH-05) at Gharuan, Mohali, Punjab, is a premier NAAC-accredited multidisciplinary educational group established in 2004 and affiliated to Maharaja Ranjit Singh Punjab Technical University (MRSPTU) / I.K. Gujral Punjab Technical University (IKGPTU). SGC Mohali offers a career-focused B.Sc. in Forensic Science with both regular and industry-integrated tracks (including hands-on clinical, paramedical, and forensic laboratory internships) covering crime scene investigation, forensic toxicology, serology, fingerprint analysis, and questioned documents.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science (Regular & Industry-Integrated Track)',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 (Senior Secondary) in Science stream (Physics, Chemistry, Biology / Mathematics) from PSEB, CBSE, ICSE, or recognized board with minimum 50% aggregate marks (45% for SC/ST)',
+        estimatedFees: '₹70,000 - ₹1,10,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Management, Physical Evidence & Forensic Photography',
+          'Forensic Chemistry, Clinical Toxicology & Drug Profiling',
+          'Forensic Biology, Serology, Fingerprint Examination & Questioned Documents'
+        ]
+      },
+      {
+        name: 'B.Sc. Medical Laboratory Science (MLS) & Allied Forensic Diagnostics',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years',
+        eligibility: '10+2 with Physics, Chemistry, and Biology from a recognized board',
+        estimatedFees: '₹65,000 - ₹85,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Clinical Biochemistry, Hematology, Serology & Molecular Diagnostics',
+          'Histopathology, Toxicology & Medico-Legal Sample Handling'
+        ]
+      }
+    ],
+    feesRange: '₹65,000 - ₹1,10,000 / year',
+    admissionProcess: 'Merit-based Admission & Counselling via Saraswati Group of Colleges (SGC) Admissions Cell, Gharuan, Mohali',
+    accreditation: 'NAAC Accredited | Affiliated to MRSPTU Bathinda / IKGPTU Jalandhar | Approved by AICTE, PCI, INC & Govt. of Punjab',
+    contactEmail: 'admissions@sgcollege.edu.in',
+    contactPhone: '+91 90410 02246 / +91 90567 20703',
+    address: 'Chandigarh-Ludhiana Highway (NH-05), Gharuan, Kharar, Distt. SAS Nagar (Mohali), Punjab 140413, India',
+    ranking: 'Leading Paramedical, Allied Health & Forensic Science Institution in Chandigarh-Mohali Tricity',
+    facilities: [
+      'Forensic Science, Clinical Biochemistry, Microbiology & Pathology Laboratories',
+      'Simulated Crime Scene Investigation & Evidence Processing Equipment',
+      'On-Campus 150+ Bed Saraswati Hospital for Medico-Legal & Clinical Exposure',
+      'Wi-Fi Campus on NH-05 with AC Classrooms, Central Library, Hostels & Tricity Bus Fleet'
+    ],
+    featured: true
+  },
+  {
+    id: 'himachal-pradesh-university-shimla',
+    name: 'Himachal Pradesh University, Shimla',
+    shortName: 'HPU Shimla',
+    country: 'India',
+    state: 'Himachal Pradesh',
+    city: 'Shimla',
+    type: 'State',
+    website: 'https://hpuniv.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/d/d8/Himachal_Pradesh_University_Shimla_Logo.svg',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/b/b9/Entrance_of_HPU.jpg',
+    description: 'Himachal Pradesh University (HPU), Shimla is the premier state public university of Himachal Pradesh, established on 22 July 1970 by an Act of the Himachal Pradesh Legislative Assembly and accredited with NAAC \'A\' Grade. Situated on the picturesque 200-acre Summer Hill campus in Shimla, its dedicated Department of Forensic Science offers highly sought-after postgraduate (M.Sc.) and doctoral (Ph.D.) programs in Forensic Science with low public-university fees, intensive laboratory work in forensic chemistry, toxicology, questioned documents, fingerprint science, forensic biology, and collaborations with State Forensic Science Laboratory (SFSL) Junga, Shimla.',
+    coursesOffered: [
+      {
+        name: 'M.Sc. in Forensic Science (Department of Forensic Science)',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. (Medical / Non-Medical) with Chemistry, Physics, Botany, Zoology, Biotechnology, Microbiology, or Biochemistry from a recognized university with minimum 50% aggregate marks (45% for SC/ST)',
+        estimatedFees: '₹12,000 - ₹28,000 / year (Subsidized State University Fee; ₹40,000 - ₹55,000 / year for Self-Financing seats)',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Chemistry, Toxicology & Instrumental Methods of Analysis',
+          'Questioned Documents, Fingerprint Science & Physical Criminalistics',
+          'Forensic Biology, Serology, DNA Profiling & Cyber Forensics'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'M.Sc. in Forensic Science with minimum 55% aggregate marks (50% for SC/ST/OBC) + HPU Ph.D. Entrance Test / UGC-NET / CSIR-NET + Interview',
+        estimatedFees: '₹15,000 - ₹25,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Trace Evidence & Questioned Document Examination',
+          'Forensic Biology, Wildlife Forensics & Himalayan Crime Scene Taphonomy'
+        ]
+      }
+    ],
+    feesRange: '₹12,000 - ₹55,000 / year',
+    admissionProcess: 'HPU Postgraduate Entrance Test (HPU-MAT / Entrance Exam) & Centralized Merit Counselling by Department of Forensic Science, HPU Shimla',
+    accreditation: 'NAAC \'A\' Grade Accredited | State Public University (Govt. of Himachal Pradesh Act of 1970) | UGC Recognized (Sections 2(f) & 12(B)) | AIU Member',
+    contactEmail: 'vc@hpuniv.ac.in',
+    contactPhone: '+91 177 2830912 / +91 177 2833555',
+    address: 'Summer Hill, Shimla, Himachal Pradesh 171005, India',
+    ranking: 'NAAC \'A\' Grade | #1 Premier State Public University in Himachal Pradesh',
+    facilities: [
+      'Department of Forensic Science Criminalistics, Toxicology & Biology Laboratories at Summer Hill',
+      'Academic & Training Collaboration with State Forensic Science Laboratory (SFSL), Junga, Shimla',
+      'University Central Library with INFLIBNET, High-Performance Computer Centre & Instrumentation Centre',
+      '200-Acre Scenic Summer Hill Campus (Adjacent to Summer Hill Railway Station) with 13 Hostels & Auditorium'
+    ],
+    featured: true
   }
 ];
 
@@ -5992,6 +7674,95 @@ const SLUG_ALIASES: Record<string, string> = {
   'shivaji-science-college': 'shri-shivaji-science-college-amravati',
   'gh-raisoni': 'gh-raisoni-nagpur',
   'ghrstu': 'gh-raisoni-nagpur',
+  'ghrua': 'gh-raisoni-amravati',
+  'ghru-amravati': 'gh-raisoni-amravati',
+  'g-h-raisoni-university-amravati': 'gh-raisoni-amravati',
+  'invertis': 'invertis-university-bareilly',
+  'invertis-university': 'invertis-university-bareilly',
+  'invertis-bareilly': 'invertis-university-bareilly',
+  'bhu': 'banaras-hindu-university-varanasi',
+  'bhu-varanasi': 'banaras-hindu-university-varanasi',
+  'banaras-hindu-university': 'banaras-hindu-university-varanasi',
+  'kashi-hindu-vishwavidyalaya': 'banaras-hindu-university-varanasi',
+  'iilm': 'iilm-university-greater-noida',
+  'iilm-university': 'iilm-university-greater-noida',
+  'iilm-gurugram': 'iilm-university-greater-noida',
+  'iilm-greater-noida': 'iilm-university-greater-noida',
+  'mku': 'madurai-kamaraj-university',
+  'mku-madurai': 'madurai-kamaraj-university',
+  'madurai-kamaraj-university-madurai': 'madurai-kamaraj-university',
+  'ajk': 'ajk-college-coimbatore',
+  'ajkcas': 'ajk-college-coimbatore',
+  'ajk-college-of-arts-and-science': 'ajk-college-coimbatore',
+  'ajk-college-of-arts-and-science-coimbatore': 'ajk-college-coimbatore',
+  'du': 'university-of-delhi',
+  'delhi-university': 'university-of-delhi',
+  'uod': 'university-of-delhi',
+  'mdu': 'maharshi-dayanand-university-rohtak',
+  'mdu-rohtak': 'maharshi-dayanand-university-rohtak',
+  'maharshi-dayanand-university': 'maharshi-dayanand-university-rohtak',
+  'adamas': 'adamas-university-kolkata',
+  'adamas-university': 'adamas-university-kolkata',
+  'chaitanya': 'chaitanya-university-hyderabad',
+  'chaitanya-university': 'chaitanya-university-hyderabad',
+  'chaitanya-deemed-to-be-university': 'chaitanya-university-hyderabad',
+  'rimt': 'rimt-university-punjab',
+  'rimt-university': 'rimt-university-punjab',
+  'rimt-mandi-gobindgarh': 'rimt-university-punjab',
+  'tmu': 'teerthanker-mahaveer-university-moradabad',
+  'tmu-moradabad': 'teerthanker-mahaveer-university-moradabad',
+  'teerthanker-mahaveer-university': 'teerthanker-mahaveer-university-moradabad',
+  'silver-oak': 'silver-oak-university-ahmedabad',
+  'silver-oak-university': 'silver-oak-university-ahmedabad',
+  'krmu': 'kr-mangalam-university-gurugram',
+  'kr-mangalam': 'kr-mangalam-university-gurugram',
+  'kr-mangalam-university': 'kr-mangalam-university-gurugram',
+  'k-r-mangalam-university': 'kr-mangalam-university-gurugram',
+  'vikram-university': 'vikram-university-ujjain',
+  'dhsgsu': 'dr-harisingh-gour-vishwavidyalaya-sagar',
+  'sagar-university': 'dr-harisingh-gour-vishwavidyalaya-sagar',
+  'dr-harisingh-gour-university': 'dr-harisingh-gour-vishwavidyalaya-sagar',
+  'dr-harisingh-gour-vishwavidyalaya': 'dr-harisingh-gour-vishwavidyalaya-sagar',
+  'srfgcc': 'sangolli-rayanna-first-grade-college-belagavi',
+  'srfgcc-belagavi': 'sangolli-rayanna-first-grade-college-belagavi',
+  'sangolli-rayanna-college': 'sangolli-rayanna-first-grade-college-belagavi',
+  'sangolli-rayanna-first-grade-constituent-college': 'sangolli-rayanna-first-grade-college-belagavi',
+  'rcub-belagavi': 'sangolli-rayanna-first-grade-college-belagavi',
+  'krcu-belagavi': 'sangolli-rayanna-first-grade-college-belagavi',
+  'skdu': 'skd-university-hanumangarh',
+  'skd-university': 'skd-university-hanumangarh',
+  'shri-khushal-das-university': 'skd-university-hanumangarh',
+  'anjaneya': 'anjaneya-university-raipur',
+  'anjaneya-university': 'anjaneya-university-raipur',
+  'bharti-vishwavidyalaya': 'bharti-vishwavidyalaya-durg',
+  'bharti-university': 'bharti-vishwavidyalaya-durg',
+  'bharti-university-durg': 'bharti-vishwavidyalaya-durg',
+  'renaissance-university': 'renaissance-university-indore',
+  'ru-indore': 'renaissance-university-indore',
+  'tsmu': 'ts-mishra-university-lucknow',
+  'ts-mishra-university': 'ts-mishra-university-lucknow',
+  't-s-mishra-university': 'ts-mishra-university-lucknow',
+  'shri-davara-university': 'shri-davara-university-raipur',
+  'davara-university': 'shri-davara-university-raipur',
+  'sdu-raipur': 'shri-davara-university-raipur',
+  'apg-shimla': 'apg-shimla-university',
+  'alakh-prakash-goyal-shimla-university': 'apg-shimla-university',
+  'agu-shimla': 'apg-shimla-university',
+  'iagi': 'indian-academy-group-of-institutions-bengaluru',
+  'iadc': 'indian-academy-group-of-institutions-bengaluru',
+  'indian-academy-degree-college': 'indian-academy-group-of-institutions-bengaluru',
+  'indian-academy-group-of-institutions': 'indian-academy-group-of-institutions-bengaluru',
+  'rgu': 'assam-royal-global-university-guwahati',
+  'rgu-guwahati': 'assam-royal-global-university-guwahati',
+  'royal-global-university': 'assam-royal-global-university-guwahati',
+  'the-assam-royal-global-university': 'assam-royal-global-university-guwahati',
+  'sgc': 'sgc-college-mohali',
+  'sgc-mohali': 'sgc-college-mohali',
+  'saraswati-group-of-colleges': 'sgc-college-mohali',
+  'saraswati-group-of-colleges-mohali': 'sgc-college-mohali',
+  'hpu': 'himachal-pradesh-university-shimla',
+  'hpu-shimla': 'himachal-pradesh-university-shimla',
+  'himachal-pradesh-university': 'himachal-pradesh-university-shimla',
   'nims': 'nims-university-jaipur',
   'nims-university': 'nims-university-jaipur',
   'nims-jaipur': 'nims-university-jaipur',
@@ -6078,6 +7849,7 @@ export async function fetchColleges(): Promise<College[]> {
     
     const fetched: College[] = [];
     const seenIds = new Set<string>();
+    const missingFromFirestore: College[] = [];
 
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
@@ -6122,10 +7894,20 @@ export async function fetchColleges(): Promise<College[]> {
         }
       }
 
-      const preferSampleAssets =
-        (canonicalId === 'nsit-ifscs-ahmedabad' || canonicalId === 'sanskriti-university-mathura') &&
+      const isOutdatedRruAssets =
+        canonicalId.startsWith('rru-') &&
         sampleFallback &&
-        (!data.logo || String(data.logo).includes('nsitgurukul.com') || String(data.logo).startsWith('/images/colleges/'));
+        (data.logo !== sampleFallback.logo || data.bannerImage !== sampleFallback.bannerImage);
+
+      if (isOutdatedRruAssets && sampleFallback) {
+        missingFromFirestore.push(sampleFallback);
+      }
+
+      const preferSampleAssets =
+        Boolean(isOutdatedRruAssets) ||
+        ((canonicalId === 'nsit-ifscs-ahmedabad' || canonicalId === 'sanskriti-university-mathura') &&
+        sampleFallback &&
+        (!data.logo || String(data.logo).includes('nsitgurukul.com') || String(data.logo).startsWith('/images/colleges/')));
 
       fetched.push({
         id: canonicalId,
@@ -6156,7 +7938,6 @@ export async function fetchColleges(): Promise<College[]> {
     });
 
     // Include any verified directory colleges not yet persisted in Firestore (unless deleted by Admin)
-    const missingFromFirestore: College[] = [];
     for (const sample of SAMPLE_COLLEGES) {
       const sampleIdLower = sample.id.toLowerCase().trim();
       const sampleCanonical = SLUG_ALIASES[sampleIdLower] || sampleIdLower;
@@ -6225,6 +8006,10 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         return null;
       }
       const sampleFallback = SAMPLE_COLLEGES.find(s => s.id.toLowerCase() === docSnap.id.toLowerCase());
+      const useSampleRruAssets =
+        docSnap.id.toLowerCase().startsWith('rru-') &&
+        sampleFallback &&
+        (data.logo !== sampleFallback.logo || data.bannerImage !== sampleFallback.bannerImage);
       return {
         id: docSnap.id,
         name: data.name || sampleFallback?.name || '',
@@ -6233,9 +8018,9 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         state: data.state || sampleFallback?.state || '',
         city: data.city || sampleFallback?.city || '',
         type: data.type || sampleFallback?.type || 'Government',
-        website: data.website || sampleFallback?.website || '',
-        logo: data.logo || sampleFallback?.logo || '',
-        bannerImage: data.bannerImage || sampleFallback?.bannerImage || '',
+        website: (useSampleRruAssets && sampleFallback) ? sampleFallback.website : (data.website || sampleFallback?.website || ''),
+        logo: (useSampleRruAssets && sampleFallback) ? sampleFallback.logo : (data.logo || sampleFallback?.logo || ''),
+        bannerImage: (useSampleRruAssets && sampleFallback) ? sampleFallback.bannerImage : (data.bannerImage || sampleFallback?.bannerImage || ''),
         description: data.description || sampleFallback?.description || '',
         coursesOffered: (Array.isArray(data.coursesOffered) && data.coursesOffered.length > 0) ? data.coursesOffered : (sampleFallback?.coursesOffered || []),
         feesRange: data.feesRange || sampleFallback?.feesRange || '',

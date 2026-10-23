@@ -18,10 +18,10 @@ const DIRECTORY_FILTERS_KEY = 'forenclue_colleges_directory_filters';
 const COMPARE_COLLEGES_KEY = 'forenclue_compare_colleges';
 
 const FALLBACK_CAMPUS_BANNERS = [
-  'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
-  'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
-  'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200',
-  'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&q=80&w=1200',
+  'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=75&w=640',
+  'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=75&w=640',
+  'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=75&w=640',
+  'https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&q=75&w=640',
 ];
 
 function getFallbackBannerForCollege(id: string): string {
@@ -272,7 +272,7 @@ function buildCollegeSearchIndex(college: College): string {
   return `${normalizeSearchText(rawParts)} ${normalizeAbbrevText(rawParts)}`;
 }
 
-// Resilient Banner Image with automatic fallback
+// Resilient Banner Image with automatic fallback, lightweight sizing, and skeleton shimmer
 function CollegeBannerImage({
   college,
   className,
@@ -281,30 +281,52 @@ function CollegeBannerImage({
   className?: string;
 }) {
   const fallbackSrc = useMemo(() => getFallbackBannerForCollege(college.id), [college.id]);
-  const initialSrc = college.bannerImage || fallbackSrc;
-  const [imgSrc, setImgSrc] = useState<string>(initialSrc);
-
-  useEffect(() => {
-    setImgSrc(college.bannerImage || fallbackSrc);
+  
+  // Downscale Unsplash URLs for directory thumbnails to prevent downloading massive full-res images
+  const optimizedSrc = useMemo(() => {
+    const raw = college.bannerImage || fallbackSrc;
+    if (raw && raw.includes('images.unsplash.com')) {
+      return raw.replace(/w=\d+/, 'w=640').replace(/q=\d+/, 'q=75');
+    }
+    return raw;
   }, [college.bannerImage, fallbackSrc]);
 
+  const [imgSrc, setImgSrc] = useState<string>(optimizedSrc);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setImgSrc(optimizedSrc);
+    setIsLoaded(false);
+  }, [optimizedSrc]);
+
   return (
-    <img
-      src={imgSrc}
-      alt={`${college.name} campus`}
-      loading="lazy"
-      referrerPolicy="no-referrer"
-      onError={() => {
-        if (imgSrc !== fallbackSrc) {
-          setImgSrc(fallbackSrc);
-        }
-      }}
-      className={className}
-    />
+    <div className="relative w-full h-full overflow-hidden bg-slate-900">
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 animate-pulse" />
+      )}
+      <img
+        src={imgSrc}
+        alt={`${college.name} campus`}
+        loading="lazy"
+        decoding="async"
+        referrerPolicy="no-referrer"
+        onLoad={() => setIsLoaded(true)}
+        onError={() => {
+          if (imgSrc !== fallbackSrc) {
+            setImgSrc(fallbackSrc);
+          }
+        }}
+        className={cn(
+          className,
+          'transition-opacity duration-300',
+          isLoaded ? 'opacity-100' : 'opacity-0'
+        )}
+      />
+    </div>
   );
 }
 
-// Resilient University Logo with automatic monogram fallback
+// Resilient University Logo with automatic monogram fallback and async decoding
 function CollegeLogoBadge({
   college,
   size = 'md',
@@ -351,6 +373,7 @@ function CollegeLogoBadge({
         src={college.logo}
         alt={`${college.shortName || college.name} logo`}
         loading="lazy"
+        decoding="async"
         referrerPolicy="no-referrer"
         onError={() => setHasError(true)}
         className="w-full h-full object-contain"
@@ -368,6 +391,8 @@ const QUICK_SEARCH_TOPICS = [
   { label: 'Questioned Documents', query: 'Questioned Documents' },
 ];
 
+const BATCH_SIZE = 12;
+
 export default function Colleges() {
   const { id } = useParams<{ id?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -381,6 +406,8 @@ export default function Colleges() {
   const [selectedCollege, setSelectedCollege] = useState<College | null>(null);
   const [highlightedCollegeId, setHighlightedCollegeId] = useState<string | null>(null);
   const [activeCourseDegreeTab, setActiveCourseDegreeTab] = useState<string>('All');
+  const [visibleCount, setVisibleCount] = useState<number>(BATCH_SIZE);
+  const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
   const lastTargetIdRef = useRef<string | null>(null);
 
   const [savedCollegeIds, setSavedCollegeIds] = useState<string[]>(() => {
@@ -833,6 +860,45 @@ export default function Colleges() {
     sortBy,
   ]);
 
+  // Slice visible colleges for instant, lightweight DOM rendering
+  const visibleColleges = useMemo(() => {
+    return filteredColleges.slice(0, visibleCount);
+  }, [filteredColleges, visibleCount]);
+
+  // Reset visible batch count to BATCH_SIZE whenever filter or search conditions change
+  useEffect(() => {
+    setVisibleCount(BATCH_SIZE);
+  }, [
+    searchQuery,
+    selectedCountry,
+    selectedState,
+    selectedCity,
+    selectedType,
+    selectedDegree,
+    featuredOnly,
+    savedOnly,
+    sortBy,
+  ]);
+
+  // Progressive loading intersection observer for smooth, infinite scroll
+  useEffect(() => {
+    if (visibleCount >= filteredColleges.length) return;
+    const sentinel = loadMoreSentinelRef.current;
+    if (!sentinel) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount((prev) => Math.min(filteredColleges.length, prev + BATCH_SIZE));
+        }
+      },
+      { rootMargin: '350px 0px' }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [visibleCount, filteredColleges.length]);
+
   const recordReturnCollege = useCallback((collegeId: string) => {
     lastTargetIdRef.current = collegeId;
     try {
@@ -904,6 +970,10 @@ export default function Colleges() {
     }
 
     const resolvedId = matchedInFiltered?.id || matchedInAll?.id || returnCollegeId;
+    const targetIdx = filteredColleges.findIndex(c => c.id === resolvedId);
+    if (targetIdx >= 0 && targetIdx >= visibleCount) {
+      setVisibleCount(Math.min(filteredColleges.length, Math.ceil((targetIdx + 1) / BATCH_SIZE) * BATCH_SIZE));
+    }
     const cardDomId = `college-card-${resolvedId}`;
 
     const scrollToCard = () => {
@@ -1634,7 +1704,7 @@ export default function Colleges() {
       />
 
       {/* Hero Banner Header */}
-      <section className="relative py-10 sm:py-16 lg:py-24 bg-surface border-b border-black/10 dark:border-white/10 overflow-hidden">
+      <section className="relative py-8 sm:py-14 lg:py-20 landscape:py-6 bg-surface border-b border-black/10 dark:border-white/10 overflow-hidden">
         {/* Layered University, Campus & City Ambient Background Animations */}
         <div className="absolute inset-0 pointer-events-none select-none overflow-hidden" aria-hidden="true">
           {/* Architectural dot & coordinate blueprint grid */}
@@ -1654,7 +1724,7 @@ export default function Colleges() {
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="absolute -top-24 -right-20 w-72 h-72 sm:w-[28rem] sm:h-[28rem] rounded-full bg-gradient-to-br from-warning/25 via-cyan-500/15 to-transparent blur-3xl"
+            className="absolute -top-24 -right-20 w-72 h-72 sm:w-[28rem] sm:h-[28rem] rounded-full bg-gradient-to-br from-warning/25 via-cyan-500/15 to-transparent blur-2xl transform-gpu pointer-events-none"
           />
 
           {/* Smooth drifting aurora orb 2 - Bottom Left Amber/Gold */}
@@ -1670,7 +1740,7 @@ export default function Colleges() {
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="absolute -bottom-24 -left-20 w-72 h-72 sm:w-[30rem] sm:h-[30rem] rounded-full bg-gradient-to-tr from-amber-500/25 via-orange-400/15 to-transparent blur-3xl"
+            className="absolute -bottom-24 -left-20 w-72 h-72 sm:w-[30rem] sm:h-[30rem] rounded-full bg-gradient-to-tr from-amber-500/25 via-orange-400/15 to-transparent blur-2xl transform-gpu pointer-events-none"
           />
 
           {/* Smooth breathing center spotlight behind title */}
@@ -1684,15 +1754,15 @@ export default function Colleges() {
               repeat: Infinity,
               ease: 'easeInOut',
             }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 sm:w-[48rem] h-40 sm:h-56 rounded-full bg-gradient-to-r from-amber-500/15 via-warning/20 to-amber-400/15 blur-3xl"
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 sm:w-[48rem] h-40 sm:h-56 rounded-full bg-gradient-to-r from-amber-500/15 via-warning/20 to-amber-400/15 blur-2xl transform-gpu pointer-events-none"
           />
 
           {/* University Crest & Academic Coat-of-Arms Watermark Ring Behind Title */}
-          <div className="absolute top-[42%] sm:top-[44%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[290px] h-[290px] sm:w-[500px] sm:h-[500px] lg:w-[640px] lg:h-[640px] opacity-25 dark:opacity-20">
+          <div className="absolute top-[42%] sm:top-[44%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[290px] h-[290px] sm:w-[500px] sm:h-[500px] lg:w-[640px] lg:h-[640px] opacity-25 dark:opacity-20 pointer-events-none select-none">
             {/* Outer rotating academic degree compass ring */}
             <motion.svg
               viewBox="0 0 400 400"
-              className="w-full h-full text-warning"
+              className="w-full h-full text-warning transform-gpu"
               animate={{ rotate: 360 }}
               transition={{ duration: 75, repeat: Infinity, ease: 'linear' }}
             >
@@ -1708,7 +1778,7 @@ export default function Colleges() {
             {/* Inner counter-rotating laurel & university emblem ring */}
             <motion.svg
               viewBox="0 0 400 400"
-              className="absolute inset-0 w-full h-full text-amber-500"
+              className="absolute inset-0 w-full h-full text-amber-500 transform-gpu"
               animate={{ rotate: -360 }}
               transition={{ duration: 55, repeat: Infinity, ease: 'linear' }}
             >
@@ -1723,7 +1793,7 @@ export default function Colleges() {
             viewBox="0 0 1440 420"
             fill="none"
             preserveAspectRatio="xMidYMax slice"
-            className="absolute inset-x-0 bottom-0 w-full h-full max-h-[420px] opacity-35 dark:opacity-30"
+            className="absolute inset-x-0 bottom-0 w-full h-full max-h-[420px] opacity-35 dark:opacity-30 hidden sm:block pointer-events-none select-none"
           >
             <defs>
               <linearGradient id="campusSkylineGrad" x1="0" y1="0" x2="1440" y2="0" gradientUnits="userSpaceOnUse">
@@ -2668,8 +2738,8 @@ export default function Colleges() {
               </div>
             ) : (
               /* College Cards Grid */
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6" style={{ overflowAnchor: 'none' }}>
-                {filteredColleges.map((college) => {
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6" style={{ overflowAnchor: 'none' }}>
+                {visibleColleges.map((college) => {
                   const isSaved = savedCollegeIds.includes(college.id);
                   const isCompared = compareCollegeIds.includes(college.id);
                   const isHighlighted = highlightedCollegeId === college.id;
@@ -2681,10 +2751,10 @@ export default function Colleges() {
                       key={college.id}
                       id={`college-card-${college.id}`}
                       data-college-id={college.id}
-                      initial={{ opacity: 0, y: 18 }}
+                      initial={{ opacity: 0, y: 14 }}
                       whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: '-20px' }}
-                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      viewport={{ once: true, margin: '20px' }}
+                      transition={{ duration: 0.35, ease: 'easeOut' }}
                       className={cn(
                         'group bg-surface border rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-warning/30 transition-all flex flex-col cursor-pointer scroll-mt-24 sm:scroll-mt-28',
                         isHighlighted
@@ -2696,7 +2766,7 @@ export default function Colleges() {
                       onClick={() => handleOpenDetails(college)}
                     >
                       {/* Banner / Cover Header */}
-                      <div className="relative h-40 sm:h-44 bg-crust overflow-hidden">
+                      <div className="relative h-36 sm:h-44 bg-crust overflow-hidden">
                         <CollegeBannerImage
                           college={college}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -2857,6 +2927,48 @@ export default function Colleges() {
                     </motion.article>
                   );
                 })}
+
+                {/* Progressive Loading Sentinel & Quick Batch Controls */}
+                {visibleCount < filteredColleges.length && (
+                  <div
+                    ref={loadMoreSentinelRef}
+                    className="col-span-full pt-4 pb-8 space-y-4"
+                  >
+                    <div className="bg-surface border border-black/5 dark:border-white/10 rounded-2xl p-4 sm:p-6 text-center space-y-3 shadow-xs">
+                      <div className="flex items-center justify-between text-xs font-bold text-text-muted">
+                        <span>
+                          Showing <strong className="text-text-main">{visibleColleges.length}</strong> of{' '}
+                          <strong className="text-warning">{filteredColleges.length}</strong> colleges
+                        </span>
+                        <span className="font-mono text-warning">
+                          {Math.round((visibleColleges.length / filteredColleges.length) * 100)}%
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-gradient-to-r from-amber-500 to-warning rounded-full transition-all duration-300"
+                          style={{ width: `${(visibleColleges.length / filteredColleges.length) * 100}%` }}
+                        />
+                      </div>
+                      <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => setVisibleCount((prev) => Math.min(filteredColleges.length, prev + BATCH_SIZE))}
+                          className="px-5 py-2.5 rounded-xl bg-warning text-crust font-black text-xs uppercase tracking-wider shadow-md hover:bg-warning/90 transition-all cursor-pointer flex items-center gap-2 min-h-[42px]"
+                        >
+                          <span>Load Next {Math.min(BATCH_SIZE, filteredColleges.length - visibleCount)} Colleges</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setVisibleCount(filteredColleges.length)}
+                          className="px-4 py-2.5 rounded-xl bg-background border border-black/10 dark:border-white/10 text-text-main hover:border-warning text-xs font-bold transition-all cursor-pointer min-h-[42px]"
+                        >
+                          <span>Show All ({filteredColleges.length})</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
