@@ -75,6 +75,8 @@ const SITE_ORIGIN = 'https://forenclue.in';
 const MAX_SOCIAL_IMAGE_BYTES = 5 * 1024 * 1024;
 const DEFAULT_IMAGE =
   'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
+const COLLEGES_OG_IMAGE =
+  'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png';
 
 const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dynamic'>> = {
   '/': {
@@ -128,7 +130,19 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
   '/colleges': {
     title: 'Forensic Science Colleges | ForenClue',
     description: 'Discover forensic science colleges, courses, admissions information, and academic pathways.',
-    image: DEFAULT_IMAGE,
+    image: COLLEGES_OG_IMAGE,
+    imageType: 'image/png',
+    imageWidth: 1200,
+    imageHeight: 630,
+    type: 'website',
+  },
+  '/college': {
+    title: 'Forensic Science Colleges | ForenClue',
+    description: 'Discover forensic science colleges, courses, admissions information, and academic pathways.',
+    image: COLLEGES_OG_IMAGE,
+    imageType: 'image/png',
+    imageWidth: 1200,
+    imageHeight: 630,
     type: 'website',
   },
   '/podcast': {

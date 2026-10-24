@@ -64,15 +64,23 @@ export function SEO({
     }
   }
 
-  // Optimize Blogger and Google User Content image parameters to deliver s1200 sizes for social crawlers
+  // Optimize Blogger and Google User Content image parameters to deliver high-res sizes for social crawlers
   if (ogImg && ogImg.includes('googleusercontent.com')) {
-    const pathRegex = /\/s\d+(?:-[a-zA-Z0-9_-]+)*\//;
-    if (pathRegex.test(ogImg)) {
-      ogImg = ogImg.replace(pathRegex, '/s1200/');
+    const pathRegex = /\/s(\d+)(?:-[a-zA-Z0-9_-]+)*\//;
+    const match = ogImg.match(pathRegex);
+    if (match) {
+      const size = parseInt(match[1], 10);
+      if (size < 1200) {
+        ogImg = ogImg.replace(pathRegex, '/s1200/');
+      }
     } else {
-      const queryRegex = /=s\d+(?:-[a-zA-Z0-9_-]+)*/;
-      if (queryRegex.test(ogImg)) {
-        ogImg = ogImg.replace(queryRegex, '=s1200');
+      const queryRegex = /=s(\d+)(?:-[a-zA-Z0-9_-]+)*/;
+      const queryMatch = ogImg.match(queryRegex);
+      if (queryMatch) {
+        const size = parseInt(queryMatch[1], 10);
+        if (size < 1200) {
+          ogImg = ogImg.replace(queryRegex, '=s1200');
+        }
       }
     }
   }

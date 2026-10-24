@@ -1761,12 +1761,12 @@ async function startServer() {
           summary = 'View earned forensic certifications, achievement badges, community contributions & active enrollment records.';
           image = '/images/og/profile.png';
         }
-        else if (cleanPath === '/colleges') {
-          title = 'Forensic Science Colleges & Universities Directory | ForenClue';
-          summary = 'Explore top accredited universities, National Forensic Sciences University (NFSU) campuses, government institutes, and private colleges offering B.Sc., M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, Cyber Forensics, and Criminology.';
+        else if (cleanPath === '/colleges' || cleanPath === '/college') {
+          title = 'Forensic Science Colleges | ForenClue';
+          summary = 'Discover forensic science colleges, courses, admissions information, and academic pathways.';
           image = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png';
         }
-        else if (cleanPath.startsWith('/colleges/')) {
+        else if (cleanPath.startsWith('/colleges/') || cleanPath.startsWith('/college/')) {
           image = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png';
           const collegeId = cleanPath.split('/')[2];
           if (collegeId) {
