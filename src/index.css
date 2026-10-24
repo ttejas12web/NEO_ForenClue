@@ -361,10 +361,56 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-
   animation: collegeBeamSweep 8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .animate-college-title-gradient,
-  .animate-college-beam {
-    animation: none !important;
+@keyframes skeletonWave {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
   }
 }
 
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: rgba(148, 163, 184, 0.11);
+}
+
+.light .skeleton-shimmer {
+  background-color: rgba(15, 23, 42, 0.06);
+}
+
+.skeleton-shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 35%,
+    rgba(0, 240, 255, 0.09) 50%,
+    rgba(255, 255, 255, 0.06) 65%,
+    transparent 100%
+  );
+  animation: skeletonWave 1.75s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.light .skeleton-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.55) 35%,
+    rgba(2, 132, 199, 0.1) 50%,
+    rgba(255, 255, 255, 0.55) 65%,
+    transparent 100%
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-college-title-gradient,
+  .animate-college-beam,
+  .skeleton-shimmer::after {
+    animation: none !important;
+  }
+}

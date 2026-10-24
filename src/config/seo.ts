@@ -267,7 +267,7 @@ export const ROUTE_SEO_CONFIG: Record<string, RouteSEOConfig> = {
     title: 'Forensic Science Colleges & Universities Directory | ForenClue',
     description: 'Explore top accredited universities, National Forensic Sciences University (NFSU) campuses, government institutes, and private colleges offering B.Sc., M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, Cyber Forensics, and Criminology.',
     keywords: 'forensic science colleges in india, forensic universities directory, nfsu campuses, bsc forensic science colleges, msc forensic science universities, government forensic colleges, amity aifs, forenclue colleges',
-    image: 'https://forenclue.in/images/og/colleges.png',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png',
     type: 'website',
     badge: 'Verified Forensic Institutions',
     tag: 'COLLEGES DIRECTORY'

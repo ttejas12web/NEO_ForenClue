@@ -7584,6 +7584,86 @@ export const SAMPLE_COLLEGES: College[] = [
       '200-Acre Scenic Summer Hill Campus (Adjacent to Summer Hill Railway Station) with 13 Hostels & Auditorium'
     ],
     featured: true
+  },
+  {
+    id: 'jiit-university-noida',
+    name: 'JIIT University (Jaypee Institute of Information Technology, Noida)',
+    shortName: 'JIIT Noida',
+    country: 'India',
+    state: 'Uttar Pradesh',
+    city: 'Noida',
+    type: 'Deemed',
+    website: 'https://www.jiit.ac.in',
+    logo: 'https://upload.wikimedia.org/wikipedia/en/5/56/Logo-jiit.png',
+    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/6/66/Fullview_day_JIIT.jpg',
+    description: 'Jaypee Institute of Information Technology (JIIT), Noida is a premier NAAC \'A\' Grade accredited Deemed-to-be University established in 2001 by the Jaypee Group and recognized by the UGC under Section 3 of the UGC Act, 1956. Operating across two high-tech campuses in Sector-62 and Sector-128 (Wish Town) in Noida (Delhi-NCR), JIIT offers a NEP 2020-aligned 4-year B.Sc. (Hons. / Hons. with Research) in Forensic Science alongside specialized B.Tech / M.Tech programs in Computer Science & Engineering (Cyber Security & Digital Forensics) and Biotechnology, backed by advanced molecular biology, cryptography, cyber security, and analytical instrumentation laboratories.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons. / Hons. with Research) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 with Physics, Chemistry, and Mathematics / Biology / Computer Science from CBSE, ICSE, or recognized board with minimum 60% aggregate marks (55% for SC/ST)',
+        estimatedFees: '₹1,85,000 - ₹1,95,000 / year (approx. ₹7.76 Lakhs total for 4 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence & Reconstruction',
+          'Forensic Chemistry, Toxicology & Instrumental Analysis',
+          'Digital Forensics, Cyber Crime Investigation & Questioned Documents',
+          'Forensic Biology, Serology & DNA Profiling'
+        ]
+      },
+      {
+        name: 'B.Tech in Computer Science & Engineering (Cyber Security & Digital Forensics)',
+        degreeLevel: 'Bachelor',
+        duration: '4 Years (8 Semesters)',
+        eligibility: '10+2 with Physics and Mathematics + Chemistry / Computer Science with minimum 60% aggregate marks; admission via JEE (Main) All India Rank or 10+2 Merit',
+        estimatedFees: '₹2,45,000 - ₹2,65,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Network Security, Cryptography & Ethical Hacking',
+          'Digital Forensics, Malware Analysis & Incident Response',
+          'Cloud Security, Blockchain & Cyber Threat Intelligence'
+        ]
+      },
+      {
+        name: 'B.Tech / M.Sc. in Biotechnology (Forensic & Molecular Diagnostics Track)',
+        degreeLevel: 'Bachelor',
+        duration: '4 Years (B.Tech) / 2 Years (M.Sc.)',
+        eligibility: '10+2 with Physics, Chemistry, and Biology / Biotechnology / Mathematics (min 60%) for B.Tech; B.Sc. in Life Sciences / Biotechnology / Forensic Science (min 55%) for M.Sc.',
+        estimatedFees: '₹1,10,000 - ₹2,45,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Molecular Diagnostics, DNA Barcoding & Genetic Engineering',
+          'Bioinformatics, Proteomics & Analytical Biosensors'
+        ]
+      },
+      {
+        name: 'Ph.D. in Computer Science, Cyber Security & Biosciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree (M.Tech / M.Sc.) in relevant discipline with minimum 60% aggregate marks or CGPA 6.5/10 + JIIT Ph.D. Entrance Test / GATE / CSIR-UGC NET + Interview',
+        estimatedFees: '₹65,000 - ₹85,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Cyber Forensics, Network Intrusion Detection & Information Security',
+          'Molecular Biology, Toxicology & Biosensor Diagnostics'
+        ]
+      }
+    ],
+    feesRange: '₹1,10,000 - ₹2,65,000 / year',
+    admissionProcess: 'Direct 10+2 Merit / CUET-UG / JIIT UGET for B.Sc. Forensic Science; JEE (Main) All India Rank or 10+2 PCM Merit Counselling for B.Tech Programs',
+    accreditation: 'NAAC \'A\' Grade Accredited | Deemed-to-be University under Section 3 of UGC Act 1956 | AICTE Approved | NBA Accredited Programs | NIRF Ranked (101–150 Engineering Band)',
+    contactEmail: 'admission@mail.jiit.ac.in',
+    contactPhone: '+91 120 2594300 / +91 99999 12862 / +91 74286 30600',
+    address: 'A-10, Sector-62, Noida, Uttar Pradesh 201309, India (Campus 2: Sector-128, Jaypee Wish Town, Noida 201304)',
+    ranking: 'NIRF Ranked (101–150 Band Engineering) | NAAC \'A\' Grade Deemed University in Delhi-NCR',
+    facilities: [
+      'Advanced Forensic Science, Analytical Instrumentation & Molecular Biology Laboratories',
+      'Dedicated Cyber Security, Cryptography, Information Security & Digital Forensics Lab',
+      '24x7 Wi-Fi Enabled Sector-62 & Sector-128 Campuses with Central Learning Resource Centre (Library)',
+      'Air-Conditioned On-Campus Boys & Girls Hostels, Jaypee Wish Town Sports Complex & Medical Dispensary'
+    ],
+    featured: true
   }
 ];
 
@@ -7763,6 +7843,11 @@ const SLUG_ALIASES: Record<string, string> = {
   'hpu': 'himachal-pradesh-university-shimla',
   'hpu-shimla': 'himachal-pradesh-university-shimla',
   'himachal-pradesh-university': 'himachal-pradesh-university-shimla',
+  'jiit': 'jiit-university-noida',
+  'jiit-noida': 'jiit-university-noida',
+  'jiit-university': 'jiit-university-noida',
+  'jaypee-institute-of-information-technology': 'jiit-university-noida',
+  'jaypee-noida': 'jiit-university-noida',
   'nims': 'nims-university-jaipur',
   'nims-university': 'nims-university-jaipur',
   'nims-jaipur': 'nims-university-jaipur',

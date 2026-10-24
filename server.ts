@@ -1761,6 +1761,30 @@ async function startServer() {
           summary = 'View earned forensic certifications, achievement badges, community contributions & active enrollment records.';
           image = '/images/og/profile.png';
         }
+        else if (cleanPath === '/colleges') {
+          title = 'Forensic Science Colleges & Universities Directory | ForenClue';
+          summary = 'Explore top accredited universities, National Forensic Sciences University (NFSU) campuses, government institutes, and private colleges offering B.Sc., M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, Cyber Forensics, and Criminology.';
+          image = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png';
+        }
+        else if (cleanPath.startsWith('/colleges/')) {
+          image = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png';
+          const collegeId = cleanPath.split('/')[2];
+          if (collegeId) {
+            try {
+              const dbAdmin = getDbAdmin();
+              const colDoc = await dbAdmin.collection('colleges').doc(collegeId).get();
+              if (colDoc.exists) {
+                const data = colDoc.data();
+                if (data) {
+                  title = `${data.name} — Forensic Science Courses, Fees & Admission | ForenClue`;
+                  summary = data.description || summary;
+                  if (data.bannerImage) image = data.bannerImage;
+                  else if (data.logo) image = data.logo;
+                }
+              }
+            } catch(e) { /* ignore preview fetch errors */ }
+          }
+        }
         else {
           // Check if this is a single top-level permalink route like /FC-EBOOK-102
           const seg = cleanPath.slice(1);
@@ -1810,15 +1834,23 @@ async function startServer() {
           ogImageUrl = `https://${host}${ogImageUrl}`;
         }
 
-        // Dynamically optimize Google User Content / Blogger size parameters to match social preview standards (1200px width)
+        // Dynamically optimize Google User Content / Blogger size parameters to match social preview standards
         if (ogImageUrl.includes('googleusercontent.com')) {
-          const pathRegex = /\/s\d+(?:-[a-zA-Z0-9_-]+)*\//;
-          if (pathRegex.test(ogImageUrl)) {
-            ogImageUrl = ogImageUrl.replace(pathRegex, '/s1200/');
+          const pathRegex = /\/s(\d+)(?:-[a-zA-Z0-9_-]+)*\//;
+          const match = ogImageUrl.match(pathRegex);
+          if (match) {
+            const size = parseInt(match[1], 10);
+            if (size < 1200) {
+              ogImageUrl = ogImageUrl.replace(pathRegex, '/s1200/');
+            }
           } else {
-            const queryRegex = /=s\d+(?:-[a-zA-Z0-9_-]+)*/;
-            if (queryRegex.test(ogImageUrl)) {
-              ogImageUrl = ogImageUrl.replace(queryRegex, '=s1200');
+            const queryRegex = /=s(\d+)(?:-[a-zA-Z0-9_-]+)*/;
+            const queryMatch = ogImageUrl.match(queryRegex);
+            if (queryMatch) {
+              const size = parseInt(queryMatch[1], 10);
+              if (size < 1200) {
+                ogImageUrl = ogImageUrl.replace(queryRegex, '=s1200');
+              }
             }
           }
         }

@@ -272,7 +272,7 @@ function buildCollegeSearchIndex(college: College): string {
   return `${normalizeSearchText(rawParts)} ${normalizeAbbrevText(rawParts)}`;
 }
 
-// Resilient Banner Image with automatic fallback, lightweight sizing, and skeleton shimmer
+// Resilient Banner Image with automatic fallback, lightweight sizing, and gentle skeleton shimmer
 function CollegeBannerImage({
   college,
   className,
@@ -302,7 +302,10 @@ function CollegeBannerImage({
   return (
     <div className="relative w-full h-full overflow-hidden bg-slate-900">
       {!isLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 animate-pulse" />
+        <div
+          className="absolute inset-0 skeleton-shimmer bg-slate-900/90"
+          aria-hidden="true"
+        />
       )}
       <img
         src={imgSrc}
@@ -314,19 +317,21 @@ function CollegeBannerImage({
         onError={() => {
           if (imgSrc !== fallbackSrc) {
             setImgSrc(fallbackSrc);
+          } else {
+            setIsLoaded(true);
           }
         }}
         className={cn(
           className,
-          'transition-opacity duration-300',
-          isLoaded ? 'opacity-100' : 'opacity-0'
+          'transition-all duration-700 ease-out will-change-[opacity,transform]',
+          isLoaded ? 'opacity-100 scale-100' : 'opacity-0 scale-[1.03]'
         )}
       />
     </div>
   );
 }
 
-// Resilient University Logo with automatic monogram fallback and async decoding
+// Resilient University Logo with automatic monogram fallback, skeleton shimmer, and async decoding
 function CollegeLogoBadge({
   college,
   size = 'md',
@@ -335,10 +340,12 @@ function CollegeLogoBadge({
   size?: 'sm' | 'md' | 'lg';
 }) {
   const [hasError, setHasError] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const initials = useMemo(() => getCollegeInitials(college), [college]);
 
   useEffect(() => {
     setHasError(false);
+    setIsLoaded(false);
   }, [college.logo, college.id]);
 
   const sizeClasses = {
@@ -366,19 +373,179 @@ function CollegeLogoBadge({
     <div
       className={cn(
         sizeClasses,
-        'bg-white dark:bg-surface border-2 border-warning/30 p-1.5 shadow-lg shrink-0 overflow-hidden flex items-center justify-center'
+        'relative bg-white dark:bg-surface border-2 border-warning/30 p-1.5 shadow-lg shrink-0 overflow-hidden flex items-center justify-center'
       )}
     >
+      {!isLoaded && (
+        <div className="absolute inset-0 skeleton-shimmer" aria-hidden="true" />
+      )}
       <img
         src={college.logo}
         alt={`${college.shortName || college.name} logo`}
         loading="lazy"
         decoding="async"
         referrerPolicy="no-referrer"
+        onLoad={() => setIsLoaded(true)}
         onError={() => setHasError(true)}
-        className="w-full h-full object-contain"
+        className={cn(
+          'w-full h-full object-contain transition-opacity duration-500 ease-out',
+          isLoaded ? 'opacity-100' : 'opacity-0'
+        )}
       />
     </div>
+  );
+}
+
+// Gentle, Anatomically Accurate Skeleton Card for Initial & Scroll-Based Loading Across All Orientations
+function CollegeCardSkeleton({ index = 0 }: { index?: number }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.98 }}
+      transition={{
+        duration: 0.4,
+        delay: Math.min(index * 0.05, 0.25),
+        ease: [0.22, 1, 0.36, 1],
+      }}
+      aria-hidden="true"
+      className="bg-surface border border-black/5 dark:border-white/10 rounded-2xl overflow-hidden shadow-[0_2px_10px_-3px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_-3px_rgba(0,0,0,0.35)] flex flex-col select-none pointer-events-none"
+    >
+      {/* Banner Skeleton Header (adapts to portrait & landscape orientations) */}
+      <div className="relative h-36 sm:h-44 landscape:max-lg:h-32 bg-crust overflow-hidden skeleton-shimmer">
+        <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between gap-2">
+          <div className="h-5 w-28 rounded-full bg-white/10 dark:bg-white/10" />
+          <div className="flex items-center gap-1.5">
+            <div className="w-8 h-8 rounded-full bg-white/10 dark:bg-white/10" />
+            <div className="w-8 h-8 rounded-full bg-white/10 dark:bg-white/10" />
+          </div>
+        </div>
+        <div className="absolute bottom-2.5 sm:bottom-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between gap-2">
+          <div className="h-3.5 w-36 rounded bg-white/10 dark:bg-white/10" />
+          <div className="h-4 w-16 rounded bg-white/10 dark:bg-white/10" />
+        </div>
+      </div>
+
+      {/* Card Body Skeleton */}
+      <div className="p-4 sm:p-6 space-y-3.5 sm:space-y-4 flex-1 flex flex-col justify-between">
+        <div className="space-y-3">
+          <div className="flex items-start gap-3">
+            <div className="w-11 h-11 rounded-xl skeleton-shimmer shrink-0" />
+            <div className="min-w-0 flex-1 space-y-2 pt-0.5">
+              <div className="h-4 sm:h-5 w-4/5 rounded-md skeleton-shimmer" />
+              <div className="h-3.5 sm:h-4 w-3/5 rounded-md skeleton-shimmer" />
+              <div className="h-2.5 w-2/5 rounded skeleton-shimmer" />
+            </div>
+          </div>
+          <div className="space-y-1.5 pt-1">
+            <div className="h-3 w-full rounded skeleton-shimmer" />
+            <div className="h-3 w-11/12 rounded skeleton-shimmer" />
+          </div>
+        </div>
+
+        {/* Fee & Programs Skeleton */}
+        <div className="space-y-2.5 sm:space-y-3 pt-2.5 border-t border-black/5 dark:border-white/5">
+          <div className="flex items-center justify-between gap-2">
+            <div className="h-3 w-24 rounded skeleton-shimmer" />
+            <div className="h-3.5 w-28 rounded skeleton-shimmer" />
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="h-3 w-24 rounded skeleton-shimmer" />
+              <div className="h-3 w-16 rounded skeleton-shimmer" />
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              <div className="h-6 w-28 rounded-md skeleton-shimmer" />
+              <div className="h-6 w-32 rounded-md skeleton-shimmer" />
+              <div className="h-6 w-20 rounded-md skeleton-shimmer" />
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Action Buttons Skeleton */}
+        <div className="pt-1.5 sm:pt-2 flex items-center gap-2 sm:gap-2.5">
+          <div className="h-11 w-24 sm:w-28 rounded-xl skeleton-shimmer shrink-0" />
+          <div className="h-11 flex-1 rounded-xl skeleton-shimmer" />
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// Steady, Smooth Count-Up Number Animation Triggered After Page Load
+function SteadyCountUp({
+  target,
+  durationMs = 1750,
+  delayMs = 0,
+  isReady = true,
+  suffix = '+',
+}: {
+  target: number;
+  durationMs?: number;
+  delayMs?: number;
+  isReady?: boolean;
+  suffix?: string;
+}) {
+  const [displayValue, setDisplayValue] = useState<number>(0);
+  const prevTargetRef = useRef<number>(0);
+
+  useEffect(() => {
+    if (!isReady || target <= 0) {
+      setDisplayValue(0);
+      prevTargetRef.current = 0;
+      return;
+    }
+
+    if (
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    ) {
+      setDisplayValue(target);
+      prevTargetRef.current = target;
+      return;
+    }
+
+    const startValue = prevTargetRef.current;
+    const delta = target - startValue;
+    if (delta === 0) {
+      setDisplayValue(target);
+      return;
+    }
+
+    let rafId = 0;
+    let startTime: number | null = null;
+
+    const timerId = setTimeout(() => {
+      const step = (timestamp: number) => {
+        if (startTime === null) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / durationMs, 1);
+        // Smooth, steady cubic/quartic ease-out curve
+        const eased = 1 - Math.pow(1 - progress, 3.2);
+        const current = Math.round(startValue + delta * eased);
+        setDisplayValue(current);
+
+        if (progress < 1) {
+          rafId = requestAnimationFrame(step);
+        } else {
+          setDisplayValue(target);
+          prevTargetRef.current = target;
+        }
+      };
+      rafId = requestAnimationFrame(step);
+    }, delayMs);
+
+    return () => {
+      clearTimeout(timerId);
+      if (rafId) cancelAnimationFrame(rafId);
+    };
+  }, [target, durationMs, delayMs, isReady]);
+
+  return (
+    <span className="font-mono tabular-nums tracking-tight">
+      {displayValue.toLocaleString('en-IN')}
+      {suffix && <span className="text-warning ml-0.5">{suffix}</span>}
+    </span>
   );
 }
 
@@ -402,12 +569,15 @@ export default function Colleges() {
   const initialCache = getCachedColleges();
   const [colleges, setColleges] = useState<College[]>(() => initialCache || []);
   const [loading, setLoading] = useState<boolean>(() => !initialCache || initialCache.length === 0);
+  const [isMetricsReady, setIsMetricsReady] = useState<boolean>(false);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
   const [selectedCollege, setSelectedCollege] = useState<College | null>(null);
   const [highlightedCollegeId, setHighlightedCollegeId] = useState<string | null>(null);
   const [activeCourseDegreeTab, setActiveCourseDegreeTab] = useState<string>('All');
   const [visibleCount, setVisibleCount] = useState<number>(BATCH_SIZE);
+  const [isLoadingMore, setIsLoadingMore] = useState<boolean>(false);
   const loadMoreSentinelRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTargetIdRef = useRef<string | null>(null);
 
   const [savedCollegeIds, setSavedCollegeIds] = useState<string[]>(() => {
@@ -588,6 +758,37 @@ export default function Colleges() {
       isMounted = false;
     };
   }, []);
+
+  // Trigger steady number loading animation after successful loading of page data
+  useEffect(() => {
+    if (loading || colleges.length === 0) return;
+    const readyTimer = setTimeout(() => {
+      setIsMetricsReady(true);
+    }, 140);
+    return () => clearTimeout(readyTimer);
+  }, [loading, colleges.length]);
+
+  // Real-time aggregated directory statistics (Colleges, Courses, States, Cities)
+  const directoryStats = useMemo(() => {
+    const totalColleges = colleges.length;
+    const totalCourses = colleges.reduce(
+      (sum, c) => sum + (c.coursesOffered?.length || 0),
+      0
+    );
+    const totalStates = new Set(
+      colleges.map((c) => (c.state || '').trim()).filter(Boolean)
+    ).size;
+    const totalCities = new Set(
+      colleges.map((c) => (c.city || '').trim()).filter(Boolean)
+    ).size;
+
+    return {
+      totalColleges,
+      totalCourses,
+      totalStates,
+      totalCities,
+    };
+  }, [colleges]);
 
   // Resolve specific college when targetId changes & record it for return scroll restoration
   useEffect(() => {
@@ -867,6 +1068,11 @@ export default function Colleges() {
 
   // Reset visible batch count to BATCH_SIZE whenever filter or search conditions change
   useEffect(() => {
+    if (loadMoreTimerRef.current) {
+      clearTimeout(loadMoreTimerRef.current);
+      loadMoreTimerRef.current = null;
+    }
+    setIsLoadingMore(false);
     setVisibleCount(BATCH_SIZE);
   }, [
     searchQuery,
@@ -880,24 +1086,44 @@ export default function Colleges() {
     sortBy,
   ]);
 
-  // Progressive loading intersection observer for smooth, infinite scroll
+  // Trigger smooth skeleton loading transition before revealing next batch of colleges
+  const triggerLoadMoreBatch = useCallback(() => {
+    if (isLoadingMore || visibleCount >= filteredColleges.length) return;
+    setIsLoadingMore(true);
+    if (loadMoreTimerRef.current) clearTimeout(loadMoreTimerRef.current);
+    loadMoreTimerRef.current = setTimeout(() => {
+      setVisibleCount((prev) => Math.min(filteredColleges.length, prev + BATCH_SIZE));
+      setIsLoadingMore(false);
+      loadMoreTimerRef.current = null;
+    }, 420);
+  }, [isLoadingMore, visibleCount, filteredColleges.length]);
+
   useEffect(() => {
-    if (visibleCount >= filteredColleges.length) return;
+    return () => {
+      if (loadMoreTimerRef.current) {
+        clearTimeout(loadMoreTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Progressive loading intersection observer for smooth, gentle skeleton scroll loading
+  useEffect(() => {
+    if (visibleCount >= filteredColleges.length || isLoadingMore) return;
     const sentinel = loadMoreSentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setVisibleCount((prev) => Math.min(filteredColleges.length, prev + BATCH_SIZE));
+          triggerLoadMoreBatch();
         }
       },
-      { rootMargin: '350px 0px' }
+      { rootMargin: '260px 0px' }
     );
 
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [visibleCount, filteredColleges.length]);
+  }, [visibleCount, filteredColleges.length, isLoadingMore, triggerLoadMoreBatch]);
 
   const recordReturnCollege = useCallback((collegeId: string) => {
     lastTargetIdRef.current = collegeId;
@@ -1145,7 +1371,7 @@ export default function Colleges() {
           fallbackTitle={`${college.name} — Forensic Science Courses, Fees & Admission`}
           fallbackDescription={college.description}
           canonicalPath={`/colleges/${college.id}`}
-          fallbackImage={college.bannerImage || college.logo || '/images/og/colleges.png'}
+          fallbackImage={college.bannerImage || college.logo || 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png'}
           keywords={`${college.name}, ${college.shortName || ''}, forensic science college ${college.city}, ${college.state} forensic university, bsc forensic science, msc forensic science, ${college.coursesOffered.map(c => c.name).join(', ')}`}
           breadcrumbs={[
             { name: 'Home', path: '/' },
@@ -1695,7 +1921,7 @@ export default function Colleges() {
         fallbackTitle="Forensic Science Colleges & Universities Directory"
         fallbackDescription="Explore top global and Indian universities, NFSU campuses, and government institutes offering accredited B.Sc., M.Sc., PG Diploma, and Ph.D. forensic science degree programs."
         canonicalPath="/colleges"
-        fallbackImage="/images/og/colleges.png"
+        fallbackImage="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png"
         breadcrumbs={[
           { name: 'Home', path: '/' },
           { name: 'Forensic Colleges', path: '/colleges' },
@@ -2186,16 +2412,125 @@ export default function Colleges() {
             </motion.h1>
           </div>
 
-          <p className="text-xs sm:text-sm text-text-muted max-w-2xl mx-auto font-medium leading-relaxed relative px-1">
-            Discover <span className="text-text-main font-bold">{colleges.length}+ verified universities and government forensic institutes</span> across India & worldwide—filter by city, degree level, institution category, or forensic specialization.
-          </p>
-
-          {/* Search Bar Input */}
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
+          {/* Open, Unboxed Editorial Directory Metrics Ribbon (Portrait & Landscape Friendly) */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="max-w-2xl mx-auto pt-0.5 sm:pt-1 space-y-2.5 sm:space-y-3"
+            transition={{ duration: 0.55, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+            aria-label="Verified Forensic Directory Statistics"
+            className="relative max-w-3xl mx-auto w-full pt-1 pb-0.5 sm:py-2 landscape:max-lg:py-0.5 px-2"
+          >
+            {/* Subtle ambient glow behind the unboxed numbers */}
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-12 inset-y-0 bg-gradient-to-r from-transparent via-warning/10 to-transparent blur-2xl pointer-events-none"
+            />
+
+            {loading && colleges.length === 0 ? (
+              <div className="grid grid-cols-2 landscape:grid-cols-4 sm:grid-cols-4 gap-y-3 gap-x-4 items-center justify-items-center py-1">
+                {[0, 1, 2, 3].map((sIdx) => (
+                  <div
+                    key={`metric-skeleton-${sIdx}`}
+                    className="flex flex-col items-center space-y-1.5"
+                  >
+                    <div className="h-6 sm:h-8 w-16 rounded-md skeleton-shimmer" />
+                    <div className="h-2.5 w-24 rounded skeleton-shimmer" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="relative grid grid-cols-2 landscape:grid-cols-4 sm:grid-cols-4 gap-y-3.5 sm:gap-y-0 items-center">
+                {[
+                  {
+                    label: 'Verified Colleges',
+                    value: directoryStats.totalColleges,
+                    icon: Building2,
+                    delayMs: 0,
+                    durationMs: 1650,
+                    accentColor: 'text-warning',
+                  },
+                  {
+                    label: 'Forensic Courses',
+                    value: directoryStats.totalCourses,
+                    icon: GraduationCap,
+                    delayMs: 90,
+                    durationMs: 1850,
+                    accentColor: 'text-amber-400',
+                  },
+                  {
+                    label: 'States & Regions',
+                    value: directoryStats.totalStates,
+                    icon: MapPin,
+                    delayMs: 180,
+                    durationMs: 1550,
+                    accentColor: 'text-warning',
+                  },
+                  {
+                    label: 'Campus Cities',
+                    value: directoryStats.totalCities,
+                    icon: Globe,
+                    delayMs: 260,
+                    durationMs: 1700,
+                    accentColor: 'text-amber-400',
+                  },
+                ].map((stat, idx) => {
+                  const Icon = stat.icon;
+                  return (
+                    <motion.div
+                      key={stat.label}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.45,
+                        delay: 0.1 + idx * 0.06,
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
+                      className="group relative flex flex-col items-center justify-center px-2 sm:px-4"
+                    >
+                      {/* Delicate vertical hairline divider between items (no boxy borders) */}
+                      {idx > 0 && (
+                        <span
+                          aria-hidden="true"
+                          className={cn(
+                            'absolute left-0 top-1/2 -translate-y-1/2 w-px h-8 sm:h-10 bg-gradient-to-b from-transparent via-black/15 dark:via-white/15 to-transparent pointer-events-none',
+                            idx === 2 ? 'hidden landscape:block sm:block' : 'block'
+                          )}
+                        />
+                      )}
+
+                      {/* Steady Animated Number */}
+                      <div className="flex items-baseline justify-center text-2xl sm:text-3xl lg:text-4xl landscape:max-lg:text-2xl font-black text-text-main leading-none tracking-tight drop-shadow-xs">
+                        <SteadyCountUp
+                          target={stat.value}
+                          durationMs={stat.durationMs}
+                          delayMs={stat.delayMs}
+                          isReady={isMetricsReady}
+                          suffix="+"
+                        />
+                      </div>
+
+                      {/* Clean Unboxed Icon + Label */}
+                      <div className="mt-1 sm:mt-1.5 flex items-center justify-center gap-1.5 text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.12em] text-text-muted group-hover:text-text-main transition-colors">
+                        <Icon
+                          size={12}
+                          className={cn('shrink-0 transition-transform duration-300 group-hover:scale-110', stat.accentColor)}
+                          aria-hidden="true"
+                        />
+                        <span className="truncate">{stat.label}</span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+
+          {/* Mobile & Orientation-Perfected Search Bar */}
+          <motion.div 
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+            className="max-w-2xl mx-auto w-full pt-1 sm:pt-1.5 landscape:max-lg:pt-0.5 space-y-2 sm:space-y-2.5"
           >
             <form
               role="search"
@@ -2203,19 +2538,33 @@ export default function Colleges() {
               onSubmit={(e) => {
                 e.preventDefault();
                 setSearchQuery(searchInput);
+                searchInputRef.current?.blur();
               }}
-              className="relative flex items-center"
+              className="group relative flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 landscape:max-lg:p-1.5 rounded-2xl bg-background/95 dark:bg-crust/90 backdrop-blur-xl border border-black/15 dark:border-white/15 focus-within:border-warning focus-within:ring-4 focus-within:ring-warning/15 shadow-[0_10px_32px_-8px_rgba(0,0,0,0.22)] transition-all"
             >
               <label htmlFor="college-directory-search" className="sr-only">
-                Search forensic science colleges and universities
+                Search forensic science colleges, cities, states, or degree programs
               </label>
-              <Search className="absolute left-3.5 sm:left-4 text-warning pointer-events-none" size={19} aria-hidden="true" />
+
+              {/* Left Search Icon Badge */}
+              <div
+                aria-hidden="true"
+                className="w-9 h-9 sm:w-10 sm:h-10 landscape:max-lg:w-9 landscape:max-lg:h-9 rounded-xl bg-warning/12 dark:bg-warning/15 text-warning flex items-center justify-center shrink-0 transition-transform duration-300 group-focus-within:scale-105"
+              >
+                <Search size={18} className="shrink-0" />
+              </div>
+
+              {/* Search Input (16px on mobile prevents iOS auto-zoom; hides native webkit cancel X) */}
               <input
                 ref={searchInputRef}
                 id="college-directory-search"
                 type="search"
+                inputMode="search"
+                enterKeyHint="search"
                 autoComplete="off"
-                placeholder="Search colleges, cities, or forensic courses..."
+                autoCorrect="off"
+                spellCheck={false}
+                placeholder="Search colleges, cities, courses..."
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 onKeyDown={(e) => {
@@ -2224,23 +2573,63 @@ export default function Colleges() {
                     clearSearch();
                   }
                 }}
-                className="w-full pl-11 sm:pl-12 pr-11 sm:pr-12 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-background border-2 border-black/10 dark:border-white/10 text-text-main placeholder:text-text-muted/60 font-semibold text-base sm:text-sm focus:border-warning focus:outline-none transition-all shadow-lg"
+                className="flex-1 min-w-0 bg-transparent px-1 sm:px-1.5 py-1.5 text-[16px] sm:text-sm font-semibold text-text-main placeholder:text-text-muted/65 focus:outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
               />
-              {searchInput && (
-                <button 
+
+              {/* Right Inline Actions: Live Count + Clear Button + Mobile Filter Trigger */}
+              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                {searchInput && (
+                  <>
+                    <span
+                      aria-live="polite"
+                      className="hidden xs:inline-flex items-center px-2 py-1 rounded-lg bg-warning/10 text-warning font-mono tabular-nums text-[11px] font-black"
+                    >
+                      {filteredColleges.length}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={clearSearch}
+                      aria-label="Clear search query"
+                      className="w-9 h-9 rounded-xl text-text-muted hover:text-text-main hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+                    >
+                      <X size={17} />
+                    </button>
+                  </>
+                )}
+
+                {/* Integrated Mobile & Landscape Filter Button inside Search Bar */}
+                <button
                   type="button"
-                  onClick={clearSearch}
-                  aria-label="Clear search query"
-                  className="absolute right-2.5 sm:right-3.5 text-text-muted hover:text-text-main p-2 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                  onClick={() => setIsMobileFilterOpen(true)}
+                  aria-label="Open directory filters"
+                  className={cn(
+                    'lg:hidden h-9 sm:h-10 landscape:max-lg:h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer shrink-0',
+                    activeFilterCount > 0
+                      ? 'bg-warning text-crust border-warning font-black shadow-xs'
+                      : 'bg-surface/90 text-text-main border-black/10 dark:border-white/10 hover:border-warning/50'
+                  )}
                 >
-                  <X size={18} />
+                  <Filter size={14} className={cn('shrink-0', activeFilterCount > 0 ? 'text-crust' : 'text-warning')} />
+                  <span className="hidden xs:inline">Filters</span>
+                  {activeFilterCount > 0 && (
+                    <span
+                      className={cn(
+                        'px-1.5 py-0.5 rounded-full text-[10px] font-mono tabular-nums font-black leading-none',
+                        activeFilterCount > 0 ? 'bg-crust/20 text-crust' : 'bg-warning/20 text-warning'
+                      )}
+                    >
+                      {activeFilterCount}
+                    </span>
+                  )}
                 </button>
-              )}
+              </div>
             </form>
 
-            {/* Quick Search Topic Buttons - Swipeable single row on mobile, wrapped on desktop */}
-            <div className="flex items-center sm:flex-wrap sm:justify-center gap-1.5 overflow-x-auto no-scrollbar pt-0.5 pb-1 -mx-4 px-4 sm:mx-0 sm:px-0">
-              <span className="text-[11px] font-bold text-text-muted mr-0.5 shrink-0">Popular:</span>
+            {/* Quick Search Topic Strip - Smooth horizontal snap scroll on mobile portrait/landscape, wrapped on desktop */}
+            <div className="flex items-center sm:flex-wrap sm:justify-center gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory pt-0.5 pb-1 -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-text-muted/80 mr-0.5 shrink-0 select-none">
+                Popular:
+              </span>
               {QUICK_SEARCH_TOPICS.map(topic => {
                 const isActive = searchInput.toLowerCase() === topic.query.toLowerCase();
                 return (
@@ -2253,10 +2642,10 @@ export default function Colleges() {
                       setSearchQuery(nextVal);
                     }}
                     className={cn(
-                      'px-3 py-1.5 sm:py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer border shrink-0 min-h-[32px] sm:min-h-0 flex items-center',
+                      'snap-start px-2.5 sm:px-3 py-1.5 sm:py-1 rounded-xl text-[11px] font-bold transition-all cursor-pointer border shrink-0 min-h-[32px] sm:min-h-0 flex items-center',
                       isActive
                         ? 'bg-warning text-crust border-warning font-black shadow-xs'
-                        : 'bg-background/85 text-text-muted hover:text-text-main border-black/10 dark:border-white/10 hover:border-warning/40'
+                        : 'bg-background/80 dark:bg-surface/70 backdrop-blur-sm text-text-muted hover:text-text-main border-black/10 dark:border-white/10 hover:border-warning/40'
                     )}
                   >
                     {topic.label}
@@ -2698,13 +3087,9 @@ export default function Colleges() {
 
             {/* Loading State */}
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="bg-surface border border-black/5 dark:border-white/5 rounded-2xl h-80 animate-pulse p-5 sm:p-6 space-y-4">
-                    <div className="h-40 bg-black/10 dark:bg-white/10 rounded-xl" />
-                    <div className="h-6 bg-black/10 dark:bg-white/10 rounded w-3/4" />
-                    <div className="h-4 bg-black/10 dark:bg-white/10 rounded w-1/2" />
-                  </div>
+              <div className="grid grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6">
+                {[0, 1, 2, 3, 4, 5].map(idx => (
+                  <CollegeCardSkeleton key={`initial-skeleton-${idx}`} index={idx} />
                 ))}
               </div>
             ) : filteredColleges.length === 0 ? (
@@ -2738,8 +3123,8 @@ export default function Colleges() {
               </div>
             ) : (
               /* College Cards Grid */
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6" style={{ overflowAnchor: 'none' }}>
-                {visibleColleges.map((college) => {
+              <div className="grid grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6" style={{ overflowAnchor: 'none' }}>
+                {visibleColleges.map((college, idx) => {
                   const isSaved = savedCollegeIds.includes(college.id);
                   const isCompared = compareCollegeIds.includes(college.id);
                   const isHighlighted = highlightedCollegeId === college.id;
@@ -2751,14 +3136,21 @@ export default function Colleges() {
                       key={college.id}
                       id={`college-card-${college.id}`}
                       data-college-id={college.id}
-                      initial={{ opacity: 0, y: 14 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true, margin: '20px' }}
-                      transition={{ duration: 0.35, ease: 'easeOut' }}
+                      initial={{ opacity: 0, y: 16, scale: 0.99 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{
+                        duration: 0.5,
+                        delay: Math.min((idx % BATCH_SIZE) * 0.04, 0.28),
+                        ease: [0.22, 1, 0.36, 1],
+                      }}
                       className={cn(
-                        'group bg-surface border rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:border-warning/30 transition-all flex flex-col cursor-pointer scroll-mt-24 sm:scroll-mt-28',
+                        'group bg-surface border rounded-2xl overflow-hidden flex flex-col cursor-pointer scroll-mt-24 sm:scroll-mt-28',
+                        'transform-gpu will-change-transform transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]',
+                        'shadow-[0_2px_10px_-3px_rgba(0,0,0,0.06),0_1px_3px_rgba(0,0,0,0.03)] dark:shadow-[0_2px_12px_-3px_rgba(0,0,0,0.35)]',
+                        'hover:-translate-y-1 hover:shadow-[0_16px_36px_-10px_rgba(15,23,42,0.14),0_6px_16px_-4px_rgba(15,23,42,0.06)] dark:hover:shadow-[0_18px_40px_-10px_rgba(0,0,0,0.65),0_0_24px_rgba(245,158,11,0.07)]',
+                        'hover:border-warning/40 dark:hover:border-warning/30 active:translate-y-0 active:scale-[0.995]',
                         isHighlighted
-                          ? 'border-warning ring-2 ring-warning shadow-xl shadow-warning/15'
+                          ? 'border-warning ring-2 ring-warning shadow-[0_18px_40px_-8px_rgba(234,179,8,0.25)] -translate-y-1'
                           : isCompared
                           ? 'border-warning/60 ring-1 ring-warning/40'
                           : 'border-black/5 dark:border-white/10'
@@ -2766,10 +3158,10 @@ export default function Colleges() {
                       onClick={() => handleOpenDetails(college)}
                     >
                       {/* Banner / Cover Header */}
-                      <div className="relative h-36 sm:h-44 bg-crust overflow-hidden">
+                      <div className="relative h-36 sm:h-44 landscape:max-lg:h-32 bg-crust overflow-hidden">
                         <CollegeBannerImage
                           college={college}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/45 to-black/45" />
 
@@ -2928,17 +3320,36 @@ export default function Colleges() {
                   );
                 })}
 
+                {/* Smooth Skeleton Cards While Scrolling */}
+                {visibleCount < filteredColleges.length &&
+                  Array.from({
+                    length: Math.min(
+                      isLoadingMore ? 4 : 2,
+                      filteredColleges.length - visibleCount
+                    ),
+                  }).map((_, sIdx) => (
+                    <CollegeCardSkeleton
+                      key={`scroll-skeleton-${visibleCount}-${sIdx}`}
+                      index={sIdx}
+                    />
+                  ))}
+
                 {/* Progressive Loading Sentinel & Quick Batch Controls */}
                 {visibleCount < filteredColleges.length && (
                   <div
                     ref={loadMoreSentinelRef}
-                    className="col-span-full pt-4 pb-8 space-y-4"
+                    className="col-span-full pt-3 pb-8 space-y-4"
                   >
                     <div className="bg-surface border border-black/5 dark:border-white/10 rounded-2xl p-4 sm:p-6 text-center space-y-3 shadow-xs">
                       <div className="flex items-center justify-between text-xs font-bold text-text-muted">
-                        <span>
-                          Showing <strong className="text-text-main">{visibleColleges.length}</strong> of{' '}
-                          <strong className="text-warning">{filteredColleges.length}</strong> colleges
+                        <span className="flex items-center gap-2">
+                          {isLoadingMore && (
+                            <Loader2 size={14} className="animate-spin text-warning shrink-0" />
+                          )}
+                          <span>
+                            Showing <strong className="text-text-main">{visibleColleges.length}</strong> of{' '}
+                            <strong className="text-warning">{filteredColleges.length}</strong> colleges
+                          </span>
                         </span>
                         <span className="font-mono text-warning">
                           {Math.round((visibleColleges.length / filteredColleges.length) * 100)}%
@@ -2946,21 +3357,36 @@ export default function Colleges() {
                       </div>
                       <div className="w-full h-1.5 bg-black/5 dark:bg-white/10 rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-gradient-to-r from-amber-500 to-warning rounded-full transition-all duration-300"
+                          className="h-full bg-gradient-to-r from-amber-500 to-warning rounded-full transition-all duration-500 ease-out"
                           style={{ width: `${(visibleColleges.length / filteredColleges.length) * 100}%` }}
                         />
                       </div>
                       <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 pt-1">
                         <button
                           type="button"
-                          onClick={() => setVisibleCount((prev) => Math.min(filteredColleges.length, prev + BATCH_SIZE))}
-                          className="px-5 py-2.5 rounded-xl bg-warning text-crust font-black text-xs uppercase tracking-wider shadow-md hover:bg-warning/90 transition-all cursor-pointer flex items-center gap-2 min-h-[42px]"
+                          onClick={triggerLoadMoreBatch}
+                          disabled={isLoadingMore}
+                          className="px-5 py-2.5 rounded-xl bg-warning text-crust font-black text-xs uppercase tracking-wider shadow-md hover:bg-warning/90 disabled:opacity-70 transition-all cursor-pointer flex items-center gap-2 min-h-[42px]"
                         >
-                          <span>Load Next {Math.min(BATCH_SIZE, filteredColleges.length - visibleCount)} Colleges</span>
+                          {isLoadingMore ? (
+                            <>
+                              <Loader2 size={14} className="animate-spin shrink-0" />
+                              <span>Loading Colleges...</span>
+                            </>
+                          ) : (
+                            <span>Load Next {Math.min(BATCH_SIZE, filteredColleges.length - visibleCount)} Colleges</span>
+                          )}
                         </button>
                         <button
                           type="button"
-                          onClick={() => setVisibleCount(filteredColleges.length)}
+                          onClick={() => {
+                            if (loadMoreTimerRef.current) {
+                              clearTimeout(loadMoreTimerRef.current);
+                              loadMoreTimerRef.current = null;
+                            }
+                            setIsLoadingMore(false);
+                            setVisibleCount(filteredColleges.length);
+                          }}
                           className="px-4 py-2.5 rounded-xl bg-background border border-black/10 dark:border-white/10 text-text-main hover:border-warning text-xs font-bold transition-all cursor-pointer min-h-[42px]"
                         >
                           <span>Show All ({filteredColleges.length})</span>
