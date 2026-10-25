@@ -218,29 +218,55 @@ function matchesCourseDegreeLevel(course: CollegeCourse, selectedDegree: string)
   }
 }
 
-// Build a comprehensive searchable index string for each college
+// Build a strict, course-title-accurate searchable index string for each college
 function buildCollegeSearchIndex(college: College): string {
   const degreeAliases: string[] = [];
   for (const c of college.coursesOffered || []) {
     const lvl = (c.degreeLevel || '').toLowerCase();
     const nm = (c.name || '').toLowerCase();
-    if (lvl === 'bachelor' || /\bb\.?\s*sc|\bb\.?\s*tech|\bb\.?\s*voc|\bb\.?\s*a/i.test(nm)) {
-      degreeAliases.push('bachelor bachelors ug undergraduate bsc b sc btech bvoc');
+    if (lvl === 'bachelor') {
+      degreeAliases.push('bachelor bachelors ug undergraduate');
     }
-    if (lvl === 'master' || /\bm\.?\s*sc|\bm\.?\s*tech|\bm\.?\s*a|\bmba|\bllm/i.test(nm)) {
-      degreeAliases.push('master masters pg postgraduate msc m sc mtech ma mba llm');
+    if (/\bb\.?\s*sc\b/i.test(nm)) {
+      degreeAliases.push('bsc b sc bachelor of science');
     }
-    if (lvl === 'doctorate' || /\bph\.?\s*d|\bm\.?\s*d/i.test(nm)) {
-      degreeAliases.push('doctorate doctoral phd ph d md research');
+    if (/\bb\.?\s*tech\b/i.test(nm)) {
+      degreeAliases.push('btech b tech bachelor of technology');
     }
-    if (lvl.includes('diploma') || /\bdiploma|\bpgd/i.test(nm)) {
+    if (/\bb\.?\s*a\b/i.test(nm)) {
+      degreeAliases.push('ba b a bachelor of arts');
+    }
+    if (lvl === 'master') {
+      degreeAliases.push('master masters pg postgraduate');
+    }
+    if (/\bm\.?\s*sc\b/i.test(nm)) {
+      degreeAliases.push('msc m sc master of science');
+    }
+    if (/\bm\.?\s*tech\b/i.test(nm)) {
+      degreeAliases.push('mtech m tech master of technology');
+    }
+    if (/\bm\.?\s*a\b/i.test(nm)) {
+      degreeAliases.push('ma m a master of arts');
+    }
+    if (/\bm\.?\s*b\.?\s*a\b/i.test(nm)) {
+      degreeAliases.push('mba');
+    }
+    if (/\bll\.?\s*m\b/i.test(nm)) {
+      degreeAliases.push('llm ll m');
+    }
+    if (lvl === 'doctorate' || /\bph\.?\s*d\b|\bm\.?\s*d\b/i.test(nm)) {
+      degreeAliases.push('doctorate doctoral phd ph d md');
+    }
+    if (lvl.includes('diploma') || /\bdiploma\b|\bpgd/i.test(nm)) {
       degreeAliases.push('diploma pgd pgdiploma postgraduate diploma');
     }
-    if (lvl.includes('certificate') || /\bcertificate/i.test(nm)) {
-      degreeAliases.push('certificate certification short term');
+    if (lvl.includes('certificate') || /\bcertificate\b/i.test(nm)) {
+      degreeAliases.push('certificate certification');
     }
   }
 
+  // Only index the college's actual identity, location, accreditation, and offered course titles
+  // (Excluding prerequisite eligibility, generic syllabus sub-bullets, and prose descriptions to prevent false positives)
   const rawParts = [
     college.id,
     college.name,
@@ -251,19 +277,12 @@ function buildCollegeSearchIndex(college: College): string {
     college.type,
     getDisplayInstitutionType(college),
     college.accreditation,
-    college.ranking,
-    college.admissionProcess,
     college.address,
-    college.description,
-    ...(college.facilities || []),
     ...degreeAliases,
     ...(college.coursesOffered || []).flatMap(course => [
       course.name,
       course.degreeLevel,
-      course.duration,
-      course.eligibility,
       course.mode,
-      ...(course.specializations || []),
     ]),
   ]
     .filter(Boolean)
@@ -549,14 +568,109 @@ function SteadyCountUp({
   );
 }
 
-const QUICK_SEARCH_TOPICS = [
-  { label: 'B.Sc. Forensic Science', query: 'B.Sc Forensic Science' },
-  { label: 'M.Sc. Forensic Science', query: 'M.Sc Forensic Science' },
-  { label: 'Cyber & Digital Forensics', query: 'Cyber Forensics' },
-  { label: 'NFSU Campuses', query: 'NFSU' },
-  { label: 'DNA & Serology', query: 'DNA Profiling' },
-  { label: 'Questioned Documents', query: 'Questioned Documents' },
+interface QuickSearchTopic {
+  id: string;
+  label: string;
+  query: string;
+  aliases: string[];
+  matchesCourse?: (course: CollegeCourse) => boolean;
+  matchesCollege: (college: College) => boolean;
+}
+
+const isBscForensicCourse = (course: CollegeCourse): boolean =>
+  /\bb\.?\s*sc\b/i.test(course.name) && /forensic/i.test(course.name);
+
+const isMscForensicCourse = (course: CollegeCourse): boolean =>
+  /\bm\.?\s*sc\b/i.test(course.name) && /forensic/i.test(course.name);
+
+const isCyberDigitalForensicsCourse = (course: CollegeCourse): boolean =>
+  /\b(cyber\s*forensic|digital\s*(?:and\s*cyber\s*)?forensic|forensic\s*cyber|cyber\s*security|information\s*security|cyber\s*crime|cyber\s*law|multimedia\s*forensic)/i.test(
+    course.name
+  );
+
+const isDnaSerologyCourse = (course: CollegeCourse): boolean =>
+  /\b(dna|serology|forensic\s*biotech|biotechnology|forensic\s*biology|genetics|forensic\s*bioscience|molecular\s*biology)/i.test(
+    course.name
+  );
+
+const isQuestionedDocumentsCourse = (course: CollegeCourse): boolean =>
+  /\b(questioned\s*document|document\s*examination|forensic\s*document|fingerprint)/i.test(
+    course.name
+  );
+
+const QUICK_SEARCH_TOPICS: QuickSearchTopic[] = [
+  {
+    id: 'bsc-forensic',
+    label: 'B.Sc. Forensic Science',
+    query: 'B.Sc. Forensic Science',
+    aliases: ['b.sc. forensic science', 'b.sc forensic science', 'bsc forensic science'],
+    matchesCourse: isBscForensicCourse,
+    matchesCollege: (college) => (college.coursesOffered || []).some(isBscForensicCourse),
+  },
+  {
+    id: 'msc-forensic',
+    label: 'M.Sc. Forensic Science',
+    query: 'M.Sc. Forensic Science',
+    aliases: ['m.sc. forensic science', 'm.sc forensic science', 'msc forensic science'],
+    matchesCourse: isMscForensicCourse,
+    matchesCollege: (college) => (college.coursesOffered || []).some(isMscForensicCourse),
+  },
+  {
+    id: 'cyber-forensics',
+    label: 'Cyber & Digital Forensics',
+    query: 'Cyber & Digital Forensics',
+    aliases: [
+      'cyber & digital forensics',
+      'cyber and digital forensics',
+      'cyber forensics',
+      'digital forensics',
+      'cyber forensic',
+      'digital forensic',
+    ],
+    matchesCourse: isCyberDigitalForensicsCourse,
+    matchesCollege: (college) => (college.coursesOffered || []).some(isCyberDigitalForensicsCourse),
+  },
+  {
+    id: 'nfsu-campuses',
+    label: 'NFSU Campuses',
+    query: 'NFSU Campuses',
+    aliases: ['nfsu campuses', 'nfsu', 'national forensic sciences university'],
+    matchesCollege: (college) =>
+      college.id.toLowerCase().startsWith('nfsu-') ||
+      /^national forensic sciences university/i.test(college.name),
+  },
+  {
+    id: 'dna-serology',
+    label: 'DNA & Serology',
+    query: 'DNA & Serology',
+    aliases: ['dna & serology', 'dna and serology', 'dna profiling', 'dna forensics'],
+    matchesCourse: isDnaSerologyCourse,
+    matchesCollege: (college) => (college.coursesOffered || []).some(isDnaSerologyCourse),
+  },
+  {
+    id: 'questioned-documents',
+    label: 'Questioned Documents',
+    query: 'Questioned Documents',
+    aliases: ['questioned documents', 'forensic document examination', 'document examination'],
+    matchesCourse: isQuestionedDocumentsCourse,
+    matchesCollege: (college) => (college.coursesOffered || []).some(isQuestionedDocumentsCourse),
+  },
 ];
+
+function findMatchingQuickTopic(input?: string): QuickSearchTopic | null {
+  if (!input || !input.trim()) return null;
+  const clean = input.trim().toLowerCase();
+  const norm = normalizeAbbrevText(clean);
+  return (
+    QUICK_SEARCH_TOPICS.find(
+      (t) =>
+        t.label.toLowerCase() === clean ||
+        t.query.toLowerCase() === clean ||
+        t.aliases.includes(clean) ||
+        t.aliases.some((a) => normalizeAbbrevText(a) === norm)
+    ) || null
+  );
+}
 
 const BATCH_SIZE = 12;
 
@@ -991,6 +1105,11 @@ export default function Colleges() {
     }
   }, [cities, selectedCity]);
 
+  const activeQuickTopic = useMemo(
+    () => findMatchingQuickTopic(searchQuery),
+    [searchQuery]
+  );
+
   // Filtered & Sorted Colleges
   const filteredColleges = useMemo(() => {
     const rawQuery = searchQuery.trim();
@@ -999,7 +1118,9 @@ export default function Colleges() {
     const queryTokens = abbrevQuery ? abbrevQuery.split(' ').filter(Boolean) : [];
 
     const list = colleges.filter(college => {
-      if (queryTokens.length > 0) {
+      if (activeQuickTopic) {
+        if (!activeQuickTopic.matchesCollege(college)) return false;
+      } else if (queryTokens.length > 0) {
         const indexed = collegeSearchIndexMap.get(college.id) || '';
         const matchesFull = normQuery && indexed.includes(normQuery);
         const matchesAllTokens = queryTokens.every(token => indexed.includes(token));
@@ -1050,6 +1171,7 @@ export default function Colleges() {
     colleges,
     collegeSearchIndexMap,
     searchQuery,
+    activeQuickTopic,
     selectedCountry,
     selectedState,
     selectedCity,
@@ -2631,11 +2753,13 @@ export default function Colleges() {
                 Popular:
               </span>
               {QUICK_SEARCH_TOPICS.map(topic => {
-                const isActive = searchInput.toLowerCase() === topic.query.toLowerCase();
+                const matchedTopic = findMatchingQuickTopic(searchInput);
+                const isActive = matchedTopic?.id === topic.id;
                 return (
                   <button
-                    key={topic.label}
+                    key={topic.id}
                     type="button"
+                    aria-pressed={isActive}
                     onClick={() => {
                       const nextVal = isActive ? '' : topic.query;
                       setSearchInput(nextVal);
@@ -3268,14 +3392,46 @@ export default function Colleges() {
                             </div>
                             
                             <div className="flex flex-wrap gap-1.5">
-                              {college.coursesOffered.slice(0, 3).map((course, idx) => (
-                                <span 
-                                  key={idx} 
-                                  className="px-2 sm:px-2.5 py-1 rounded-md bg-background border border-black/5 dark:border-white/10 text-[11px] font-bold text-text-main line-clamp-1"
-                                >
-                                  {course.name}
-                                </span>
-                              ))}
+                              {(() => {
+                                const courses = college.coursesOffered || [];
+                                const isCourseMatch = (c: CollegeCourse) => {
+                                  if (activeQuickTopic?.matchesCourse) {
+                                    return activeQuickTopic.matchesCourse(c);
+                                  }
+                                  if (selectedDegree !== 'All' && matchesCourseDegreeLevel(c, selectedDegree)) {
+                                    return true;
+                                  }
+                                  if (searchQuery.trim()) {
+                                    const qNorm = normalizeAbbrevText(searchQuery);
+                                    const cNorm = normalizeAbbrevText(c.name);
+                                    return qNorm.split(' ').filter(Boolean).every(t => cNorm.includes(t));
+                                  }
+                                  return false;
+                                };
+
+                                const orderedCourses = [...courses].sort((a, b) => {
+                                  const aMatch = isCourseMatch(a) ? 1 : 0;
+                                  const bMatch = isCourseMatch(b) ? 1 : 0;
+                                  return bMatch - aMatch;
+                                });
+
+                                return orderedCourses.slice(0, 3).map((course, cIdx) => {
+                                  const matched = isCourseMatch(course);
+                                  return (
+                                    <span
+                                      key={cIdx}
+                                      className={cn(
+                                        'px-2 sm:px-2.5 py-1 rounded-md border text-[11px] font-bold line-clamp-1 transition-colors',
+                                        matched
+                                          ? 'bg-warning/15 border-warning/50 text-warning font-extrabold'
+                                          : 'bg-background border-black/5 dark:border-white/10 text-text-main'
+                                      )}
+                                    >
+                                      {course.name}
+                                    </span>
+                                  );
+                                });
+                              })()}
                               {college.coursesOffered.length > 3 && (
                                 <span className="px-2 py-1 rounded-md bg-warning/10 text-warning font-black text-[10px]">
                                   +{college.coursesOffered.length - 3} more

@@ -7596,7 +7596,7 @@ export const SAMPLE_COLLEGES: College[] = [
     website: 'https://www.jiit.ac.in',
     logo: 'https://upload.wikimedia.org/wikipedia/en/5/56/Logo-jiit.png',
     bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/6/66/Fullview_day_JIIT.jpg',
-    description: 'Jaypee Institute of Information Technology (JIIT), Noida is a premier NAAC \'A\' Grade accredited Deemed-to-be University established in 2001 by the Jaypee Group and recognized by the UGC under Section 3 of the UGC Act, 1956. Operating across two high-tech campuses in Sector-62 and Sector-128 (Wish Town) in Noida (Delhi-NCR), JIIT offers a NEP 2020-aligned 4-year B.Sc. (Hons. / Hons. with Research) in Forensic Science alongside specialized B.Tech / M.Tech programs in Computer Science & Engineering (Cyber Security & Digital Forensics) and Biotechnology, backed by advanced molecular biology, cryptography, cyber security, and analytical instrumentation laboratories.',
+    description: 'Jaypee Institute of Information Technology (JIIT), Noida is a premier NAAC \'A\' Grade accredited Deemed-to-be University established in 2001 by the Jaypee Group and recognized by the UGC under Section 3 of the UGC Act, 1956. Operating across two high-tech campuses in Sector-62 and Sector-128 (Wish Town) in Noida (Delhi-NCR), JIIT offers a NEP 2020-aligned 4-year B.Sc. (Hons. / Hons. with Research) in Forensic Science and Ph.D. research programs through its Department of Biotechnology & Biosciences, backed by advanced molecular biology, analytical instrumentation, and forensic science laboratories.',
     coursesOffered: [
       {
         name: 'B.Sc. (Hons. / Hons. with Research) in Forensic Science',
@@ -7613,45 +7613,20 @@ export const SAMPLE_COLLEGES: College[] = [
         ]
       },
       {
-        name: 'B.Tech in Computer Science & Engineering (Cyber Security & Digital Forensics)',
-        degreeLevel: 'Bachelor',
-        duration: '4 Years (8 Semesters)',
-        eligibility: '10+2 with Physics and Mathematics + Chemistry / Computer Science with minimum 60% aggregate marks; admission via JEE (Main) All India Rank or 10+2 Merit',
-        estimatedFees: '₹2,45,000 - ₹2,65,000 / year',
-        mode: 'Full-time',
-        specializations: [
-          'Network Security, Cryptography & Ethical Hacking',
-          'Digital Forensics, Malware Analysis & Incident Response',
-          'Cloud Security, Blockchain & Cyber Threat Intelligence'
-        ]
-      },
-      {
-        name: 'B.Tech / M.Sc. in Biotechnology (Forensic & Molecular Diagnostics Track)',
-        degreeLevel: 'Bachelor',
-        duration: '4 Years (B.Tech) / 2 Years (M.Sc.)',
-        eligibility: '10+2 with Physics, Chemistry, and Biology / Biotechnology / Mathematics (min 60%) for B.Tech; B.Sc. in Life Sciences / Biotechnology / Forensic Science (min 55%) for M.Sc.',
-        estimatedFees: '₹1,10,000 - ₹2,45,000 / year',
-        mode: 'Full-time',
-        specializations: [
-          'Molecular Diagnostics, DNA Barcoding & Genetic Engineering',
-          'Bioinformatics, Proteomics & Analytical Biosensors'
-        ]
-      },
-      {
-        name: 'Ph.D. in Computer Science, Cyber Security & Biosciences',
+        name: 'Ph.D. in Forensic & Biosciences',
         degreeLevel: 'Doctorate',
         duration: '3-5 Years',
-        eligibility: 'Master’s Degree (M.Tech / M.Sc.) in relevant discipline with minimum 60% aggregate marks or CGPA 6.5/10 + JIIT Ph.D. Entrance Test / GATE / CSIR-UGC NET + Interview',
+        eligibility: 'Master’s Degree (M.Sc. / M.Tech) in Forensic Science, Biotechnology, Life Sciences, or allied discipline with minimum 60% aggregate marks or CGPA 6.5/10 + JIIT Ph.D. Entrance Test / GATE / CSIR-UGC NET + Interview',
         estimatedFees: '₹65,000 - ₹85,000 / year',
         mode: 'Full-time',
         specializations: [
-          'Cyber Forensics, Network Intrusion Detection & Information Security',
-          'Molecular Biology, Toxicology & Biosensor Diagnostics'
+          'Molecular Diagnostics, DNA Profiling & Analytical Toxicology',
+          'Forensic Biosciences & Trace Evidence Analysis'
         ]
       }
     ],
-    feesRange: '₹1,10,000 - ₹2,65,000 / year',
-    admissionProcess: 'Direct 10+2 Merit / CUET-UG / JIIT UGET for B.Sc. Forensic Science; JEE (Main) All India Rank or 10+2 PCM Merit Counselling for B.Tech Programs',
+    feesRange: '₹1,85,000 - ₹1,95,000 / year',
+    admissionProcess: 'Direct 10+2 Merit / CUET-UG / JIIT UGET for B.Sc. (Hons.) Forensic Science followed by JIIT Noida Centralized Counselling',
     accreditation: 'NAAC \'A\' Grade Accredited | Deemed-to-be University under Section 3 of UGC Act 1956 | AICTE Approved | NBA Accredited Programs | NIRF Ranked (101–150 Engineering Band)',
     contactEmail: 'admission@mail.jiit.ac.in',
     contactPhone: '+91 120 2594300 / +91 99999 12862 / +91 74286 30600',
@@ -7659,9 +7634,329 @@ export const SAMPLE_COLLEGES: College[] = [
     ranking: 'NIRF Ranked (101–150 Band Engineering) | NAAC \'A\' Grade Deemed University in Delhi-NCR',
     facilities: [
       'Advanced Forensic Science, Analytical Instrumentation & Molecular Biology Laboratories',
-      'Dedicated Cyber Security, Cryptography, Information Security & Digital Forensics Lab',
+      'Dedicated Questioned Documents, Fingerprint Science & Crime Scene Reconstruction Lab',
       '24x7 Wi-Fi Enabled Sector-62 & Sector-128 Campuses with Central Learning Resource Centre (Library)',
       'Air-Conditioned On-Campus Boys & Girls Hostels, Jaypee Wish Town Sports Complex & Medical Dispensary'
+    ],
+    featured: true
+  },
+  {
+    id: 'rungta-international-skills-university-bhilai',
+    name: 'Rungta International Skills University, Bhilai (Santosh Rungta Group / Rungta R1)',
+    shortName: 'Rungta University Bhilai (RISU)',
+    city: 'Bhilai',
+    state: 'Chhattisgarh',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://rungta.ac.in/wp-content/uploads/2025/10/image-1.svg',
+    bannerImage: 'https://rungta.ac.in/wp-content/uploads/2026/02/Campus-Image-HD-1.webp',
+    website: 'https://rungta.ac.in',
+    description: 'Rungta International Skills University (RISU), located at the sprawling 150+ acre Rungta Educational Campus (R1) on Kohka-Kurud Road in Bhilai, Chhattisgarh, is India\'s premier skill-focused private university established under the Chhattisgarh Private Universities Act and backed by the prestigious Santosh Rungta Group of Institutions (est. 1999, NAAC \'A\' Grade). Through its Faculty of Science & Forensic Sciences, the university offers specialized undergraduate, postgraduate, and doctoral programs in B.Sc. (Hons.) Forensic Science, M.Sc. Forensic Science, and Ph.D. in Forensic & Allied Sciences with industry-integrated hands-on crime scene, toxicology, serology, and DNA profiling training.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 in Science stream with Physics, Chemistry, and Biology / Mathematics from a recognized Central or State Board',
+        estimatedFees: '₹50,000 - ₹55,000 / year (approx. ₹1,50,000 total for 3 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence & Reconstruction',
+          'Questioned Documents, Handwriting Analysis & Fingerprint Science',
+          'Forensic Chemistry, Toxicology, Serology & Preliminary DNA Profiling',
+          'Forensic Ballistics & Medico-Legal Evidence Fundamentals'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry, Physics, Biology, Biotechnology, Microbiology, Biochemistry, or allied Life Sciences with minimum 50% aggregate marks',
+        estimatedFees: '₹70,000 - ₹75,500 / year (approx. ₹1,40,000 - ₹1,51,000 total)',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Forensic Toxicology, Narcotics & Instrumental Chemical Analysis',
+          'Forensic Biology, Serology, Molecular Diagnostics & DNA Fingerprinting',
+          'Questioned Document Examination, Forensic Ballistics & Explosives',
+          'Crime Scene Reconstruction & Dissertation Research'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science & Allied Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree (M.Sc.) in Forensic Science, Chemistry, Life Sciences, or allied discipline with minimum 55% aggregate marks + RISU Ph.D. Entrance Test / UGC-CSIR NET + Interview',
+        estimatedFees: '₹60,000 - ₹80,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Analytical Toxicology, Environmental Forensics & Trace Evidence',
+          'Forensic Biosciences, Serology & Questioned Documents'
+        ]
+      }
+    ],
+    feesRange: '₹50,000 - ₹80,000 / year',
+    admissionProcess: 'Merit-based on 10+2 / Graduation Marks or CUET-UG / CUET-PG scores followed by Rungta University Counselling & Personal Interview',
+    accreditation: 'UGC Recognized | Chhattisgarh Private Universities Act | NAAC \'A\' Grade Accredited Group (Rungta R1) | AICTE, PCI & BCI Approved | NIRF Innovation Ranked',
+    contactEmail: 'info@rungta.ac.in',
+    contactPhone: '+91 90162 24444 / +91 90162 25555 / +91 92291 11666',
+    address: 'Rungta Educational Campus (R1), Kohka-Kurud Road, Bhilai, Dist. Durg, Chhattisgarh 490024, India',
+    ranking: '#1 Ranked Private Educational Group in Central India & Chhattisgarh (NIRF Innovation & Outlook Rankings)',
+    facilities: [
+      'Dedicated Forensic Science, Crime Scene Simulation, Toxicology & Analytical Chemistry Laboratories',
+      'Advanced Serology, Fingerprint Examination & Questioned Document Analysis Labs',
+      '150+ Acre Wi-Fi Enabled R1 Smart Campus with Central Digital Library, E-Journals & Auditorium Complex',
+      'Separate AC/Non-AC Boys & Girls Hostels (2,500+ Capacity), Multi-Cuisine Mess, Gymnasium & Outdoor Sports Complex',
+      'RUBI (Rungta Business Incubator) Startup Cell & Central India\'s Largest Placement Cell ("PLACEMENTS NAMA")'
+    ],
+    featured: true
+  },
+  {
+    id: 'uttaranchal-university-dehradun',
+    name: 'Uttaranchal University, Dehradun (School of Applied & Life Sciences)',
+    shortName: 'Uttaranchal University Dehradun',
+    city: 'Dehradun',
+    state: 'Uttarakhand',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://uudoon.in/assets/images/uu-logo.svg',
+    bannerImage: 'https://uudoon.in/assets/images/home-image-2.webp',
+    website: 'https://www.uudoon.in',
+    description: 'Uttaranchal University, located in Premnagar, Dehradun, is the first private university in Uttarakhand to be accredited with the prestigious NAAC \'A+\' Grade in its very first cycle. Through its School of Applied and Life Sciences (SALS), the university offers industry-aligned B.Sc. (Hons. / Hons. with Research) in Forensic Science, M.Sc. in Forensic Science, and Ph.D. programs. Students receive intensive practical training in indoor and outdoor crime scene investigation, forensic toxicology, serology, DNA profiling, ballistics, questioned documents, and moot courtroom testimony, alongside national forensic conclaves such as "Pramanam".',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons. / Hons. with Research) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 examination in Science stream (PCM / PCB) from a recognized board with a minimum of 50% aggregate marks (45% for SC/ST category)',
+        estimatedFees: '₹1,25,000 - ₹1,45,000 / year (approx. ₹4,10,000 - ₹4,31,000 total; Uttarakhand Quota & Merit Scholarships available)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Management, Physical Evidence & Reconstruction',
+          'Questioned Documents, Fingerprint Science & Impressions Analysis',
+          'Forensic Chemistry, Toxicology, Serology & DNA Profiling',
+          'Forensic Ballistics & Criminal Law Basics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science, Physical Sciences, Chemical Sciences, Life Sciences, Biotechnology, Microbiology, or allied Science discipline from a recognized university with minimum 50% aggregate marks (45% for SC/ST)',
+        estimatedFees: '₹1,50,000 - ₹1,90,000 / year (approx. ₹3,00,000 - ₹3,83,000 total; Merit & State Quota Concessions applicable)',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Forensic Toxicology, Analytical Chemistry & Pharmacology',
+          'Forensic Biology, Serology, Molecular Genetics & DNA Fingerprinting',
+          'Questioned Document Examination, Forensic Ballistics & Explosives',
+          'Crime Scene Reconstruction & Dissertation Research'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science & Applied Life Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree (M.Sc.) in Forensic Science or allied Life / Chemical Sciences with minimum 55% aggregate marks + Uttaranchal University Entrance Test / UGC-CSIR NET + Interview',
+        estimatedFees: '₹80,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Trace Evidence & Instrumental Chemical Analysis',
+          'Forensic Biology, DNA Profiling, Questioned Documents & Criminalistics'
+        ]
+      }
+    ],
+    feesRange: '₹1,25,000 - ₹1,90,000 / year',
+    admissionProcess: 'Merit-based on 10+2 / Graduation marks or CUET-UG / CUET-PG scores followed by Uttaranchal University Centralized Counselling (26% Fee Concession for Uttarakhand Domicile & Merit Scholarships up to 30%)',
+    accreditation: 'NAAC \'A+\' Grade Accredited (CGPA 3.30) | UGC Recognized under Sections 2(f) & 12(B) | Uttarakhand Govt. Act No. 11 of 2013 | AICTE, BCI & PCI Approved | NIRF & WURI Ranked',
+    contactEmail: 'university@uumail.in',
+    contactPhone: '+91 135 2770300 / +91 135 3509300 / +91 76177 74454',
+    address: 'Arcadia Grant, Chandanwari, Premnagar, Dehradun, Uttarakhand 248007, India',
+    ranking: 'NAAC \'A+\' Grade (1st Private University in Uttarakhand) | WURI Global Top Innovative University & NIRF Ranked',
+    facilities: [
+      'School of Applied & Life Sciences (SALS) Forensic Criminalistics, Toxicology, Serology & Ballistics Laboratories',
+      'Outdoor & Indoor Crime Scene Simulation Arena and Moot Court Training Integration with Law College Dehradun',
+      'Central Instrumentation Facility (HPLC, GC-MS, FTIR, UV-Vis Spectrophotometer & PCR Thermal Cyclers)',
+      '70+ Acre Lush Green Campus in Doon Valley with Central Digital Library, Auditorium & 2,500+ Capacity Hostels'
+    ],
+    featured: true
+  },
+  {
+    id: 'nagarathinam-angalammal-arts-and-science-college-madurai',
+    name: 'Nagarathinam Angalammal Arts & Science College, Madurai (NAASC)',
+    shortName: 'NAAS College Madurai',
+    city: 'Madurai',
+    state: 'Tamil Nadu',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://naascollege.com/uploads/settings/1773913804783_29c2.webp',
+    bannerImage: 'https://naascollege.com/og.webp',
+    website: 'https://naascollege.com',
+    description: 'Nagarathinam Angalammal Arts and Science College (NAASC), established in 2018 at Valayankulam near Madurai Airport, is a premier co-educational self-financing institution affiliated with Madurai Kamaraj University (MKU) and approved by the Government of Tamil Nadu. The Department of Forensic Science at NAASC offers a full-time 3-year B.Sc. in Forensic Science designed to equip students in southern Tamil Nadu with practical expertise in crime scene investigation, fingerprint dactyloscopy, forensic chemistry & toxicology, forensic biology, questioned document analysis, and criminal law procedures.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 Years (6 Semesters)',
+        eligibility: 'Pass in Higher Secondary (10+2 / HSC) examination with Science stream (Physics, Chemistry, and Biology / Mathematics / Computer Science) from Tamil Nadu State Board, CBSE, or equivalent recognized board',
+        estimatedFees: '₹40,000 - ₹60,000 / year (approx. ₹1,20,000 - ₹1,80,000 total for 3 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence Collection & Reconstruction',
+          'Dermatoglyphics (Fingerprint Analysis), Footprint & Toolmark Examination',
+          'Forensic Chemistry, Toxicology, Serology & Biological Evidence Analysis',
+          'Questioned Documents, IPC/BNS & Criminal Procedure'
+        ]
+      }
+    ],
+    feesRange: '₹40,000 - ₹60,000 / year',
+    admissionProcess: 'Direct Merit-based Admission based on 10+2 (HSC / CBSE / ISC) Science marks as per Madurai Kamaraj University (MKU) and Government of Tamil Nadu norms',
+    accreditation: 'Affiliated to Madurai Kamaraj University (MKU), Madurai | Recognized by Government of Tamil Nadu | ISO Certified Institution',
+    contactEmail: 'info@naascollege.com',
+    contactPhone: '+91 96559 15151 / +91 86800 15151 / +91 82200 46162',
+    address: 'S.No. 32/1, Four-Way Track, Near Madurai Airport, Valayankulam Village, Perungudi, Tiruparankundram Taluk, Madurai, Tamil Nadu 625022, India',
+    ranking: 'Top Emerging Affiliated Forensic & Applied Science College under Madurai Kamaraj University in Southern Tamil Nadu',
+    facilities: [
+      'Dedicated Forensic Science Laboratory for Fingerprint Lifting, Crime Scene Reconstruction, Toxicology & Serology',
+      'Field Visits & Practical Exposure with Police Stations, Regional Forensic Science Laboratories (RFSL Madurai) & Courts',
+      'Modern Science Laboratories, Digital Library, Seminar Halls & Smart Classrooms near Madurai Ring Road',
+      'Separate Boys & Girls Hostels, College Bus Fleet across Madurai & Surrounding Districts, and Sports Complex'
+    ],
+    featured: true
+  },
+  {
+    id: 'medicaps-university-indore',
+    name: 'Medi-Caps University, Indore (Faculty of Science — Department of Forensic Science)',
+    shortName: 'Medi-Caps University Indore',
+    city: 'Indore',
+    state: 'Madhya Pradesh',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://www.medicaps.ac.in/public/frontend/images/medicaps-logo-new.webp',
+    bannerImage: 'https://www.medicaps.ac.in/uploads/home/banner_images/banner.webp',
+    website: 'https://www.medicaps.ac.in',
+    description: 'Medi-Caps University, Indore (established in 2000 as Medi-Caps Group and constituted as a State Private University under the Madhya Pradesh Niji Vishwavidyalaya Adhiniyam) is one of Central India\'s largest and highest-ranked private universities. Under its Faculty of Science, the Department of Forensic Science offers comprehensive B.Sc. (Hons.) in Forensic Science, M.Sc. in Forensic Science, and Ph.D. programs. Backed by formal training collaborations with the Sherlock Institute of Forensic Science (SIFS India) and regional forensic labs, students gain hands-on mastery in crime scene management, analytical toxicology, DNA fingerprinting, ballistics, and questioned documents.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020)',
+        eligibility: '10+2 (Higher Secondary) from a recognized board with Physics and Chemistry as compulsory subjects along with Biology or Mathematics and a minimum of 50% aggregate marks',
+        estimatedFees: '₹1,10,000 / year (approx. ₹3,30,000 - ₹3,47,000 total for 3 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence & Criminalistics',
+          'Questioned Documents, Fingerprint Science & Biometric Identification',
+          'Forensic Chemistry, Toxicology, Serology & Preliminary DNA Analysis',
+          'Forensic Ballistics & Medico-Legal Jurisprudence'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. in Forensic Science or B.Sc. with Chemistry, Physics, Biology, Biotechnology, Microbiology, Biochemistry, or allied Science discipline from a recognized university with minimum 50% aggregate marks',
+        estimatedFees: '₹90,000 / year (approx. ₹1,80,000 total for 2 years)',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Forensic Toxicology, Narcotics & Instrumental Chemical Analysis',
+          'Forensic Biology, Serology, Molecular Diagnostics & DNA Profiling',
+          'Questioned Document Examination, Forensic Ballistics & Explosives',
+          'Crime Scene Reconstruction & Dissertation Research'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science & Allied Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree (M.Sc.) in Forensic Science or allied Science discipline with minimum 55% aggregate marks + Medi-Caps Ph.D. Entrance Test / UGC-CSIR NET + Interview',
+        estimatedFees: '₹70,000 - ₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Analytical Chemistry & Trace Evidence',
+          'Forensic Biosciences & Questioned Documents'
+        ]
+      }
+    ],
+    feesRange: '₹90,000 - ₹1,10,000 / year',
+    admissionProcess: 'Admission through Medi-Caps University Scholarship cum Admission Test (MU-SAT), CUET-UG / CUET-PG, or Qualifying Exam Merit followed by University Counselling',
+    accreditation: 'UGC Recognized under Section 2(f) | Established under MP Niji Vishwavidyalaya Adhiniyam | AICTE, PCI & BCI Approved | NIRF Ranked (151–200 Engineering Band)',
+    contactEmail: 'info@medicaps.ac.in',
+    contactPhone: '+91 731 3111500 / +91 731 3111501 / +91 77230 19450',
+    address: 'A.B. Road, Pigdamber, Rau, Indore, Madhya Pradesh 453331, India',
+    ranking: '#1 Ranked Private University in Madhya Pradesh & Central India (Times & i3RC Placement Rankings) | NIRF Ranked',
+    facilities: [
+      'Department of Forensic Science Crime Scene Simulation, Toxicology, Serology, Fingerprint & Questioned Document Labs',
+      'Academic & Internship MoU with Sherlock Institute of Forensic Science (SIFS India) and Regional Forensic Labs',
+      '50+ Acre Wi-Fi Enabled Rau Campus with Central Library (1,00,000+ Volumes), Incubation Cell (MII Foundation) & Labs',
+      'Separate On-Campus Boys & Girls Hostels, Sports Complex, Gymnasium, Medical Centre & 50+ Bus Fleet across Indore-Dewas-Mhow'
+    ],
+    featured: true
+  },
+  {
+    id: 'jaipur-national-university-jaipur',
+    name: 'Jaipur National University, Jaipur (School of Life & Basic Sciences)',
+    shortName: 'JNU Jaipur',
+    city: 'Jaipur',
+    state: 'Rajasthan',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://www.jnujaipur.ac.in/public/frontend/assets/images/logo/jnu-logo.webp',
+    bannerImage: 'https://www.jnujaipur.ac.in/public/uploads/banner/21_pic-1.webp',
+    website: 'https://www.jnujaipur.ac.in',
+    description: 'Jaipur National University (JNU), Jaipur, established in 2007 under the Jaipur National University Act of the Government of Rajasthan, is the first private university in Rajasthan to be accredited by NAAC and holds the prestigious NAAC \'A+\' Grade. Through its School of Life & Basic Sciences and JNU Institute for Medical Sciences & Research Centre (JNUIMSRC), the university offers NEP 2020-aligned 4-year B.Sc. (Hons.) in Forensic Science, 2-year M.Sc. in Forensic Science, and Ph.D. programs. Students benefit from direct medico-legal autopsy, clinical toxicology, DNA profiling, and crime scene reconstruction exposure integrated with the 1,100+ bed JNU Hospital & Medical College on the Jagatpura campus.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. (Hons.) in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3-4 Years (NEP 2020 with Mandatory Internship)',
+        eligibility: '10+2 examination in Science stream with Physics, Chemistry, and Biology (PCB) or Mathematics (PCM) along with English and a minimum of 50% aggregate marks',
+        estimatedFees: '₹42,100 / year (approx. ₹1,68,400 total tuition for 4 years + lab & exam charges)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Physical Evidence & Criminalistics',
+          'Questioned Documents, Handwriting & Fingerprint Analysis (Dactyloscopy)',
+          'Forensic Chemistry, Toxicology, Serology & DNA Profiling',
+          'Forensic Medicine & Autopsy Exposure'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Sc. Pass or (Hons.) degree in Forensic Science, Chemistry, Biochemistry, Biotechnology, Microbiology, Zoology, Botany, Computer Science, or allied Life/Physical Sciences with minimum 50% aggregate marks',
+        estimatedFees: '₹60,000 / year (approx. ₹1,20,000 total tuition for 2 years + lab & exam charges)',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Forensic Toxicology, Narcotics & Instrumental Chemical Analysis',
+          'Forensic Biology, Serology, Molecular Genetics & DNA Fingerprinting',
+          'Questioned Document Examination, Forensic Ballistics & Explosives',
+          'Medico-Legal Jurisprudence & Dissertation Research'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science & Life Sciences',
+        degreeLevel: 'Doctorate',
+        duration: '3-5 Years',
+        eligibility: 'Master’s Degree (M.Sc.) in Forensic Science or allied Life / Chemical Sciences with minimum 55% aggregate marks + JNU Ph.D. Entrance Test / UGC-CSIR NET + Personal Interview',
+        estimatedFees: '₹90,000 - ₹1,10,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Forensic Toxicology, Analytical Chemistry & Trace Evidence',
+          'Forensic Biosciences, DNA Profiling, Questioned Documents & Criminalistics'
+        ]
+      }
+    ],
+    feesRange: '₹42,100 - ₹90,000 / year',
+    admissionProcess: 'Merit in Qualifying Examination (10+2 / Graduation) or CUET-UG / CUET-PG / JNU Combined Entrance Test followed by Personal Interview (PI)',
+    accreditation: 'NAAC \'A+\' Grade Accredited | UGC Recognized under Section 2(f) | Established by Govt. of Rajasthan Act 2007 | NMC, AICTE, BCI, PCI & INC Approved | NIRF Ranked',
+    contactEmail: 'admissions@jnujaipur.ac.in',
+    contactPhone: '1800 102 1900 / +91 88239 99216 / +91 88750 20636 / +91 141 7197070',
+    address: 'Jaipur-Agra Bypass, Near New RTO Office, Jagatpura, Jaipur, Rajasthan 302017, India',
+    ranking: 'NAAC \'A+\' Grade | Ranked Top 25 Private Universities in India (India Today) & NIRF Ranked',
+    facilities: [
+      'School of Life & Basic Sciences Forensic Criminalistics, Toxicology, Serology, Ballistics & Document Examination Labs',
+      '1,100+ Bed JNU Institute for Medical Sciences & Research Centre (JNUIMSRC) for Medico-Legal & Clinical Forensic Exposure',
+      'Four Sprawling Wi-Fi Campuses (Main, Silas, SADTM & Medical Campus) in Jagatpura with Central Libraries & Auditoriums',
+      'Separate AC/Non-AC Boys & Girls Hostels, Sports Complex, Gymnasium, Cafeterias & City-Wide Transport Fleet'
     ],
     featured: true
   }
@@ -7848,6 +8143,36 @@ const SLUG_ALIASES: Record<string, string> = {
   'jiit-university': 'jiit-university-noida',
   'jaypee-institute-of-information-technology': 'jiit-university-noida',
   'jaypee-noida': 'jiit-university-noida',
+  'rungta': 'rungta-international-skills-university-bhilai',
+  'risu': 'rungta-international-skills-university-bhilai',
+  'risu-bhilai': 'rungta-international-skills-university-bhilai',
+  'rungta-university': 'rungta-international-skills-university-bhilai',
+  'rungta-bhilai': 'rungta-international-skills-university-bhilai',
+  'rungta-r1': 'rungta-international-skills-university-bhilai',
+  'santosh-rungta': 'rungta-international-skills-university-bhilai',
+  'rungta-international-skills-university': 'rungta-international-skills-university-bhilai',
+  'uttaranchal': 'uttaranchal-university-dehradun',
+  'uttaranchal-university': 'uttaranchal-university-dehradun',
+  'uu-dehradun': 'uttaranchal-university-dehradun',
+  'uudoon': 'uttaranchal-university-dehradun',
+  'sals-dehradun': 'uttaranchal-university-dehradun',
+  'naas': 'nagarathinam-angalammal-arts-and-science-college-madurai',
+  'naasc': 'nagarathinam-angalammal-arts-and-science-college-madurai',
+  'naas-college': 'nagarathinam-angalammal-arts-and-science-college-madurai',
+  'naasc-madurai': 'nagarathinam-angalammal-arts-and-science-college-madurai',
+  'nagarathinam-angalammal': 'nagarathinam-angalammal-arts-and-science-college-madurai',
+  'nagarathinam-angalammal-college': 'nagarathinam-angalammal-arts-and-science-college-madurai',
+  'nagarathinam-angalammal-arts-and-science-college': 'nagarathinam-angalammal-arts-and-science-college-madurai',
+  'medicaps': 'medicaps-university-indore',
+  'medi-caps': 'medicaps-university-indore',
+  'medicaps-university': 'medicaps-university-indore',
+  'medi-caps-university': 'medicaps-university-indore',
+  'medicaps-indore': 'medicaps-university-indore',
+  'medi-caps-university-indore': 'medicaps-university-indore',
+  'jnu-jaipur': 'jaipur-national-university-jaipur',
+  'jaipur-national-university': 'jaipur-national-university-jaipur',
+  'jnujaipur': 'jaipur-national-university-jaipur',
+  'jnu-rajasthan': 'jaipur-national-university-jaipur',
   'nims': 'nims-university-jaipur',
   'nims-university': 'nims-university-jaipur',
   'nims-jaipur': 'nims-university-jaipur',
