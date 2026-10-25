@@ -5,6 +5,8 @@ import {
   DeviceTextStyle,
   generateTextId,
   getElementDomSelector,
+  findOverrideForElement,
+  isEligibleLeafElement,
   normalizeStr,
   isItemCustomized,
   resolveResponsiveText
@@ -571,6 +573,7 @@ export function AdminLiveEditor() {
     if (!newEl || newEl.closest('[data-admin-editor-ignore="true"]')) return;
     const tag = newEl.tagName.toLowerCase();
     if (['html', 'body', 'main', 'section', 'nav', 'header', 'footer', 'script', 'style'].includes(tag)) return;
+    if (!isEligibleLeafElement(newEl)) return;
 
     const rawText = normalizeStr(newEl.textContent || newEl.innerText || '');
     const domSelector = getElementDomSelector(newEl);
@@ -578,16 +581,21 @@ export function AdminLiveEditor() {
       !rawText && (tag === 'svg' || newEl.querySelector('svg'))
         ? `[Icon ${domSelector || 'element'}]`
         : '';
-    const existingId = newEl.getAttribute('data-wt-id');
     const existingOrig = newEl.getAttribute('data-wt-orig');
     const baseOrig = existingOrig ? normalizeStr(existingOrig) : rawText || fallbackIconOrig;
     if (!baseOrig) return;
 
-    const id = existingId || generateTextId(baseOrig);
-    const override = overrides[id];
+    const override = findOverrideForElement(
+      overrides,
+      newEl,
+      baseOrig,
+      domSelector,
+      location.pathname
+    );
+    const id = override?.id || generateTextId(baseOrig, domSelector, location.pathname);
 
     setEditingItem({
-      id: override?.id || id,
+      id,
       originalText: override?.originalText || baseOrig,
       domSelector: override?.domSelector || domSelector,
       currentText: override ? resolveResponsiveText(override, isMobileViewport) : rawText,
@@ -2020,7 +2028,9 @@ export function AdminLiveEditor() {
                     </button>
                   </div>
 
-                  {editingItem.element?.parentElement && !isModalCompact && (
+                  {editingItem.element?.parentElement &&
+                    isEligibleLeafElement(editingItem.element.parentElement) &&
+                    !isModalCompact && (
                     <button
                       type="button"
                       onClick={() => handleSelectRelativeElement(editingItem.element?.parentElement || null)}

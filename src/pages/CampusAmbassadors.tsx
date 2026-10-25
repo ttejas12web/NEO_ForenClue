@@ -266,8 +266,8 @@ export default function CampusAmbassadors() {
                     {/* Meta & Titles */}
                     <div className="space-y-2 text-center sm:text-left flex-grow">
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="px-2.5 py-0.5 rounded-full bg-[color-mix(in_srgb,currentColor_10%,transparent)] border border-[color-mix(in_srgb,currentColor_25%,transparent)] text-emerald-500 text-[10px] font-mono font-bold uppercase tracking-wider inline-flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                           {amb.status} Ambassador
                         </span>
                         <span className="px-2.5 py-0.5 rounded-full bg-warning/10 border border-warning/20 text-warning text-[10px] font-mono font-bold uppercase">

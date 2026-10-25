@@ -115,18 +115,27 @@ interface WebsiteTextContextType {
 
 const WebsiteTextContext = createContext<WebsiteTextContextType | undefined>(undefined);
 
-// Generate deterministic safe Firestore document ID from text
-export function generateTextId(originalText: string): string {
+// Generate deterministic safe Firestore document ID from text (and optional domSelector + page so repeated card items get unique IDs)
+export function generateTextId(
+  originalText: string,
+  domSelector?: string,
+  page?: string
+): string {
   const normalized = originalText.trim().replace(/\s+/g, ' ');
-  const slug = normalized
-    .slice(0, 30)
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/^_+|_+$/g, '') || 'txt';
+  const slug =
+    normalized
+      .slice(0, 30)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || 'txt';
+
+  const seed = domSelector
+    ? `${(page || '').trim()}::${domSelector.trim()}::${normalized}`
+    : normalized;
 
   let hash = 2166136261;
-  for (let i = 0; i < normalized.length; i++) {
-    hash ^= normalized.charCodeAt(i);
+  for (let i = 0; i < seed.length; i++) {
+    hash ^= seed.charCodeAt(i);
     hash = Math.imul(hash, 16777619);
   }
   const hashHex = (hash >>> 0).toString(16).padStart(8, '0');
@@ -189,6 +198,72 @@ function querySelectorSafe(selector?: string): HTMLElement | null {
   return null;
 }
 
+// Prevent layout/card container divs that wrap block elements from being treated as a single leaf text element
+export function isEligibleLeafElement(el?: HTMLElement | null): boolean {
+  if (!el) return false;
+  const tag = el.tagName.toLowerCase();
+  if (tag === 'div') {
+    if (el.children.length > 4) return false;
+    if (
+      el.querySelector(
+        'div, section, article, ul, ol, table, form, h1, h2, h3, h4, h5, h6, p'
+      )
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
+// Find an override specifically belonging to this DOM element (never matching a sibling card's override)
+export function findOverrideForElement(
+  overridesMap: Record<string, WebsiteTextItem>,
+  el: HTMLElement | null | undefined,
+  baseOrig: string,
+  domSelector: string,
+  page: string
+): WebsiteTextItem | undefined {
+  if (domSelector) {
+    const scopedId = generateTextId(baseOrig, domSelector, page);
+    if (overridesMap[scopedId]) {
+      return overridesMap[scopedId];
+    }
+  }
+
+  const existingId = el?.getAttribute('data-wt-id');
+  if (existingId && overridesMap[existingId]) {
+    const candidate = overridesMap[existingId];
+    if (!candidate.domSelector || candidate.domSelector === domSelector) {
+      return candidate;
+    }
+  }
+
+  if (domSelector) {
+    const isGlobalLayout =
+      domSelector.startsWith('nav') ||
+      domSelector.startsWith('header') ||
+      domSelector.startsWith('footer');
+    for (const item of Object.values(overridesMap)) {
+      if (!item || !item.domSelector) continue;
+      if (item.domSelector === domSelector) {
+        if (isGlobalLayout || !item.page || !page || item.page === page) {
+          return item;
+        }
+      }
+    }
+  }
+
+  const legacyId = generateTextId(baseOrig);
+  const legacyCandidate = overridesMap[legacyId];
+  if (legacyCandidate && !legacyCandidate.domSelector) {
+    if (!legacyCandidate.page || !page || legacyCandidate.page === page) {
+      return legacyCandidate;
+    }
+  }
+
+  return undefined;
+}
+
 const LOCAL_STORAGE_CACHE_KEY = 'forenclue_website_texts_cache';
 const LOCAL_ADMIN_SAVED_KEY = 'forenclue_admin_saved_overrides';
 const STYLE_ELEMENT_ID = 'forenclue-live-text-styles';
@@ -234,7 +309,9 @@ export function normalizeStr(str: string): string {
 function buildOrigLookupMap(itemsMap: Record<string, WebsiteTextItem>): Map<string, WebsiteTextItem> {
   const map = new Map<string, WebsiteTextItem>();
   Object.values(itemsMap).forEach((item) => {
-    if (item && item.originalText) {
+    // Only index items that do NOT have a specific domSelector.
+    // Any item with a domSelector is strictly scoped to its selected element so repeated cards (e.g. "Active" on /volunteers) are never mass-overwritten.
+    if (item && item.originalText && !item.domSelector) {
       const norm = normalizeStr(item.originalText);
       if (norm) {
         map.set(norm, item);
@@ -621,6 +698,14 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         cssBlocks.push(
           `html[data-wt-preview-device="desktop"] [data-wt-id="${safeId}"] { ${desktopCss} }`
         );
+        if (effectiveDesktopColor) {
+          cssBlocks.push(
+            `@media (min-width: 768px) { html:not([data-wt-preview-device="mobile"]) [data-wt-id="${safeId}"] > span:empty { background-color: currentColor !important; } }`
+          );
+          cssBlocks.push(
+            `html[data-wt-preview-device="desktop"] [data-wt-id="${safeId}"] > span:empty { background-color: currentColor !important; }`
+          );
+        }
         const lightDesktopColor = getLightModeSafeColor(effectiveDesktopColor, Boolean(desktopStyleObj?.bgColor));
         if (lightDesktopColor) {
           cssBlocks.push(
@@ -639,6 +724,14 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         cssBlocks.push(
           `html[data-wt-preview-device="mobile"] [data-wt-id="${safeId}"] { ${mobileCss} }`
         );
+        if (effectiveMobileColor) {
+          cssBlocks.push(
+            `@media (max-width: 767px) { html:not([data-wt-preview-device="desktop"]) [data-wt-id="${safeId}"] > span:empty { background-color: currentColor !important; } }`
+          );
+          cssBlocks.push(
+            `html[data-wt-preview-device="mobile"] [data-wt-id="${safeId}"] > span:empty { background-color: currentColor !important; }`
+          );
+        }
         const lightMobileColor = getLightModeSafeColor(effectiveMobileColor, Boolean(mobileStyleObj?.bgColor));
         if (lightMobileColor) {
           cssBlocks.push(
@@ -672,8 +765,9 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
 
       const origMap = originalToOverrideRef.current;
       const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+      const targetedElements = new Map<HTMLElement, WebsiteTextItem>();
 
-      // 0. Locate elements directly via saved structural domSelector (handles multi-node containers, deleted blocks & standalone icons)
+      // 0. Locate elements directly via saved structural domSelector (ensures only the exact selected card/element is updated)
       for (const override of activeOverridesList) {
         if (!override.domSelector) continue;
         const isGlobalLayoutSelector =
@@ -684,7 +778,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
           continue;
         }
         const matchedBySelector = querySelectorSafe(override.domSelector);
-        if (matchedBySelector) {
+        if (matchedBySelector && isEligibleLeafElement(matchedBySelector)) {
           const existingId = matchedBySelector.getAttribute('data-wt-id');
           const elRawText = normalizeStr(
             matchedBySelector.innerText || matchedBySelector.textContent || ''
@@ -702,6 +796,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
             elRawText === '';
 
           if (matchesTextOrAlreadyTagged) {
+            targetedElements.set(matchedBySelector, override);
             applyOverrideToDomElement(matchedBySelector, override, isMobileViewport);
           }
         }
@@ -715,20 +810,49 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
           el.removeAttribute('data-wt-orig');
           return;
         }
+        if (targetedElements.has(el)) {
+          return;
+        }
         const id = el.getAttribute('data-wt-id');
         const orig = el.getAttribute('data-wt-orig');
-        const match = (id && overrides[id]) || lookupByOriginalText(origMap, orig);
-        if (match) {
-          applyOverrideToDomElement(el, match, isMobileViewport);
+        const candidateById = id ? overrides[id] : undefined;
+
+        if (candidateById) {
+          if (candidateById.domSelector) {
+            const expectedEl = querySelectorSafe(candidateById.domSelector);
+            if (expectedEl !== el) {
+              // Element does not match the override's specific domSelector (e.g. a sibling card); restore its original text
+              const origText = orig || candidateById.originalText || '';
+              el.removeAttribute('data-wt-id');
+              el.removeAttribute('data-wt-orig');
+              if (origText && !origText.startsWith('[Icon ')) {
+                updateElementText(el, origText);
+              }
+              return;
+            }
+          }
+          applyOverrideToDomElement(el, candidateById, isMobileViewport);
+          return;
+        }
+
+        const fallbackMatch = lookupByOriginalText(origMap, orig);
+        if (fallbackMatch && !fallbackMatch.domSelector) {
+          applyOverrideToDomElement(el, fallbackMatch, isMobileViewport);
         }
       });
 
-      // 2. Element-level check for headings/buttons/badges/containers (runs BEFORE TreeWalker so multi-span containers match before child text nodes are cleared)
+      // 2. Legacy fallback ONLY for overrides that do NOT have a domSelector
+      const selectorlessOverrides = activeOverridesList.filter((o) => !o.domSelector);
+      if (selectorlessOverrides.length === 0) {
+        return;
+      }
+
       const candidateNodes = document.querySelectorAll<HTMLElement>(
         'h1, h2, h3, h4, h5, h6, button, a, p, span, label, li, td, th, blockquote, dt, dd, figcaption, strong, b, em, div'
       );
 
-      for (const override of activeOverridesList) {
+      for (const override of selectorlessOverrides) {
+        if (override.page && override.page !== currentPath) continue;
         if (!override.originalText) continue;
         const origNorm = normalizeStr(override.originalText);
         if (origNorm.length < 2 || origNorm.startsWith('[Icon ')) continue;
@@ -738,16 +862,12 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         const normMobileText = override.mobileText ? normalizeStr(override.mobileText) : '';
         const normDesktopText = override.desktopText ? normalizeStr(override.desktopText) : '';
 
+        const matchedCandidates: HTMLElement[] = [];
+
         candidateNodes.forEach((element) => {
           if (element.closest('[data-admin-editor-ignore="true"]')) return;
-          const tag = element.tagName.toLowerCase();
-          if (tag === 'div') {
-            if (element.children.length > 4) return;
-            const hasBlockDescendant = element.querySelector('div, section, article, ul, ol, table, form');
-            if (hasBlockDescendant && element.children.length > 2) return;
-          } else if (element.children.length > 6) {
-            return;
-          }
+          if (!isEligibleLeafElement(element)) return;
+          if (element.children.length > 6) return;
 
           const innerTxt = normalizeStr(element.innerText || '');
           const contentTxt = normalizeStr(element.textContent || '');
@@ -767,74 +887,14 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
             (normDesktopText.length >= 2 && fullText === normDesktopText);
 
           if (isMatch) {
-            applyOverrideToDomElement(element, override, isMobileViewport);
+            matchedCandidates.push(element);
           }
         });
-      }
 
-      // 3. Walk all text nodes across the entire document
-      const walker = document.createTreeWalker(
-        document.body,
-        NodeFilter.SHOW_TEXT,
-        {
-          acceptNode: (node) => {
-            const parent = node.parentElement;
-            if (!parent) return NodeFilter.FILTER_REJECT;
-            const tag = parent.tagName.toLowerCase();
-            if (['script', 'style', 'svg', 'path', 'noscript', 'code', 'pre'].includes(tag)) {
-              return NodeFilter.FILTER_REJECT;
-            }
-            if (parent.closest('[data-admin-editor-ignore="true"]')) {
-              return NodeFilter.FILTER_REJECT;
-            }
-            if (parent.isContentEditable) {
-              return NodeFilter.FILTER_REJECT;
-            }
-            const val = node.nodeValue?.trim();
-            if (!val || val.length === 0) {
-              return NodeFilter.FILTER_REJECT;
-            }
-            return NodeFilter.FILTER_ACCEPT;
-          }
+        // Never apply a selector-less override if multiple elements on the page share the same text (e.g. repeated profile cards)
+        if (matchedCandidates.length === 1) {
+          applyOverrideToDomElement(matchedCandidates[0], override, isMobileViewport);
         }
-      );
-
-      let currentNode = walker.nextNode();
-      while (currentNode) {
-        const textNode = currentNode as Text;
-        const currentVal = textNode.nodeValue || '';
-        const trimmedCurrent = normalizeStr(currentVal);
-
-        let originalText = textNodeOriginalMap.current.get(textNode);
-        if (!originalText) {
-          originalText = trimmedCurrent;
-          textNodeOriginalMap.current.set(textNode, originalText);
-        }
-
-        const override =
-          lookupByOriginalText(origMap, originalText) ||
-          lookupByOriginalText(origMap, trimmedCurrent);
-
-        if (override) {
-          const targetText = resolveResponsiveText(override, isMobileViewport);
-          const parentEl = textNode.parentElement;
-          if (parentEl && !parentEl.hasAttribute('data-wt-id')) {
-            parentEl.setAttribute('data-wt-id', override.id);
-            parentEl.setAttribute('data-wt-orig', override.originalText || originalText);
-          }
-
-          if (typeof targetText === 'string' && trimmedCurrent !== normalizeStr(targetText)) {
-            const leading = currentVal.match(/^\s*/)?.[0] || '';
-            const trailing = currentVal.match(/\s*$/)?.[0] || '';
-            textNode.nodeValue = targetText === '' ? '' : leading + targetText + trailing;
-          }
-
-          if (parentEl) {
-            applyOverrideToDomElement(parentEl, override, isMobileViewport);
-          }
-        }
-
-        currentNode = walker.nextNode();
       }
     } catch (err) {
       console.warn('DOM text replacement notice:', err);
@@ -951,6 +1011,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
 
     const items: TextItemDetail[] = [];
     const seenKeys = new Set<string>();
+    const currentPath = window.location.pathname;
 
     const candidateElements = document.querySelectorAll(
       'h1, h2, h3, h4, h5, h6, p, span, a, button, label, li, blockquote, dt, dd, td, th, figcaption, strong, b, em, div'
@@ -959,6 +1020,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
     candidateElements.forEach((el) => {
       const element = el as HTMLElement;
       if (element.closest('[data-admin-editor-ignore="true"]')) return;
+      if (!isEligibleLeafElement(element)) return;
       const tag = element.tagName.toLowerCase();
 
       // For generic divs, only include if they directly contain text nodes or very few inline children
@@ -971,26 +1033,29 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         if (element.children.length > 6) return;
       }
 
-      const existingId = element.getAttribute('data-wt-id');
       const existingOrig = element.getAttribute('data-wt-orig');
       const rawText = normalizeStr(element.innerText || element.textContent || '');
       const baseOriginal = existingOrig ? normalizeStr(existingOrig) : rawText;
       if (!baseOriginal || baseOriginal.length < 2 || baseOriginal.length > 2500) return;
 
-      const id = existingId || generateTextId(baseOriginal);
+      const domSelector = getElementDomSelector(element);
+      const override = findOverrideForElement(
+        overrides,
+        element,
+        baseOriginal,
+        domSelector,
+        currentPath
+      );
+      const id = override?.id || generateTextId(baseOriginal, domSelector, currentPath);
       if (seenKeys.has(id)) return;
       seenKeys.add(id);
 
-      const override =
-        overrides[id] ||
-        lookupByOriginalText(originalToOverrideRef.current, baseOriginal) ||
-        lookupByOriginalText(originalToOverrideRef.current, rawText);
       const isOverridden = isItemCustomized(override, baseOriginal);
 
       items.push({
-        id: override?.id || id,
+        id,
         originalText: override?.originalText || baseOriginal,
-        domSelector: override?.domSelector || getElementDomSelector(element),
+        domSelector: override?.domSelector || domSelector,
         currentText: override ? resolveResponsiveText(override, isMobileViewport) : rawText,
         mobileText: override?.mobileText || '',
         desktopText: override?.desktopText !== undefined ? override.desktopText : override?.text ?? rawText,
@@ -1004,7 +1069,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         isOverridden,
         element,
         tagName: tag,
-        page: window.location.pathname
+        page: currentPath
       });
     });
 
@@ -1023,14 +1088,15 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
     ) => {
       const trimmedOriginal = normalizeStr(originalText);
       const trimmedNew = newText.trim();
-      const docId = customId || generateTextId(trimmedOriginal);
       const now = new Date().toISOString();
 
       const computedSelector =
         extraOptions?.domSelector ||
         (targetElement ? getElementDomSelector(targetElement) : '') ||
-        overrides[docId]?.domSelector ||
+        (customId ? overrides[customId]?.domSelector : '') ||
         '';
+
+      const docId = customId || generateTextId(trimmedOriginal, computedSelector, page);
 
       const desktopColor = extraOptions?.desktopColor ?? extraOptions?.desktopStyle?.color ?? '';
       const mobileColor = extraOptions?.mobileColor ?? extraOptions?.mobileStyle?.color ?? '';
@@ -1097,20 +1163,28 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         timestamp: Date.now()
       });
 
-      // 1. Immediately update targetElement & all matching [data-wt-id] elements directly in the DOM
-      const matchedEls =
-        typeof document !== 'undefined'
-          ? Array.from(document.querySelectorAll<HTMLElement>(`[data-wt-id="${docId}"]`))
-          : [];
-      if (targetElement && !matchedEls.includes(targetElement)) {
+      // 1. Immediately update ONLY targetElement / exact domSelector match in the DOM
+      const matchedEls: HTMLElement[] = [];
+      if (targetElement && isEligibleLeafElement(targetElement)) {
         matchedEls.push(targetElement);
       }
       if (computedSelector) {
         const bySel = querySelectorSafe(computedSelector);
-        if (bySel && !matchedEls.includes(bySel)) {
+        if (bySel && isEligibleLeafElement(bySel) && !matchedEls.includes(bySel)) {
           matchedEls.push(bySel);
         }
       }
+      if (matchedEls.length === 0 && typeof document !== 'undefined') {
+        const byIdEls = Array.from(
+          document.querySelectorAll<HTMLElement>(`[data-wt-id="${docId}"]`)
+        );
+        byIdEls.forEach((el) => {
+          if (isEligibleLeafElement(el) && (!computedSelector || getElementDomSelector(el) === computedSelector)) {
+            matchedEls.push(el);
+          }
+        });
+      }
+
       matchedEls.forEach((el) => {
         applyOverrideToDomElement(el, payload, isMobileViewport);
         el.classList.add('admin-edit-saved-flash');
@@ -1121,8 +1195,13 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
 
       // 2. Optimistically update local state & in-memory cache
       saveLocalAdminItem(payload);
-      originalToOverrideRef.current.set(trimmedOriginal, payload);
-      originalToOverrideRef.current.set(trimmedOriginal.toLowerCase(), payload);
+      if (!payload.domSelector) {
+        originalToOverrideRef.current.set(trimmedOriginal, payload);
+        originalToOverrideRef.current.set(trimmedOriginal.toLowerCase(), payload);
+      } else {
+        originalToOverrideRef.current.delete(trimmedOriginal);
+        originalToOverrideRef.current.delete(trimmedOriginal.toLowerCase());
+      }
       setOverrides((prev) => {
         const next = { ...prev, [docId]: payload };
         try {
@@ -1131,7 +1210,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         return next;
       });
 
-      // 3. Immediately apply to all matching elements across the DOM
+      // 3. Immediately apply to matching element
       applyTextReplacements();
 
       // 4. Save to Firestore database
@@ -1182,13 +1261,27 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
 
       if (!overrides[idOrOriginalText]) {
         const normalized = normalizeStr(idOrOriginalText);
-        const match = lookupByOriginalText(originalToOverrideRef.current, normalized);
-        if (match) {
-          targetDocId = match.id;
-          originalTextKey = match.originalText || normalized;
+        const selector = targetElement ? getElementDomSelector(targetElement) : '';
+        const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+        const elementMatch = findOverrideForElement(
+          overrides,
+          targetElement,
+          normalized,
+          selector,
+          currentPath
+        );
+        if (elementMatch) {
+          targetDocId = elementMatch.id;
+          originalTextKey = elementMatch.originalText || normalized;
         } else {
-          targetDocId = generateTextId(normalized);
-          originalTextKey = normalized;
+          const match = lookupByOriginalText(originalToOverrideRef.current, normalized);
+          if (match) {
+            targetDocId = match.id;
+            originalTextKey = match.originalText || normalized;
+          } else {
+            targetDocId = generateTextId(normalized, selector, currentPath);
+            originalTextKey = normalized;
+          }
         }
       } else {
         originalTextKey = overrides[idOrOriginalText]?.originalText || '';
@@ -1400,7 +1493,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         return resolveResponsiveText(match, isMobileViewport);
       }
       const id = generateTextId(normalized);
-      if (overrides[id]) {
+      if (overrides[id] && !overrides[id].domSelector) {
         return resolveResponsiveText(overrides[id], isMobileViewport);
       }
       return defaultText !== undefined ? defaultText : originalText;
@@ -1464,7 +1557,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
       if (['html', 'body', 'main', 'section', 'nav', 'header', 'footer', 'script', 'style', 'input', 'textarea', 'select'].includes(tag)) {
         return false;
       }
-      if (tag === 'div' && el.children.length > 4) {
+      if (!isEligibleLeafElement(el)) {
         return false;
       }
       const text = (el.innerText || el.textContent || '').trim();
@@ -1480,10 +1573,15 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         const candidate =
           (svgEl.closest('button, a, h1, h2, h3, h4, h5, h6, label, li, p, span') as HTMLElement) ||
           (svgEl.parentElement as HTMLElement);
-        if (candidate && candidate.tagName.toLowerCase() === 'div' && candidate.children.length > 4) {
+        if (candidate && !isEligibleLeafElement(candidate)) {
           return svgEl as unknown as HTMLElement;
         }
         return candidate || (svgEl as unknown as HTMLElement);
+      }
+      // If clicking an empty decorative indicator (such as the status dot <span> inside the "Active" pill), resolve to its parent element
+      const rawText = (rawTarget.innerText || rawTarget.textContent || '').trim();
+      if (!rawText && rawTarget.children.length === 0 && rawTarget.parentElement) {
+        return rawTarget.parentElement;
       }
       return rawTarget;
     };
@@ -1516,25 +1614,28 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
       e.stopPropagation();
 
       const browserSelection = typeof window !== 'undefined' ? window.getSelection()?.toString().trim() || '' : '';
+      const currentPath = window.location.pathname;
 
       const domSelector = getElementDomSelector(target);
       // Prefer raw DOM textContent if innerText was transformed by CSS uppercase, so originalText matches DOM text nodes on refresh
       const rawTextContent = normalizeStr(target.textContent || '');
       const rawInnerText = normalizeStr(target.innerText || '');
       const rawText = rawTextContent || rawInnerText;
-      const existingId = target.getAttribute('data-wt-id');
       const existingOrig = target.getAttribute('data-wt-orig');
       const fallbackIconOrig = !rawText && (target.tagName.toLowerCase() === 'svg' || target.querySelector('svg'))
         ? `[Icon ${domSelector || 'element'}]`
         : '';
       const baseOrig = existingOrig ? normalizeStr(existingOrig) : rawText || fallbackIconOrig;
       if (!baseOrig) return;
-      const id = existingId || generateTextId(baseOrig);
 
-      const override =
-        overrides[id] ||
-        lookupByOriginalText(originalToOverrideRef.current, baseOrig) ||
-        lookupByOriginalText(originalToOverrideRef.current, rawInnerText);
+      const override = findOverrideForElement(
+        overrides,
+        target,
+        baseOrig,
+        domSelector,
+        currentPath
+      );
+      const id = override?.id || generateTextId(baseOrig, domSelector, currentPath);
       const isOverridden = isItemCustomized(override, baseOrig);
 
       const validSelectedSubstring =
@@ -1547,7 +1648,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
           : undefined;
 
       setEditingItem({
-        id: override?.id || id,
+        id,
         originalText: override?.originalText || baseOrig,
         domSelector: override?.domSelector || domSelector,
         currentText: override ? resolveResponsiveText(override, isMobileViewport) : rawText,
@@ -1564,7 +1665,7 @@ export function WebsiteTextProvider({ children }: { children: React.ReactNode })
         isOverridden,
         element: target,
         tagName: target.tagName.toLowerCase(),
-        page: window.location.pathname
+        page: currentPath
       });
     };
 

@@ -271,8 +271,8 @@ export default function Volunteers() {
                 className="bg-surface border border-black/10 dark:border-white/5 rounded-2xl p-6 relative group hover:border-warning/50 hover:shadow-[0_20px_35px_-10px_rgba(0,0,0,0.5),_0_0_30px_rgba(217,119,6,0.18)] transition-all duration-300 shadow-xl flex flex-col items-center text-center justify-between cursor-pointer"
               >
                 {/* Status Indicator */}
-                <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-[10px] font-mono uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <div className="absolute top-4 left-4 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[color-mix(in_srgb,currentColor_10%,transparent)] border border-[color-mix(in_srgb,currentColor_25%,transparent)] text-emerald-500 text-[10px] font-mono uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                   Active
                 </div>
 
