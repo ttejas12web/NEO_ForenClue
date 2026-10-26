@@ -11,6 +11,7 @@ import { SEOManager } from '@/components/layout/SEOManager';
 import { College, CollegeCourse } from '@/types/college';
 import { fetchColleges, fetchCollegeById, getCachedColleges, matchCollegeBySlug } from '@/services/collegeService';
 import { CollegeComparisonSystem, MAX_COMPARE_COLLEGES } from '@/components/colleges/CollegeComparisonModal';
+import { ForenClueCollegesAI } from '@/components/colleges/ForenClueCollegesAI';
 import { cn } from '@/lib/utils';
 
 const RETURN_TO_COLLEGE_KEY = 'forenclue_return_to_college_id';
@@ -2008,6 +2009,18 @@ export default function Colleges() {
           parseNumericMinFee={parseNumericMinFee}
           matchesCourseDegreeLevel={matchesCourseDegreeLevel}
         />
+
+        {/* ForenClue AI Bot (Left-Bottom Fingerprint College Counselor) */}
+        <ForenClueCollegesAI
+          colleges={colleges}
+          onSelectCollege={handleOpenDetails}
+          compareIds={compareCollegeIds}
+          onToggleCompare={(cId, e) => handleToggleCompare(cId, e)}
+          getFallbackBannerForCollege={getFallbackBannerForCollege}
+          getCollegeInitials={getCollegeInitials}
+          getDisplayInstitutionType={getDisplayInstitutionType}
+          parseNumericMinFee={parseNumericMinFee}
+        />
       </div>
     );
   }
@@ -3772,6 +3785,18 @@ export default function Colleges() {
         getDisplayInstitutionType={getDisplayInstitutionType}
         parseNumericMinFee={parseNumericMinFee}
         matchesCourseDegreeLevel={matchesCourseDegreeLevel}
+      />
+
+      {/* ForenClue AI Bot (Left-Bottom Fingerprint College Counselor) */}
+      <ForenClueCollegesAI
+        colleges={colleges}
+        onSelectCollege={handleOpenDetails}
+        compareIds={compareCollegeIds}
+        onToggleCompare={(cId, e) => handleToggleCompare(cId, e)}
+        getFallbackBannerForCollege={getFallbackBannerForCollege}
+        getCollegeInitials={getCollegeInitials}
+        getDisplayInstitutionType={getDisplayInstitutionType}
+        parseNumericMinFee={parseNumericMinFee}
       />
     </div>
   );

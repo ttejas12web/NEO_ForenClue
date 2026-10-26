@@ -157,6 +157,31 @@ export default function About() {
       points: [
         "Forensic Science Student"
       ]
+    },
+    {
+      name: "Pranav Kale Patil",
+      role: "Managing Director (MD)",
+      image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjtMbZr5AjExAGCqfwCJCaidFxFnNlRkh9KiRw7iwAjS1CINzxnRlEKIEO66fIaUEZfMjRYLOawndJh2aTVyoeSY88Ivbf2dS20SSoaz9YM8QisDdUJqGr1r8-0_-kBe94xNU9G5lpKFpxswLnhFnKQ220eLAvXUdmEaSh0BLle2SdpFiKaL4qC3wogd60/s1600/image.jpeg",
+      points: [
+        "Managing Director of ForenClue",
+        "Forensic Science & Operations"
+      ]
+    }
+  ];
+
+      const academicMentors = [
+    {
+      name: "Rajat Pithadia",
+      role: "Academic Mentor",
+      image: "https://blogger.googleusercontent.com/img/a/AVvXsEiseuO8LFJ74UtogyoZLu5orh44gH7WVqDM4oinlMLhD3u4grQKoinTCZYk-OfKJrXJjV8E9EZHoPbhefI60LoXmqO623wQXiv-4hXumhYmBrBJCh4HYvYk9ifZ4nSccrYe5qyJHQXAQvW_8Zgkdq3T7vCycYqiJy0aUSZYzhmqc8M12jhhUq3X1GoORws",
+      linkedin: "https://www.linkedin.com/in/rajatresearch",
+      points: [
+        "UGC-NET & GSET Qualified",
+        "Assistant Professor, Parul University",
+        "Wiley Author",
+        "Ph.D. Scholar (Genotoxicity & Mutagenicity)",
+        "M.Sc. (Forensic Chemistry, Toxicology & Pharmacology)"
+      ]
     }
   ];
 
@@ -257,9 +282,25 @@ export default function About() {
       >
         <h2 className="text-3xl font-heading font-black mb-12 text-center">Meet Our Leaders</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-center">
           {team.map((member, i) => (
             <TeamCard key={i} member={member} index={i} />
+          ))}
+        </div>
+      </motion.div>
+
+      <motion.div 
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, margin: "-50px" }}
+        transition={{ duration: 0.6 }}
+        className="max-w-7xl mx-auto mt-24 perspective-[2000px]"
+      >
+        <h2 className="text-3xl font-heading font-black mb-12 text-center">Academic Mentor</h2>
+        
+        <div className="max-w-md mx-auto">
+          {academicMentors.map((mentor, i) => (
+            <TeamCard key={i} member={mentor} index={i} />
           ))}
         </div>
       </motion.div>

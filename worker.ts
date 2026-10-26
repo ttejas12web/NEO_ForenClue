@@ -1012,6 +1012,62 @@ export default {
       return jsonError('Method not allowed.', 405);
     }
 
+    if (url.pathname === '/api/colleges/ai-chat' || url.pathname === '/api/colleges/ai-chat/') {
+      if (request.method === 'OPTIONS') {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Accept',
+          },
+        });
+      }
+      if (request.method !== 'POST') {
+        return Response.json({ error: 'Method not allowed.' }, { status: 405 });
+      }
+      try {
+        const body = (await request.json()) as Record<string, any>;
+        const topList = Array.isArray(body?.collegesContext) ? body.collegesContext.slice(0, 5) : [];
+        const recommendedCollegeIds =
+          Array.isArray(body?.fallbackCollegeIds) && body.fallbackCollegeIds.length > 0
+            ? body.fallbackCollegeIds
+            : topList.map((c: any) => c.id).filter(Boolean);
+        const answer =
+          typeof body?.fallbackAnswer === 'string' && body.fallbackAnswer.trim()
+            ? body.fallbackAnswer.trim()
+            : 'Here are the top matching forensic science colleges from the ForenClue `/colleges` directory.';
+        const followUpSuggestions =
+          Array.isArray(body?.fallbackFollowUps) && body.fallbackFollowUps.length > 0
+            ? body.fallbackFollowUps
+            : [
+                'Give best affordable low fees colleges in Maharashtra',
+                'Give NFSU best campus for M.Sc. Forensic Science',
+                'Top Government forensic science colleges in India',
+              ];
+
+        return Response.json(
+          { answer, recommendedCollegeIds, followUpSuggestions },
+          {
+            status: 200,
+            headers: {
+              'Cache-Control': 'no-store',
+              'Access-Control-Allow-Origin': '*',
+            },
+          }
+        );
+      } catch {
+        return Response.json(
+          {
+            answer: 'Here are the recommended colleges from our `/colleges` directory.',
+            recommendedCollegeIds: [],
+            followUpSuggestions: [],
+          },
+          { status: 200 }
+        );
+      }
+    }
+
     const dynamicTarget = getDynamicTarget(url);
     let publicationDocument: Record<string, unknown> | undefined;
     let publicationChecked = false;

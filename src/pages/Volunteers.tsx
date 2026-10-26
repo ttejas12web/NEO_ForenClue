@@ -228,12 +228,6 @@ const activeVolunteers: Volunteer[] = [
     image: 'https://blogger.googleusercontent.com/img/a/AVvXsEjng9ACXuQ2Iy2TGz3vpaM2o0uWdDm3YVMAk1rULLiAZywRJOoktWVMxiYhwq546gpVCyEn_TpJp7gvPxQHV_WAT2sRPJvMNe8uupRssB7rUa8AIbyNWNwv1253Jit2Llg0-9PjOpHxxrB1CgyUzNLF4dkeG1yGVrpUt_nzLeHpzO0o7SojbMgSNyEhbmg'
   },
   {
-    name: 'Pranav Kale',
-    role: 'Forensic Research Associate',
-    id: 'FC-VOL-2026-027',
-    image: 'https://blogger.googleusercontent.com/img/a/AVvXsEglbMaPKjUEnGzxCKf6Zi4SngP7TdlJ5B20dgg1-lU65kefVlwmsj3R6aPEXs62AmESwjFA2edK9ihg9i2MggaWeLxHH4i8TD2qOjyLXShHoceayRCFA-53FyAn8ZPsk3C9qd9l7xSJj9k5L86zmu8FbLp4Jorggd6BRHKz6HxQJlHHcFcHZ5MfaT-ehy0'
-  },
-  {
     name: 'Aayna Mohanty',
     role: 'Forensic Research Associate',
     id: 'FC-VOL-2026-034',

@@ -9,6 +9,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import fs from 'fs';
 import multer from 'multer';
 import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { GoogleGenAI, Type } from "@google/genai";
 
 import { COURSES } from './src/constants';
 
@@ -1379,6 +1380,134 @@ async function startServer() {
     } catch (dbError: any) {
       console.error("Database update error:", dbError);
       res.status(500).json({ error: "Failed to allocate free course." });
+    }
+  });
+
+  // ForenClue AI College Counselor Endpoint (powered by Gemini & /colleges directory data)
+  app.post("/api/colleges/ai-chat", async (req, res) => {
+    const { prompt, collegesContext, history, fallbackAnswer, fallbackCollegeIds, fallbackFollowUps } = req.body || {};
+    if (!prompt || typeof prompt !== "string") {
+      return res.status(400).json({ error: "Missing student question prompt." });
+    }
+
+    const buildFallbackPayload = () => {
+      const topList = Array.isArray(collegesContext) ? collegesContext.slice(0, 5) : [];
+      const synthesizedIds =
+        Array.isArray(fallbackCollegeIds) && fallbackCollegeIds.length > 0
+          ? fallbackCollegeIds
+          : topList.map((c: any) => c.id).filter(Boolean);
+
+      const synthesizedAnswer =
+        typeof fallbackAnswer === "string" && fallbackAnswer.trim()
+          ? fallbackAnswer.trim()
+          : topList.length > 0
+            ? `### Recommended Colleges from ForenClue Directory\n\n` +
+              topList
+                .map(
+                  (c: any, idx: number) =>
+                    `**${idx + 1}. ${c.name}** (${c.city}, ${c.state})\n` +
+                    `- **Institution Type:** ${c.type || "University"}\n` +
+                    `- **Fees Range:** ${c.feesRange || "Check official website"}\n` +
+                    (Array.isArray(c.courses) && c.courses.length > 0
+                      ? `- **Courses Offered:** ${c.courses.map((co: any) => co.name).slice(0, 3).join(", ")}\n`
+                      : "") +
+                    (c.admissionProcess ? `- **Admission Process:** ${c.admissionProcess}\n` : "")
+                )
+                .join("\n")
+            : "Please explore the verified colleges listed on our `/colleges` directory.";
+
+      return {
+        answer: synthesizedAnswer,
+        recommendedCollegeIds: synthesizedIds,
+        followUpSuggestions:
+          Array.isArray(fallbackFollowUps) && fallbackFollowUps.length > 0
+            ? fallbackFollowUps
+            : [
+                "Give best affordable low fees colleges in Maharashtra",
+                "Give NFSU best campus for M.Sc. Forensic Science",
+                "Top Government forensic science colleges in India",
+              ],
+      };
+    };
+
+    if (!process.env.GEMINI_API_KEY) {
+      return res.json(buildFallbackPayload());
+    }
+
+    try {
+      const ai = new GoogleGenAI({
+        apiKey: process.env.GEMINI_API_KEY,
+        httpOptions: {
+          headers: {
+            "User-Agent": "aistudio-build",
+          },
+        },
+      });
+
+      const systemInstruction = `You are "ForenClue AI", the official Forensic Science College & University Counselor on ForenClue's /colleges page.
+Your job is to help students find the best forensic science colleges, universities, courses (B.Sc., M.Sc., Ph.D., PG Diploma), fee structures, and admission pathways strictly using the provided "/colleges" directory data.
+
+Key rules:
+1. Rely strictly on the provided collegesContext JSON from the /colleges page. Do not invent fake colleges or inaccurate fees.
+2. When a student asks for "affordable" or "low fees" colleges (e.g., "best affordable low fees colleges in Maharashtra"), prioritize Government / State / Central institutes with the lowest fees first (such as Institute of Forensic Science Mumbai, Govt. Institute of Forensic Science Chhatrapati Sambhajinagar/Aurangabad, Govt. Institute of Forensic Science Nagpur, Yashwantrao Chavan Institute of Science Satara, etc., followed by affordable private universities), and clearly mention their exact feesRange / course fees and admission process.
+3. When a student asks about NFSU campuses (e.g., "give NFSU best campus for M.Sc."), highlight National Forensic Sciences University (NFSU) Gandhinagar (Headquarters & flagship campus) and NFSU Delhi (LNJN NICFS campus) first, along with other specialized NFSU campuses (Goa, Bhopal, Pune, Tripura, Dharwad, Guwahati), explaining their M.Sc. specializations, NFAT entrance exam, and fees.
+4. Format your "answer" in clean, well-structured Markdown with bullet points, bold college names, fees, courses, and actionable counseling advice.
+5. In "recommendedCollegeIds", return the exact "id" values (from collegesContext) of the top 3 to 6 colleges you recommend in your answer so the UI can display their campus photos, logos, fees, and interactive cards.`;
+
+      const conversationHistoryText = Array.isArray(history)
+        ? history
+            .map((h: any) => `${h.role === "user" ? "Student" : "ForenClue AI"}: ${h.content}`)
+            .join("\n\n")
+        : "";
+
+      const userContents = `Verified /colleges Directory Data (JSON):
+${JSON.stringify(collegesContext || [], null, 2)}
+
+${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\n` : ""}Student Question: ${prompt}`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.8-flash",
+        contents: userContents,
+        config: {
+          systemInstruction,
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              answer: {
+                type: Type.STRING,
+                description: "Comprehensive markdown answer referencing exact colleges, fees, courses, and admission info from /colleges data.",
+              },
+              recommendedCollegeIds: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.STRING,
+                },
+                description: "List of exact college 'id' strings from the provided collegesContext that match the answer (up to 6).",
+              },
+              followUpSuggestions: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.STRING,
+                },
+                description: "2 or 3 short follow-up questions the student might want to ask next.",
+              },
+            },
+            required: ["answer", "recommendedCollegeIds", "followUpSuggestions"],
+          },
+        },
+      });
+
+      const rawText = response.text;
+      if (!rawText) {
+        return res.json(buildFallbackPayload());
+      }
+
+      const parsed = JSON.parse(rawText.trim());
+      return res.json(parsed);
+    } catch (_err: any) {
+      // Gracefully return directory-grounded counselor answer when Gemini API key has depleted prepayment credits (402) or rate limits (429)
+      return res.json(buildFallbackPayload());
     }
   });
 
