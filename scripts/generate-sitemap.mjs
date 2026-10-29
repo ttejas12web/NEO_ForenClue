@@ -73,7 +73,43 @@ async function generateSitemap() {
     // Static pages configurations
     const staticPages = [
       { path: '/', priority: '1.0', changefreq: 'daily' },
-      { path: '/about', priority: '0.8', changefreq: 'monthly' },
+      {
+        path: '/about',
+        priority: '0.9',
+        changefreq: 'weekly',
+        images: [
+          {
+            loc: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhBbTT3QCs_EHXasFjAT9pC1laU-vAIRhIQ7qjpQHS3ErsprqykE9eT63H-XnATqutTGhCjq-zzbmvCeFhHfE0_DZ1wtZmu8pmARltV1makLhdqyCwftxjW55J0qyPbmjn6H6Abb6OzIHPUrkbkYOwmDeVxLmGyH_0nbr9qOnWtWKEg3NaPIvEJKTNg8vU/s1323/IMG_0865.PNG',
+            title: 'Tejas Tapse - Founder of ForenClue',
+            caption: 'Tejas Tapse, Founder of ForenClue Forensic Science & Cybersecurity EdTech Platform',
+          },
+          {
+            loc: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjt-N4hwGU4tzUkx9XwNKGHv2Te4J3tbfxJWFRXS6Z3KzdZX1f9VKZB88MYTeF4OqePRwDcGMbqjmOpoROSJlsSHaZJnLEIMnP2S98gBLOlP6IDs33SBqLf7yhLEyWCICI90IfGk5XV06fUYonMDC5zufGitO8-sTe1sIExdZcckiMh0VuZmmmPJpxhGQs/s1352/IMG_0866.PNG',
+            title: 'Mrunmayee Bodhe - Chief Executive Officer (CEO) of ForenClue',
+            caption: 'Mrunmayee Bodhe, Chief Executive Officer of ForenClue Ventures',
+          },
+          {
+            loc: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsllQMEHs5qT_GJSyZnGVcFH64Zadagai4Y9rlbFHQ9vuaVgX-3CgkApXQu660nTDPB0C3mEMJoZSnhLnOpBtTOt5mlEEADPKcOZbzcem8pq3flsJWbG6adC-aDmg9tlmyu4nGyaDh-TLzHanJ4dde67VUggiI5rMCb-4dVVUzRhY-A_EJKmiQgLkJez4/s1462/IMG_0859%20(1).PNG',
+            title: 'Ayush Gaikwad - Co-Founder of ForenClue',
+            caption: 'Ayush Gaikwad, Co-Founder of ForenClue',
+          },
+          {
+            loc: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjtMbZr5AjExAGCqfwCJCaidFxFnNlRkh9KiRw7iwAjS1CINzxnRlEKIEO66fIaUEZfMjRYLOawndJh2aTVyoeSY88Ivbf2dS20SSoaz9YM8QisDdUJqGr1r8-0_-kBe94xNU9G5lpKFpxswLnhFnKQ220eLAvXUdmEaSh0BLle2SdpFiKaL4qC3wogd60/s1600/image.jpeg',
+            title: 'Pranav Kale Patil - Managing Director (MD) of ForenClue',
+            caption: 'Pranav Kale Patil, Managing Director of ForenClue',
+          },
+          {
+            loc: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhk5LmpFNaR2YN6ZCUpVLvfWnJimYXwbrNtK9ztFDyfAD2frVDHHplRgN1_KZXjeh2RCHd40Q8EY2y3Qfygkw-wgZeK7rirHtRD-xL-JdW-FD7k0hsm8RSYWZc4gZvYOGkw1iZdp2J0MXzNmuma9_HEFdJMmN3tjmeTEEnbBDbKuMhVIr2xvVLdHN5u7CA/s1600/image.png',
+            title: 'Punam Gadade - Chief Technology Officer (CTO) of ForenClue',
+            caption: 'Punam Gadade, Chief Technology Officer (CTO) and Tech Professional at ForenClue',
+          },
+          {
+            loc: 'https://blogger.googleusercontent.com/img/a/AVvXsEiseuO8LFJ74UtogyoZLu5orh44gH7WVqDM4oinlMLhD3u4grQKoinTCZYk-OfKJrXJjV8E9EZHoPbhefI60LoXmqO623wQXiv-4hXumhYmBrBJCh4HYvYk9ifZ4nSccrYe5qyJHQXAQvW_8Zgkdq3T7vCycYqiJy0aUSZYzhmqc8M12jhhUq3X1GoORws',
+            title: 'Rajat Pithadia - Academic Mentor at ForenClue',
+            caption: 'Rajat Pithadia, Academic Mentor at ForenClue, UGC-NET & GSET Qualified Assistant Professor and Wiley Author',
+          },
+        ],
+      },
       { path: '/courses', priority: '0.9', changefreq: 'daily' },
       { path: '/cases', priority: '0.9', changefreq: 'daily' },
       { path: '/careers', priority: '0.7', changefreq: 'weekly' },
@@ -99,6 +135,18 @@ async function generateSitemap() {
       xml += `    <lastmod>${currentIsoDate}</lastmod>\n`;
       xml += `    <changefreq>${page.changefreq}</changefreq>\n`;
       xml += `    <priority>${page.priority}</priority>\n`;
+      if (Array.isArray(page.images)) {
+        page.images.forEach((img) => {
+          const safeLoc = img.loc.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeTitle = (img.title || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          const safeCaption = (img.caption || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          xml += `    <image:image>\n`;
+          xml += `      <image:loc>${safeLoc}</image:loc>\n`;
+          if (safeTitle) xml += `      <image:title>${safeTitle}</image:title>\n`;
+          if (safeCaption) xml += `      <image:caption>${safeCaption}</image:caption>\n`;
+          xml += `    </image:image>\n`;
+        });
+      }
       xml += `  </url>\n`;
     });
 

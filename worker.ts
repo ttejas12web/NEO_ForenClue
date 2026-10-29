@@ -86,6 +86,13 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
     image: DEFAULT_IMAGE,
     type: 'website',
   },
+  '/about': {
+    title: 'About ForenClue – Mission, Leadership & Academic Mentors | ForenClue',
+    description:
+      "Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform. Meet our leadership team, founders, and academic mentors.",
+    image: DEFAULT_IMAGE,
+    type: 'website',
+  },
   '/ebooks': {
     title: 'Academic eLibrary - Reference Textbook Vault | ForenClue',
     description:

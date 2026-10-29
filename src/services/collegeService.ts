@@ -7959,6 +7959,80 @@ export const SAMPLE_COLLEGES: College[] = [
       'Separate AC/Non-AC Boys & Girls Hostels, Sports Complex, Gymnasium, Cafeterias & City-Wide Transport Fleet'
     ],
     featured: true
+  },
+  {
+    id: 'nirwan-university-jaipur',
+    name: 'Nirwan University, Jaipur',
+    shortName: 'Nirwan University Jaipur',
+    city: 'Jaipur',
+    state: 'Rajasthan',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://www.nirwanuniversity.ac.in/images/logo.svg',
+    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    website: 'https://www.nirwanuniversity.ac.in',
+    description: 'Nirwan University, Jaipur is a premier multidisciplinary private university established in 2017 by the Government of Rajasthan under the Nirwan University, Jaipur Act, 2017 (Act No. 2 of 2017) and recognized by the University Grants Commission (UGC) under Section 2(f) of the UGC Act, 1956. Situated on a lush green campus along the Jaipur-Agra National Highway (NH-21), the university houses a dedicated School of Forensic Science and Cyber Forensics offering NEP 2020-aligned undergraduate, postgraduate, and doctoral programs in Forensic Science, Crime Scene Investigation, Digital & Cyber Forensics, Forensic Toxicology, Questioned Documents, Fingerprint Science, and Forensic Biology with hands-on laboratory training and field investigation exposure.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science and Cyber Forensics',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (6 / 8 Semesters - NEP 2020)',
+        eligibility: '10+2 examination in Science stream (Physics, Chemistry, and Biology / Mathematics / Computer Science) with a minimum of 50% aggregate marks from a recognized board (relaxation for reserved categories as per Rajasthan Govt. norms)',
+        estimatedFees: '₹35,000 / semester (approx ₹70,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & Physical Evidence',
+          'Cyber Forensics, Digital Evidence Recovery & Incident Response',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics Analysis',
+          'Questioned Documents, Handwriting & Fingerprint Examination (Dactyloscopy)',
+          'Forensic Biology, Serology & DNA Profiling'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science and Cyber Forensics',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'Bachelor’s degree (B.Sc.) in Forensic Science, Cyber Forensics, Chemistry, Biology, Physics, Biotechnology, Life Sciences, Computer Science, BCA, or B.Tech with a minimum of 50% aggregate marks from a recognized university',
+        estimatedFees: '₹40,000 - ₹50,000 / semester (approx ₹80,000 - ₹1,00,000 / year)',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Digital Forensics, Network Security & Malware Investigation',
+          'Forensic Toxicology, Instrumental Chemical Profiling & Trace Evidence',
+          'Forensic Serology, Molecular Genetics & DNA Fingerprinting',
+          'Questioned Document Examination, Forensic Ballistics & Cyber Law'
+        ]
+      },
+      {
+        name: 'Ph.D. in Forensic Science',
+        degreeLevel: 'Doctorate',
+        duration: 'Minimum 3 Years',
+        eligibility: 'Master’s degree (M.Sc. or equivalent) in Forensic Science, Cyber Forensics, or allied Physical / Life / Computer Sciences with minimum 55% aggregate marks (50% for SC/ST/OBC/Differently-Abled) + Nirwan Research Entrance Test (NRET) / UGC-NET / CSIR-NET + Personal Interview',
+        estimatedFees: '₹50,000 / semester (approx ₹1,00,000 / year + ₹15,000 enrollment & coursework fee)',
+        mode: 'Full-time',
+        specializations: [
+          'Cyber Crime Investigation, Digital Evidence & Network Forensics',
+          'Forensic Toxicology, Analytical Chemistry & Questioned Documents',
+          'Forensic Biosciences, Serology & Criminalistics'
+        ]
+      }
+    ],
+    feesRange: '₹70,000 - ₹1,00,000 / year (₹35,000 - ₹50,000 / semester)',
+    admissionProcess: 'Merit in Qualifying Examination (10+2 / Graduation) or CUET-UG / CUET-PG / Nirwan University Entrance Test followed by Personal Counseling & Document Verification; NRET / UGC-NET for Ph.D. admissions',
+    accreditation: 'UGC Recognized under Section 2(f) | Established by Govt. of Rajasthan Act No. 2 of 2017 | AICTE, PCI, NCTE & BCI Approved | AIU Member',
+    contactEmail: 'info@nirwanuniversity.ac.in',
+    contactPhone: '+91 92898 00300 / 0141-2228000',
+    address: 'Near Bassi-Rajadhok Toll, Village - Jhar, Agra Road (NH-21), Jaipur, Rajasthan 303305, India',
+    ranking: 'Leading Multidisciplinary Private University in Jaipur with Dedicated School of Forensic Science and Cyber Forensics',
+    facilities: [
+      'Dedicated School of Forensic Science and Cyber Forensics Laboratories',
+      'Crime Scene Investigation (CSI) Simulation & Evidence Reconstruction Arena',
+      'Cyber Forensics, Digital Evidence Analysis & Information Security Lab',
+      'Forensic Chemistry, Toxicology, Serology & Questioned Document Examination Labs',
+      'Central Digital Library with DELNET, E-Journals & Forensic Reference Collections',
+      'Wi-Fi Enabled Lush Green Campus on Jaipur-Agra Highway (NH-21) with Smart Classrooms & Seminar Halls',
+      'Separate Boys & Girls On-Campus Hostels with 24/7 Security, Mess, Sports Complex & Transport Fleet across Jaipur'
+    ],
+    featured: true
   }
 ];
 
@@ -8049,6 +8123,7 @@ const SLUG_ALIASES: Record<string, string> = {
   'shivaji-science-college': 'shri-shivaji-science-college-amravati',
   'gh-raisoni': 'gh-raisoni-nagpur',
   'ghrstu': 'gh-raisoni-nagpur',
+  'ghru': 'gh-raisoni-amravati',
   'ghrua': 'gh-raisoni-amravati',
   'ghru-amravati': 'gh-raisoni-amravati',
   'g-h-raisoni-university-amravati': 'gh-raisoni-amravati',
@@ -8173,6 +8248,10 @@ const SLUG_ALIASES: Record<string, string> = {
   'jaipur-national-university': 'jaipur-national-university-jaipur',
   'jnujaipur': 'jaipur-national-university-jaipur',
   'jnu-rajasthan': 'jaipur-national-university-jaipur',
+  'nirwan': 'nirwan-university-jaipur',
+  'nirwan-university': 'nirwan-university-jaipur',
+  'nirwan-jaipur': 'nirwan-university-jaipur',
+  'nu-jaipur': 'nirwan-university-jaipur',
   'nims': 'nims-university-jaipur',
   'nims-university': 'nims-university-jaipur',
   'nims-jaipur': 'nims-university-jaipur',

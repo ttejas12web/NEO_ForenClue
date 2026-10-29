@@ -973,13 +973,23 @@ export const ForenClueCollegesAI: React.FC<ForenClueCollegesAIProps> = ({
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const latestMessageTopRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // Scroll to the TOP of the new query/response so results are read from top to bottom
   useEffect(() => {
-    if (isOpen && messages.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
+    if (!isOpen || messages.length === 0) return;
+
+    const timer = setTimeout(() => {
+      if (messages.length <= 2 && scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (latestMessageTopRef.current) {
+        latestMessageTopRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 60);
+
+    return () => clearTimeout(timer);
   }, [messages, isOpen]);
 
   const handleSendQuestion = async (questionText?: string) => {
@@ -1117,9 +1127,28 @@ export const ForenClueCollegesAI: React.FC<ForenClueCollegesAIProps> = ({
 
   const hasCompareTray = compareIds.length > 0;
 
+  const QUICK_FILTER_PROMPTS: { label: string; prompt: string }[] = [
+    {
+      label: 'Under ₹50,000 Fees',
+      prompt: 'Best colleges for M.Sc. Cyber Security under 50,000 fees',
+    },
+    {
+      label: 'Maharashtra Low Fee',
+      prompt: 'Give best affordable low fees colleges in Maharashtra',
+    },
+    {
+      label: 'NFSU Campuses',
+      prompt: 'Give NFSU best campus for M.Sc. Forensic Science',
+    },
+    {
+      label: 'Govt. B.Sc. Colleges',
+      prompt: 'Top Government colleges for B.Sc. Forensic Science',
+    },
+  ];
+
   return (
     <>
-      {/* Minimalist, Professional Left-Bottom ForenClue AI Launcher */}
+      {/* Bright Professional Royal Blue Left-Bottom ForenClue AI Launcher */}
       <div
         className={cn(
           'fixed left-3 sm:left-5 z-[910] transition-all duration-300',
@@ -1140,23 +1169,23 @@ export const ForenClueCollegesAI: React.FC<ForenClueCollegesAIProps> = ({
               whileTap={{ scale: 0.98 }}
               onClick={() => setIsOpen(true)}
               aria-label="Open ForenClue AI Directory Advisor"
-              className="group flex items-center gap-2.5 pl-2.5 pr-3.5 py-2 sm:pl-3 sm:pr-4 sm:py-2.5 landscape:max-lg:py-1.5 landscape:max-lg:pl-2 landscape:max-lg:pr-3 rounded-xl bg-slate-950/95 dark:bg-slate-900/95 backdrop-blur-md text-white border border-slate-800 dark:border-white/15 hover:border-warning/60 shadow-[0_10px_30px_-10px_rgba(0,0,0,0.65)] cursor-pointer transition-all"
+              className="group flex items-center gap-2.5 pl-2.5 pr-3.5 py-2 sm:pl-3 sm:pr-4 sm:py-2.5 landscape:max-lg:py-1.5 landscape:max-lg:pl-2 landscape:max-lg:pr-3 rounded-xl bg-gradient-to-r from-[#1E40AF] to-[#2563EB] hover:from-[#1D4ED8] hover:to-[#3B82F6] text-white border border-blue-400/50 shadow-[0_12px_28px_-6px_rgba(37,99,235,0.55)] cursor-pointer transition-all"
             >
-              {/* Clean Architectural Fingerprint Emblem */}
-              <div className="relative w-8 h-8 sm:w-9 sm:h-9 landscape:max-lg:w-7 landscape:max-lg:h-7 rounded-lg bg-white/10 group-hover:bg-warning/20 border border-white/10 group-hover:border-warning/40 text-warning flex items-center justify-center transition-colors shrink-0">
+              {/* Fingerprint Emblem */}
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9 landscape:max-lg:w-7 landscape:max-lg:h-7 rounded-lg bg-white/15 group-hover:bg-white/20 border border-white/25 text-white flex items-center justify-center transition-colors shrink-0">
                 <Fingerprint size={18} className="stroke-[2]" />
-                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-950" />
+                <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-[#1E40AF]" />
               </div>
 
-              {/* Minimal Typography */}
+              {/* Typography */}
               <div className="text-left leading-none">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-xs sm:text-[13px] font-bold tracking-tight text-white">
+                  <span className="text-xs sm:text-[13px] font-semibold tracking-tight text-white">
                     ForenClue AI
                   </span>
                 </div>
-                <span className="block text-[10px] font-medium text-slate-400 mt-0.5 landscape:max-lg:hidden">
-                  College Advisor
+                <span className="block text-[10px] font-medium text-blue-100 mt-0.5 landscape:max-lg:hidden">
+                  Admissions Advisor
                 </span>
               </div>
             </motion.button>
@@ -1164,48 +1193,51 @@ export const ForenClueCollegesAI: React.FC<ForenClueCollegesAIProps> = ({
         </AnimatePresence>
       </div>
 
-      {/* Orientation-Friendly, Minimalist ForenClue AI Console */}
+      {/* Bright Professional Daylight & Royal Blue ForenClue AI Console */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: 18, scale: 0.98 }}
+            initial={{ opacity: 0, y: 16, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 18, scale: 0.98 }}
+            exit={{ opacity: 0, y: 16, scale: 0.98 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
             className={cn(
-              'fixed z-[995] flex flex-col bg-surface border border-black/15 dark:border-white/15 shadow-[0_24px_64px_-16px_rgba(0,0,0,0.75)] overflow-hidden transition-all duration-200',
+              'fixed z-[995] flex flex-col bg-[#F4F7FB] text-slate-900 border border-slate-200 shadow-[0_24px_60px_-12px_rgba(15,23,42,0.45)] overflow-hidden transition-all duration-200 font-sans',
               isExpanded
-                ? 'inset-2 sm:inset-auto sm:left-5 sm:bottom-5 sm:w-[min(92vw,720px)] sm:h-[min(86dvh,760px)] rounded-2xl'
+                ? 'inset-2 sm:inset-auto sm:left-5 sm:bottom-5 sm:w-[min(92vw,740px)] sm:h-[min(86dvh,760px)] rounded-2xl'
                 : [
                     // Portrait Mobile & Desktop default
-                    'inset-x-2.5 bottom-2.5 sm:inset-x-auto sm:left-5 sm:bottom-5 sm:w-[420px] md:w-[440px]',
-                    'h-[min(78dvh,600px)] max-h-[calc(100dvh-1.25rem)]',
-                    // Landscape Mobile & Small Tablet optimization (wider, full available height, compact chrome)
-                    'landscape:max-lg:inset-x-auto landscape:max-lg:left-3 landscape:max-lg:bottom-2 landscape:max-lg:w-[min(94vw,620px)] landscape:max-lg:h-[calc(100dvh-1rem)]',
+                    'inset-x-2.5 bottom-2.5 sm:inset-x-auto sm:left-5 sm:bottom-5 sm:w-[420px] md:w-[450px]',
+                    'h-[min(80dvh,620px)] max-h-[calc(100dvh-1.25rem)]',
+                    // Landscape Mobile & Small Tablet optimization
+                    'landscape:max-lg:inset-x-auto landscape:max-lg:left-3 landscape:max-lg:bottom-2 landscape:max-lg:w-[min(94vw,640px)] landscape:max-lg:h-[calc(100dvh-1rem)]',
                     'rounded-2xl',
                   ]
             )}
             role="dialog"
             aria-label="ForenClue AI College Directory Advisor"
           >
-            {/* Clean Minimalist Top Bar (Compact in Landscape) */}
-            <div className="px-3.5 py-2.5 sm:px-4 sm:py-3 landscape:max-lg:py-2 bg-crust border-b border-black/10 dark:border-white/10 flex items-center justify-between gap-2 shrink-0">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 landscape:max-lg:w-7 landscape:max-lg:h-7 rounded-lg bg-warning/15 border border-warning/30 text-warning flex items-center justify-center shrink-0">
-                  <Fingerprint size={17} className="stroke-[2.1]" />
+            {/* Bright Executive Royal Blue Header Bar */}
+            <div className="px-4 py-3 landscape:max-lg:py-2 bg-gradient-to-r from-[#1E3A8A] via-[#1D4ED8] to-[#2563EB] border-b border-blue-700/40 flex items-center justify-between gap-3 shrink-0 text-white">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-8 h-8 landscape:max-lg:w-7 landscape:max-lg:h-7 rounded-lg bg-white/15 border border-white/25 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <Fingerprint size={16} className="stroke-[2]" />
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-xs sm:text-[13px] font-bold tracking-tight text-text-main truncate">
+                    <h3 className="text-[13px] sm:text-sm font-semibold tracking-tight text-white truncate">
                       ForenClue AI
                     </h3>
-                    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25 text-emerald-600 dark:text-emerald-400 text-[9px] font-semibold uppercase tracking-wider">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                      Directory Live
+                    <span className="text-blue-200/60" aria-hidden="true">
+                      ·
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-blue-100">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                      <span>Directory Advisor</span>
                     </span>
                   </div>
-                  <p className="text-[10px] text-text-muted truncate landscape:max-lg:hidden">
-                    {colleges.length} verified institutions • Strict course & fee matching
+                  <p className="text-[11px] text-blue-100/85 truncate landscape:max-lg:hidden">
+                    {colleges.length} verified institutions · Course & tuition analysis
                   </p>
                 </div>
               </div>
@@ -1215,12 +1247,12 @@ export const ForenClueCollegesAI: React.FC<ForenClueCollegesAIProps> = ({
                   <button
                     type="button"
                     onClick={handleResetChat}
-                    title="Reset view"
-                    aria-label="Reset view"
-                    className="px-2 py-1 rounded-lg bg-surface hover:bg-black/5 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                    title="Clear conversation"
+                    aria-label="Clear conversation"
+                    className="px-2.5 py-1 rounded-lg bg-white/15 hover:bg-white/25 border border-white/20 text-white text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <RotateCcw size={12} />
-                    <span className="hidden xs:inline">Reset</span>
+                    <span className="hidden xs:inline">New Inquiry</span>
                   </button>
                 )}
                 <button
@@ -1228,75 +1260,85 @@ export const ForenClueCollegesAI: React.FC<ForenClueCollegesAIProps> = ({
                   onClick={() => setIsExpanded(prev => !prev)}
                   title={isExpanded ? 'Standard size' : 'Expand view'}
                   aria-label={isExpanded ? 'Standard size' : 'Expand view'}
-                  className="hidden sm:flex w-7 h-7 rounded-lg bg-surface hover:bg-black/5 dark:hover:bg-white/10 border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main items-center justify-center transition-colors cursor-pointer"
+                  className="hidden sm:flex w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 border border-white/20 text-white items-center justify-center transition-colors cursor-pointer"
                 >
                   {isExpanded ? <Minimize2 size={13} /> : <Maximize2 size={13} />}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsOpen(false)}
-                  title="Close panel"
-                  aria-label="Close panel"
-                  className="w-7 h-7 rounded-lg bg-surface hover:bg-rose-500/15 border border-black/10 dark:border-white/10 text-text-muted hover:text-rose-500 flex items-center justify-center transition-colors cursor-pointer"
+                  title="Close advisor"
+                  aria-label="Close advisor"
+                  className="w-7 h-7 rounded-lg bg-white/15 hover:bg-rose-500 border border-white/20 hover:border-rose-400 text-white flex items-center justify-center transition-colors cursor-pointer"
                 >
                   <X size={15} />
                 </button>
               </div>
             </div>
 
-            {/* Body Area: Minimalist Welcome Console (when empty) OR Active Conversation */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 landscape:max-lg:p-2.5 bg-background/50">
+            {/* Body Area: Bright Crisp Daylight Surface (#F4F7FB) */}
+            <div
+              ref={scrollContainerRef}
+              className="flex-1 overflow-y-auto p-4 landscape:max-lg:p-3 bg-[#F4F7FB]"
+            >
               {messages.length === 0 ? (
-                /* FIRST LOOK: Minimalist Professional Directory Console */
-                <div className="h-full flex flex-col justify-between gap-3 landscape:max-lg:gap-2">
-                  {/* Minimalist Hero Summary Card */}
-                  <div className="relative overflow-hidden rounded-xl bg-surface border border-black/10 dark:border-white/10 p-3.5 sm:p-4 landscape:max-lg:p-3">
-                    <Fingerprint
-                      size={88}
-                      className="absolute -right-4 -bottom-4 text-text-muted/5 pointer-events-none select-none stroke-[1.2]"
-                    />
-                    <div className="relative space-y-1.5">
-                      <div className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-warning">
-                        <SlidersHorizontal size={11} />
-                        <span>Forensic College Intelligence</span>
+                /* FIRST LOOK: Bright Professional Admissions Briefing */
+                <div className="h-full flex flex-col justify-between gap-4 landscape:max-lg:gap-2.5">
+                  {/* Editorial Introduction */}
+                  <div className="space-y-3">
+                    <div className="p-4 landscape:max-lg:p-3 rounded-xl bg-white border border-slate-200/90 shadow-xs">
+                      <div className="flex items-center gap-2 text-[11px] font-semibold text-[#1D4ED8] mb-1">
+                        <SlidersHorizontal size={12} className="text-[#1D4ED8]" />
+                        <span>Forensic & Cyber Security Admissions Desk</span>
                       </div>
-                      <h4 className="text-sm sm:text-base font-bold text-text-main tracking-tight">
-                        Find the right forensic institution & degree
+                      <h4 className="text-sm sm:text-[15px] font-semibold text-slate-900 tracking-tight">
+                        Compare colleges by program, fee structure & location
                       </h4>
-                      <p className="text-xs text-text-muted leading-relaxed">
-                        Ask by exact fee budget (e.g. under ₹50,000), state, NFSU campus, or degree specialization.
+                      <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                        Query verified B.Sc., M.Sc., and Diploma programs across NFSU campuses, Government institutes, and private universities.
                       </p>
+
+                      {/* Quick Action Filter Buttons */}
+                      <div className="pt-3 mt-3 border-t border-slate-100 flex flex-wrap gap-1.5">
+                        {QUICK_FILTER_PROMPTS.map((qItem, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleSendQuestion(qItem.prompt)}
+                            className="px-2.5 py-1 rounded-md bg-blue-50 hover:bg-[#1D4ED8] text-[#1D4ED8] hover:text-white border border-blue-200/80 hover:border-[#1D4ED8] text-[11px] font-medium transition-colors cursor-pointer"
+                          >
+                            {qItem.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Structured Starter Inquiry List (Responsive Grid in Landscape) */}
-                  <div className="space-y-1.5">
-                    <div className="px-1 flex items-center justify-between">
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted">
-                        Common Student Inquiries
-                      </span>
-                      <span className="text-[10px] text-text-muted/70 font-mono">
-                        {colleges.length} records indexed
-                      </span>
+                  {/* Curated Student Inquiries List */}
+                  <div className="space-y-2">
+                    <div className="px-1 flex items-center justify-between text-[11px] text-slate-600">
+                      <span className="font-semibold text-slate-800">Recommended Inquiries</span>
+                      <span>{colleges.length} institutions indexed</span>
                     </div>
 
-                    <div className="grid grid-cols-1 landscape:max-lg:grid-cols-2 gap-1.5">
+                    <div className="grid grid-cols-1 landscape:max-lg:grid-cols-2 gap-2">
                       {STARTER_INQUIRIES.map((item, idx) => (
                         <button
                           key={idx}
                           type="button"
                           onClick={() => handleSendQuestion(item.prompt)}
-                          className="group w-full text-left px-3 py-2.5 landscape:max-lg:py-2 rounded-xl bg-surface hover:bg-crust border border-black/8 dark:border-white/10 hover:border-warning/40 transition-all flex items-center justify-between gap-2.5 cursor-pointer"
+                          className="group w-full text-left px-3.5 py-2.5 landscape:max-lg:py-2 rounded-xl bg-white hover:bg-blue-50/50 text-slate-900 border border-slate-200/90 hover:border-blue-400 transition-all flex items-center justify-between gap-3 cursor-pointer shadow-2xs"
                         >
                           <div className="min-w-0 flex-1">
-                            <span className="block text-[9px] font-semibold uppercase tracking-wider text-text-muted group-hover:text-warning transition-colors">
-                              {item.category}
-                            </span>
-                            <span className="block text-xs font-medium text-text-main truncate mt-0.5">
+                            <div className="flex items-center gap-1.5 text-[10px] font-semibold text-[#1D4ED8]">
+                              <span className="font-mono text-slate-400">0{idx + 1}.</span>
+                              <span>{item.category}</span>
+                            </div>
+                            <span className="block text-xs font-medium text-slate-800 group-hover:text-slate-950 truncate mt-0.5">
                               {item.prompt}
                             </span>
                           </div>
-                          <div className="w-6 h-6 rounded-lg bg-background group-hover:bg-warning/15 text-text-muted group-hover:text-warning flex items-center justify-center shrink-0 transition-colors">
+                          <div className="w-6 h-6 rounded-md bg-blue-50 group-hover:bg-[#1D4ED8] text-[#1D4ED8] group-hover:text-white flex items-center justify-center shrink-0 transition-colors">
                             <ArrowUpRight size={13} />
                           </div>
                         </button>
@@ -1305,314 +1347,323 @@ export const ForenClueCollegesAI: React.FC<ForenClueCollegesAIProps> = ({
                   </div>
                 </div>
               ) : (
-                /* ACTIVE CONVERSATION STREAM */
-                <div className="space-y-4 landscape:max-lg:space-y-3">
-                  {messages.map(msg => (
-                    <div
-                      key={msg.id}
-                      className={cn(
-                        'flex flex-col gap-2',
-                        msg.role === 'user' ? 'items-end' : 'items-start'
-                      )}
-                    >
-                      {/* Minimal Sender Meta */}
-                      <div className="flex items-center gap-1.5 px-1 flex-wrap">
-                        {msg.role === 'assistant' && (
-                          <Fingerprint size={12} className="text-warning shrink-0" />
-                        )}
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
-                          {msg.role === 'user' ? 'You' : 'ForenClue AI'}
-                        </span>
-                        {msg.matchedCourseFilterLabel && (
-                          <span className="px-1.5 py-0.5 rounded bg-warning/10 border border-warning/25 text-[9px] font-semibold text-warning">
-                            Target: {msg.matchedCourseFilterLabel}
-                          </span>
-                        )}
-                        <span className="text-[9px] text-text-muted/60">{msg.timestamp}</span>
-                      </div>
+                /* ACTIVE CONSULTATION STREAM (Reads Top-to-Bottom) */
+                <div className="space-y-5 landscape:max-lg:space-y-3.5">
+                  {messages.map((msg, msgIdx) => {
+                    const targetTopIdx =
+                      messages.length >= 2 && messages[messages.length - 1].role === 'assistant'
+                        ? messages.length - 2
+                        : messages.length - 1;
+                    const isLatestTurnStart = msgIdx === targetTopIdx;
 
-                      {/* Message Bubble */}
+                    return (
                       <div
+                        key={msg.id}
+                        ref={isLatestTurnStart ? latestMessageTopRef : undefined}
                         className={cn(
-                          'max-w-[95%] rounded-xl px-3.5 py-2.5 text-xs sm:text-[13px] leading-relaxed',
-                          msg.role === 'user'
-                            ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-medium'
-                            : 'bg-surface border border-black/10 dark:border-white/10 text-text-main'
+                          'flex flex-col gap-2 scroll-mt-2',
+                          msg.role === 'user' ? 'items-end' : 'items-start'
                         )}
                       >
-                        {msg.role === 'user' ? (
-                          <p className="whitespace-pre-wrap">{msg.content}</p>
-                        ) : (
-                          <div className="prose prose-xs dark:prose-invert max-w-none prose-p:my-1 prose-headings:my-1.5 prose-headings:text-text-main prose-headings:font-bold prose-ul:my-1 prose-li:my-0.5 prose-strong:text-text-main">
-                            <ReactMarkdown>{msg.content}</ReactMarkdown>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Strictly Matched Visual College Cards with Images */}
-                      {msg.role === 'assistant' &&
-                        msg.recommendedColleges &&
-                        msg.recommendedColleges.length > 0 && (
-                          <div className="w-full space-y-2 pt-0.5">
-                            <div className="flex items-center justify-between px-1">
-                              <span className="text-[10px] font-bold uppercase tracking-wider text-text-muted flex items-center gap-1.5">
-                                <Building2 size={11} className="text-warning" />
-                                Verified Directory Matches ({msg.recommendedColleges.length})
+                        {/* Clean Unboxed Sender Metadata */}
+                        <div className="flex items-center gap-1.5 px-1 flex-wrap text-[11px] text-slate-500">
+                          {msg.role === 'assistant' && (
+                            <Fingerprint size={12} className="text-[#1D4ED8] shrink-0" />
+                          )}
+                          <span className="font-semibold text-slate-800">
+                            {msg.role === 'user' ? 'You' : 'ForenClue Advisor'}
+                          </span>
+                          {msg.matchedCourseFilterLabel && (
+                            <>
+                              <span aria-hidden="true">·</span>
+                              <span className="font-semibold text-[#1D4ED8]">
+                                {msg.matchedCourseFilterLabel}
                               </span>
+                            </>
+                          )}
+                          <span aria-hidden="true">·</span>
+                          <span className="text-slate-400">{msg.timestamp}</span>
+                        </div>
+
+                        {/* Message Bubble */}
+                        <div
+                          className={cn(
+                            'max-w-[96%] rounded-xl px-4 py-3 text-xs sm:text-[13px] leading-relaxed',
+                            msg.role === 'user'
+                              ? 'bg-[#1D4ED8] text-white font-medium border border-blue-700 shadow-xs'
+                              : 'bg-white text-slate-800 border border-slate-200/90 shadow-xs'
+                          )}
+                        >
+                          {msg.role === 'user' ? (
+                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                          ) : (
+                            <div className="prose prose-xs prose-slate max-w-none prose-p:my-1.5 prose-headings:my-2 prose-headings:text-slate-900 prose-headings:font-semibold prose-ul:my-1.5 prose-li:my-0.5 prose-strong:text-slate-900">
+                              <ReactMarkdown>{msg.content}</ReactMarkdown>
                             </div>
+                          )}
+                        </div>
 
-                            {/* Grid adapts to 2 columns in Landscape or Expanded mode for effortless viewing */}
-                            <div
-                              className={cn(
-                                'grid gap-2',
-                                isExpanded
-                                  ? 'grid-cols-1 sm:grid-cols-2'
-                                  : 'grid-cols-1 landscape:max-lg:grid-cols-2'
-                              )}
-                            >
-                              {msg.recommendedColleges.map(college => {
-                                const bannerUrl =
-                                  college.bannerImage || getFallbackBannerForCollege(college.id);
-                                const isComparing = compareIds.includes(college.id);
-                                const labelLower = (msg.matchedCourseFilterLabel || '').toLowerCase();
+                        {/* Strictly Matched Institutional Directory Cards */}
+                        {msg.role === 'assistant' &&
+                          msg.recommendedColleges &&
+                          msg.recommendedColleges.length > 0 && (
+                            <div className="w-full space-y-2.5 pt-1">
+                              <div className="flex items-center justify-between px-1 text-[11px] text-slate-600">
+                                <span className="font-semibold text-slate-800 flex items-center gap-1.5">
+                                  <Building2 size={12} className="text-[#1D4ED8]" />
+                                  <span>Matched Institutions ({msg.recommendedColleges.length})</span>
+                                </span>
+                              </div>
 
-                                // Prioritize courses that match the user's requested degree & specialization
-                                const prioritizedCourses = [...(college.coursesOffered || [])].sort(
-                                  (a, b) => {
-                                    const scoreCourse = (co: CollegeCourse) => {
-                                      let s = 0;
-                                      if (labelLower.includes('cyber') && isCyberDigitalForensicsCourse(co)) s += 10;
-                                      if (labelLower.includes('dna') && isDnaSerologyCourse(co)) s += 10;
-                                      if (labelLower.includes('document') && isQuestionedDocumentsCourse(co)) s += 10;
-                                      if (labelLower.includes('toxicology') && isToxicologyChemistryCourse(co)) s += 10;
-                                      if (labelLower.includes('criminology') && isPsychologyCriminologyCourse(co)) s += 10;
-                                      if (labelLower.includes('m.sc.') && isMscCourse(co)) s += 5;
-                                      if (labelLower.includes('b.sc.') && isBscCourse(co)) s += 5;
-                                      return s;
-                                    };
-                                    return scoreCourse(b) - scoreCourse(a);
-                                  }
-                                );
-
-                                // Show the fee of the top matched course on the card badge
-                                const primaryCourseFee = prioritizedCourses[0]?.estimatedFees
-                                  ? formatFee(prioritizedCourses[0].estimatedFees, college.country)
-                                  : '';
-                                const formattedFee =
-                                  primaryCourseFee ||
-                                  formatFee(college.feesRange, college.country);
-
-                                return (
-                                  <div
-                                    key={college.id}
-                                    className="group bg-surface border border-black/10 dark:border-white/10 hover:border-warning/50 rounded-xl overflow-hidden shadow-sm transition-all flex flex-col justify-between"
-                                  >
-                                    <div>
-                                      {/* Campus Banner Photo */}
-                                      <div className="relative h-24 sm:h-28 landscape:max-lg:h-20 w-full overflow-hidden bg-crust">
-                                        <img
-                                          src={bannerUrl}
-                                          alt={college.name}
-                                          loading="lazy"
-                                          onError={e => {
-                                            const target = e.currentTarget;
-                                            const fallback = getFallbackBannerForCollege(college.id);
-                                            if (target.src !== fallback) {
-                                              target.src = fallback;
-                                            }
-                                          }}
-                                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-
-                                        {/* Institution Type Tag */}
-                                        <div className="absolute top-2 left-2">
-                                          <span className="px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md border border-white/15 text-[9px] font-semibold text-white flex items-center gap-1">
-                                            <ShieldCheck size={10} className="text-warning" />
-                                            {getDisplayInstitutionType(college)}
-                                          </span>
-                                        </div>
-
-                                        {/* Course-Specific Fee Tag */}
-                                        {formattedFee && (
-                                          <div className="absolute top-2 right-2 max-w-[55%]">
-                                            <span className="block truncate px-2 py-0.5 rounded-md bg-emerald-600/95 text-white text-[9px] font-bold shadow-sm">
-                                              {formattedFee}
-                                            </span>
-                                          </div>
-                                        )}
-
-                                        {/* Logo & College Name */}
-                                        <div className="absolute bottom-2 left-2 right-2 flex items-end gap-2">
-                                          <div className="w-8 h-8 rounded-lg bg-white dark:bg-surface border border-white/20 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow">
-                                            {college.logo ? (
-                                              <img
-                                                src={college.logo}
-                                                alt={`${college.name} logo`}
-                                                className="w-full h-full object-contain"
-                                                onError={e => {
-                                                  e.currentTarget.style.display = 'none';
-                                                }}
-                                              />
-                                            ) : (
-                                              <span className="text-[9px] font-bold text-warning">
-                                                {getCollegeInitials(college)}
-                                              </span>
-                                            )}
-                                          </div>
-                                          <div className="min-w-0 flex-1">
-                                            <h4 className="text-xs font-bold text-white leading-tight truncate">
-                                              {college.name}
-                                            </h4>
-                                            <p className="text-[10px] text-white/80 flex items-center gap-1 truncate mt-0.5">
-                                              <MapPin size={9} className="text-warning shrink-0" />
-                                              {college.city}, {college.state}
-                                            </p>
-                                          </div>
-                                        </div>
-                                      </div>
-
-                                      {/* Courses & Accreditation */}
-                                      <div className="p-2.5 space-y-1.5">
-                                        {prioritizedCourses.length > 0 && (
-                                          <div className="flex flex-wrap gap-1">
-                                            {prioritizedCourses.slice(0, 2).map((course, idx) => (
-                                              <span
-                                                key={idx}
-                                                className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-background border border-black/5 dark:border-white/10 text-[10px] font-medium text-text-main"
-                                              >
-                                                <GraduationCap
-                                                  size={10}
-                                                  className="text-warning shrink-0"
-                                                />
-                                                <span className="truncate max-w-[180px]">
-                                                  {course.name}
-                                                </span>
-                                              </span>
-                                            ))}
-                                            {prioritizedCourses.length > 2 && (
-                                              <span className="px-1.5 py-0.5 rounded bg-background text-text-muted text-[9px] font-semibold">
-                                                +{prioritizedCourses.length - 2} more
-                                              </span>
-                                            )}
-                                          </div>
-                                        )}
-
-                                        {(college.accreditation || college.ranking) && (
-                                          <p className="text-[10px] text-text-muted line-clamp-1 flex items-center gap-1">
-                                            <Award size={10} className="text-warning shrink-0" />
-                                            <span>{college.ranking || college.accreditation}</span>
-                                          </p>
-                                        )}
-                                      </div>
-                                    </div>
-
-                                    {/* Card Actions */}
-                                    <div className="px-2.5 pb-2.5 pt-1.5 flex items-center gap-1.5 border-t border-black/5 dark:border-white/5">
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          onSelectCollege(college);
-                                          setIsOpen(false);
-                                        }}
-                                        className="flex-1 px-2.5 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-slate-950 font-semibold text-[11px] hover:opacity-90 transition-opacity flex items-center justify-center gap-1 cursor-pointer"
-                                      >
-                                        <span>View Profile</span>
-                                        <ChevronRight size={12} />
-                                      </button>
-
-                                      <button
-                                        type="button"
-                                        onClick={e => onToggleCompare(college.id, e)}
-                                        className={cn(
-                                          'px-2 py-1.5 rounded-lg border text-[10px] font-semibold flex items-center gap-1 transition-colors cursor-pointer',
-                                          isComparing
-                                            ? 'bg-warning/15 border-warning text-warning'
-                                            : 'bg-background border-black/10 dark:border-white/10 text-text-muted hover:text-text-main'
-                                        )}
-                                      >
-                                        {isComparing ? <Check size={11} /> : <Scale size={11} />}
-                                        <span>{isComparing ? 'Added' : 'Compare'}</span>
-                                      </button>
-
-                                      {college.website && (
-                                        <a
-                                          href={college.website}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          title="Official Website"
-                                          className="p-1.5 rounded-lg bg-background border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main transition-colors"
-                                        >
-                                          <ExternalLink size={12} />
-                                        </a>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        )}
-
-                      {/* Follow-Up Inquiry Chips */}
-                      {msg.role === 'assistant' &&
-                        msg.followUpSuggestions &&
-                        msg.followUpSuggestions.length > 0 && (
-                          <div className="flex flex-wrap gap-1.5 pt-0.5">
-                            {msg.followUpSuggestions.map((suggestion, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                disabled={isLoading}
-                                onClick={() => handleSendQuestion(suggestion)}
-                                className="text-left px-2.5 py-1 rounded-lg bg-surface hover:bg-crust border border-black/10 dark:border-white/10 hover:border-warning/40 text-[10px] font-medium text-text-muted hover:text-text-main transition-all cursor-pointer flex items-center gap-1"
+                              {/* Grid adapts to 2 columns in Landscape or Expanded mode */}
+                              <div
+                                className={cn(
+                                  'grid gap-2.5',
+                                  isExpanded
+                                    ? 'grid-cols-1 sm:grid-cols-2'
+                                    : 'grid-cols-1 landscape:max-lg:grid-cols-2'
+                                )}
                               >
-                                <span>{suggestion}</span>
-                                <ArrowUpRight size={11} className="text-warning shrink-0" />
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                    </div>
-                  ))}
+                                {msg.recommendedColleges.map(college => {
+                                  const bannerUrl =
+                                    college.bannerImage || getFallbackBannerForCollege(college.id);
+                                  const isComparing = compareIds.includes(college.id);
+                                  const labelLower = (msg.matchedCourseFilterLabel || '').toLowerCase();
+
+                                  // Prioritize courses that match the user's requested degree & specialization
+                                  const prioritizedCourses = [...(college.coursesOffered || [])].sort(
+                                    (a, b) => {
+                                      const scoreCourse = (co: CollegeCourse) => {
+                                        let s = 0;
+                                        if (labelLower.includes('cyber') && isCyberDigitalForensicsCourse(co)) s += 10;
+                                        if (labelLower.includes('dna') && isDnaSerologyCourse(co)) s += 10;
+                                        if (labelLower.includes('document') && isQuestionedDocumentsCourse(co)) s += 10;
+                                        if (labelLower.includes('toxicology') && isToxicologyChemistryCourse(co)) s += 10;
+                                        if (labelLower.includes('criminology') && isPsychologyCriminologyCourse(co)) s += 10;
+                                        if (labelLower.includes('m.sc.') && isMscCourse(co)) s += 5;
+                                        if (labelLower.includes('b.sc.') && isBscCourse(co)) s += 5;
+                                        return s;
+                                      };
+                                      return scoreCourse(b) - scoreCourse(a);
+                                    }
+                                  );
+
+                                  const primaryCourseFee = prioritizedCourses[0]?.estimatedFees
+                                    ? formatFee(prioritizedCourses[0].estimatedFees, college.country)
+                                    : '';
+                                  const formattedFee =
+                                    primaryCourseFee ||
+                                    formatFee(college.feesRange, college.country);
+
+                                  return (
+                                    <div
+                                      key={college.id}
+                                      className="group bg-white border border-slate-200/90 hover:border-blue-400 rounded-xl overflow-hidden shadow-xs transition-all flex flex-col justify-between text-slate-900"
+                                    >
+                                      <div>
+                                        {/* Campus Banner Header */}
+                                        <div className="relative h-24 sm:h-26 landscape:max-lg:h-20 w-full overflow-hidden bg-slate-900">
+                                          <img
+                                            src={bannerUrl}
+                                            alt={college.name}
+                                            loading="lazy"
+                                            onError={e => {
+                                              const target = e.currentTarget;
+                                              const fallback = getFallbackBannerForCollege(college.id);
+                                              if (target.src !== fallback) {
+                                                target.src = fallback;
+                                              }
+                                            }}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+                                          />
+                                          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/45 to-slate-950/10" />
+
+                                          {/* Logo & College Name */}
+                                          <div className="absolute bottom-2.5 left-3 right-3 flex items-end gap-2.5">
+                                            <div className="w-8 h-8 rounded-lg bg-white border border-white/20 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
+                                              {college.logo ? (
+                                                <img
+                                                  src={college.logo}
+                                                  alt={`${college.name} logo`}
+                                                  className="w-full h-full object-contain"
+                                                  onError={e => {
+                                                    e.currentTarget.style.display = 'none';
+                                                  }}
+                                                />
+                                              ) : (
+                                                <span className="text-[9px] font-bold text-[#1D4ED8]">
+                                                  {getCollegeInitials(college)}
+                                                </span>
+                                              )}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                              <h4 className="text-xs font-semibold text-white leading-tight truncate">
+                                                {college.name}
+                                              </h4>
+                                              <p className="text-[10px] text-slate-200 flex items-center gap-1 truncate mt-0.5">
+                                                <MapPin size={10} className="text-blue-300 shrink-0" />
+                                                <span>
+                                                  {college.city}, {college.state}
+                                                </span>
+                                              </p>
+                                            </div>
+                                          </div>
+                                        </div>
+
+                                        {/* Clean Institutional Metadata & Courses */}
+                                        <div className="p-3 space-y-2">
+                                          {/* Type & Tuition Metadata Row */}
+                                          <div className="flex items-center justify-between gap-2 text-[11px] pb-2 border-b border-slate-100">
+                                            <span className="font-medium text-slate-600 flex items-center gap-1 truncate">
+                                              <ShieldCheck size={11} className="text-[#1D4ED8] shrink-0" />
+                                              <span className="truncate">{getDisplayInstitutionType(college)}</span>
+                                            </span>
+                                            {formattedFee && (
+                                              <span className="font-semibold text-slate-900 shrink-0 tabular-nums">
+                                                {formattedFee}
+                                              </span>
+                                            )}
+                                          </div>
+
+                                          {/* Target Courses List */}
+                                          {prioritizedCourses.length > 0 && (
+                                            <div className="space-y-1">
+                                              {prioritizedCourses.slice(0, 2).map((course, idx) => (
+                                                <div
+                                                  key={idx}
+                                                  className="flex items-center gap-1.5 text-[11px] text-slate-700"
+                                                >
+                                                  <GraduationCap
+                                                    size={11}
+                                                    className="text-[#1D4ED8] shrink-0"
+                                                  />
+                                                  <span className="truncate font-medium">
+                                                    {course.name}
+                                                  </span>
+                                                </div>
+                                              ))}
+                                              {prioritizedCourses.length > 2 && (
+                                                <p className="text-[10px] text-slate-400 pl-4">
+                                                  +{prioritizedCourses.length - 2} additional programs
+                                                </p>
+                                              )}
+                                            </div>
+                                          )}
+
+                                          {(college.accreditation || college.ranking) && (
+                                            <p className="text-[10px] text-slate-500 line-clamp-1 flex items-center gap-1 pt-0.5">
+                                              <Award size={10} className="text-[#1D4ED8] shrink-0" />
+                                              <span>{college.ranking || college.accreditation}</span>
+                                            </p>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Card Actions */}
+                                      <div className="px-3 pb-3 pt-2 flex items-center gap-1.5 border-t border-slate-100">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            onSelectCollege(college);
+                                            setIsOpen(false);
+                                          }}
+                                          className="flex-1 px-2.5 py-1.5 rounded-lg bg-[#1D4ED8] hover:bg-[#1E40AF] text-white font-medium text-[11px] transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                                        >
+                                          <span>View Details</span>
+                                          <ChevronRight size={12} />
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={e => onToggleCompare(college.id, e)}
+                                          className={cn(
+                                            'px-2.5 py-1.5 rounded-lg border text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer',
+                                            isComparing
+                                              ? 'bg-blue-50 border-[#1D4ED8] text-[#1D4ED8]'
+                                              : 'bg-white border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                                          )}
+                                        >
+                                          {isComparing ? <Check size={11} /> : <Scale size={11} />}
+                                          <span>{isComparing ? 'Added' : 'Compare'}</span>
+                                        </button>
+
+                                        {college.website && (
+                                          <a
+                                            href={college.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            title="Official Website"
+                                            className="p-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                                          >
+                                            <ExternalLink size={12} />
+                                          </a>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                        {/* Follow-Up Suggestions */}
+                        {msg.role === 'assistant' &&
+                          msg.followUpSuggestions &&
+                          msg.followUpSuggestions.length > 0 && (
+                            <div className="flex flex-wrap gap-1.5 pt-1">
+                              {msg.followUpSuggestions.map((suggestion, idx) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  disabled={isLoading}
+                                  onClick={() => handleSendQuestion(suggestion)}
+                                  className="text-left px-2.5 py-1.5 rounded-lg bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 text-[11px] font-medium text-slate-700 hover:text-[#1D4ED8] transition-all cursor-pointer flex items-center gap-1 shadow-2xs"
+                                >
+                                  <span>{suggestion}</span>
+                                  <ArrowUpRight size={11} className="text-[#1D4ED8] shrink-0" />
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                      </div>
+                    );
+                  })}
 
                   {/* Loading State */}
                   {isLoading && (
-                    <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-surface border border-black/10 dark:border-white/10 w-fit">
-                      <Loader2 size={14} className="text-warning animate-spin" />
-                      <span className="text-[11px] font-medium text-text-muted">
-                        Analyzing /colleges directory...
+                    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white border border-slate-200 w-fit shadow-xs">
+                      <Loader2 size={14} className="text-[#1D4ED8] animate-spin" />
+                      <span className="text-xs font-medium text-slate-700">
+                        Searching verified college records...
                       </span>
                     </div>
                   )}
-
-                  <div ref={messagesEndRef} />
                 </div>
               )}
             </div>
 
-            {/* Minimalist Input Bar (Compact in Landscape) */}
+            {/* Bright Clean Input Footer */}
             <form
               onSubmit={e => {
                 e.preventDefault();
                 handleSendQuestion();
               }}
-              className="p-2.5 sm:p-3 landscape:max-lg:p-2 bg-crust border-t border-black/10 dark:border-white/10 flex items-center gap-2 shrink-0"
+              className="p-3 landscape:max-lg:p-2 bg-white border-t border-slate-200/90 flex items-center gap-2 shrink-0"
             >
               <input
                 ref={inputRef}
                 type="text"
                 value={input}
                 onChange={e => setInput(e.target.value)}
-                placeholder="Ask e.g. M.Sc. Cyber Security under 50,000 fees..."
+                placeholder="Ask by course, fee budget (e.g. under ₹50,000), or state..."
                 disabled={isLoading}
-                className="flex-1 bg-surface border border-black/10 dark:border-white/10 rounded-xl px-3 py-2 landscape:max-lg:py-1.5 text-xs sm:text-[13px] text-text-main placeholder:text-text-muted/60 focus:outline-none focus:border-warning/60 transition-colors"
+                className="flex-1 bg-[#F8FAFC] focus:bg-white border border-slate-200 rounded-xl px-3.5 py-2 landscape:max-lg:py-1.5 text-xs sm:text-[13px] text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#1D4ED8] focus:ring-2 focus:ring-blue-500/15 transition-all"
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
                 aria-label="Send inquiry"
-                className="w-9 h-9 landscape:max-lg:w-8 landscape:max-lg:h-8 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-950 flex items-center justify-center hover:opacity-90 disabled:opacity-35 disabled:pointer-events-none transition-all cursor-pointer shrink-0"
+                className="w-9 h-9 landscape:max-lg:w-8 landscape:max-lg:h-8 rounded-xl bg-[#1D4ED8] hover:bg-[#1E40AF] text-white flex items-center justify-center disabled:opacity-35 disabled:pointer-events-none transition-all cursor-pointer shrink-0 shadow-xs"
               >
                 <Send size={14} />
               </button>

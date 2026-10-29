@@ -10,8 +10,8 @@ const TeamCard = ({ member, index = 0 }: { member: any, index?: number }) => {
   const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
   const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
 
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["15deg", "-15deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-15deg", "15deg"]);
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["8deg", "-8deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-8deg", "8deg"]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -32,37 +32,35 @@ const TeamCard = ({ member, index = 0 }: { member: any, index?: number }) => {
     y.set(0);
   };
 
+  const hasSocials = Boolean(member.linkedin || member.youtube || member.email);
+
   return (
     <motion.div 
       id={member.name.toLowerCase().replace(/\s+/g, '-')}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      initial={{ opacity: 0, y: 50, scale: 0.9 }}
-      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 100 }}
+      transition={{ duration: 0.45, delay: index * 0.08 }}
       style={{
         rotateX,
         rotateY,
         transformStyle: "preserve-3d"
       }}
-      className="group relative flex flex-col gap-6 items-center mx-auto max-w-sm w-full p-8 rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.12)] transition-all duration-500 hover:shadow-[0_8px_32px_rgba(var(--color-warning),0.2)] border border-white/20 dark:border-white/10 bg-white/10 dark:bg-black/20 backdrop-blur-xl"
+      className="group relative flex flex-col items-center justify-start mx-auto max-w-sm w-full h-full p-7 rounded-2xl overflow-hidden shadow-[0_10px_30px_rgba(0,0,0,0.12)] transition-all duration-300 hover:shadow-[0_14px_36px_rgba(0,0,0,0.2)] border border-black/10 dark:border-white/10 hover:border-warning/40 bg-surface/90 dark:bg-white/[0.03] backdrop-blur-xl"
     >
-      {/* Liquid / Glass animated backgrounds */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-black/10 dark:from-white/5 dark:via-transparent dark:to-black/40 pointer-events-none transition-opacity duration-500 opacity-60 group-hover:opacity-100 z-0" />
-      <div className="absolute -top-24 -right-24 w-56 h-56 bg-warning/20 rounded-full blur-[60px] group-hover:bg-warning/40 group-hover:scale-110 transition-all duration-700 z-0 pointer-events-none"></div>
-      <div className="absolute -bottom-24 -left-24 w-56 h-56 bg-cyan-500/20 rounded-full blur-[60px] group-hover:bg-cyan-500/30 group-hover:scale-110 transition-all duration-700 z-0 pointer-events-none"></div>
-      
-      {/* Glass inner border reflection */}
-      <div className="absolute inset-0 rounded-3xl border border-white/40 dark:border-white/20 pointer-events-none [mask-image:linear-gradient(to_bottom,white,transparent)] z-0" />
-      
+      {/* Subtle ambient top glow */}
+      <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-warning/10 via-warning/[0.03] to-transparent pointer-events-none transition-opacity duration-500 opacity-75 group-hover:opacity-100 z-0" />
+      <div className="absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-warning/50 to-transparent pointer-events-none z-10" />
+
+      {/* Profile Photo */}
       <motion.div 
-        style={{ transform: "translateZ(60px)" }}
-        className="relative w-40 h-40 rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-[0_0_30px_rgba(0,0,0,0.2)] border-2 border-white/40 dark:border-white/20 z-10 bg-black/5 dark:bg-white/5 backdrop-blur-md group-hover:scale-105 transition-transform duration-500"
+        style={{ transform: "translateZ(30px)" }}
+        className="relative w-36 h-36 rounded-full flex items-center justify-center overflow-hidden shrink-0 shadow-[0_8px_24px_rgba(0,0,0,0.25)] ring-2 ring-black/10 dark:ring-white/15 group-hover:ring-warning/60 z-10 bg-black/5 dark:bg-white/5 transition-all duration-300"
       >
-        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/40 to-transparent opacity-0 group-hover:opacity-100 group-hover:translate-x-full -translate-x-full transition-all duration-1000 pointer-events-none z-20" />
         {member.image ? (
-          <img src={member.image} alt={member.name} className="w-full h-full object-cover z-10 relative" />
+          <img src={member.image} alt={member.name} className="w-full h-full object-cover object-top z-10 relative group-hover:scale-105 transition-transform duration-500" />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-3xl font-heading font-black text-text-main/20 uppercase tracking-widest z-10 relative">
             {member.name.split(' ').map((n: string) => n[0]).join('')}
@@ -70,39 +68,67 @@ const TeamCard = ({ member, index = 0 }: { member: any, index?: number }) => {
         )}
       </motion.div>
       
+      {/* Name, Role & Bio Information directly below Profile Photo */}
       <motion.div 
-        style={{ transform: "translateZ(40px)" }}
-        className="relative z-10 text-center flex-1 flex flex-col w-full"
+        style={{ transform: "translateZ(20px)" }}
+        className="relative z-10 text-center flex flex-col items-center w-full mt-5 flex-1"
       >
-        {(member.linkedin || member.youtube || member.email) && (
-          <div className="flex items-center justify-center gap-4 mb-4">
-             {member.linkedin && (
-               <a href={member.linkedin} target="_blank" rel="noreferrer" className="p-2 rounded-full bg-white/5 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-white/10 text-text-muted hover:text-[#0A66C2] dark:hover:text-[#4294FF] hover:scale-110 transition-all backdrop-blur-sm border border-white/10">
-                  <Linkedin size={18} />
-               </a>
-             )}
-             {member.youtube && (
-               <a href={member.youtube} target="_blank" rel="noreferrer" className="p-2 rounded-full bg-white/5 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-white/10 text-text-muted hover:text-[#FF0000] hover:scale-110 transition-all backdrop-blur-sm border border-white/10">
-                  <Youtube size={18} />
-               </a>
-             )}
-             {member.email && (
-               <a href={`mailto:${member.email}`} className="p-2 rounded-full bg-white/5 dark:bg-black/20 hover:bg-white/20 dark:hover:bg-white/10 text-text-muted hover:text-warning hover:scale-110 transition-all backdrop-blur-sm border border-white/10">
-                  <Mail size={18} />
-               </a>
-             )}
+        <h3 className="text-xl font-bold font-heading text-text-main group-hover:text-warning transition-colors duration-300 tracking-tight">
+          {member.name}
+        </h3>
+        <p className="text-warning mt-1 uppercase tracking-[0.14em] text-[11px] font-bold">
+          {member.role}
+        </p>
+
+        {/* Divider directly under Role */}
+        <div className="w-full border-t border-black/10 dark:border-white/10 my-4" />
+
+        {/* Information / Highlights immediately below photo & title */}
+        <ul className="flex flex-col gap-2.5 w-full text-left">
+          {member.points.map((point: string, i: number) => (
+            <li key={i} className="flex items-start gap-2.5 text-sm text-text-muted group-hover:text-text-main/90 transition-colors duration-200 leading-snug">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+              <span>{point}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Social Links neatly anchored below information */}
+        {hasSocials && (
+          <div className="flex items-center justify-center gap-3 pt-5 mt-5 border-t border-black/5 dark:border-white/5 w-full">
+            {member.linkedin && (
+              <a
+                href={member.linkedin}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${member.name} LinkedIn`}
+                className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-warning/15 text-text-muted hover:text-warning transition-colors border border-black/5 dark:border-white/10"
+              >
+                <Linkedin size={16} />
+              </a>
+            )}
+            {member.youtube && (
+              <a
+                href={member.youtube}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${member.name} YouTube`}
+                className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-warning/15 text-text-muted hover:text-warning transition-colors border border-black/5 dark:border-white/10"
+              >
+                <Youtube size={16} />
+              </a>
+            )}
+            {member.email && (
+              <a
+                href={`mailto:${member.email}`}
+                aria-label={`Email ${member.name}`}
+                className="p-2 rounded-lg bg-black/5 dark:bg-white/5 hover:bg-warning/15 text-text-muted hover:text-warning transition-colors border border-black/5 dark:border-white/10"
+              >
+                <Mail size={16} />
+              </a>
+            )}
           </div>
         )}
-        <h3 className="text-2xl font-bold font-heading drop-shadow-md text-text-main group-hover:text-warning transition-colors duration-300">{member.name}</h3>
-        <p className="text-warning mb-5 uppercase tracking-widest text-xs font-bold drop-shadow-sm">{member.role}</p>
-        <div className="flex flex-col gap-3 mt-auto w-full">
-          {member.points.map((point: string, i: number) => (
-            <div key={i} className="flex items-start text-sm group-hover:text-text-main/90 transition-colors duration-300 bg-white/5 dark:bg-black/20 p-2.5 rounded-lg border border-white/10 backdrop-blur-sm shadow-inner">
-              <span className="text-warning mr-2 text-lg leading-none">•</span>
-              <span className="text-left text-text-muted leading-tight">{point}</span>
-            </div>
-          ))}
-        </div>
       </motion.div>
     </motion.div>
   );
@@ -166,10 +192,19 @@ export default function About() {
         "Managing Director of ForenClue",
         "Forensic Science & Operations"
       ]
+    },
+    {
+      name: "Punam Gadade",
+      role: "Chief Technology Officer (CTO)",
+      image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhk5LmpFNaR2YN6ZCUpVLvfWnJimYXwbrNtK9ztFDyfAD2frVDHHplRgN1_KZXjeh2RCHd40Q8EY2y3Qfygkw-wgZeK7rirHtRD-xL-JdW-FD7k0hsm8RSYWZc4gZvYOGkw1iZdp2J0MXzNmuma9_HEFdJMmN3tjmeTEEnbBDbKuMhVIr2xvVLdHN5u7CA/s1600/image.png",
+      points: [
+        "Chief Technology Officer of ForenClue",
+        "Tech Professional"
+      ]
     }
   ];
 
-      const academicMentors = [
+  const academicMentors = [
     {
       name: "Rajat Pithadia",
       role: "Academic Mentor",
@@ -185,21 +220,141 @@ export default function About() {
     }
   ];
 
+  const aboutCustomSchema = [
+    {
+      '@type': 'AboutPage',
+      '@id': 'https://forenclue.in/about#aboutpage',
+      url: 'https://forenclue.in/about',
+      name: 'About ForenClue – Mission, Vision, Leadership & Academic Mentors',
+      description:
+        "Learn about ForenClue, India's MSME Udyam registered Forensic Science and Cybersecurity EdTech platform founded in 2025. Meet our leadership team and academic mentors.",
+      inLanguage: 'en-IN',
+      isPartOf: { '@id': 'https://forenclue.in/#website' },
+      mainEntity: { '@id': 'https://forenclue.in/#organization' },
+    },
+    {
+      '@type': 'EducationalOrganization',
+      '@id': 'https://forenclue.in/#organization',
+      name: 'ForenClue',
+      alternateName: 'ForenClue Ventures',
+      url: 'https://forenclue.in',
+      foundingDate: '2025',
+      areaServed: {
+        '@type': 'Country',
+        name: 'India',
+      },
+      description:
+        'Founded in 2025, ForenClue is a dedicated Forensic Science and Cybersecurity EdTech platform registered under MSME Udyam, Government of India, empowering students, educators, and investigators through practical learning, virtual labs, and case studies.',
+      knowsAbout: [
+        'Forensic Science',
+        'Cyber Security',
+        'Digital Forensics',
+        'Crime Scene Investigation',
+        'Forensic Toxicology',
+        'Questioned Documents & Fingerprints',
+        'UGC-NET Forensic Science Preparation',
+      ],
+      founder: [
+        {
+          '@type': 'Person',
+          '@id': 'https://forenclue.in/about#tejas-tapse',
+          name: 'Tejas Tapse',
+          jobTitle: 'Founder',
+          image:
+            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhBbTT3QCs_EHXasFjAT9pC1laU-vAIRhIQ7qjpQHS3ErsprqykE9eT63H-XnATqutTGhCjq-zzbmvCeFhHfE0_DZ1wtZmu8pmARltV1makLhdqyCwftxjW55J0qyPbmjn6H6Abb6OzIHPUrkbkYOwmDeVxLmGyH_0nbr9qOnWtWKEg3NaPIvEJKTNg8vU/s1323/IMG_0865.PNG',
+          worksFor: { '@id': 'https://forenclue.in/#organization' },
+          sameAs: [
+            'https://www.linkedin.com/in/ttapse12/',
+            'https://www.youtube.com/@TejasTapse',
+          ],
+        },
+        {
+          '@type': 'Person',
+          '@id': 'https://forenclue.in/about#ayush-gaikwad',
+          name: 'Ayush Gaikwad',
+          jobTitle: 'Co-Founder',
+          image:
+            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsllQMEHs5qT_GJSyZnGVcFH64Zadagai4Y9rlbFHQ9vuaVgX-3CgkApXQu660nTDPB0C3mEMJoZSnhLnOpBtTOt5mlEEADPKcOZbzcem8pq3flsJWbG6adC-aDmg9tlmyu4nGyaDh-TLzHanJ4dde67VUggiI5rMCb-4dVVUzRhY-A_EJKmiQgLkJez4/s1462/IMG_0859%20(1).PNG',
+          worksFor: { '@id': 'https://forenclue.in/#organization' },
+          sameAs: ['https://www.linkedin.com/in/ayush-gaikwad-41313a3bb/'],
+        },
+      ],
+      member: [
+        {
+          '@type': 'Person',
+          '@id': 'https://forenclue.in/about#mrunmayee-bodhe',
+          name: 'Mrunmayee Bodhe',
+          jobTitle: 'Chief Executive Officer',
+          image:
+            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjt-N4hwGU4tzUkx9XwNKGHv2Te4J3tbfxJWFRXS6Z3KzdZX1f9VKZB88MYTeF4OqePRwDcGMbqjmOpoROSJlsSHaZJnLEIMnP2S98gBLOlP6IDs33SBqLf7yhLEyWCICI90IfGk5XV06fUYonMDC5zufGitO8-sTe1sIExdZcckiMh0VuZmmmPJpxhGQs/s1352/IMG_0866.PNG',
+          worksFor: { '@id': 'https://forenclue.in/#organization' },
+          sameAs: ['https://www.linkedin.com/in/mrunmayee-bodhe-bb3a8a394/'],
+        },
+        {
+          '@type': 'Person',
+          '@id': 'https://forenclue.in/about#pranav-kale-patil',
+          name: 'Pranav Kale Patil',
+          jobTitle: 'Managing Director (MD)',
+          image:
+            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjtMbZr5AjExAGCqfwCJCaidFxFnNlRkh9KiRw7iwAjS1CINzxnRlEKIEO66fIaUEZfMjRYLOawndJh2aTVyoeSY88Ivbf2dS20SSoaz9YM8QisDdUJqGr1r8-0_-kBe94xNU9G5lpKFpxswLnhFnKQ220eLAvXUdmEaSh0BLle2SdpFiKaL4qC3wogd60/s1600/image.jpeg',
+          worksFor: { '@id': 'https://forenclue.in/#organization' },
+        },
+        {
+          '@type': 'Person',
+          '@id': 'https://forenclue.in/about#punam-gadade',
+          name: 'Punam Gadade',
+          jobTitle: 'Chief Technology Officer (CTO)',
+          description: 'Chief Technology Officer (CTO) and Tech Professional at ForenClue.',
+          image:
+            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhk5LmpFNaR2YN6ZCUpVLvfWnJimYXwbrNtK9ztFDyfAD2frVDHHplRgN1_KZXjeh2RCHd40Q8EY2y3Qfygkw-wgZeK7rirHtRD-xL-JdW-FD7k0hsm8RSYWZc4gZvYOGkw1iZdp2J0MXzNmuma9_HEFdJMmN3tjmeTEEnbBDbKuMhVIr2xvVLdHN5u7CA/s1600/image.png',
+          worksFor: { '@id': 'https://forenclue.in/#organization' },
+        },
+        {
+          '@type': 'Person',
+          '@id': 'https://forenclue.in/about#rajat-pithadia',
+          name: 'Rajat Pithadia',
+          jobTitle: 'Academic Mentor',
+          description:
+            'UGC-NET & GSET Qualified Assistant Professor at Parul University, Wiley Author, Ph.D. Scholar (Genotoxicity & Mutagenicity), and M.Sc. in Forensic Chemistry, Toxicology & Pharmacology.',
+          image:
+            'https://blogger.googleusercontent.com/img/a/AVvXsEiseuO8LFJ74UtogyoZLu5orh44gH7WVqDM4oinlMLhD3u4grQKoinTCZYk-OfKJrXJjV8E9EZHoPbhefI60LoXmqO623wQXiv-4hXumhYmBrBJCh4HYvYk9ifZ4nSccrYe5qyJHQXAQvW_8Zgkdq3T7vCycYqiJy0aUSZYzhmqc8M12jhhUq3X1GoORws',
+          worksFor: { '@id': 'https://forenclue.in/#organization' },
+          sameAs: ['https://www.linkedin.com/in/rajatresearch'],
+        },
+      ],
+    },
+  ];
+
   return (
     <div className="py-20 px-4 max-w-7xl mx-auto relative perspective-[2000px]">
       <SEO 
-        title="About Our Mission & Team"
-        description="Learn about the visionaries, educators, and technology experts behind ForenClue. We are democratizing case-based and high-fidelity forensic science learning globally."
-        keywords="forenclue founders, forenclue team, tejas tapse, mrunmayee bodhe, forensic learning platform, chief technology officer forensic"
+        title="About ForenClue – Mission, Leadership & Academic Mentors"
+        description="Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform. Meet our leadership team, founders, and academic mentors."
+        keywords="about forenclue, forenclue founders, tejas tapse, mrunmayee bodhe, ayush gaikwad, pranav kale patil, punam gadade, rajat pithadia, forensic science edtech india, cybersecurity learning platform, msme registered forensic platform, forensic academic mentor"
         canonicalPath="/about"
         breadcrumbs={[
           { name: 'Home', path: '/' },
           { name: 'About Us', path: '/about' }
         ]}
         faqs={[
-          { question: "What is the mission of ForenClue?", answer: "ForenClue is dedicated to democratizing advanced case-based forensic science education through interactive tech tools, expert training, and virtual labs." },
-          { question: "Who founded ForenClue?", answer: "The platform is founded by visionary forensic educators and technology professionals, with leadership including Tejas Tapse and Mrunmayee Bodhe." }
+          {
+            question: "What is ForenClue and when was it founded?",
+            answer: "Founded in 2025, ForenClue is an official MSME Udyam registered Forensic Science and Cybersecurity EdTech platform in India dedicated to practical investigation training, real-world case studies, virtual laboratory simulations, and academic mentorship."
+          },
+          {
+            question: "Who are the leaders and founders of ForenClue?",
+            answer: "ForenClue is led by Founder Tejas Tapse, Chief Executive Officer (CEO) Mrunmayee Bodhe, Co-Founder Ayush Gaikwad, Managing Director (MD) Pranav Kale Patil, and Chief Technology Officer (CTO) Punam Gadade."
+          },
+          {
+            question: "Who is the Academic Mentor at ForenClue?",
+            answer: "Rajat Pithadia serves as Academic Mentor at ForenClue. He is UGC-NET & GSET qualified, an Assistant Professor at Parul University, a published Wiley Author, and a Ph.D. Scholar specializing in Genotoxicity & Mutagenicity with an M.Sc. in Forensic Chemistry, Toxicology & Pharmacology."
+          },
+          {
+            question: "What is the mission and vision of ForenClue?",
+            answer: "ForenClue's mission is to democratize top-tier forensic science and cybersecurity education by bridging the gap between academic theory and real-world crime scene and digital investigation practices."
+          }
         ]}
+        customSchema={aboutCustomSchema}
       />
 
       <div className="max-w-4xl mx-auto mb-24 text-left">
@@ -282,7 +437,7 @@ export default function About() {
       >
         <h2 className="text-3xl font-heading font-black mb-12 text-center">Meet Our Leaders</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
           {team.map((member, i) => (
             <TeamCard key={i} member={member} index={i} />
           ))}
