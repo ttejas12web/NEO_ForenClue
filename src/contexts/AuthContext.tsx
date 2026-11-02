@@ -42,6 +42,7 @@ export interface UserProfile {
   commentsCount?: number;
   careerSpeciality?: string | null;
   careerQuizAnswers?: string[] | null;
+  savedColleges?: string[];
 }
 
 interface AuthContextType {

@@ -7,7 +7,100 @@ import { College } from '@/types/college';
 
 const COLLEGES_COLLECTION = 'colleges';
 
-export const SAMPLE_COLLEGES: College[] = [
+const NON_GOV_EXCLUDED_IDS = new Set([
+  'ycis-satara',
+  'shri-shivaji-science-college-amravati',
+  'ajk-college-coimbatore',
+  'strathclyde-uk',
+  'shsu-usa',
+  'kcl-uk',
+  'panjab-university',
+  'sardar-patel-university-anand',
+]);
+
+/**
+ * Determines whether a college belongs in Featured:
+ * Strictly restricted to NFSU campuses, RRU campuses, and Indian Government campuses/institutes.
+ * All other universities (Private, Deemed, State, Central, Foreign) are excluded from Featured.
+ */
+export function isEligibleFeaturedCampus(college: {
+  id?: string;
+  name?: string;
+  type?: string;
+  country?: string;
+}): boolean {
+  const id = String(college.id || '').toLowerCase().trim();
+  const name = String(college.name || '').toLowerCase().trim();
+  const type = String(college.type || '').toLowerCase().trim();
+  const country = String(college.country || 'India').toLowerCase().trim();
+
+  if (NON_GOV_EXCLUDED_IDS.has(id)) return false;
+
+  // 1. All NFSU Campuses
+  if (id.startsWith('nfsu-') || /^national forensic sciences university/i.test(name)) {
+    return true;
+  }
+
+  // 2. All RRU Campuses
+  if (id.startsWith('rru-') || /^rashtriya raksha university/i.test(name)) {
+    return true;
+  }
+
+  // 3. Indian Government Campuses / Government Forensic Institutes (excluding general universities)
+  if (country && country !== 'india') return false;
+  if (type === 'government' && !/\buniversity\b|\bvishwavidyalaya\b/i.test(name)) {
+    return true;
+  }
+  if (
+    id === 'ifs-mumbai' ||
+    id === 'gifsa-chhatrapati-sambhajinagar' ||
+    id === 'ifsc-nagpur' ||
+    id === 'upsifs-lucknow' ||
+    id === 'holkar-science-college-indore' ||
+    id === 'sangolli-rayanna-first-grade-college-belagavi'
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Priority rank for sorting Featured colleges so NFSU campuses, RRU campuses,
+ * and Government forensic campuses appear first at the top of Featured.
+ */
+export function getFeaturedPriorityRank(college: {
+  id?: string;
+  name?: string;
+  type?: string;
+  country?: string;
+  featured?: boolean;
+}): number {
+  const id = String(college.id || '').toLowerCase().trim();
+  const name = String(college.name || '').toLowerCase().trim();
+  const type = String(college.type || '').toLowerCase().trim();
+
+  if (!isEligibleFeaturedCampus(college)) return 99;
+
+  // 1. NFSU Flagship & Campuses
+  if (id === 'nfsu-gandhinagar') return 1;
+  if (id.startsWith('nfsu-') || /^national forensic sciences university/i.test(name)) return 2;
+
+  // 2. RRU Flagship & Campuses
+  if (id === 'rru-gandhinagar') return 3;
+  if (id.startsWith('rru-') || /^rashtriya raksha university/i.test(name)) return 4;
+
+  // 3. Dedicated Government Forensic Institutes & Government Colleges
+  if (type === 'government') return 5;
+
+  // 4. Central & State Government Campuses
+  if (type === 'central' || type === 'institute of national importance') return 6;
+  if (type === 'state') return 7;
+
+  return 8;
+}
+
+const RAW_SAMPLE_COLLEGES: College[] = [
   {
     id: 'geeta-university',
     name: 'Geeta University',
@@ -17,8 +110,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Panipat',
     type: 'Private',
     website: 'https://www.geetauniversity.edu.in',
-    logo: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&q=80&w=300',
-    bannerImage: 'https://images.unsplash.com/photo-1541829070764-84a7d30dd3f3?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://geetauniversity.edu.in/uploads/all/4/GU-Logo-fav.png',
+    bannerImage: 'https://media.collegedekho.com/media/img/institute/crawled_images/None/geeta_university2.webp',
     description: 'Geeta University is a premier multidisciplinary institution located in Panipat (Delhi-NCR), Haryana, established under the Haryana Private Universities Act. Its School of Allied Health & Forensic Sciences delivers comprehensive, NEP 2020-aligned education in forensic science, crime scene investigation, questioned document analysis, toxicology, and digital forensics with world-class laboratory infrastructure, dedicated mock crime scenes, and industry-focused mentorship.',
     coursesOffered: [
       {
@@ -245,7 +338,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://www.iujaipur.edu.in',
     logo: 'https://www.iujaipur.edu.in/assets/img/Logo.svg',
-    bannerImage: 'https://www.iujaipur.edu.in/assets/img/HomePage/banner/Slider-1.jpg',
+    bannerImage: 'https://www.iujaipur.edu.in/assets/img/generalimgs/about-university.jpg',
     description: 'The ICFAI University, Jaipur is a premier institution established under The ICFAI University, Jaipur Act, 2011 (Act No. 26 of 2011) passed by the Legislative Assembly of Rajasthan and recognized by the University Grants Commission (UGC) under Section 2(f). Part of the reputed ICFAI Group with a pan-India educational footprint, the university\'s Department of Forensic Science delivers contemporary, industry-aligned education in forensic science, crime scene management, fingerprint analysis, questioned documents, cyber forensics, and toxicology with specialized instrumentation laboratories, mock crime scene simulations, and strong academic mentorship.',
     coursesOffered: [
       {
@@ -323,7 +416,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://www.mangalayatan.in',
     logo: 'https://www.mangalayatan.in/admission-open/images/logo.webp',
-    bannerImage: 'https://www.mangalayatan.in/images/home-sliders/naac-banner.webp',
+    bannerImage: 'https://www.mangalayatan.in/images/universityBuilding.webp',
     description: 'Mangalayatan University is a premier NAAC A+ accredited multidisciplinary university located in Aligarh (NCR), Uttar Pradesh, with prominent regional campuses including Jabalpur, Madhya Pradesh. Established under the Uttar Pradesh State Legislature and recognized by the University Grants Commission (UGC), the university\'s Institute of Applied Sciences delivers comprehensive, NEP 2020-aligned education in forensic science, crime scene investigation, forensic toxicology, cyber forensics, fingerprint examination, and questioned documents with high-tech research labs, mock crime scenes, and student-focused mentorship.',
     coursesOffered: [
       {
@@ -400,8 +493,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Meerut',
     type: 'Private',
     website: 'https://subharti.org',
-    logo: 'https://subharti.org/favicon.png',
-    bannerImage: 'https://subharti.org/images/banner/1_2026.webp',
+    logo: '/images/colleges/subharti-logo.png',
+    bannerImage: 'https://subharti.org/international-students/images/IMG_0411.jpg',
     description: 'Swami Vivekanand Subharti University (SVSU), Meerut is a premier NAAC \'A\' Grade accredited private university established in 2008 under the Swami Vivekanand Subharti Vishwavidyalaya Uttar Pradesh Adhiniyam, 2008 (U.P. Act No. 29 of 2008) and recognized by the University Grants Commission (UGC) under Section 2(f). Located on a 250-acre green residential campus (Subhartipuram) on NH-58, Delhi-Haridwar Bypass Road in Meerut, its Keral Verma Subharti College of Science (Department of Forensic Science) and on-campus Chhatrapati Shivaji Subharti Hospital provide students with intensive practical training in Crime Scene Investigation, Forensic Toxicology, Serology & DNA Profiling, Questioned Documents, Fingerprint Analysis, Forensic Odontology, Medico-Legal Autopsy Exposure, and Cyber Forensics.',
     coursesOffered: [
       {
@@ -550,8 +643,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Vadodara',
     type: 'Private',
     website: 'https://paruluniversity.ac.in',
-    logo: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=300',
-    bannerImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://www.paruluniversity.ac.in/wp-content/uploads/2026/09/Group-2.svg',
+    bannerImage: 'https://www.paruluniversity.ac.in/wp-content/uploads/2026/10/pu-main-gate-png-scaled.webp',
     description: 'Parul University is one of India\'s leading multidisciplinary private universities located in Vadodara, Gujarat, accredited with the prestigious NAAC A++ grade. Its Department of Forensic Sciences under the Faculty of Applied Sciences provides advanced education in crime scene investigation, questioned documents, toxicology, fingerprint examination, forensic biology, and cyber forensics with world-class labs, mock crime scenes, and hands-on investigative training.',
     coursesOffered: [
       {
@@ -772,8 +865,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Cuttack',
     type: 'Private',
     website: 'https://srisriuniversity.edu.in',
-    logo: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=300',
-    bannerImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://srisriuniversity.edu.in/wp-content/uploads/2020/11/sri-logo.png',
+    bannerImage: 'https://srisriuniversity.edu.in/wp-content/uploads/2022/10/ssucampus.png',
     description: 'Sri Sri University (SSU) is a premier UGC-recognized university situated on a serene 187-acre eco-friendly campus in Cuttack (near Bhubaneswar), Odisha. Its Department of Forensic Science under the Faculty of Science offers interdisciplinary, cutting-edge education in crime scene management, forensic chemistry, DNA serology, ballistics, and cyber forensics, blending rigorous scientific methodology with value-based ethics.',
     coursesOffered: [
       {
@@ -2072,8 +2165,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Noida',
     type: 'Private',
     website: 'https://amity.edu/aifs',
-    logo: 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&q=80&w=300',
-    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    logo: '/images/colleges/amity-logo.png',
+    bannerImage: '/images/colleges/amity-campus.jpg',
     description: 'Amity Institute of Forensic Sciences (AIFS) at Amity University, Sector 125, Noida is a leading private forensic science institute in North India offering comprehensive hands-on training and academic research in crime scene investigation, forensic biology & DNA profiling, questioned documents, fingerprint science, analytical toxicology, and cyber/digital intelligence.',
     coursesOffered: [
       {
@@ -2578,7 +2671,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://www.karunya.edu',
     logo: 'https://admissions.karunya.edu/sites/admissions/files/uploads/logo.png',
-    bannerImage: 'https://www.karunya.edu/img/homepage/Slides/slide1.jpg',
+    bannerImage: 'https://www.karunya.edu/sites/default/files/img/infra/webs/EMMANUEL-WEB_0.jpg',
     description: 'Karunya Institute of Technology and Sciences (Deemed to be University), popularly known as Karunya University, is a premier NAAC A++ accredited (CGPA 3.55/4.0) Category-1 Deemed-to-be University established in 1986 and conferred university status under Section 3 of the UGC Act, 1956. Nestled in a lush 700-acre eco-friendly residential valley in Karunya Nagar at the foothills of the Western Ghats in Coimbatore, Tamil Nadu, its Division of Criminology and Forensic Science (School of Sciences, Arts, Media and Management) offers comprehensive undergraduate, postgraduate, and doctoral programs in Forensic Science, Criminology, Digital & Cyber Forensics, Crime Scene Investigation, Forensic Toxicology, Serology & DNA Profiling, Questioned Documents, and Fingerprint Examination.',
     coursesOffered: [
       {
@@ -3221,7 +3314,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://www.samglobaluniversity.ac.in',
     logo: 'https://www.samglobaluniversity.ac.in/wp-content/uploads/2026/09/logo-png-scaled-506x184.webp',
-    bannerImage: 'https://www.samglobaluniversity.ac.in/wp-content/uploads/2025/05/image-888.webp',
+    bannerImage: 'https://www.samglobaluniversity.ac.in/wp-content/uploads/2025/05/Picture.webp',
     description: 'Established in 2019 by the Shri Guru Hargovind Society (60+ years of educational legacy in Central India) under the Madhya Pradesh Niji Vishwavidyalaya Adhiniyam, SAM Global University in Bhopal/Raisen offers specialized undergraduate, postgraduate, and doctoral programs in Forensic Science. The curriculum integrates practical training in Crime Scene Investigation, Forensic Serology, DNA Fingerprinting, Forensic Toxicology, Ballistics, Questioned Document Examination, and Cyber Crime Investigation.',
     coursesOffered: [
       {
@@ -3335,7 +3428,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://rvu.edu.in',
     logo: 'https://d2b6aloc836m7p.cloudfront.net/wp-content/uploads/2026/01/RV-Logo.png',
-    bannerImage: 'https://d2b6aloc836m7p.cloudfront.net/wp-content/uploads/2026/09/RV-New-Banner-scaled.jpg',
+    bannerImage: 'https://rvu.edu.in/wp-content/uploads/2025/06/Campus-Overview.jpg',
     description: 'Established under the RV University Act, 2019 by the Rashtreeya Sikshana Samithi Trust (RSST — over 84 years of educational excellence in Bengaluru), RV University offers cutting-edge interdisciplinary education across Science, Law, and Technology. Through its School of Liberal Arts & Sciences, School of Computer Science & Engineering, and School of Law, RV University offers a distinctive NEP-aligned B.Sc. (Hons.) in Criminology, Cyber Law and Forensic Sciences, integrating physical crime scene forensics with digital forensics, cyber law, and criminal psychology.',
     coursesOffered: [
       {
@@ -3951,8 +4044,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Greater Noida',
     type: 'Private',
     website: 'https://lifs.co.in',
-    logo: 'https://lifs.co.in/images/lifs/ec-council.webp',
-    bannerImage: 'https://lifs.co.in/images/lifs/lifs-banner1-28-2-23.webp',
+    logo: 'https://lifs.co.in/images/lifs/logo.webp',
+    bannerImage: 'https://lifs.co.in/images/lifs/001.jpeg',
     description: 'Located in Knowledge Park-II, Greater Noida (Delhi-NCR), Lloyd Institute of Forensic Science (LIFS) is a premier dedicated forensic science institution affiliated with the National Forensic Sciences University (NFSU), Gandhinagar (Ministry of Home Affairs, Govt. of India) and Chaudhary Charan Singh University (CCSU), Meerut. LIFS features EC-Council academic partnerships, mock crime scene houses, and advanced forensic instrumentation laboratories.',
     coursesOffered: [
       {
@@ -4018,7 +4111,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'State',
     website: 'https://www.gujaratuniversity.ac.in',
     logo: 'https://www.gujaratuniversity.ac.in/images/logo.png',
-    bannerImage: 'https://www.gujaratuniversity.ac.in/images/tower.png',
+    bannerImage: '/images/colleges/gujarat-campus.jpg',
     description: 'Established in 1949, Gujarat University is the largest and oldest state university in Gujarat, accredited by NAAC with an A+ Grade. Its Department of Forensic Science and Department of Cyber Security & Forensics under the School of Sciences at the Navrangpura campus in Ahmedabad offer highly sought-after 5-year Integrated B.Sc.-M.Sc., 2-year M.Sc., and Ph.D. programs in Forensic Science and Cyber Forensics.',
     coursesOffered: [
       {
@@ -4147,8 +4240,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Hyderabad',
     type: 'State',
     website: 'https://www.osmania.ac.in',
-    logo: 'https://www.osmania.ac.in/images/logo.png',
-    bannerImage: 'https://www.osmania.ac.in/images/tgr.jpg',
+    logo: '/images/colleges/osmania-logo.png',
+    bannerImage: '/images/colleges/osmania-campus.jpg',
     description: 'Established in 1918, Osmania University is one of India’s oldest and most prestigious public universities, accredited by NAAC with an A+ Grade. The Department of Forensic Science at the University College of Science (Saifabad & Tarnaka Main Campus), Hyderabad offers postgraduate and doctoral programs in Forensic Science in close collaboration with the Telangana State Forensic Science Laboratory (TSFSL), Centre for DNA Fingerprinting and Diagnostics (CDFD), CCMB, and IICT Hyderabad.',
     coursesOffered: [
       {
@@ -4204,7 +4297,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'State',
     website: 'https://www.unom.ac.in',
     logo: 'https://www.unom.ac.in/image/data/unomlogo.png',
-    bannerImage: 'https://www.unom.ac.in/image/data/accredition/naac1.jpg',
+    bannerImage: '/images/colleges/madras-campus.jpg',
     description: 'Founded in 1857 on the model of the University of London, the University of Madras is one of India’s three oldest premier universities and holds the highest NAAC A++ Accreditation. Its Department of Criminology (established in 1965 at the historic Chepauk Campus, Chennai) is a pioneer in Southern India offering M.Sc. in Cyber Forensics and Information Security, M.A. in Criminology and Criminal Justice Administration, PG Diplomas, and Ph.D. research.',
     coursesOffered: [
       {
@@ -4334,7 +4427,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'State',
     website: 'https://www.gbu.ac.in',
     logo: 'https://www.gbu.ac.in/Content/img/fulllogogbu.png',
-    bannerImage: 'https://www.gbu.ac.in/Content/img/banner/Homepic1.jpg',
+    bannerImage: '/images/colleges/gbu-campus.jpg',
     description: 'Established by the Uttar Pradesh Gautam Buddha University Act 2002 across a lush 511-acre campus in Greater Noida, Gautam Buddha University (GBU) is a state government university accredited by NAAC with a B+ Grade. Under the School of Vocational Studies and Applied Sciences (Department of Chemistry & Forensic Science) and School of Information & Communication Technology, GBU offers comprehensive B.Sc. (Hons.), M.Sc., PG Diploma, and Ph.D. programs in Forensic Science and Cyber Security.',
     coursesOffered: [
       {
@@ -4463,8 +4556,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Pune',
     type: 'State',
     website: 'http://www.unipune.ac.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/f/f6/Savitribai_Phule_Pune_University_Logo.svg',
-    bannerImage: 'http://www.unipune.ac.in/uop_files/Bannerimage/126.jpg',
+    logo: '/images/colleges/sppu-logo.png',
+    bannerImage: '/images/colleges/sppu-campus.jpg',
     description: 'Established in 1949 and popularly known as the "Oxford of the East," Savitribai Phule Pune University (SPPU) is one of India’s premier public universities, accredited by NAAC with an A+ Grade across its historic 411-acre Ganeshkhind campus in Pune. Through its Department of Anthropology, Department of Law, Department of Technology, and affiliated colleges, SPPU offers specialized programs in Cyber Security and Digital Forensics, Forensic Anthropology & Odontology, and Forensic & Medical Jurisprudence.',
     coursesOffered: [
       {
@@ -4538,7 +4631,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'State',
     website: 'https://www.kud.ac.in',
     logo: 'https://kud.ac.in/images/kud-logo-new.png',
-    bannerImage: 'https://kud.ac.in/image/banner-14.jpg',
+    bannerImage: '/images/colleges/karnatak-campus.jpg',
     description: 'Established in 1949 at Pavate Nagar, Dharwad, Karnatak University (KUD) is the second oldest university in Karnataka, accredited by NAAC with an A Grade across a scenic 888-acre campus. Its pioneering Department of Studies in Criminology and Forensic Science (founded in 1959/1969, making it one of the oldest university forensic departments in India) and constituent Karnatak Science/Arts College offer B.Sc./B.A. (Hons.), M.Sc., M.A., and Ph.D. programs in Criminology and Forensic Science.',
     coursesOffered: [
       {
@@ -4603,7 +4696,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Deemed',
     website: 'https://christuniversity.in',
     logo: 'https://christuniversity.in/images/logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    bannerImage: '/images/colleges/christ-campus.jpg',
     description: 'Founded in 1969 and declared a Deemed-to-be University under Section 3 of the UGC Act in 2008, CHRIST (Deemed to be University), Bengaluru is accredited by NAAC with the highest A+ Grade. Under its School of Sciences (Department of Life Sciences) at the Bangalore Central Campus, Christ University offers premier B.Sc. (Hons. / Hons. with Research), M.Sc., and Ph.D. programs in Forensic Science with specialized laboratories in Criminalistics, Forensic Toxicology, Serology, Questioned Documents, and Digital Forensics.',
     coursesOffered: [
       {
@@ -4669,7 +4762,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Deemed',
     website: 'https://www.jainuniversity.ac.in',
     logo: 'https://www.jainuniversity.ac.in/jain/home/assets/images/jain-logo.png',
-    bannerImage: 'https://www.jainuniversity.ac.in/jain/home/assets/images/2027/3831-ju-ug-web-banner-2027.webp',
+    bannerImage: '/images/colleges/jain-campus.jpg',
     description: 'Accredited by NAAC with the highest A++ Grade (CGPA 3.71) and classified as a Category-I Deemed-to-be University by UGC, JAIN (Deemed-to-be University), Bengaluru is one of Southern India’s foremost centers for forensic and cyber security education. Its Department of Forensic Science under the School of Sciences offers industry-integrated B.Sc. (Hons.), M.Sc. in Forensic Science, M.Sc. in Digital Forensics & Information Security, and Ph.D. programs in partnership with EC-Council and forensic laboratories.',
     coursesOffered: [
       {
@@ -4734,8 +4827,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Greater Noida',
     type: 'Private',
     website: 'https://www.galgotiasuniversity.edu.in',
-    logo: 'https://www.galgotiasuniversity.edu.in/public/uploads/media/ruw5LaQiSiFRCDtfkVElRnpmrjVqA8XHMqjIodhR.webp',
-    bannerImage: 'https://www.galgotiasuniversity.edu.in/public/uploads/media/OEVr5a6uPsTXBnlpVn4Zywd2qOyWSYvNGNr7lbiz.jpg',
+    logo: 'https://www.galgotiasuniversity.edu.in/public/uploads/media/PSf8vV9pdHjUb5MhnGpG1hiiJ9Y0c8YYgSAk54Q3.png',
+    bannerImage: 'https://www.galgotiasuniversity.edu.in/public/uploads/media/SPe27qXGWfiHAcXlrCS0fVQrasKJv11tGW9kVjSX.jpg',
     description: 'Located opposite Buddha International Circuit along the Yamuna Expressway in Greater Noida, Galgotias University is a NAAC A+ accredited private university (CGPA 3.37). Its Department of Forensic Science under the School of Basic and Applied Sciences offers comprehensive B.Sc. (Hons. / Hons. with Research), M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, equipped with dedicated Crime Scene Investigation, Toxicology, Serology, Ballistics, and Questioned Document laboratories.',
     coursesOffered: [
       {
@@ -4801,7 +4894,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://www.sharda.ac.in',
     logo: 'https://www.sharda.ac.in/attachments/site_logo/logo111.png',
-    bannerImage: 'https://www.sharda.ac.in/attachments/banner_images/ai-enabled-campus.webp',
+    bannerImage: 'https://media.sharda.ac.in/sharda.ac.in/sharda-assets/imgs/virutal-tour_1200x628.jpg',
     description: 'Established across a 63-acre campus in Knowledge Park-III, Greater Noida, Sharda University is a NAAC A+ accredited global university with students from 95+ countries. Under the Sharda School of Basic Sciences & Research (SSBSR) and supported by the 1,200+ bed Sharda Hospital & School of Medical Sciences, the university offers B.Sc. (Hons.), M.Sc., and Ph.D. programs in Forensic Science with hands-on exposure to clinical toxicology, autopsy medicine, DNA profiling, and cyber forensics.',
     coursesOffered: [
       {
@@ -4913,8 +5006,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Jaipur',
     type: 'Private',
     website: 'https://jecrcuniversity.edu.in',
-    logo: 'https://jecrcuniversity.edu.in/wp-content/uploads/2023/02/Untitled-design-1-2.png',
-    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://jecrcuniversity.edu.in/wp-content/uploads/2020/02/JECRC-LOGO-4.png',
+    bannerImage: 'https://jecrcuniversity.edu.in/wp-content/uploads/2023/01/9841.webp',
     description: 'Established across a 32-acre campus in Vidhani, Jaipur, JECRC University is a NAAC-accredited private university renowned in Rajasthan for its industry-aligned scientific and technological education. The Department of Forensic Science under the School of Sciences offers B.Sc. (Hons.), M.Sc., and Ph.D. programs in Forensic Science with hands-on training in Crime Scene Reconstruction, Forensic Chemistry & Toxicology, Serology, Questioned Documents, Ballistics, and Digital Forensics.',
     coursesOffered: [
       {
@@ -4970,8 +5063,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Lakshmangarh (Sikar)',
     type: 'Private',
     website: 'https://www.modyuniversity.ac.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/6/60/Mody_University_logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&q=80&w=1200',
+    logo: '/images/colleges/mody-logo.png',
+    bannerImage: 'https://www.modyuniversity.ac.in/wp-content/uploads/2026/09/banner_Modyuniversity-1.webp',
     description: 'Established in 1998 across a 265-acre eco-friendly residential campus in Lakshmangarh (Sikar district, Rajasthan), Mody University of Science and Technology is one of India’s premier women’s universities, accredited by NAAC with an A+ Grade. Under its School of Sciences, Mody University offers specialized B.Sc. (Hons. / Hons. with Research), M.Sc., and Ph.D. programs in Forensic Science empowering women in forensic investigation, toxicology, DNA profiling, and cyber forensics.',
     coursesOffered: [
       {
@@ -5093,8 +5186,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Lucknow',
     type: 'Private',
     website: 'https://www.iul.ac.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/0/03/Integral_University_Logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://ibs.iul.ac.in/assets/img/logo/logo-edited.png',
+    bannerImage: 'https://www.iul.ac.in/img/GallaryPic/G46.JPG',
     description: 'Established under Act Number 9 of 2004 by the Uttar Pradesh State Government across a 120-acre campus on Kursi Road, Lucknow, Integral University is accredited by NAAC with an A+ Grade. Through its Faculty of Science (Department of Biosciences & Department of Chemistry) and Integral Institute of Medical Sciences & Research (IIMSR), the university offers B.Sc. (Hons.), M.Sc., and Ph.D. programs in Forensic Science with comprehensive training in Toxicology, Serology, DNA Fingerprinting, and Questioned Documents.',
     coursesOffered: [
       {
@@ -5151,7 +5244,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'State',
     website: 'https://www.ycis.ac.in',
     logo: 'https://www.ycis.ac.in/header/newyclogo.png',
-    bannerImage: 'https://www.ycis.ac.in/slider/1.jpeg',
+    bannerImage: 'https://www.ycis.ac.in/photo_gallery/Campus/1776234953907_DJI_20260226102240_0128_D.JPG',
     description: 'Established in 1958 by Padmabhushan Dr. Karmaveer Bhaurao Patil under the Rayat Shikshan Sanstha and operating as an Autonomous Institute & Constituent College of Karmaveer Bhaurao Patil University, Satara, Yashavantrao Chavan Institute of Science (YCIS), Satara is accredited by NAAC with the highest A++ Grade (CGPA 3.61). Its dedicated Department of Forensic Science offers comprehensive NEP-aligned B.Sc. (Hons.), M.Sc., Diploma, and research programs in Forensic Science, Cyber Forensics, Toxicology, Serology, Questioned Documents, and Crime Scene Investigation.',
     coursesOffered: [
       {
@@ -5217,7 +5310,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://www.sandipuniversity.edu.in',
     logo: 'https://www.sandipuniversity.edu.in/images/logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    bannerImage: 'https://www.sandipuniversity.edu.in/blog/wp-content/uploads/2024/12/Sandip-University-Campus.jpg',
     description: 'Established in 2017 under the Maharashtra Self-Financed Universities Act and sprawling across a 250+ acre lush green Wi-Fi enabled campus in Mahiravani, Nashik, Sandip University is a premier UGC-recognized Private University accredited by NAAC with an A Grade. Its School of Science (Department of Forensic Science) offers industry-aligned B.Sc., M.Sc., and Ph.D. programs in Forensic Science and Criminology with hands-on training in crime scene investigation, forensic toxicology, DNA profiling, fingerprint & questioned document examination, and cyber forensics.',
     coursesOffered: [
       {
@@ -5357,7 +5450,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://ghrstu.edu.in',
     logo: 'https://blogger.googleusercontent.com/img/a/AVvXsEisGM7zhetx-SuR9KTaDseNKeVgTZtQnmIpTZnZiGXn0GH9S8RGLPdBPDEG_iGHPY-vmaSD9KSV4AXa2UyeGziCJztNNFMXkRE871FPBR1p12AWq8KX5EwnsP6rHr8NKCyt5sgaRWPWEG5A6EB0-s2fY6Z1X1bJL7tcYY5OE_L6narP3rqPF91HGlhPDl4',
-    bannerImage: 'https://blogger.googleusercontent.com/img/a/AVvXsEh1G7NDBa16Pk7pWQMcB0so8AleF_tqq_hLK3qzF6I-urFOUgN__PsJNBroGSPdPFwHYo4r--iaW1bC-wWqrhLkTaMPFLPvMhy3A8HF-jFJyGnYFll5i7rupu_eMtQUDC_lGJPlYxc6XtzDiJHUo3dYdEdiAq1OCITi7r3PS5PSD_IBS967YugjE5ubR0k',
+    bannerImage: 'https://ghrstucdn.s3.ap-south-1.amazonaws.com/images/ghru-nagpur.webp',
     description: 'Established under the Maharashtra State Self-Financed Skill University Act and spearheaded by the renowned Raisoni Education Group in Nagpur, G H Raisoni Skill Tech University (GHRSTU), Nagpur offers skill-intensive, NEP 2020-aligned programs in Forensic Science and Digital Forensics. Its curriculum emphasizes practical laboratory mastery in crime scene reconstruction, forensic biology, analytical toxicology, fingerprint & questioned document examination, DNA profiling, and cyber evidence investigation.',
     coursesOffered: [
       {
@@ -5413,7 +5506,7 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Amravati',
     type: 'Private',
     website: 'https://ghrua.edu.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/f/f5/G.H._Raisoni_University_logo.png',
+    logo: 'https://ghrua.edu.in/assets/img/logo-ghru.webp',
     bannerImage: 'https://ghrus.s3.ap-south-1.amazonaws.com/ghru/images/campus/ghrua.png',
     description: 'Established by the Government of Maharashtra (Act No. XXIX of 2018) and part of the Raisoni Education Group, G H Raisoni University (GHRU), Amravati is a multidisciplinary private university located on Anjangaon Bari Road, Amravati. Through its School of Science, GHRU Amravati offers industry-aligned undergraduate and postgraduate programs in Forensic Science focusing on crime scene investigation, forensic biology & DNA profiling, forensic chemistry & toxicology, questioned documents, ballistics, and cyber/digital forensics.',
     coursesOffered: [
@@ -5570,8 +5663,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Jaipur',
     type: 'Private',
     website: 'https://www.nimsuniversity.org',
-    logo: 'https://www.nimsuniversity.org/images/logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://guninetwork.org/wp-content/uploads/2024/01/Logo-NIMS.png',
+    bannerImage: 'https://nimsuniversity.org/nimsimages/campus/overview/campus-hero.webp',
     description: 'Established under the NIMS University Rajasthan, Jaipur Act, 2008 and accredited by NAAC with an A+ Grade, NIMS University is one of North India’s largest self-financed health, technical, and science universities spanning a 250+ acre campus on the Jaipur-Delhi Highway (NH-11C). Through the Axel Pries Institute of Allied Medical Science & Technology, NIMS offers NEP 2020-aligned B.Sc. / B.Sc. (Hons.), M.Sc., and Ph.D. programs in Forensic Science, combining crime scene investigation, forensic toxicology, DNA profiling, and digital forensics with direct clinical and medico-legal autopsy exposure at the 1,400+ bed NIMS Super-Specialty Hospital.',
     coursesOffered: [
       {
@@ -5641,8 +5734,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Chhatrapati Sambhajinagar',
     type: 'State',
     website: 'https://www.bamu.ac.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/2/2c/Dr._Babasaheb_Ambedkar_Marathwada_University_logo.png',
-    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    logo: '/images/colleges/bamu-logo.png',
+    bannerImage: '/images/colleges/bamu-campus.png',
     description: 'Established in August 1958 and named after Bharat Ratna Dr. Babasaheb Ambedkar, Dr. Babasaheb Ambedkar Marathwada University (BAMU) is a premier Maharashtra State Public University spanning a historic 725-acre campus near the Soneri Mahal and Aurangabad Caves in Chhatrapati Sambhajinagar (formerly Aurangabad). Accredited by NAAC and recognized under UGC 2(f) & 12(B), BAMU houses a dedicated University Department of Forensic Science (established in 2021) alongside its affiliated Government Institute of Forensic Science (GIFSA), offering NEP 2020-aligned B.Sc., M.Sc., PG Diploma, and Ph.D. programs in Forensic Science, DNA Profiling, Forensic Anthropology, Toxicology, and Digital Forensics.',
     coursesOffered: [
       {
@@ -5879,8 +5972,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Mathura',
     type: 'Private',
     website: 'https://www.sanskriti.edu.in',
-    logo: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&q=80&w=300',
-    bannerImage: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=80&w=1200',
+    logo: 'https://www.sanskriti.edu.in/new-assets/images/header-footer/su-logo.webp',
+    bannerImage: 'https://www.sanskriti.edu.in/newhome/assets/images/header/campus.webp',
     description: 'Established in 2016 under the Uttar Pradesh Private Universities Act (U.P. Act No. 20 of 2016) and recognized by the University Grants Commission (UGC) under Section 2(f), Sanskriti University (also searched as Sanskruti University) is a premier NAAC \'A\' Grade accredited multidisciplinary university spanning a 70+ acre green residential campus on the Mathura-Delhi Highway (NH-19) in Chhata, Mathura, Uttar Pradesh. Its School of Basic & Applied Sciences (Department of Forensic Science) and on-campus teaching hospitals deliver NEP 2020-aligned undergraduate, postgraduate, and doctoral education in Forensic Science, Crime Scene Management, Forensic Chemistry & Toxicology, Forensic Biology & Serology, Questioned Documents, Fingerprint Examination, Forensic Ballistics, and Digital & Cyber Forensics.',
     coursesOffered: [
       {
@@ -6070,7 +6163,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://iilm.edu',
     logo: 'https://iilm.edu/wp-content/uploads/2025/12/logo.png',
-    bannerImage: 'https://iilm.edu/wp-content/uploads/2026/01/iilmu-placement-banner_11zon-2.jpg',
+    bannerImage: 'https://iilm.edu/wp-content/uploads/2026/01/Campus_4-1@2x-3-full.webp',
     description: 'Established under the Uttar Pradesh Private Universities Act (with campuses in Greater Noida and Gurugram) and backed by over 30 years of legacy of the IILM Educational Group, IILM University offers a multidisciplinary, NEP-2020 aligned B.Sc. (Hons.) in Forensic Science and M.Sc. in Forensic Science. The curriculum blends hands-on crime scene investigation, forensic toxicology, DNA profiling, fingerprint & questioned document analysis, digital/cyber forensics, and criminal law with intensive laboratory training and forensic internships.',
     coursesOffered: [
       {
@@ -6209,7 +6302,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Autonomous',
     website: 'https://ajkcas.ac.in',
     logo: 'https://ajkcas.ac.in/wp-content/uploads/2026/09/AJKCollegeOf-Arts-And-Science.webp',
-    bannerImage: 'https://ajkcas.ac.in/wp-content/uploads/2026/03/slider2.jpg',
+    bannerImage: 'https://ajkcas.ac.in/wp-content/uploads/2026/04/Top-Arts-And-Science-College-In-Coimbatore.webp',
     description: 'Established in 2007 at Navakkarai on the Coimbatore–Palakkad National Highway, AJK College of Arts and Science (AJKCAS) is a premier NAAC A+ accredited Autonomous institution affiliated with Bharathiar University, Coimbatore and ISO 21001:2018 certified. Pioneering specialized cyber-forensic education in Tamil Nadu, AJKCAS offers an industry-integrated B.Sc. in Digital and Cyber Forensic Science focused on digital evidence recovery, ethical hacking, network security, malware analysis, crime scene investigation, and cyber law.',
     coursesOffered: [
       {
@@ -6322,7 +6415,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://adamasuniversity.ac.in',
     logo: 'https://ricedigitals3bucket.s3.ap-south-1.amazonaws.com/AUPortalContent/2022/04/21114809/AU-Main-Logof.png',
-    bannerImage: 'https://s3-ap-south-1.amazonaws.com/ricedigitals3bucket/AUPortalContent/2023/11/07154110/ACRE-GREEN-CAMPUS.webp',
+    bannerImage: 'https://s3-ap-south-1.amazonaws.com/ricedigitals3bucket/AUPortalContent/2019/05/29111106/Adamas-University-Building-1.jpg',
     description: 'Established in 2014 under the Adamas University Act (West Bengal Act IV of 2014) by the RICE Group and accredited with NAAC Grade A, Adamas University is Situated on a 120-acre green campus at Barasat, Kolkata. Its Department of Forensic Science under the School of Basic and Applied Sciences is one of Eastern India’s premier forensic training centers, offering NEP-aligned 4-year B.Sc. (Hons.), 2-year M.Sc., and Ph.D. programs in Forensic Science with dedicated laboratories for crime scene reconstruction, toxicology, DNA forensics, ballistics, and cyber forensics.',
     coursesOffered: [
       {
@@ -6448,7 +6541,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://rimt.ac.in',
     logo: 'https://rimt.ac.in/wp-content/uploads/2024/01/RIMT-LOGO.jpg',
-    bannerImage: 'https://rimt.ac.in/wp-content/uploads/2026/03/Slider-01.png',
+    bannerImage: 'https://rimt.ac.in/wp-content/uploads/2022/06/Building-scaled.jpg',
     description: 'Established under the Punjab State Legislature Act (Punjab Act No. 31 of 2015) and recognized by the UGC, RIMT University is located on the Delhi–Jalandhar National Highway (NH-44) at Mandi Gobindgarh, Fatehgarh Sahib, Punjab. Through its School of Basic and Applied Sciences / Health Sciences, RIMT University offers practical, laboratory-intensive B.Sc., M.Sc., and Ph.D. programs in Forensic Science focusing on crime scene management, forensic toxicology, serology, DNA profiling, ballistics, and questioned documents.',
     coursesOffered: [
       {
@@ -6561,8 +6654,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Ahmedabad',
     type: 'Private',
     website: 'https://silveroakuni.ac.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/f/f5/Silver_Oak_University_logo.png',
-    bannerImage: 'https://upload.wikimedia.org/wikipedia/commons/e/ee/Campus_Landmark_at_Silver_Oak_University.jpg',
+    logo: '/images/colleges/silver-oak-logo.png',
+    bannerImage: '/images/colleges/silver-oak-campus.jpg',
     description: 'Established in 2019 under the Gujarat Private Universities Act (building on the legacy of Silver Oak Group of Institutes founded in 2009) and accredited by NAAC, Silver Oak University in Gota, Ahmedabad is a rapidly growing urban multidisciplinary university. Through the Silver Oak Institute of Science and College of Computer Application, the university offers industry-focused B.Sc. in Forensic Science and M.Sc. in Cyber Security & Forensic Science with state-of-the-art crime scene, biotechnology, and cyber defense laboratories.',
     coursesOffered: [
       {
@@ -6618,7 +6711,7 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Gurugram',
     type: 'Private',
     website: 'https://www.krmangalam.edu.in',
-    logo: 'https://upload.wikimedia.org/wikipedia/en/3/38/K.R._Mangalam_University_logo.svg',
+    logo: '/images/colleges/kr-mangalam-logo.svg',
     bannerImage: 'https://www.krmangalam.edu.in/modules/header/campus/campus.png',
     description: 'Established in 2013 under the Haryana Private Universities Act and accredited with NAAC Grade A, K.R. Mangalam University (KRMU) is located on a scenic 26-acre campus on Sohna Road, Gurugram (Delhi-NCR). Its School of Basic and Applied Sciences is a major hub for forensic education in North India, offering B.Sc. (Hons. / Hons. with Research) in Forensic Science, 5-year Integrated B.Sc.-M.Sc. in Forensic Science, M.Sc. in Forensic Science, and Ph.D. programs with dedicated crime scene rooms, FSL visits, and cyber forensic training.',
     coursesOffered: [
@@ -6988,7 +7081,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://www.anjaneyauniversity.ac.in',
     logo: 'https://www.anjaneyauniversity.ac.in/uploads/51ba570fe68fc088e0a942bdf8700cdce7eb8b1d/1677909673favicons.png',
-    bannerImage: 'https://www.anjaneyauniversity.ac.in/uploads/51ba570fe68fc088e0a942bdf8700cdce7eb8b1d/1778652004AJ.webp',
+    bannerImage: 'https://anjaneyauniversity.ac.in/uploads/51ba570fe68fc088e0a942bdf8700cdce7eb8b1d/17315772141678788201aca-01-04.webp',
     description: 'Anjaneya University, Raipur is a dynamic UGC-recognized state private university in Chhattisgarh established under the Chhattisgarh Private Universities (Establishment and Operation) Act and sponsored by SBA Education Society. Located on a sprawling 25-acre modern green campus at Vidhan Sabha Road, Naradha, Raipur, its Faculty of Science (Department of Forensic Science) offers industry-oriented B.Sc., M.Sc., and Ph.D. programs in Forensic Science featuring dedicated crime scene simulation zones, forensic chemistry and toxicology labs, fingerprint and questioned document analysis, and forensic biology research.',
     coursesOffered: [
       {
@@ -7243,8 +7336,8 @@ export const SAMPLE_COLLEGES: College[] = [
     city: 'Raipur',
     type: 'Private',
     website: 'https://sdu.ac.in',
-    logo: 'https://sdu.ac.in/wp-content/themes/new/assets/SDU-NEW-LOGO.jpg',
-    bannerImage: 'https://sdu.ac.in/wp-content/uploads/2026/05/slider1-1.webp',
+    logo: 'https://sdu.ac.in/wp-content/uploads/2024/07/dvara_new_logo.png',
+    bannerImage: 'https://sdu.ac.in/wp-content/uploads/2024/07/davara-1.jpg',
     description: 'Shri Davara University (SDU), Raipur is a UGC-recognized state private university in Chhattisgarh established under the Chhattisgarh Private Universities Act. Located at Atal Nagar (Naya Raipur) / Siltara region of Raipur, the Faculty of Science & Technology offers NEP 2020-aligned B.Sc. (Plain / Hons. / Hons. with Research) and M.Sc. programs in Forensic Science designed to train students in crime scene management, physical evidence analysis, forensic chemistry, toxicology, questioned documents, fingerprint science, and digital forensics at an affordable fee structure.',
     coursesOffered: [
       {
@@ -7487,7 +7580,7 @@ export const SAMPLE_COLLEGES: College[] = [
     type: 'Private',
     website: 'https://sgcollege.edu.in',
     logo: 'https://sgcollege.edu.in/wp-content/uploads/2024/03/SGC-Logo-1024x295.png',
-    bannerImage: 'https://sgcollege.edu.in/wp-content/uploads/2026/01/img-001.png',
+    bannerImage: 'https://sgcollege.edu.in/wp-content/uploads/2026/03/campus-about.webp',
     description: 'SGC College, Mohali (Saraswati Group of Colleges), located on the Chandigarh-Ludhiana National Highway (NH-05) at Gharuan, Mohali, Punjab, is a premier NAAC-accredited multidisciplinary educational group established in 2004 and affiliated to Maharaja Ranjit Singh Punjab Technical University (MRSPTU) / I.K. Gujral Punjab Technical University (IKGPTU). SGC Mohali offers a career-focused B.Sc. in Forensic Science with both regular and industry-integrated tracks (including hands-on clinical, paramedical, and forensic laboratory internships) covering crime scene investigation, forensic toxicology, serology, fingerprint analysis, and questioned documents.',
     coursesOffered: [
       {
@@ -7831,7 +7924,7 @@ export const SAMPLE_COLLEGES: College[] = [
     country: 'India',
     type: 'Private',
     logo: 'https://www.medicaps.ac.in/public/frontend/images/medicaps-logo-new.webp',
-    bannerImage: 'https://www.medicaps.ac.in/uploads/home/banner_images/banner.webp',
+    bannerImage: 'https://www.medicaps.ac.in/public/frontend/images/home_about-img.webp',
     website: 'https://www.medicaps.ac.in',
     description: 'Medi-Caps University, Indore (established in 2000 as Medi-Caps Group and constituted as a State Private University under the Madhya Pradesh Niji Vishwavidyalaya Adhiniyam) is one of Central India\'s largest and highest-ranked private universities. Under its Faculty of Science, the Department of Forensic Science offers comprehensive B.Sc. (Hons.) in Forensic Science, M.Sc. in Forensic Science, and Ph.D. programs. Backed by formal training collaborations with the Sherlock Institute of Forensic Science (SIFS India) and regional forensic labs, students gain hands-on mastery in crime scene management, analytical toxicology, DNA fingerprinting, ballistics, and questioned documents.',
     coursesOffered: [
@@ -7899,8 +7992,8 @@ export const SAMPLE_COLLEGES: College[] = [
     state: 'Rajasthan',
     country: 'India',
     type: 'Private',
-    logo: 'https://www.jnujaipur.ac.in/public/frontend/assets/images/logo/jnu-logo.webp',
-    bannerImage: 'https://www.jnujaipur.ac.in/public/uploads/banner/21_pic-1.webp',
+    logo: '/images/colleges/jnu-jaipur-logo.png',
+    bannerImage: 'https://dfhe5ze0n4pxu.cloudfront.net/College/Image/Image-1767882231119.jpg',
     website: 'https://www.jnujaipur.ac.in',
     description: 'Jaipur National University (JNU), Jaipur, established in 2007 under the Jaipur National University Act of the Government of Rajasthan, is the first private university in Rajasthan to be accredited by NAAC and holds the prestigious NAAC \'A+\' Grade. Through its School of Life & Basic Sciences and JNU Institute for Medical Sciences & Research Centre (JNUIMSRC), the university offers NEP 2020-aligned 4-year B.Sc. (Hons.) in Forensic Science, 2-year M.Sc. in Forensic Science, and Ph.D. programs. Students benefit from direct medico-legal autopsy, clinical toxicology, DNA profiling, and crime scene reconstruction exposure integrated with the 1,100+ bed JNU Hospital & Medical College on the Jagatpura campus.',
     coursesOffered: [
@@ -8033,8 +8126,186 @@ export const SAMPLE_COLLEGES: College[] = [
       'Separate Boys & Girls On-Campus Hostels with 24/7 Security, Mess, Sports Complex & Transport Fleet across Jaipur'
     ],
     featured: true
+  },
+  {
+    id: 'dr-rvr-nri-institute-of-technology-agiripalli',
+    name: 'Dr. RVR NRI Institute of Technology - Deemed to be University, Agiripalli',
+    shortName: 'Dr. RVR NRIIT (NRI University) Agiripalli',
+    city: 'Agiripalli (Vijayawada)',
+    state: 'Andhra Pradesh',
+    country: 'India',
+    type: 'Deemed University',
+    logo: 'https://rvrnriuniversity.edu.in/wp-content/uploads/2026/01/NRI-LOGO-FINAL.png',
+    bannerImage: 'https://rvrnriuniversity.edu.in/wp-content/uploads/2026/04/NRI-25.jpg',
+    website: 'https://rvrnriuniversity.edu.in',
+    description: 'Dr. RVR NRI Institute of Technology (NRI Deemed-to-be-University / RVRNRIU), located at Pothavarappadu, Agiripalli (Vijayawada Rural, Eluru District), Andhra Pradesh, is a premier NAAC \'A\' Grade & NBA accredited institution granted Deemed-to-be-University status by the University Grants Commission (UGC) under Section 3 of the UGC Act, 1956. Through its dedicated School of Digital Forensics and Cyber Security, School of Paramedical & Allied Health Sciences, and School of Computing, the university offers specialized undergraduate and postgraduate programs in Forensic Science, Digital Forensics & Cyber Security, Criminology, and B.Tech / M.Tech in Cyber Security with advanced digital investigation labs, crime scene simulation facilities, and strong industry placements.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Digital Forensics & Cyber Security',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: 'Pass in 10+2 (Intermediate / Higher Secondary) with Science stream (Physics, Chemistry, Mathematics / Biology / Computer Science) with minimum 50% aggregate marks from a recognized board',
+        estimatedFees: '₹55,000 - ₹90,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Digital Evidence Acquisition, Disk & Mobile Device Forensics',
+          'Network Security, Ethical Hacking & Vulnerability Assessment',
+          'Cybercrime Investigation, Incident Response & Malware Analysis',
+          'Cyber Law, IT Act Compliance & Electronic Evidence Presentation'
+        ]
+      },
+      {
+        name: 'B.Sc. in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: 'Pass in 10+2 (Intermediate / Higher Secondary) with Science subjects (Physics, Chemistry, Biology / Mathematics) with minimum 50% aggregate marks from a recognized board',
+        estimatedFees: '₹55,000 - ₹85,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & Physical Evidence',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics Profiling',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents, Handwriting & Fingerprint Analysis (Dactyloscopy)'
+        ]
+      },
+      {
+        name: 'B.Tech in Computer Science and Engineering (Cyber Security)',
+        degreeLevel: 'Bachelor',
+        duration: '4 Years (8 Semesters)',
+        eligibility: '10+2 (Intermediate) with Mathematics, Physics, and Chemistry (MPC) with minimum 45-50% aggregate marks + valid rank in AP EAPCET / JEE Main / University Entrance Test (3-Year Lateral Entry via AP ECET for Diploma holders)',
+        estimatedFees: '₹55,000 / year (Category-A Convenor Quota) | ₹1,65,000 - ₹2,00,000 / year (University Merit / Category-B)',
+        mode: 'Full-time',
+        specializations: [
+          'Cryptography, Network Security & Secure Software Architecture',
+          'Digital Forensics, Penetration Testing & Threat Intelligence',
+          'Cloud Security, IoT Security & Security Operations Center (SOC) Analytics'
+        ]
+      },
+      {
+        name: 'M.Sc. in Digital Forensics & Cyber Security',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'Bachelor’s degree in B.Sc. (Forensic Science / Digital Forensics / Cyber Security / Computer Science / IT), BCA, or B.Tech / B.E. with minimum 50% aggregate marks from a recognized university',
+        estimatedFees: '₹60,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Memory, Cloud & Mobile Forensics',
+          'Reverse Engineering, Malware Forensics & Threat Hunting',
+          'Enterprise Cyber Defense, SIEM & Incident Response Management'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science & Criminology',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'Bachelor’s degree (B.Sc.) in Forensic Science, Chemistry, Biology, Biotechnology, Life Sciences, or allied disciplines with minimum 50% aggregate marks from a recognized university',
+        estimatedFees: '₹60,000 - ₹95,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Criminalistics, Crime Scene Management & Victimology',
+          'Forensic Toxicology, Instrumental Chemical Analysis & Trace Evidence',
+          'Forensic Serology, DNA Profiling & Questioned Document Examination',
+          'Criminological Theory, Penology & Criminal Justice Administration'
+        ]
+      },
+      {
+        name: 'M.Tech in Computer Science & Engineering (Cyber Security)',
+        degreeLevel: 'Master',
+        duration: '2 Years (4 Semesters)',
+        eligibility: 'B.Tech / B.E. in CSE, IT, Cyber Security, or equivalent discipline with minimum 50% aggregate marks + valid GATE / AP PGECET / University Entrance Score',
+        estimatedFees: '₹50,000 - ₹70,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Cryptography, Network Defense & Cyber Forensics',
+          'AI-Driven Intrusion Detection & Secure Distributed Systems'
+        ]
+      }
+    ],
+    feesRange: '₹55,000 - ₹1,65,000 / year',
+    admissionProcess: 'Admission through AP EAPCET / AP ECET / AP PGECET / GATE / CUET or Dr. RVR NRI Deemed-to-be-University Entrance & Merit Scholarship Counseling followed by document verification',
+    accreditation: 'Deemed-to-be-University under Section 3 of UGC Act 1956 | NAAC \'A\' Grade Accredited | NBA Accredited | AICTE Approved',
+    contactEmail: 'info@rvrnriuniversity.edu.in',
+    contactPhone: '+91 96403 34422 / +91 92475 98461 / 0866-2469666',
+    address: 'Pothavarappadu (V), Via Nunna, Agiripalli (M), Vijayawada Rural, Eluru District, Andhra Pradesh 521212, India',
+    ranking: 'NAAC \'A\' Grade & NBA Accredited Deemed-to-be-University | Premier Technology & Forensic Education Hub in Andhra Pradesh',
+    facilities: [
+      'Dedicated School of Digital Forensics and Cyber Security Laboratories',
+      'Forensic Science, Criminalistics, Toxicology & Questioned Documents Lab',
+      'Cyber Security Operations, Ethical Hacking & Network Defense Lab',
+      'Central Digital Library with IEEE, Springer, DELNET & Forensic Journals',
+      'Sprawling Lush Green Wi-Fi Enabled Eco-Friendly Campus at Agiripalli (Vijayawada Rural)',
+      'Air-Conditioned Smart Classrooms, Auditoriums & Innovation Incubation Center',
+      'Separate On-Campus Boys & Girls Hostels with 24/7 Security, Hygienic Mess & Medical Care',
+      'Extensive Bus Transport Fleet connecting Vijayawada, Eluru, Guntur & Surrounding Regions'
+    ],
+    featured: false
+  },
+  {
+    id: 'harsha-institute-of-management-studies-bangalore',
+    name: 'Harsha Institute of Management Studies, Bangalore',
+    shortName: 'Harsha Institutions Bangalore',
+    city: 'Bengaluru',
+    state: 'Karnataka',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://harshainstitute.edu.in/wp-content/uploads/2025/11/harsha-logo.png',
+    bannerImage: 'https://harshainstitute.edu.in/wp-content/uploads/2026/01/Campus.webp',
+    website: 'https://www.harshainstitutions.com',
+    description: 'Harsha Institute of Management Studies (part of Harsha Institutions / Sri Harsha Educational Trust), located at Nelamangala, Bengaluru Rural, Karnataka, is a premier multidisciplinary institution affiliated with Bangalore University and approved by the Government of Karnataka. Through its Department of Forensic Science and Allied Sciences, the institute offers industry-oriented undergraduate education in Forensic Science, Crime Scene Investigation, Cyber Forensics, Forensic Toxicology, Questioned Documents, Fingerprint Analysis, and Forensic Biology, supported by modern laboratory infrastructure, hospital & medico-legal exposure through Harsha Hospital, and experiential forensic training.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: 'Pass in 10+2 / PUC or equivalent examination in Science stream (Physics, Chemistry, and Biology / Mathematics / Computer Science) from a recognized board',
+        estimatedFees: '₹85,000 - ₹1,25,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & Physical Evidence',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics Profiling',
+          'Questioned Documents, Handwriting & Fingerprint Examination (Dactyloscopy)',
+          'Forensic Biology, Serology, Autopsy Exposure & DNA Profiling',
+          'Cyber Forensics, Digital Evidence & Cyber Law'
+        ]
+      },
+      {
+        name: 'B.Sc. in Criminology & Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: 'Pass in 10+2 / PUC in Science or allied stream with minimum qualifying marks from a recognized board',
+        estimatedFees: '₹80,000 - ₹1,15,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Criminology, Penology & Criminal Justice Administration',
+          'Criminalistics, Trace Evidence & Ballistics Basics',
+          'Forensic Psychology, Victimology & Medico-Legal Jurisprudence'
+        ]
+      }
+    ],
+    feesRange: '₹80,000 - ₹1,25,000 / year',
+    admissionProcess: 'Merit-based on 10+2 / PUC qualifying examination scores followed by personal counseling and document verification as per Bangalore University norms',
+    accreditation: 'Affiliated to Bangalore University | Recognized by Govt. of Karnataka | UGC Recognized Parent University | ISO Certified Institution',
+    contactEmail: 'info@harshainstitutions.com',
+    contactPhone: '+91 96069 77845 / +91 80 2772 8366',
+    address: 'No. 193/4, Sodala Mutt Road, Vishweshwarapura, Nelamangala, Bengaluru, Karnataka 562123, India',
+    ranking: 'Leading Forensic Science & Allied Health Institution in Bengaluru under Harsha Institutions',
+    facilities: [
+      'Dedicated Forensic Science, Criminalistics & Toxicology Laboratories',
+      'Crime Scene Investigation (CSI) Simulation & Evidence Collection Arena',
+      'Questioned Documents, Fingerprint & Microscopic Analysis Unit',
+      'Clinical & Medico-Legal Exposure via On-Campus Multi-Specialty Harsha Hospital',
+      'Digital Library with Forensic Science Textbooks, E-Journals & Research Databases',
+      'Wi-Fi Enabled Green Campus with Smart Classrooms, Seminar Halls & Auditorium',
+      'Separate Boys & Girls Hostels with 24/7 Security, Hygienic Mess & Transport Fleet across Bengaluru'
+    ],
+    featured: false
   }
 ];
+
+export const SAMPLE_COLLEGES: College[] = RAW_SAMPLE_COLLEGES.map((college) => ({
+  ...college,
+  featured: isEligibleFeaturedCampus(college),
+}));
 
 const DELETED_COLLEGES_KEY = 'forenclue_deleted_college_ids';
 const SYSTEM_SETTINGS_DOC = 'deleted_colleges';
@@ -8252,6 +8523,15 @@ const SLUG_ALIASES: Record<string, string> = {
   'nirwan-university': 'nirwan-university-jaipur',
   'nirwan-jaipur': 'nirwan-university-jaipur',
   'nu-jaipur': 'nirwan-university-jaipur',
+  'nriit': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'nriit-agiripalli': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'nri-institute-of-technology': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'dr-rvr-nri-institute-of-technology': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'dr-rvr-nri': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'rvr-nri': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'rvrnriu': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'nri-university': 'dr-rvr-nri-institute-of-technology-agiripalli',
+  'nri-deemed-university': 'dr-rvr-nri-institute-of-technology-agiripalli',
   'nims': 'nims-university-jaipur',
   'nims-university': 'nims-university-jaipur',
   'nims-jaipur': 'nims-university-jaipur',
@@ -8285,6 +8565,11 @@ const SLUG_ALIASES: Record<string, string> = {
   'naryan-shastri-institute': 'nsit-ifscs-ahmedabad',
   'naryan-shastri-institute-of-forensic-science-and-cybersecurity': 'nsit-ifscs-ahmedabad',
   'narayan-shastri-institute-of-forensic-science-and-cybersecurity': 'nsit-ifscs-ahmedabad',
+  'harsha': 'harsha-institute-of-management-studies-bangalore',
+  'harsha-institutions': 'harsha-institute-of-management-studies-bangalore',
+  'harsha-institute': 'harsha-institute-of-management-studies-bangalore',
+  'harsha-institute-of-management-studies': 'harsha-institute-of-management-studies-bangalore',
+  'hims-bangalore': 'harsha-institute-of-management-studies-bangalore',
 };
 
 export function matchCollegeBySlug(collegesList: College[], rawSlug: string): College | undefined {
@@ -8383,32 +8668,44 @@ export async function fetchColleges(): Promise<College[]> {
         }
       }
 
-      const isOutdatedRruAssets =
-        canonicalId.startsWith('rru-') &&
-        sampleFallback &&
-        (data.logo !== sampleFallback.logo || data.bannerImage !== sampleFallback.bannerImage);
-
-      if (isOutdatedRruAssets && sampleFallback) {
-        missingFromFirestore.push(sampleFallback);
-      }
+      const isOutdatedSampleAssets =
+        Boolean(sampleFallback) &&
+        (data.logo !== sampleFallback!.logo || data.bannerImage !== sampleFallback!.bannerImage);
 
       const preferSampleAssets =
-        Boolean(isOutdatedRruAssets) ||
+        isOutdatedSampleAssets ||
         ((canonicalId === 'nsit-ifscs-ahmedabad' || canonicalId === 'sanskriti-university-mathura') &&
-        sampleFallback &&
-        (!data.logo || String(data.logo).includes('nsitgurukul.com') || String(data.logo).startsWith('/images/colleges/')));
+        Boolean(sampleFallback));
+
+      const resolvedName = (preferSampleAssets && sampleFallback) ? sampleFallback.name : (data.name || sampleFallback?.name || '');
+      const resolvedType = data.type || sampleFallback?.type || 'Government';
+      const resolvedCountry = data.country || sampleFallback?.country || 'India';
+      const effectiveFeatured = isEligibleFeaturedCampus({
+        id: canonicalId,
+        name: resolvedName,
+        type: resolvedType,
+        country: resolvedCountry,
+      });
+
+      const isOutdatedFeaturedFlag = Boolean(data.featured) !== effectiveFeatured;
+      if ((isOutdatedSampleAssets || isOutdatedFeaturedFlag) && sampleFallback) {
+        missingFromFirestore.push({
+          ...sampleFallback,
+          featured: effectiveFeatured,
+        });
+      }
 
       fetched.push({
         id: canonicalId,
-        name: (preferSampleAssets && sampleFallback) ? sampleFallback.name : (data.name || sampleFallback?.name || ''),
+        name: resolvedName,
         shortName: (preferSampleAssets && sampleFallback) ? sampleFallback.shortName : (data.shortName || sampleFallback?.shortName || ''),
-        country: data.country || sampleFallback?.country || 'India',
+        country: resolvedCountry,
         state: data.state || sampleFallback?.state || '',
         city: data.city || sampleFallback?.city || '',
-        type: data.type || sampleFallback?.type || 'Government',
+        type: resolvedType,
         website: (preferSampleAssets && sampleFallback) ? sampleFallback.website : (data.website || sampleFallback?.website || ''),
-        logo: (preferSampleAssets && sampleFallback) ? sampleFallback.logo : (data.logo || sampleFallback?.logo || ''),
-        bannerImage: (preferSampleAssets && sampleFallback) ? sampleFallback.bannerImage : (data.bannerImage || sampleFallback?.bannerImage || ''),
+        logo: sampleFallback?.logo || data.logo || '',
+        bannerImage: sampleFallback?.bannerImage || data.bannerImage || '',
         description: ((canonicalId === 'amity-aifs' || preferSampleAssets) && sampleFallback) ? sampleFallback.description : (data.description || sampleFallback?.description || ''),
         coursesOffered,
         feesRange: data.feesRange || sampleFallback?.feesRange || '',
@@ -8419,10 +8716,10 @@ export async function fetchColleges(): Promise<College[]> {
         address: data.address || sampleFallback?.address || '',
         ranking: data.ranking || sampleFallback?.ranking || '',
         facilities: (Array.isArray(data.facilities) && data.facilities.length > 3) ? data.facilities : (sampleFallback?.facilities || (Array.isArray(data.facilities) ? data.facilities : [])),
-        featured: data.featured !== undefined ? !!data.featured : !!sampleFallback?.featured,
+        featured: effectiveFeatured,
         createdBy: data.createdBy || 'ForenClue Admin',
         createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString(),
-        updatedAt: data.updatedAt ? (data.updatedAt.seconds ? new Date(data.updatedAt.seconds * 1000).toISOString() : data.updatedAt) : new Date().toISOString()
+        updatedAt: data.updatedAt ? (data.updatedAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.updatedAt) : new Date().toISOString()
       });
     });
 
@@ -8508,8 +8805,8 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         city: data.city || sampleFallback?.city || '',
         type: data.type || sampleFallback?.type || 'Government',
         website: (useSampleRruAssets && sampleFallback) ? sampleFallback.website : (data.website || sampleFallback?.website || ''),
-        logo: (useSampleRruAssets && sampleFallback) ? sampleFallback.logo : (data.logo || sampleFallback?.logo || ''),
-        bannerImage: (useSampleRruAssets && sampleFallback) ? sampleFallback.bannerImage : (data.bannerImage || sampleFallback?.bannerImage || ''),
+        logo: sampleFallback?.logo || data.logo || '',
+        bannerImage: sampleFallback?.bannerImage || data.bannerImage || '',
         description: data.description || sampleFallback?.description || '',
         coursesOffered: (Array.isArray(data.coursesOffered) && data.coursesOffered.length > 0) ? data.coursesOffered : (sampleFallback?.coursesOffered || []),
         feesRange: data.feesRange || sampleFallback?.feesRange || '',
@@ -8520,7 +8817,12 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         address: data.address || sampleFallback?.address || '',
         ranking: data.ranking || sampleFallback?.ranking || '',
         facilities: (Array.isArray(data.facilities) && data.facilities.length > 0) ? data.facilities : (sampleFallback?.facilities || []),
-        featured: data.featured !== undefined ? !!data.featured : !!sampleFallback?.featured,
+        featured: isEligibleFeaturedCampus({
+          id: docSnap.id,
+          name: data.name || sampleFallback?.name || '',
+          type: data.type || sampleFallback?.type || 'Government',
+          country: data.country || sampleFallback?.country || 'India',
+        }),
         createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString()
       };
     }
@@ -8531,28 +8833,34 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
       if (d.id.toLowerCase() === resolvedSlug || d.id.toLowerCase() === cleanLower) {
         const data = d.data();
         if (data.isDeleted === true || data.status === 'deleted') return null;
+        const sampleFallback = SAMPLE_COLLEGES.find(s => s.id.toLowerCase() === d.id.toLowerCase() || s.id.toLowerCase() === resolvedSlug);
         return {
           id: d.id,
-          name: data.name || '',
-          shortName: data.shortName || '',
-          country: data.country || 'India',
-          state: data.state || '',
-          city: data.city || '',
-          type: data.type || 'Government',
-          website: data.website || '',
-          logo: data.logo || '',
-          bannerImage: data.bannerImage || '',
-          description: data.description || '',
-          coursesOffered: Array.isArray(data.coursesOffered) ? data.coursesOffered : [],
-          feesRange: data.feesRange || '',
-          admissionProcess: data.admissionProcess || '',
-          accreditation: data.accreditation || '',
-          contactEmail: data.contactEmail || '',
-          contactPhone: data.contactPhone || '',
-          address: data.address || '',
-          ranking: data.ranking || '',
-          facilities: Array.isArray(data.facilities) ? data.facilities : [],
-          featured: !!data.featured,
+          name: data.name || sampleFallback?.name || '',
+          shortName: data.shortName || sampleFallback?.shortName || '',
+          country: data.country || sampleFallback?.country || 'India',
+          state: data.state || sampleFallback?.state || '',
+          city: data.city || sampleFallback?.city || '',
+          type: data.type || sampleFallback?.type || 'Government',
+          website: data.website || sampleFallback?.website || '',
+          logo: sampleFallback?.logo || data.logo || '',
+          bannerImage: sampleFallback?.bannerImage || data.bannerImage || '',
+          description: data.description || sampleFallback?.description || '',
+          coursesOffered: Array.isArray(data.coursesOffered) ? data.coursesOffered : (sampleFallback?.coursesOffered || []),
+          feesRange: data.feesRange || sampleFallback?.feesRange || '',
+          admissionProcess: data.admissionProcess || sampleFallback?.admissionProcess || '',
+          accreditation: data.accreditation || sampleFallback?.accreditation || '',
+          contactEmail: data.contactEmail || sampleFallback?.contactEmail || '',
+          contactPhone: data.contactPhone || sampleFallback?.contactPhone || '',
+          address: data.address || sampleFallback?.address || '',
+          ranking: data.ranking || sampleFallback?.ranking || '',
+          facilities: Array.isArray(data.facilities) ? data.facilities : (sampleFallback?.facilities || []),
+          featured: isEligibleFeaturedCampus({
+            id: d.id,
+            name: data.name || sampleFallback?.name || '',
+            type: data.type || sampleFallback?.type || 'Government',
+            country: data.country || sampleFallback?.country || 'India',
+          }),
           createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString()
         };
       }

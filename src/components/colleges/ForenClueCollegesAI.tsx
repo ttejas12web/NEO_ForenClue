@@ -122,6 +122,9 @@ const isCollegeRRU = (college: College): boolean =>
 
 const isCollegeGovernment = (college: College): boolean => {
   const t = (college.type || '').toLowerCase().trim();
+  if (t === 'private' || t === 'deemed' || t === 'deemed university' || t === 'autonomous') {
+    return false;
+  }
   const accred = (college.accreditation || '').toLowerCase();
   return (
     t === 'government' ||

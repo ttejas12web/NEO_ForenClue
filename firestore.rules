@@ -62,7 +62,8 @@ service cloud.firestore {
         && (!('universityName' in data) || data.universityName is string && data.universityName.size() <= 256)
         && (!('studyingYear' in data) || data.studyingYear is string && data.studyingYear.size() <= 64)
         && (!('educationLevel' in data) || data.educationLevel is string && data.educationLevel.size() <= 128)
-        && (!('wishlist' in data) || data.wishlist is list);
+        && (!('wishlist' in data) || data.wishlist is list)
+        && (!('savedColleges' in data) || (data.savedColleges is list && data.savedColleges.size() <= 200));
     }
 
     function isValidDoubt(data) {
@@ -296,8 +297,14 @@ service cloud.firestore {
       allow get: if true;
       allow list: if isSignedIn(); 
       
-      allow create: if isOwner(userId) && isValidUser(incoming()) && incoming().createdAt == request.time;
-      allow update: if isOwner(userId) && isValidUser(incoming()) && incoming().uid == existing().uid;
+      allow create: if isOwner(userId) && (
+        (isValidUser(incoming()) && incoming().createdAt == request.time) ||
+        (incoming().keys().hasOnly(['uid', 'email', 'displayName', 'savedColleges', 'updatedAt']) && incoming().uid == request.auth.uid && incoming().savedColleges is list && incoming().savedColleges.size() <= 200)
+      );
+      allow update: if isOwner(userId) && (
+        (isValidUser(incoming()) && incoming().uid == existing().uid) ||
+        (incoming().diff(existing()).affectedKeys().hasOnly(['savedColleges', 'updatedAt']) && incoming().savedColleges is list && incoming().savedColleges.size() <= 200)
+      );
     }
 
     // --- Reports ---

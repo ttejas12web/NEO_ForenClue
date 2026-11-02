@@ -5,18 +5,32 @@ import {
   Building2, MapPin, Globe, BookOpen, GraduationCap, 
   Search, Filter, ExternalLink, Award, CheckCircle2, 
   ChevronRight, Bookmark, Share2, Phone, Mail, FileText, X, 
-  ShieldCheck, Info, RefreshCw, ArrowLeft, Loader2, Star, Check, ArrowUpDown, Sparkles, Scale
+  ShieldCheck, Info, RefreshCw, ArrowLeft, Loader2, Star, Check, ArrowUpDown, Sparkles, Scale,
+  LayoutGrid, List, IndianRupee, ArrowUp, Users
 } from 'lucide-react';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { useAuth } from '@/contexts/AuthContext';
 import { SEOManager } from '@/components/layout/SEOManager';
 import { College, CollegeCourse } from '@/types/college';
-import { fetchColleges, fetchCollegeById, getCachedColleges, matchCollegeBySlug } from '@/services/collegeService';
+import {
+  fetchColleges,
+  fetchCollegeById,
+  getCachedColleges,
+  matchCollegeBySlug,
+  isEligibleFeaturedCampus,
+  getFeaturedPriorityRank,
+} from '@/services/collegeService';
 import { CollegeComparisonSystem, MAX_COMPARE_COLLEGES } from '@/components/colleges/CollegeComparisonModal';
+import { BookmarkedCollegesDrawer } from '@/components/colleges/BookmarkedCollegesDrawer';
 import { ForenClueCollegesAI } from '@/components/colleges/ForenClueCollegesAI';
+import { getCampusAmbassadorsForCollege } from '@/pages/CampusAmbassadors';
 import { cn } from '@/lib/utils';
 
 const RETURN_TO_COLLEGE_KEY = 'forenclue_return_to_college_id';
-const DIRECTORY_FILTERS_KEY = 'forenclue_colleges_directory_filters';
+const DIRECTORY_FILTERS_KEY = 'forenclue_colleges_directory_filters_v2';
 const COMPARE_COLLEGES_KEY = 'forenclue_compare_colleges';
+const VIEW_MODE_KEY = 'forenclue_colleges_view_mode';
 
 const FALLBACK_CAMPUS_BANNERS = [
   'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&q=75&w=640',
@@ -140,6 +154,14 @@ function matchesInstitutionTypeFilter(college: College, selectedType: string): b
 
   switch (selectedType) {
     case 'Government':
+      if (
+        rawType === 'private' ||
+        rawType === 'deemed' ||
+        rawType === 'deemed university' ||
+        rawType === 'autonomous'
+      ) {
+        return false;
+      }
       return (
         rawType === 'government' ||
         rawType === 'central' ||
@@ -266,6 +288,8 @@ function buildCollegeSearchIndex(college: College): string {
     }
   }
 
+  const matchedAmbassadors = getCampusAmbassadorsForCollege(college);
+
   // Only index the college's actual identity, location, accreditation, and offered course titles
   // (Excluding prerequisite eligibility, generic syllabus sub-bullets, and prose descriptions to prevent false positives)
   const rawParts = [
@@ -280,6 +304,11 @@ function buildCollegeSearchIndex(college: College): string {
     college.accreditation,
     college.address,
     ...degreeAliases,
+    ...matchedAmbassadors.flatMap(amb => [
+      amb.name,
+      amb.id,
+      'forenclue campus ambassador',
+    ]),
     ...(college.coursesOffered || []).flatMap(course => [
       course.name,
       course.degreeLevel,
@@ -649,12 +678,13 @@ const QUICK_SEARCH_TOPICS: QuickSearchTopic[] = [
     matchesCollege: (college) => (college.coursesOffered || []).some(isDnaSerologyCourse),
   },
   {
-    id: 'questioned-documents',
-    label: 'Questioned Documents',
-    query: 'Questioned Documents',
-    aliases: ['questioned documents', 'forensic document examination', 'document examination'],
-    matchesCourse: isQuestionedDocumentsCourse,
-    matchesCollege: (college) => (college.coursesOffered || []).some(isQuestionedDocumentsCourse),
+    id: 'rru-campuses',
+    label: 'RRU Campuses',
+    query: 'RRU Campuses',
+    aliases: ['rru campuses', 'rru', 'rashtriya raksha university', 'raksha shakti university'],
+    matchesCollege: (college) =>
+      college.id.toLowerCase().startsWith('rru-') ||
+      /^rashtriya raksha university/i.test(college.name),
   },
 ];
 
@@ -679,6 +709,7 @@ export default function Colleges() {
   const { id } = useParams<{ id?: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user, userProfile } = useAuth();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const initialCache = getCachedColleges();
@@ -703,6 +734,28 @@ export default function Colleges() {
       return [];
     }
   });
+  const [isBookmarksDrawerOpen, setIsBookmarksDrawerOpen] = useState<boolean>(false);
+  const [isCloudSynced, setIsCloudSynced] = useState<boolean>(false);
+  const [isSearchFocused, setIsSearchFocused] = useState<boolean>(false);
+  const [showBackToTop, setShowBackToTop] = useState<boolean>(false);
+
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    try {
+      const savedMode = localStorage.getItem(VIEW_MODE_KEY);
+      return savedMode === 'list' ? 'list' : 'grid';
+    } catch {
+      return 'grid';
+    }
+  });
+
+  const handleSetViewMode = useCallback((mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem(VIEW_MODE_KEY, mode);
+    } catch {
+      // Ignore storage error
+    }
+  }, []);
 
   const [compareCollegeIds, setCompareCollegeIds] = useState<string[]>(() => {
     try {
@@ -761,20 +814,82 @@ export default function Colleges() {
   const [selectedType, setSelectedType] = useState<string>(
     () => searchParams.get('type') ?? savedFilters?.selectedType ?? 'All'
   );
+  const [selectedFeeRange, setSelectedFeeRange] = useState<string>(
+    () => searchParams.get('fee') ?? savedFilters?.selectedFeeRange ?? 'All'
+  );
   const [featuredOnly, setFeaturedOnly] = useState<boolean>(
     () => searchParams.get('featured') === 'true' ? true : (savedFilters?.featuredOnly ?? false)
   );
   const [savedOnly, setSavedOnly] = useState<boolean>(
     () => searchParams.get('saved') === 'true' ? true : (savedFilters?.savedOnly ?? false)
   );
-  const [sortBy, setSortBy] = useState<'featured' | 'name-asc' | 'name-desc' | 'courses-desc' | 'fee-asc'>(
-    () => (searchParams.get('sort') as any) ?? savedFilters?.sortBy ?? 'featured'
+  const [sortBy, setSortBy] = useState<'featured' | 'name-asc' | 'name-desc' | 'courses-desc' | 'fee-asc' | 'fee-desc' | 'bookmarked-first'>(
+    () => (searchParams.get('sort') as any) ?? savedFilters?.sortBy ?? 'name-asc'
   );
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedCardId, setCopiedCardId] = useState<string | null>(null);
 
   const targetId = id || searchParams.get('id');
+
+  // Keyboard shortcut ('/' to focus search bar) & scroll listener for Back-to-Top button
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '/' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+        if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target as HTMLElement)?.isContentEditable) {
+          return;
+        }
+        if (searchInputRef.current) {
+          e.preventDefault();
+          searchInputRef.current.focus();
+        }
+      }
+    };
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 750);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  // Cloud Firestore synchronization for user bookmarked colleges
+  useEffect(() => {
+    if (!user) {
+      setIsCloudSynced(false);
+      return;
+    }
+    const cloudSaved = Array.isArray(userProfile?.savedColleges) ? userProfile.savedColleges : null;
+    if (cloudSaved === null) return;
+
+    setSavedCollegeIds(prevLocal => {
+      const merged = Array.from(new Set([...cloudSaved, ...prevLocal]));
+      try {
+        localStorage.setItem('forenclue_saved_colleges', JSON.stringify(merged));
+      } catch {
+        // Ignore storage error
+      }
+      // If local had bookmarks not yet in Firestore, sync merged list to Firestore
+      if (merged.length !== cloudSaved.length || merged.some(id => !cloudSaved.includes(id))) {
+        const userRef = doc(db, 'users', user.uid);
+        setDoc(
+          userRef,
+          {
+            uid: user.uid,
+            savedColleges: merged,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        ).catch(() => {});
+      }
+      return merged;
+    });
+    setIsCloudSynced(true);
+  }, [user, userProfile?.savedColleges]);
 
   // Debounce searchInput -> searchQuery (180ms) for smooth, responsive filtering without lag
   useEffect(() => {
@@ -801,6 +916,7 @@ export default function Colleges() {
           selectedCity,
           selectedDegree,
           selectedType,
+          selectedFeeRange,
           featuredOnly,
           savedOnly,
           sortBy,
@@ -818,9 +934,10 @@ export default function Colleges() {
       if (selectedCity !== 'All') nextParams.set('city', selectedCity);
       if (selectedType !== 'All') nextParams.set('type', selectedType);
       if (selectedDegree !== 'All') nextParams.set('degree', selectedDegree);
+      if (selectedFeeRange !== 'All') nextParams.set('fee', selectedFeeRange);
       if (featuredOnly) nextParams.set('featured', 'true');
       if (savedOnly) nextParams.set('saved', 'true');
-      if (sortBy !== 'featured') nextParams.set('sort', sortBy);
+      if (sortBy !== 'name-asc') nextParams.set('sort', sortBy);
 
       const currentStr = searchParams.toString();
       const nextStr = nextParams.toString();
@@ -835,6 +952,7 @@ export default function Colleges() {
     selectedCity,
     selectedDegree,
     selectedType,
+    selectedFeeRange,
     featuredOnly,
     savedOnly,
     sortBy,
@@ -951,7 +1069,7 @@ export default function Colleges() {
     };
   }, [targetId, colleges]);
 
-  // Sync bookmark updates to localStorage
+  // Sync bookmark updates to localStorage AND Cloud Firestore for signed-in users
   const toggleSaveCollege = useCallback((e: React.MouseEvent, collegeId: string) => {
     e.stopPropagation();
     e.preventDefault();
@@ -963,9 +1081,43 @@ export default function Colleges() {
       } catch (err) {
         console.error('Failed to save college bookmark:', err);
       }
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        setDoc(
+          userRef,
+          {
+            uid: user.uid,
+            savedColleges: updated,
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true }
+        ).catch(() => {});
+      }
       return updated;
     });
-  }, []);
+  }, [user]);
+
+  const handleClearAllSaved = useCallback(() => {
+    setSavedCollegeIds([]);
+    setSavedOnly(false);
+    try {
+      localStorage.setItem('forenclue_saved_colleges', JSON.stringify([]));
+    } catch {
+      // Ignore storage error
+    }
+    if (user) {
+      const userRef = doc(db, 'users', user.uid);
+      setDoc(
+        userRef,
+        {
+          uid: user.uid,
+          savedColleges: [],
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      ).catch(() => {});
+    }
+  }, [user]);
 
   // Toggle college in comparison list (up to MAX_COMPARE_COLLEGES)
   const handleToggleCompare = useCallback((collegeId: string, e?: React.MouseEvent) => {
@@ -1006,6 +1158,17 @@ export default function Colleges() {
     } catch {
       // Ignore storage error
     }
+  }, []);
+
+  const handleCompareSavedColleges = useCallback((ids: string[]) => {
+    const trimmed = ids.slice(0, MAX_COMPARE_COLLEGES);
+    setCompareCollegeIds(trimmed);
+    try {
+      localStorage.setItem(COMPARE_COLLEGES_KEY, JSON.stringify(trimmed));
+    } catch {
+      // Ignore storage error
+    }
+    setIsCompareModalOpen(true);
   }, []);
 
   const handleClearCompare = useCallback(() => {
@@ -1061,7 +1224,7 @@ export default function Colleges() {
     }
   }, []);
 
-  // Precompute search index per college for fast, multi-token matching
+  // Precompute search index & fee/type metadata per college for O(1) filtering & rendering
   const collegeSearchIndexMap = useMemo(() => {
     const map = new Map<string, string>();
     for (const c of colleges) {
@@ -1069,6 +1232,41 @@ export default function Colleges() {
     }
     return map;
   }, [colleges]);
+
+  const collegeMetaMap = useMemo(() => {
+    const map = new Map<string, { minFee: number; formattedFee: string; displayType: string }>();
+    for (const c of colleges) {
+      map.set(c.id, {
+        minFee: parseNumericMinFee(c),
+        formattedFee: formatFee(c.feesRange, c.country),
+        displayType: getDisplayInstitutionType(c),
+      });
+    }
+    return map;
+  }, [colleges]);
+
+  // Instant search autocomplete suggestions (top 5 colleges matching current input)
+  const searchSuggestions = useMemo(() => {
+    const q = searchInput.trim();
+    if (q.length < 2) return [];
+    const matchedQuick = findMatchingQuickTopic(q);
+    if (matchedQuick) {
+      return colleges.filter(c => matchedQuick.matchesCollege(c)).slice(0, 5);
+    }
+    const norm = normalizeSearchText(q);
+    const tokens = normalizeAbbrevText(q).split(' ').filter(Boolean);
+    if (tokens.length === 0) return [];
+
+    const matches: College[] = [];
+    for (const c of colleges) {
+      const nameNorm = normalizeSearchText(`${c.name} ${c.shortName || ''} ${c.city} ${c.state}`);
+      if (nameNorm.includes(norm) || tokens.every(t => (collegeSearchIndexMap.get(c.id) || '').includes(t))) {
+        matches.push(c);
+        if (matches.length >= 5) break;
+      }
+    }
+    return matches;
+  }, [searchInput, colleges, collegeSearchIndexMap]);
 
   // Derive unique Filter Options
   const countries = useMemo(() => {
@@ -1140,16 +1338,44 @@ export default function Colleges() {
         if (!hasDegree) return false;
       }
 
-      if (featuredOnly && !college.featured) return false;
+      if (selectedFeeRange !== 'All') {
+        const minFee = collegeMetaMap.get(college.id)?.minFee ?? parseNumericMinFee(college);
+        if (minFee === Number.MAX_SAFE_INTEGER) return false;
+        if (selectedFeeRange === 'under-50k' && minFee > 50000) return false;
+        if (selectedFeeRange === '50k-100k' && (minFee < 50000 || minFee > 100000)) return false;
+        if (selectedFeeRange === '100k-200k' && (minFee < 100000 || minFee > 200000)) return false;
+        if (selectedFeeRange === 'above-200k' && minFee <= 200000) return false;
+      }
+
+      if (featuredOnly && (!college.featured || !isEligibleFeaturedCampus(college))) return false;
       if (savedOnly && !savedCollegeIds.includes(college.id)) return false;
 
       return true;
     });
 
     return list.sort((a, b) => {
+      const aFeatured = Boolean(a.featured) && isEligibleFeaturedCampus(a);
+      const bFeatured = Boolean(b.featured) && isEligibleFeaturedCampus(b);
+
+      if (sortBy === 'bookmarked-first') {
+        const aSaved = savedCollegeIds.includes(a.id) ? 1 : 0;
+        const bSaved = savedCollegeIds.includes(b.id) ? 1 : 0;
+        if (aSaved !== bSaved) return bSaved - aSaved;
+        if (aFeatured && !bFeatured) return -1;
+        if (!aFeatured && bFeatured) return 1;
+        if (aFeatured && bFeatured) {
+          const rankDiff = getFeaturedPriorityRank(a) - getFeaturedPriorityRank(b);
+          if (rankDiff !== 0) return rankDiff;
+        }
+        return a.name.localeCompare(b.name);
+      }
       if (sortBy === 'featured') {
-        if (a.featured && !b.featured) return -1;
-        if (!a.featured && b.featured) return 1;
+        if (aFeatured && !bFeatured) return -1;
+        if (!aFeatured && bFeatured) return 1;
+        if (aFeatured && bFeatured) {
+          const rankDiff = getFeaturedPriorityRank(a) - getFeaturedPriorityRank(b);
+          if (rankDiff !== 0) return rankDiff;
+        }
         return a.name.localeCompare(b.name);
       }
       if (sortBy === 'name-asc') {
@@ -1163,7 +1389,18 @@ export default function Colleges() {
         return diff !== 0 ? diff : a.name.localeCompare(b.name);
       }
       if (sortBy === 'fee-asc') {
-        const diff = parseNumericMinFee(a) - parseNumericMinFee(b);
+        const feeA = collegeMetaMap.get(a.id)?.minFee ?? parseNumericMinFee(a);
+        const feeB = collegeMetaMap.get(b.id)?.minFee ?? parseNumericMinFee(b);
+        const diff = feeA - feeB;
+        return diff !== 0 ? diff : a.name.localeCompare(b.name);
+      }
+      if (sortBy === 'fee-desc') {
+        const feeA = collegeMetaMap.get(a.id)?.minFee ?? parseNumericMinFee(a);
+        const feeB = collegeMetaMap.get(b.id)?.minFee ?? parseNumericMinFee(b);
+        if (feeA === Number.MAX_SAFE_INTEGER && feeB === Number.MAX_SAFE_INTEGER) return a.name.localeCompare(b.name);
+        if (feeA === Number.MAX_SAFE_INTEGER) return 1;
+        if (feeB === Number.MAX_SAFE_INTEGER) return -1;
+        const diff = feeB - feeA;
         return diff !== 0 ? diff : a.name.localeCompare(b.name);
       }
       return 0;
@@ -1171,6 +1408,7 @@ export default function Colleges() {
   }, [
     colleges,
     collegeSearchIndexMap,
+    collegeMetaMap,
     searchQuery,
     activeQuickTopic,
     selectedCountry,
@@ -1178,6 +1416,7 @@ export default function Colleges() {
     selectedCity,
     selectedType,
     selectedDegree,
+    selectedFeeRange,
     featuredOnly,
     savedOnly,
     savedCollegeIds,
@@ -1204,6 +1443,7 @@ export default function Colleges() {
     selectedCity,
     selectedType,
     selectedDegree,
+    selectedFeeRange,
     featuredOnly,
     savedOnly,
     sortBy,
@@ -1276,8 +1516,10 @@ export default function Colleges() {
     setSelectedCity('All');
     setSelectedDegree('All');
     setSelectedType('All');
+    setSelectedFeeRange('All');
     setFeaturedOnly(false);
     setSavedOnly(false);
+    setSortBy('name-asc');
     setSearchParams({}, { replace: true });
   }, [setSearchParams]);
 
@@ -1289,10 +1531,11 @@ export default function Colleges() {
     if (selectedCity !== 'All') count++;
     if (selectedType !== 'All') count++;
     if (selectedDegree !== 'All') count++;
+    if (selectedFeeRange !== 'All') count++;
     if (featuredOnly) count++;
     if (savedOnly) count++;
     return count;
-  }, [searchQuery, selectedCountry, selectedState, selectedCity, selectedType, selectedDegree, featuredOnly, savedOnly]);
+  }, [searchQuery, selectedCountry, selectedState, selectedCity, selectedType, selectedDegree, selectedFeeRange, featuredOnly, savedOnly]);
 
   // Restore scroll position directly to the opened college card when returning to /colleges
   useEffect(() => {
@@ -1405,6 +1648,7 @@ export default function Colleges() {
     }
 
     const isSaved = savedCollegeIds.includes(college.id);
+    const collegeAmbassadors = getCampusAmbassadorsForCollege(college);
 
     // Distinct course degree categories for this college
     const availableCourseTabs = ['All', ...Array.from(new Set(college.coursesOffered.map(c => c.degreeLevel).filter(Boolean)))];
@@ -1620,9 +1864,15 @@ export default function Colleges() {
                           {college.accreditation.split('|')[0].trim()}
                         </span>
                       )}
-                      {college.featured && (
+                      {college.featured && isEligibleFeaturedCampus(college) && (
                         <span className="px-2.5 sm:px-3 py-1 rounded-full bg-amber-500 text-crust font-black text-[10px] sm:text-xs uppercase tracking-wider flex items-center gap-1 shadow-md">
                           <Star size={12} className="fill-crust text-crust" /> Featured
+                        </span>
+                      )}
+                      {collegeAmbassadors.length > 0 && (
+                        <span className="px-2.5 sm:px-3 py-1 rounded-full bg-gradient-to-r from-warning via-amber-400 to-amber-500 text-crust font-black text-[10px] sm:text-xs uppercase tracking-wider inline-flex items-center gap-1.5 shadow-md">
+                          <ShieldCheck size={13} className="stroke-[2.5] shrink-0" />
+                          <span>ForenClue Campus Ambassador</span>
                         </span>
                       )}
                     </div>
@@ -1703,6 +1953,124 @@ export default function Colleges() {
                   </div>
                 )}
               </section>
+
+              {/* Dedicated ForenClue Campus Ambassador Contact & Representation Section */}
+              {collegeAmbassadors.length > 0 && (
+                <section className="relative bg-surface border-2 border-warning/40 rounded-3xl p-6 sm:p-8 space-y-5 shadow-lg overflow-hidden">
+                  <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-warning/10 blur-3xl pointer-events-none" />
+
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-black/10 dark:border-white/10 relative z-10">
+                    <div className="space-y-1">
+                      <span className="inline-flex items-center gap-1.5 text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500">
+                        <CheckCircle2 size={12} /> Verified University Chapter Representation
+                      </span>
+                      <h2 className="text-sm sm:text-base font-black uppercase tracking-wider text-warning flex items-center gap-2">
+                        <ShieldCheck size={18} className="shrink-0" />
+                        <span>ForenClue Campus Ambassador — Official Student Contact</span>
+                      </h2>
+                    </div>
+
+                    <Link
+                      to="/ambassadors"
+                      className="text-xs font-bold text-warning hover:underline inline-flex items-center gap-1 self-start sm:self-auto"
+                    >
+                      <span>Ambassador Directory</span>
+                      <ChevronRight size={14} />
+                    </Link>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 relative z-10">
+                    {collegeAmbassadors.map((amb) => (
+                      <div
+                        key={amb.id}
+                        className="bg-background/90 border border-warning/25 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-5"
+                      >
+                        <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 text-center sm:text-left min-w-0 flex-1">
+                          <div className="relative shrink-0">
+                            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-warning bg-surface p-1 shadow-md">
+                              <img
+                                src={amb.image}
+                                alt={`${amb.name} — ForenClue Campus Ambassador at ${college.name}`}
+                                referrerPolicy="no-referrer"
+                                className="w-full h-full object-cover object-top rounded-xl"
+                              />
+                            </div>
+                            <div
+                              className="absolute -bottom-2 -right-2 bg-warning text-crust p-1.5 rounded-xl shadow-md border-2 border-surface flex items-center justify-center"
+                              title="Verified ForenClue Campus Ambassador"
+                            >
+                              <ShieldCheck size={15} className="stroke-[2.5]" />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2 min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+                              <span className="px-2.5 py-0.5 rounded-full bg-warning text-crust text-[10px] font-black uppercase tracking-wider">
+                                ForenClue Campus Ambassador
+                              </span>
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 text-[10px] font-mono font-bold uppercase inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                {amb.status}
+                              </span>
+                              <span className="px-2.5 py-0.5 rounded-full bg-warning/10 border border-warning/25 text-warning text-[10px] font-mono font-bold uppercase">
+                                {amb.batch}
+                              </span>
+                            </div>
+
+                            <div>
+                              <h3 className="text-lg sm:text-xl font-black text-text-main uppercase tracking-tight">
+                                {amb.name}
+                              </h3>
+                              <p className="text-xs font-mono font-bold text-warning uppercase tracking-wider">
+                                Official ID: {amb.id}
+                              </p>
+                            </div>
+
+                            <div className="space-y-1 text-xs font-semibold text-text-muted">
+                              <p className="flex items-center justify-center sm:justify-start gap-1.5 text-text-main">
+                                <Building2 size={13} className="text-warning shrink-0" />
+                                <span>{amb.institute}</span>
+                              </p>
+                              {amb.specialization && (
+                                <p className="flex items-center justify-center sm:justify-start gap-1.5">
+                                  <GraduationCap size={13} className="text-warning shrink-0" />
+                                  <span>Specialization: {amb.specialization}</span>
+                                </p>
+                              )}
+                            </div>
+
+                            <p className="text-xs text-text-muted leading-relaxed pt-1">
+                              Have questions about forensic science courses, campus life, laboratory facilities, or upcoming ForenClue workshops at{' '}
+                              <span className="font-bold text-text-main">{college.shortName || college.name}</span>? Connect with our verified ForenClue Campus Ambassador for student guidance and campus assistance.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col sm:items-end justify-center gap-2.5 w-full sm:w-auto shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-black/5 dark:border-white/5">
+                          <Link
+                            to={`/contact?subject=${encodeURIComponent(
+                              `Campus Ambassador Contact: ${amb.name} (${amb.id}) — ${college.shortName || college.name}`
+                            )}`}
+                            className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-warning text-crust font-black text-xs uppercase tracking-wider shadow-md hover:bg-warning/90 transition-all flex items-center justify-center gap-2 min-h-[42px]"
+                          >
+                            <Mail size={14} />
+                            <span>Contact for Campus Queries</span>
+                          </Link>
+                          <a
+                            href={`mailto:forenclue@gmail.com?subject=${encodeURIComponent(
+                              `Connect with Campus Ambassador ${amb.name} (${amb.id}) - ${college.name}`
+                            )}`}
+                            className="w-full sm:w-auto px-4 py-2 rounded-xl bg-surface border border-black/10 dark:border-white/10 text-text-main hover:border-warning/50 hover:text-warning font-bold text-xs flex items-center justify-center gap-2 transition-all min-h-[38px]"
+                          >
+                            <Phone size={13} className="text-warning" />
+                            <span>Direct Email Desk</span>
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+              )}
 
               {/* Forensic Courses Offered */}
               <section className="bg-surface border border-black/10 dark:border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-8 space-y-5 sm:space-y-6 shadow-sm">
@@ -2660,105 +3028,189 @@ export default function Colleges() {
             )}
           </motion.div>
 
-          {/* Mobile & Orientation-Perfected Search Bar */}
+          {/* Mobile & Orientation-Perfected Search Bar with Instant Quick-Jump Autocomplete */}
           <motion.div 
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-            className="max-w-2xl mx-auto w-full pt-1 sm:pt-1.5 landscape:max-lg:pt-0.5 space-y-2 sm:space-y-2.5"
+            className="max-w-2xl mx-auto w-full pt-1 sm:pt-1.5 landscape:max-lg:pt-0.5 space-y-2 sm:space-y-2.5 relative z-30"
           >
-            <form
-              role="search"
-              aria-label="Search forensic science colleges and universities"
-              onSubmit={(e) => {
-                e.preventDefault();
-                setSearchQuery(searchInput);
-                searchInputRef.current?.blur();
-              }}
-              className="group relative flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 landscape:max-lg:p-1.5 rounded-2xl bg-background/95 dark:bg-crust/90 backdrop-blur-xl border border-black/15 dark:border-white/15 focus-within:border-warning focus-within:ring-4 focus-within:ring-warning/15 shadow-[0_10px_32px_-8px_rgba(0,0,0,0.22)] transition-all"
-            >
-              <label htmlFor="college-directory-search" className="sr-only">
-                Search forensic science colleges, cities, states, or degree programs
-              </label>
-
-              {/* Left Search Icon Badge */}
-              <div
-                aria-hidden="true"
-                className="w-9 h-9 sm:w-10 sm:h-10 landscape:max-lg:w-9 landscape:max-lg:h-9 rounded-xl bg-warning/12 dark:bg-warning/15 text-warning flex items-center justify-center shrink-0 transition-transform duration-300 group-focus-within:scale-105"
-              >
-                <Search size={18} className="shrink-0" />
-              </div>
-
-              {/* Search Input (16px on mobile prevents iOS auto-zoom; hides native webkit cancel X) */}
-              <input
-                ref={searchInputRef}
-                id="college-directory-search"
-                type="search"
-                inputMode="search"
-                enterKeyHint="search"
-                autoComplete="off"
-                autoCorrect="off"
-                spellCheck={false}
-                placeholder="Search colleges, cities, courses..."
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape' && searchInput) {
-                    e.preventDefault();
-                    clearSearch();
-                  }
+            <div className="relative">
+              <form
+                role="search"
+                aria-label="Search forensic science colleges and universities"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setSearchQuery(searchInput);
+                  setIsSearchFocused(false);
+                  searchInputRef.current?.blur();
                 }}
-                className="flex-1 min-w-0 bg-transparent px-1 sm:px-1.5 py-1.5 text-[16px] sm:text-sm font-semibold text-text-main placeholder:text-text-muted/65 focus:outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
-              />
+                className="group relative flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 landscape:max-lg:p-1.5 rounded-2xl bg-background/95 dark:bg-crust/90 backdrop-blur-xl border border-black/15 dark:border-white/15 focus-within:border-warning focus-within:ring-4 focus-within:ring-warning/15 shadow-[0_10px_32px_-8px_rgba(0,0,0,0.22)] transition-all"
+              >
+                <label htmlFor="college-directory-search" className="sr-only">
+                  Search forensic science colleges, cities, states, or degree programs
+                </label>
 
-              {/* Right Inline Actions: Live Count + Clear Button + Mobile Filter Trigger */}
-              <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                {searchInput && (
-                  <>
-                    <span
-                      aria-live="polite"
-                      className="hidden xs:inline-flex items-center px-2 py-1 rounded-lg bg-warning/10 text-warning font-mono tabular-nums text-[11px] font-black"
-                    >
-                      {filteredColleges.length}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={clearSearch}
-                      aria-label="Clear search query"
-                      className="w-9 h-9 rounded-xl text-text-muted hover:text-text-main hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
-                    >
-                      <X size={17} />
-                    </button>
-                  </>
-                )}
-
-                {/* Integrated Mobile & Landscape Filter Button inside Search Bar */}
-                <button
-                  type="button"
-                  onClick={() => setIsMobileFilterOpen(true)}
-                  aria-label="Open directory filters"
-                  className={cn(
-                    'lg:hidden h-9 sm:h-10 landscape:max-lg:h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer shrink-0',
-                    activeFilterCount > 0
-                      ? 'bg-warning text-crust border-warning font-black shadow-xs'
-                      : 'bg-surface/90 text-text-main border-black/10 dark:border-white/10 hover:border-warning/50'
-                  )}
+                {/* Left Search Icon Badge */}
+                <div
+                  aria-hidden="true"
+                  className="w-9 h-9 sm:w-10 sm:h-10 landscape:max-lg:w-9 landscape:max-lg:h-9 rounded-xl bg-warning/12 dark:bg-warning/15 text-warning flex items-center justify-center shrink-0 transition-transform duration-300 group-focus-within:scale-105"
                 >
-                  <Filter size={14} className={cn('shrink-0', activeFilterCount > 0 ? 'text-crust' : 'text-warning')} />
-                  <span className="hidden xs:inline">Filters</span>
-                  {activeFilterCount > 0 && (
-                    <span
-                      className={cn(
-                        'px-1.5 py-0.5 rounded-full text-[10px] font-mono tabular-nums font-black leading-none',
-                        activeFilterCount > 0 ? 'bg-crust/20 text-crust' : 'bg-warning/20 text-warning'
-                      )}
+                  <Search size={18} className="shrink-0" />
+                </div>
+
+                {/* Search Input (16px on mobile prevents iOS auto-zoom; hides native webkit cancel X) */}
+                <input
+                  ref={searchInputRef}
+                  id="college-directory-search"
+                  type="search"
+                  inputMode="search"
+                  enterKeyHint="search"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="Search colleges, cities, courses..."
+                  value={searchInput}
+                  onFocus={() => setIsSearchFocused(true)}
+                  onBlur={() => setTimeout(() => setIsSearchFocused(false), 180)}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      if (searchInput) {
+                        e.preventDefault();
+                        clearSearch();
+                      } else {
+                        setIsSearchFocused(false);
+                        searchInputRef.current?.blur();
+                      }
+                    }
+                  }}
+                  className="flex-1 min-w-0 bg-transparent px-1 sm:px-1.5 py-1.5 text-[16px] sm:text-sm font-semibold text-text-main placeholder:text-text-muted/65 focus:outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
+                />
+
+                {/* Right Inline Actions: Keyboard Shortcut + Live Count + Clear Button + Mobile Filter Trigger */}
+                <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
+                  {!searchInput && !isSearchFocused && (
+                    <kbd
+                      aria-hidden="true"
+                      className="hidden md:inline-flex items-center justify-center px-2 py-0.5 rounded-md bg-surface border border-black/10 dark:border-white/10 text-[10px] font-mono font-bold text-text-muted select-none"
+                      title="Press / to focus search"
                     >
-                      {activeFilterCount}
-                    </span>
+                      /
+                    </kbd>
                   )}
-                </button>
-              </div>
-            </form>
+
+                  {searchInput && (
+                    <>
+                      <span
+                        aria-live="polite"
+                        className="hidden xs:inline-flex items-center px-2 py-1 rounded-lg bg-warning/10 text-warning font-mono tabular-nums text-[11px] font-black"
+                      >
+                        {filteredColleges.length}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearSearch}
+                        aria-label="Clear search query"
+                        className="w-9 h-9 rounded-xl text-text-muted hover:text-text-main hover:bg-black/5 dark:hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
+                      >
+                        <X size={17} />
+                      </button>
+                    </>
+                  )}
+
+                  {/* Integrated Mobile & Landscape Filter Button inside Search Bar */}
+                  <button
+                    type="button"
+                    onClick={() => setIsMobileFilterOpen(true)}
+                    aria-label="Open directory filters"
+                    className={cn(
+                      'lg:hidden h-9 sm:h-10 landscape:max-lg:h-9 px-2.5 sm:px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer shrink-0',
+                      activeFilterCount > 0
+                        ? 'bg-warning text-crust border-warning font-black shadow-xs'
+                        : 'bg-surface/90 text-text-main border-black/10 dark:border-white/10 hover:border-warning/50'
+                    )}
+                  >
+                    <Filter size={14} className={cn('shrink-0', activeFilterCount > 0 ? 'text-crust' : 'text-warning')} />
+                    <span className="hidden xs:inline">Filters</span>
+                    {activeFilterCount > 0 && (
+                      <span
+                        className={cn(
+                          'px-1.5 py-0.5 rounded-full text-[10px] font-mono tabular-nums font-black leading-none',
+                          activeFilterCount > 0 ? 'bg-crust/20 text-crust' : 'bg-warning/20 text-warning'
+                        )}
+                      >
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+              </form>
+
+              {/* Instant Quick-Jump Search Suggestions Dropdown */}
+              <AnimatePresence>
+                {isSearchFocused && searchSuggestions.length > 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.16 }}
+                    className="absolute left-0 right-0 top-full mt-2 bg-surface/95 backdrop-blur-xl border border-warning/30 rounded-2xl shadow-2xl overflow-hidden z-50 text-left"
+                  >
+                    <div className="px-3.5 py-2 bg-crust/70 border-b border-black/10 dark:border-white/10 flex items-center justify-between text-[10px] font-black uppercase tracking-wider text-text-muted">
+                      <span>Quick Jump to Institution</span>
+                      <span className="text-warning">{filteredColleges.length} Matches</span>
+                    </div>
+                    <div className="divide-y divide-black/5 dark:divide-white/5 max-h-72 overflow-y-auto">
+                      {searchSuggestions.map((item) => {
+                        const isSavedItem = savedCollegeIds.includes(item.id);
+                        return (
+                          <div
+                            key={item.id}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setIsSearchFocused(false);
+                              handleOpenDetails(item);
+                            }}
+                            className="px-3.5 py-2.5 hover:bg-warning/10 flex items-center justify-between gap-3 cursor-pointer transition-colors"
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <CollegeLogoBadge college={item} size="sm" />
+                              <div className="min-w-0">
+                                <p className="text-xs sm:text-sm font-black text-text-main truncate">
+                                  {item.name}
+                                </p>
+                                <p className="text-[11px] font-semibold text-text-muted truncate flex items-center gap-1">
+                                  <MapPin size={11} className="text-warning shrink-0" />
+                                  <span>{item.city}, {item.state || item.country}</span>
+                                  <span className="opacity-50">•</span>
+                                  <span className="text-warning">{item.coursesOffered.length} Courses</span>
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              <button
+                                type="button"
+                                onMouseDown={(e) => {
+                                  e.stopPropagation();
+                                  toggleSaveCollege(e, item.id);
+                                }}
+                                aria-label={isSavedItem ? 'Remove bookmark' : 'Bookmark college'}
+                                className="w-7 h-7 rounded-lg bg-background border border-black/10 dark:border-white/10 flex items-center justify-center text-text-muted hover:text-warning"
+                              >
+                                <Bookmark size={12} className={cn(isSavedItem && 'fill-warning text-warning')} />
+                              </button>
+                              <ChevronRight size={14} className="text-warning" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Quick Search Topic Strip - Smooth horizontal snap scroll on mobile portrait/landscape, wrapped on desktop */}
             <div className="flex items-center sm:flex-wrap sm:justify-center gap-1.5 overflow-x-auto no-scrollbar snap-x snap-mandatory pt-0.5 pb-1 -mx-3.5 px-3.5 sm:mx-0 sm:px-0">
@@ -2800,8 +3252,8 @@ export default function Colleges() {
           
           {/* Desktop Filter Sidebar */}
           <aside aria-label="Directory Filters" className="hidden lg:block w-72 shrink-0 space-y-6">
-            <div className="bg-surface border border-black/5 dark:border-white/10 rounded-2xl p-6 space-y-6 shadow-lg sticky top-24">
-              <div className="flex items-center justify-between pb-4 border-b border-black/5 dark:border-white/10">
+            <div className="bg-surface border border-black/5 dark:border-white/10 rounded-2xl p-6 space-y-5 shadow-lg sticky top-24">
+              <div className="flex items-center justify-between pb-3.5 border-b border-black/5 dark:border-white/10">
                 <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider text-text-main">
                   <Filter size={16} className="text-warning" />
                   <span>Refine Search</span>
@@ -2818,7 +3270,7 @@ export default function Colleges() {
               </div>
 
               {/* Country Filter */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label htmlFor="filter-country-desktop" className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
                   <Globe size={14} className="text-warning" /> Country
                 </label>
@@ -2839,7 +3291,7 @@ export default function Colleges() {
               </div>
 
               {/* State Filter */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label htmlFor="filter-state-desktop" className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
                   <MapPin size={14} className="text-warning" /> State / Region
                 </label>
@@ -2859,7 +3311,7 @@ export default function Colleges() {
               </div>
 
               {/* City Filter */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label htmlFor="filter-city-desktop" className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
                   <Building2 size={14} className="text-warning" /> City
                 </label>
@@ -2876,7 +3328,7 @@ export default function Colleges() {
               </div>
 
               {/* Institution Type Filter */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label htmlFor="filter-type-desktop" className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
                   <ShieldCheck size={14} className="text-warning" /> Institution Type
                 </label>
@@ -2898,7 +3350,7 @@ export default function Colleges() {
               </div>
 
               {/* Degree Level Filter */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <label htmlFor="filter-degree-desktop" className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
                   <GraduationCap size={14} className="text-warning" /> Degree Level
                 </label>
@@ -2917,7 +3369,26 @@ export default function Colleges() {
                 </select>
               </div>
 
-              {/* Checkboxes: Featured & Saved */}
+              {/* Annual Tuition Budget Filter */}
+              <div className="space-y-1.5">
+                <label htmlFor="filter-fee-desktop" className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
+                  <IndianRupee size={14} className="text-warning" /> Annual Fee Budget
+                </label>
+                <select
+                  id="filter-fee-desktop"
+                  value={selectedFeeRange}
+                  onChange={(e) => setSelectedFeeRange(e.target.value)}
+                  className="w-full bg-background border border-black/10 dark:border-white/10 rounded-xl px-3 py-2.5 text-xs font-semibold text-text-main focus:border-warning focus:outline-none min-h-[40px]"
+                >
+                  <option value="All">All Fee Ranges</option>
+                  <option value="under-50k">Under ₹50,000 / year</option>
+                  <option value="50k-100k">₹50,000 – ₹1,00,000 / year</option>
+                  <option value="100k-200k">₹1,00,000 – ₹2,00,000 / year</option>
+                  <option value="above-200k">Above ₹2,00,000 / year</option>
+                </select>
+              </div>
+
+              {/* Checkboxes: Featured & Saved + Shortlist Drawer Button */}
               <div className="pt-3 border-t border-black/5 dark:border-white/10 space-y-3">
                 <label className="flex items-center gap-3 cursor-pointer text-xs font-bold text-text-main select-none">
                   <input
@@ -2944,14 +3415,23 @@ export default function Colleges() {
                     Saved Bookmarks Only ({savedCollegeIds.length})
                   </span>
                 </label>
+
+                <button
+                  type="button"
+                  onClick={() => setIsBookmarksDrawerOpen(true)}
+                  className="w-full py-2.5 px-3 rounded-xl bg-warning/10 hover:bg-warning/20 border border-warning/30 text-warning text-xs font-black uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Bookmark size={13} className="fill-warning shrink-0" />
+                  <span>Manage Bookmarked ({savedCollegeIds.length})</span>
+                </button>
               </div>
             </div>
           </aside>
 
-          {/* Directory Grid View */}
+          {/* Directory Grid / List View */}
           <div className="flex-1 space-y-4 sm:space-y-6 min-w-0">
             
-            {/* Control Bar: Mobile Filter Button, Compare, Sorting & Active Count */}
+            {/* Control Bar: Mobile Filter Button, Compare, Bookmarks Drawer, View Mode, Sorting & Active Count */}
             <div className="bg-surface border border-black/5 dark:border-white/10 rounded-2xl p-3.5 sm:p-4 shadow-sm space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 {/* Results Counter + Mobile Quick Saved / Reset */}
@@ -2962,22 +3442,19 @@ export default function Colleges() {
                   </div>
 
                   <div className="flex items-center gap-1.5 sm:hidden">
-                    {savedCollegeIds.length > 0 && (
-                      <button
-                        type="button"
-                        onClick={() => setSavedOnly(prev => !prev)}
-                        aria-pressed={savedOnly}
-                        className={cn(
-                          'text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 border transition-all cursor-pointer',
-                          savedOnly
-                            ? 'bg-warning text-crust border-warning font-black shadow-xs'
-                            : 'text-warning bg-warning/10 border-warning/20'
-                        )}
-                      >
-                        <Bookmark size={12} className={cn(savedOnly ? 'fill-crust text-crust' : 'fill-warning')} />
-                        <span>{savedCollegeIds.length}</span>
-                      </button>
-                    )}
+                    <button
+                      type="button"
+                      onClick={() => setIsBookmarksDrawerOpen(true)}
+                      className={cn(
+                        'text-[11px] font-bold px-2.5 py-1.5 rounded-lg flex items-center gap-1 border transition-all cursor-pointer',
+                        savedCollegeIds.length > 0
+                          ? 'text-warning bg-warning/10 border-warning/30 font-black'
+                          : 'text-text-muted bg-background border-black/10 dark:border-white/10'
+                      )}
+                    >
+                      <Bookmark size={12} className={cn(savedCollegeIds.length > 0 && 'fill-warning text-warning')} />
+                      <span>Saved ({savedCollegeIds.length})</span>
+                    </button>
                     {activeFilterCount > 0 && (
                       <button
                         type="button"
@@ -3008,6 +3485,22 @@ export default function Colleges() {
                     )}
                   </button>
 
+                  {/* Bookmarked Colleges Drawer Trigger */}
+                  <button
+                    type="button"
+                    onClick={() => setIsBookmarksDrawerOpen(true)}
+                    className={cn(
+                      'hidden sm:flex text-xs font-bold px-3 py-2 rounded-xl items-center gap-1.5 shrink-0 border transition-all cursor-pointer min-h-[40px]',
+                      savedCollegeIds.length > 0
+                        ? 'text-warning bg-warning/10 border-warning/30 hover:border-warning font-black'
+                        : 'bg-background sm:bg-surface text-text-main border-black/10 dark:border-white/10 hover:border-warning/50 hover:text-warning'
+                    )}
+                    title="View and manage bookmarked colleges shortlist"
+                  >
+                    <Bookmark size={13} className={cn('shrink-0', savedCollegeIds.length > 0 ? 'fill-warning text-warning' : 'text-warning')} />
+                    <span>Bookmarked ({savedCollegeIds.length})</span>
+                  </button>
+
                   {/* Compare Colleges Trigger */}
                   <button
                     type="button"
@@ -3027,27 +3520,45 @@ export default function Colleges() {
                     </span>
                   </button>
 
-                  {/* Saved Colleges Trigger (Desktop/Tablet) */}
-                  {savedCollegeIds.length > 0 && (
+                  {/* View Mode Switcher (Cards Grid vs Executive Compact List) */}
+                  <div
+                    role="group"
+                    aria-label="Directory layout view mode"
+                    className="hidden sm:inline-flex items-center p-1 rounded-xl bg-background border border-black/10 dark:border-white/10 shrink-0"
+                  >
                     <button
                       type="button"
-                      onClick={() => setSavedOnly(prev => !prev)}
-                      aria-pressed={savedOnly}
+                      onClick={() => handleSetViewMode('grid')}
+                      aria-pressed={viewMode === 'grid'}
+                      title="Cards Grid View"
                       className={cn(
-                        'hidden sm:flex text-xs font-bold px-3 py-2 rounded-xl items-center gap-1.5 shrink-0 border transition-all cursor-pointer min-h-[40px]',
-                        savedOnly
-                          ? 'bg-warning text-crust border-warning font-black shadow-xs'
-                          : 'text-warning bg-warning/10 border-warning/20 hover:border-warning/50'
+                        'p-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold',
+                        viewMode === 'grid'
+                          ? 'bg-warning text-crust font-black shadow-xs'
+                          : 'text-text-muted hover:text-text-main'
                       )}
                     >
-                      <Bookmark size={13} className={cn(savedOnly ? 'fill-crust text-crust' : 'fill-warning')} />
-                      <span>{savedCollegeIds.length} Saved</span>
+                      <LayoutGrid size={14} />
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => handleSetViewMode('list')}
+                      aria-pressed={viewMode === 'list'}
+                      title="Compact Executive List View"
+                      className={cn(
+                        'p-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 text-[11px] font-bold',
+                        viewMode === 'list'
+                          ? 'bg-warning text-crust font-black shadow-xs'
+                          : 'text-text-muted hover:text-text-main'
+                      )}
+                    >
+                      <List size={14} />
+                    </button>
+                  </div>
 
                   {/* Sort Select (Full width across the 2 cols on mobile, inline on sm+) */}
                   <div className="col-span-2 sm:col-span-1 flex items-center gap-2">
-                    <label htmlFor="sort-colleges-select" className="text-xs font-mono uppercase text-text-muted hidden sm:inline-flex items-center gap-1">
+                    <label htmlFor="sort-colleges-select" className="text-xs font-mono uppercase text-text-muted hidden xl:inline-flex items-center gap-1">
                       <ArrowUpDown size={12} className="text-warning" /> Sort:
                     </label>
                     <div className="relative w-full sm:w-auto flex items-center">
@@ -3058,18 +3569,20 @@ export default function Colleges() {
                         onChange={(e) => setSortBy(e.target.value as any)}
                         className="w-full sm:w-auto bg-background border border-black/10 dark:border-white/10 rounded-xl pl-8 sm:pl-3 pr-3 py-2.5 sm:py-2 text-xs font-bold text-text-main focus:border-warning focus:outline-none min-h-[42px] sm:min-h-[40px]"
                       >
-                        <option value="featured">Sort: Featured First</option>
                         <option value="name-asc">Sort: Name (A–Z)</option>
                         <option value="name-desc">Sort: Name (Z–A)</option>
+                        <option value="featured">Sort: Featured First</option>
+                        <option value="bookmarked-first">Sort: Bookmarked First</option>
                         <option value="courses-desc">Sort: Most Programs</option>
                         <option value="fee-asc">Sort: Lowest Estimated Fee</option>
+                        <option value="fee-desc">Sort: Highest Estimated Fee</option>
                       </select>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Mobile Quick-Filter Pill Strip (Degree & Institution Type shortcuts) */}
+              {/* Mobile Quick-Filter Pill Strip (Degree, Fee & Institution Type shortcuts) */}
               <div className="lg:hidden flex items-center gap-1.5 overflow-x-auto no-scrollbar pt-2 border-t border-black/5 dark:border-white/5 -mx-1 px-1">
                 <button
                   type="button"
@@ -3196,6 +3709,14 @@ export default function Colleges() {
                     </button>
                   </span>
                 )}
+                {selectedFeeRange !== 'All' && (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-xs font-bold text-text-main shrink-0">
+                    Fee: {selectedFeeRange === 'under-50k' ? 'Under ₹50K/yr' : selectedFeeRange === '50k-100k' ? '₹50K–₹1L/yr' : selectedFeeRange === '100k-200k' ? '₹1L–₹2L/yr' : 'Above ₹2L/yr'}
+                    <button type="button" onClick={() => setSelectedFeeRange('All')} aria-label="Remove fee range filter" className="text-text-muted hover:text-text-main cursor-pointer">
+                      <X size={12} />
+                    </button>
+                  </span>
+                )}
                 {featuredOnly && (
                   <span className="inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1 rounded-lg bg-warning text-crust text-xs font-black shadow-xs shrink-0">
                     <Star size={12} className="fill-crust text-crust" /> Featured Only
@@ -3258,6 +3779,159 @@ export default function Colleges() {
                   </button>
                 </div>
               </div>
+            ) : viewMode === 'list' ? (
+              /* Executive Compact List View */
+              <div className="space-y-3" style={{ overflowAnchor: 'none' }}>
+                {visibleColleges.map((college) => {
+                  const isSaved = savedCollegeIds.includes(college.id);
+                  const isCompared = compareCollegeIds.includes(college.id);
+                  const isHighlighted = highlightedCollegeId === college.id;
+                  const meta = collegeMetaMap.get(college.id);
+                  const formattedFee = meta?.formattedFee ?? formatFee(college.feesRange, college.country);
+                  const displayType = meta?.displayType ?? getDisplayInstitutionType(college);
+
+                  return (
+                    <div
+                      key={college.id}
+                      id={`college-card-${college.id}`}
+                      data-college-id={college.id}
+                      onClick={() => handleOpenDetails(college)}
+                      className={cn(
+                        'group bg-surface border rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer transition-all scroll-mt-24',
+                        'hover:border-warning/40 hover:shadow-md',
+                        isHighlighted
+                          ? 'border-warning ring-2 ring-warning'
+                          : isCompared
+                          ? 'border-warning/60 ring-1 ring-warning/40'
+                          : 'border-black/5 dark:border-white/10'
+                      )}
+                    >
+                      <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                        <CollegeLogoBadge college={college} size="sm" />
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <span className="px-2 py-0.5 rounded-md bg-warning/15 text-warning font-black text-[10px] uppercase tracking-wider">
+                              {displayType}
+                            </span>
+                            {college.accreditation && (
+                              <span className="px-2 py-0.5 rounded-md bg-background border border-black/10 dark:border-white/10 text-text-muted font-bold text-[10px]">
+                                {college.accreditation.split('|')[0].trim()}
+                              </span>
+                            )}
+                            {college.featured && isEligibleFeaturedCampus(college) && (
+                              <span className="px-2 py-0.5 rounded-md bg-amber-500 text-crust font-black text-[10px] uppercase tracking-wider inline-flex items-center gap-1">
+                                <Star size={10} className="fill-crust" /> Featured
+                              </span>
+                            )}
+                            {getCampusAmbassadorsForCollege(college).map(amb => (
+                              <span
+                                key={`list-amb-${amb.id}`}
+                                className="px-2 py-0.5 rounded-md bg-warning/15 border border-warning/40 text-warning font-black text-[10px] uppercase tracking-wider inline-flex items-center gap-1"
+                              >
+                                <ShieldCheck size={11} className="shrink-0" />
+                                <span>ForenClue Campus Ambassador: {amb.name}</span>
+                              </span>
+                            ))}
+                          </div>
+
+                          <h2 className="text-sm sm:text-base font-black text-text-main group-hover:text-warning transition-colors leading-snug">
+                            <Link
+                              to={`/colleges/${college.id}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                recordReturnCollege(college.id);
+                              }}
+                            >
+                              {college.name}
+                            </Link>
+                          </h2>
+
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-text-muted">
+                            <span className="inline-flex items-center gap-1 text-text-main">
+                              <MapPin size={12} className="text-warning shrink-0" />
+                              {college.city}, {college.state ? `${college.state}, ` : ''}{college.country}
+                            </span>
+                            <span className="inline-flex items-center gap-1 text-warning font-bold">
+                              <GraduationCap size={13} />
+                              {college.coursesOffered.length} Forensic Programs
+                            </span>
+                            {formattedFee && (
+                              <span className="font-black text-text-main">
+                                Fee: <span className="text-warning">{formattedFee}</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-end gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-black/5 dark:border-white/5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => toggleSaveCollege(e, college.id)}
+                          aria-pressed={isSaved}
+                          aria-label={isSaved ? 'Remove bookmark' : 'Save college'}
+                          title={isSaved ? 'Bookmarked' : 'Bookmark College'}
+                          className={cn(
+                            'w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer',
+                            isSaved
+                              ? 'bg-warning/15 border-warning text-warning'
+                              : 'bg-background border-black/10 dark:border-white/10 text-text-muted hover:text-warning hover:border-warning/40'
+                          )}
+                        >
+                          <Bookmark size={14} className={cn(isSaved && 'fill-warning')} />
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleCompare(college.id, e)}
+                          aria-pressed={isCompared}
+                          className={cn(
+                            'px-3 py-2 rounded-xl text-xs font-black uppercase tracking-wider border flex items-center gap-1.5 transition-all cursor-pointer min-h-[38px]',
+                            isCompared
+                              ? 'bg-warning/15 border-warning text-warning'
+                              : 'bg-background border-black/10 dark:border-white/10 text-text-main hover:border-warning/50 hover:text-warning'
+                          )}
+                        >
+                          {isCompared ? <Check size={13} /> : <Scale size={13} className="text-warning" />}
+                          <span>{isCompared ? 'Comparing' : 'Compare'}</span>
+                        </button>
+
+                        <Link
+                          to={`/colleges/${college.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            recordReturnCollege(college.id);
+                          }}
+                          className="px-3.5 py-2 rounded-xl bg-warning text-crust font-black text-xs uppercase tracking-wider flex items-center gap-1 shadow-xs hover:bg-warning/90 transition-all min-h-[38px]"
+                        >
+                          <span>Explore</span>
+                          <ChevronRight size={13} />
+                        </Link>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {visibleCount < filteredColleges.length && (
+                  <div ref={loadMoreSentinelRef} className="pt-3 pb-8 text-center">
+                    <button
+                      type="button"
+                      onClick={triggerLoadMoreBatch}
+                      disabled={isLoadingMore}
+                      className="px-5 py-2.5 rounded-xl bg-warning text-crust font-black text-xs uppercase tracking-wider shadow-md hover:bg-warning/90 transition-all cursor-pointer inline-flex items-center gap-2"
+                    >
+                      {isLoadingMore ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>Loading...</span>
+                        </>
+                      ) : (
+                        <span>Load More Colleges ({filteredColleges.length - visibleCount} remaining)</span>
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               /* College Cards Grid */
               <div className="grid grid-cols-1 landscape:grid-cols-2 sm:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-4 sm:gap-6" style={{ overflowAnchor: 'none' }}>
@@ -3266,7 +3940,9 @@ export default function Colleges() {
                   const isCompared = compareCollegeIds.includes(college.id);
                   const isHighlighted = highlightedCollegeId === college.id;
                   const isCardCopied = copiedCardId === college.id;
-                  const formattedFee = formatFee(college.feesRange, college.country);
+                  const meta = collegeMetaMap.get(college.id);
+                  const formattedFee = meta?.formattedFee ?? formatFee(college.feesRange, college.country);
+                  const displayType = meta?.displayType ?? getDisplayInstitutionType(college);
 
                   return (
                     <motion.article
@@ -3305,11 +3981,11 @@ export default function Colleges() {
                         {/* Type, Featured, Share & Bookmark Controls */}
                         <div className="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 right-2.5 sm:right-3 flex items-center justify-between gap-2 z-10">
                           <span className="px-2.5 py-1 rounded-full bg-black/75 backdrop-blur-md text-white font-black text-[10px] uppercase tracking-wider border border-white/10 truncate max-w-[55%]">
-                            {getDisplayInstitutionType(college)}
+                            {displayType}
                           </span>
 
                           <div className="flex items-center gap-1.5 shrink-0">
-                            {college.featured && (
+                            {college.featured && isEligibleFeaturedCampus(college) && (
                               <span className="px-2 sm:px-2.5 py-1 rounded-full bg-warning text-crust font-black text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-md">
                                 <Star size={11} className="fill-crust text-crust shrink-0" />
                                 <span className="hidden xs:inline">Featured</span>
@@ -3385,6 +4061,29 @@ export default function Colleges() {
                           <p className="text-xs text-text-muted line-clamp-2 leading-relaxed">
                             {college.description}
                           </p>
+
+                          {getCampusAmbassadorsForCollege(college).map(amb => (
+                            <div
+                              key={`card-amb-${amb.id}`}
+                              className="flex items-center gap-2.5 p-2 rounded-xl bg-warning/10 border border-warning/30"
+                            >
+                              <img
+                                src={amb.image}
+                                alt={amb.name}
+                                referrerPolicy="no-referrer"
+                                className="w-8 h-8 rounded-lg object-cover object-top border border-warning shrink-0"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1 text-[9px] font-black uppercase tracking-wider text-warning">
+                                  <ShieldCheck size={11} className="shrink-0" />
+                                  <span className="truncate">ForenClue Campus Ambassador</span>
+                                </div>
+                                <p className="text-[11px] font-bold text-text-main truncate">
+                                  {amb.name} <span className="font-mono text-[10px] text-warning">({amb.id})</span>
+                                </p>
+                              </div>
+                            </div>
+                          ))}
                         </div>
 
                         {/* Fee & Programs Summary */}
@@ -3717,6 +4416,25 @@ export default function Colleges() {
                   </select>
                 </div>
 
+                {/* Annual Fee Range Filter (Mobile) */}
+                <div className="space-y-2">
+                  <label htmlFor="filter-fee-mobile" className="text-xs font-black uppercase tracking-wider text-text-muted flex items-center gap-1.5">
+                    <IndianRupee size={14} className="text-warning" /> Annual Fee Budget
+                  </label>
+                  <select
+                    id="filter-fee-mobile"
+                    value={selectedFeeRange}
+                    onChange={(e) => setSelectedFeeRange(e.target.value)}
+                    className="w-full bg-background border border-black/10 dark:border-white/10 rounded-xl px-3.5 py-3 text-base sm:text-xs font-semibold text-text-main focus:border-warning focus:outline-none min-h-[46px]"
+                  >
+                    <option value="All">All Fee Ranges</option>
+                    <option value="under-50k">Under ₹50,000 / year</option>
+                    <option value="50k-100k">₹50,000 – ₹1,00,000 / year</option>
+                    <option value="100k-200k">₹1,00,000 – ₹2,00,000 / year</option>
+                    <option value="above-200k">Above ₹2,00,000 / year</option>
+                  </select>
+                </div>
+
                 {/* Checkboxes: Featured & Saved */}
                 <div className="pt-3 border-t border-black/5 dark:border-white/10 space-y-3.5">
                   <label className="flex items-center gap-3 cursor-pointer text-xs font-bold text-text-main select-none py-1">
@@ -3769,6 +4487,46 @@ export default function Colleges() {
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Bookmarked Colleges Shortlist Manager & User Bookmarks Drawer */}
+      <BookmarkedCollegesDrawer
+        isOpen={isBookmarksDrawerOpen}
+        onClose={() => setIsBookmarksDrawerOpen(false)}
+        colleges={colleges}
+        savedCollegeIds={savedCollegeIds}
+        compareCollegeIds={compareCollegeIds}
+        savedOnly={savedOnly}
+        isCloudSynced={isCloudSynced}
+        onToggleSave={toggleSaveCollege}
+        onClearAllSaved={handleClearAllSaved}
+        onToggleCompare={handleToggleCompare}
+        onCompareSavedColleges={handleCompareSavedColleges}
+        onToggleSavedOnlyFilter={() => setSavedOnly(prev => !prev)}
+        onOpenCollegeDetails={handleOpenDetails}
+        getDisplayInstitutionType={getDisplayInstitutionType}
+        parseNumericMinFee={parseNumericMinFee}
+      />
+
+      {/* Floating Back-to-Top Button */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0, scale: 0.85, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.85, y: 12 }}
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            aria-label="Scroll back to top of colleges directory"
+            title="Back to Top"
+            className={cn(
+              'fixed right-4 sm:right-6 z-40 w-11 h-11 rounded-full bg-surface/95 backdrop-blur-md border border-warning/40 text-warning hover:bg-warning hover:text-crust shadow-xl flex items-center justify-center transition-colors cursor-pointer',
+              compareCollegeIds.length > 0 ? 'bottom-28' : 'bottom-6'
+            )}
+          >
+            <ArrowUp size={18} />
+          </motion.button>
         )}
       </AnimatePresence>
 

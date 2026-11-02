@@ -6,6 +6,7 @@ import {
 import { Quiz, QuizAttempt, LeaderboardEntry, QuizRegistration, EnrolledParticipant } from '@/types/quiz';
 import { CHEILOSCOPY_QUESTIONS } from '@/data/cheiloscopyQuestions';
 import { BLOOD_STAIN_QUESTIONS } from '@/data/bloodStainQuestions';
+import { FORENSIC_MEDICINE_QUESTIONS } from '@/data/forensicMedicineQuestions';
 
 const QUIZZES_COLLECTION = 'quizzes';
 const ATTEMPTS_COLLECTION = 'quizAttempts';
@@ -13,6 +14,31 @@ const REGISTRATIONS_COLLECTION = 'quizRegistrations';
 
 // Initial sample quizzes for seed fallback
 export const SAMPLE_QUIZZES: Quiz[] = [
+  {
+    id: 'weekly-challenge-forensic-medicine-2026-11-05',
+    title: 'Weekly Challenge: Fundamentals of Forensic Medicine',
+    description: 'Official 25-question live medico-legal challenge covering Thanatology (Algor, Rigor & Livor Mortis), Mechanical & Firearm Traumatology, Asphyxial Deaths, Intracranial Hemorrhages, Thermal Burns (Wallace Rule of Nines), Forensic Osteology, Gustafson\'s Dental Age Estimation, Diatom Bone Marrow Testing, and BNS/BNSS/BSA Statutory Provisions. Features 10 high-precision visual graphic reference questions (10 points each, 250 total points). Scheduled live for 5 Nov at 7:00 PM IST.',
+    category: 'Forensic Medicine & Toxicology',
+    isWeeklyChallenge: true,
+    scheduledStartTime: '2026-11-05T13:30:00.000Z',
+    scheduledEndTime: '2026-11-05T14:00:00.000Z',
+    durationMinutes: 30,
+    totalPoints: 250,
+    passingScore: 150,
+    enrolledUserIds: [],
+    isEnrollmentOpen: true,
+    isPaid: false,
+    price: 0,
+    enableTabSwitchDetection: true,
+    status: 'published',
+    createdBy: 'ForenClue Forensic Medicine Division',
+    createdAt: '2026-11-02T12:00:00.000Z',
+    thumbnail: 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=800',
+    coverImage: 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=1200',
+    bannerImage: 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=1200',
+    image: 'https://images.unsplash.com/photo-1530497610245-94d3c16cda28?auto=format&fit=crop&q=80&w=800',
+    questions: FORENSIC_MEDICINE_QUESTIONS
+  },
   {
     id: 'practice-bpa-1',
     title: 'Bloodstain Pattern Identification: 15 Beginner Questions',
@@ -345,6 +371,16 @@ function applyQuizOverrides(quiz: Quiz): Quiz {
     quiz.totalPoints = 150;
     quiz.passingScore = 90;
     quiz.questions = BLOOD_STAIN_QUESTIONS;
+  } else if (quiz.id === 'weekly-challenge-forensic-medicine-2026-11-05') {
+    quiz.isWeeklyChallenge = quiz.isWeeklyChallenge ?? true;
+    quiz.isEnrollmentOpen = quiz.isEnrollmentOpen ?? true;
+    quiz.scheduledStartTime = quiz.scheduledStartTime || '2026-11-05T13:30:00.000Z';
+    quiz.scheduledEndTime = quiz.scheduledEndTime || '2026-11-05T14:00:00.000Z';
+    quiz.durationMinutes = quiz.durationMinutes || 30;
+    quiz.totalPoints = 250;
+    quiz.passingScore = quiz.passingScore || 150;
+    quiz.questions = FORENSIC_MEDICINE_QUESTIONS;
+    quiz.enrolledUserIds = Array.isArray(quiz.enrolledUserIds) ? quiz.enrolledUserIds : [];
   }
   return quiz;
 }

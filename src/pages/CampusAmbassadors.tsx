@@ -15,11 +15,12 @@ import {
 import { Link } from 'react-router-dom';
 import { SEO } from '@/components/layout/SEO';
 
-interface Ambassador {
+export interface Ambassador {
   id: string;
   name: string;
   role: string;
   institute: string;
+  collegeId?: string;
   location: string;
   image: string;
   batch: string;
@@ -33,12 +34,13 @@ interface Ambassador {
   };
 }
 
-const campusAmbassadors: Ambassador[] = [
+export const campusAmbassadors: Ambassador[] = [
   {
     id: 'FC-CA-2026-012',
     name: 'Saima Khan',
     role: 'Campus Ambassador',
     institute: 'Vivekananda Global University',
+    collegeId: 'vivekananda-global-university',
     location: 'Jaipur, Rajasthan',
     batch: '2026 Cohort',
     status: 'Active',
@@ -50,6 +52,7 @@ const campusAmbassadors: Ambassador[] = [
     name: 'Ayush Kumar',
     role: 'Campus Ambassador',
     institute: 'Parul University',
+    collegeId: 'parul-university',
     location: 'Vadodara, Gujarat',
     batch: '2026 Cohort',
     status: 'Active',
@@ -61,6 +64,7 @@ const campusAmbassadors: Ambassador[] = [
     name: 'Nitin Soni',
     role: 'Campus Ambassador',
     institute: 'Mangalayatan University',
+    collegeId: 'mangalayatan-university',
     location: 'Jabalpur, Madhya Pradesh',
     batch: '2026 Cohort',
     status: 'Active',
@@ -72,6 +76,7 @@ const campusAmbassadors: Ambassador[] = [
     name: 'Aastha Kumari',
     role: 'Campus Ambassador',
     institute: 'Usha Martin University',
+    collegeId: 'usha-martin-university',
     location: 'Ranchi, Jharkhand',
     batch: '2026 Cohort',
     status: 'Active',
@@ -83,6 +88,7 @@ const campusAmbassadors: Ambassador[] = [
     name: 'Anuradha Kesharwani',
     role: 'Campus Ambassador',
     institute: 'Sanskruti University',
+    collegeId: 'sanskriti-university-mathura',
     location: 'Ranchi, Jharkhand',
     batch: '2026 Cohort',
     status: 'Active',
@@ -94,6 +100,7 @@ const campusAmbassadors: Ambassador[] = [
     name: 'Monika Singh',
     role: 'Campus Ambassador',
     institute: 'Holkar Science College',
+    collegeId: 'holkar-science-college-indore',
     location: 'Indore, Madhya Pradesh',
     batch: '2026 Cohort',
     status: 'Active',
@@ -105,13 +112,122 @@ const campusAmbassadors: Ambassador[] = [
     name: 'Sudhir Chavan',
     role: 'Campus Ambassador',
     institute: 'MGM University',
+    collegeId: 'mgm-university',
     location: 'Chhatrapati Sambhajinagar, Maharashtra',
     batch: '2026 Cohort',
     status: 'Active',
     image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjkiHvuW0sofWvboeKVuBYCzIETR1iCtxLz4MzfdWcDS1TnCgCF2gZummMfC36qTNLqWevRG3alM5dlyGvQ56rEbTFHc6h-cac7GOjustIMpq9GW1cKLDMSsqVyhOniD1sU33Ytln4v5jlgfmvwn2UEwg81ATrnUcKyRzKK21KfI-BgtCPw-9WjH_gAEyA/s1800/Sudhir_Chavan%20photo%20%20-%20Sudhir%20Chavan.jpg',
     specialization: 'Forensic Science'
+  },
+  {
+    id: 'FC-CAM-26-016',
+    name: 'Guru Raj',
+    role: 'Campus Ambassador',
+    institute: 'Guru Ghasidas Vishwavidyalaya',
+    collegeId: 'guru-ghasidas-vishwavidyalaya',
+    location: 'Bilaspur, Chhattisgarh',
+    batch: '2026 Cohort',
+    status: 'Active',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgvRL4TmkYZpcXlnMFK3Qm5obARxCAwtEd5etroaVpC745fnwkoixanbzMuiY8KgQLG7hUuWxPkwo3a81ffJSwnvwgpPk4uzkM4pU8OCGdzhBcoX9utk1m4eX-Rxdoq4yd7RgYxJzKpfiPeDJookPyj-Q8qeAFWZ5qSLlO9AmQUMBxDlPT2yfU-gddd_o8/s1600/IMG_20260915_034419%20-%20Guru%20Raj.jpg',
+    specialization: 'Forensic Science'
+  },
+  {
+    id: 'FC-CAM-26-017',
+    name: 'Anil Gurjar',
+    role: 'Campus Ambassador',
+    institute: 'ICFAI University, Jaipur',
+    collegeId: 'icfai-university',
+    location: 'Jaipur, Rajasthan',
+    batch: '2026 Cohort',
+    status: 'Active',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgux0xuoWC6cY13XvdHApM0xk5rquhfnVz8nDdpf-DxefvZ27FsLnsr1dP2LJ1hE5oCAtjxIiM-OW5CEkiNLVT6rPomBFClRBBSxzOSF_VUvVOBD4IlxKYPJDFkUF7AvAh6PZtCoWzwtz0ywWqVgeabexZyDq0HSJYDkEtX1Yb67SXqK-aBWNY15R4dMBk/s1600/IMG_20260209_175159%20-%20Anil%20Gurjar.jpg',
+    specialization: 'Forensic Science'
+  },
+  {
+    id: 'FC-CAM-26-018',
+    name: 'Nikita Mishra',
+    role: 'Campus Ambassador',
+    institute: 'Amity University, Delhi',
+    collegeId: 'amity-aifs',
+    location: 'Delhi NCR',
+    batch: '2026 Cohort',
+    status: 'Active',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiQHiw7BwHmBCqlFQfVIMaOqcqC2LsJbodTwPCfOkpGVoZN6ud2dAr1PJOB_EwUyz55yDXbZIoroLy0_Q8gt8PZp_RTWWR93i5wRBNwTjAjO7U9IwkGxjBZO6dtR4_l0kHCO89NkgRYHjoaas0GqV9e5unEf03Ax7dHhyphenhyphenqKEn8ADW9t3VIIpgiOeT5Hg4U/s1600/IMG-20261023-WA0006%20-%20Nikita%20Mishra.jpg',
+    specialization: 'Forensic Science'
+  },
+  {
+    id: 'FC-CAM-26-019',
+    name: 'Mitthun Rajesh',
+    role: 'Campus Ambassador',
+    institute: 'National Forensic Sciences University (NFSU), Chennai',
+    collegeId: 'nfsu-chennai',
+    location: 'Chennai, Tamil Nadu',
+    batch: '2026 Cohort',
+    status: 'Active',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhRqMkDz2qkloG4JIsoAYw66V9_M_Je_Gr17C0x2lSxYv_9DrJvqJRoO2YfYXvPhutoS0XM8Lsjnd2hRWa87ot6gGv5TCJbI2lMP0PMmDOkn1ydDjLPa9DZnVYG9EFvtAY4lpk1Q9wqxO60D51dD8gCKY8yGnEKSgejcxJh0RVWvj252QQ-l3VByvd4FgQ/w220-h273/20251015_103149%20-%20Mithuun%20Rajesh.jpg',
+    specialization: 'Forensic Science'
+  },
+  {
+    id: 'FC-CAM-26-020',
+    name: 'Vaibhav Bade',
+    role: 'Campus Ambassador',
+    institute: 'Harsha Institute of Management Studies, Bangalore',
+    collegeId: 'harsha-institute-of-management-studies-bangalore',
+    location: 'Bengaluru, Karnataka',
+    batch: '2026 Cohort',
+    status: 'Active',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj6PVwhTcEHf3lnKIIRrXaNzcatWHi8SBt98F3kjTEDNEOmbVDYJQmAB7Sc51aFQxdyuaKd8i4MXj9F6_yPf_UuWJ19dVXeonmI1PuRIPXUgR8TTzoHbE2ntPSfVohLlEHcl9Ndy1PaoPiwKNkMGPBZ6-mFE3PkkXCfneYUjecyADWPnvD3_3_nI-8sBl8/s320/1771233478958%20-%20Vaibhav%20Bade.jpg',
+    specialization: 'Forensic Science'
+  },
+  {
+    id: 'FC-CAM-26-021',
+    name: 'Janhvi Patil',
+    role: 'Campus Ambassador',
+    institute: "People's College of Forensic Science and Cyber Security",
+    collegeId: 'peoples-college-forensic-science-cyber-security',
+    location: 'Chhatrapati Sambhajinagar, Maharashtra',
+    batch: '2026 Cohort',
+    status: 'Active',
+    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgFhh3_NOumjI3qtYJn9EQ5-LqxV2UzQPmzE-dZYymNW3aXFvzbAXhwGAMNGRBo-ehITKzfaaSwvjs1JdG23vfRMWQ7jyqu6llhXomNVMNyT4LfLc_tDmWONMgAZ-s8L-8FVO2oN6f9c1LsImVlZXOxzDksS8Nmkm7Y9AqAqn0qM9LlANXb4uYI8K7kgqE/s320/IMG-20261101-WA8054%20-%20Vedant%20Patil.jpg',
+    specialization: 'Forensic Science & Cyber Security'
   }
 ];
+
+function normalizeInstText(input?: string): string {
+  if (!input) return '';
+  return input
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+export function getCampusAmbassadorsForCollege(college?: {
+  id?: string;
+  name?: string;
+  shortName?: string;
+} | null): Ambassador[] {
+  if (!college) return [];
+  const colId = (college.id || '').toLowerCase().trim();
+  const colName = normalizeInstText(college.name);
+  const colShort = normalizeInstText(college.shortName);
+
+  return campusAmbassadors.filter((amb) => {
+    if (amb.collegeId && colId && amb.collegeId.toLowerCase().trim() === colId) {
+      return true;
+    }
+    const inst = normalizeInstText(amb.institute);
+    if (!inst) return false;
+    if (colName && (colName.includes(inst) || inst.includes(colName))) {
+      return true;
+    }
+    if (colShort && (colShort.includes(inst) || inst.includes(colShort))) {
+      return true;
+    }
+    return false;
+  });
+}
 
 const programBenefits = [
   {
@@ -161,7 +277,7 @@ export default function CampusAmbassadors() {
       <SEO 
         title="Campus Ambassadors | ForenClue University Leadership"
         description="Meet the official ForenClue Campus Ambassadors representing leading universities across India. Driving forensic science innovation, campus workshops, and academic excellence."
-        keywords="campus ambassador, forensic science ambassador, Vivekananda Global University, Parul University, Mangalayatan University, Usha Martin University, Sanskruti University, Holkar Science College, MGM University, Sri Sri University, ForenClue student leadership, forensic workshops"
+        keywords="campus ambassador, forensic science ambassador, Vivekananda Global University, Parul University, Mangalayatan University, Usha Martin University, Sanskruti University, Holkar Science College, MGM University, Guru Ghasidas Vishwavidyalaya, ICFAI University Jaipur, Amity University Delhi, NFSU Chennai, Harsha Institute of Management Studies Bangalore, People's College of Forensic Science and Cyber Security, Sri Sri University, ForenClue student leadership, forensic workshops"
         image="https://blogger.googleusercontent.com/img/a/AVvXsEjnb4ZUOiND0rAIo-I8g9lVtlxNdiwc-uPrdSpWW2sPFQq4kPhDpOFRhEQmH1pnrHnNSRPuwWr0NdkrBka_MjU02zK15VK5-4DHQ01DUzJzLwx-M7-rUs9VEIp1RCYyV-6et12jaC5fleoimYUm1qwRQ-rMtZFH4a4-a_CyDhHsNo414RksWoPwo6cyfjI"
         customSchema={ambassadorSchemas}
       />
@@ -286,10 +402,20 @@ export default function CampusAmbassadors() {
 
                       {/* Institute */}
                       <div className="space-y-1 pt-1">
-                        <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-text-main font-semibold">
-                          <Building2 size={14} className="text-warning shrink-0" />
-                          <span>{amb.institute}</span>
-                        </div>
+                        {amb.collegeId ? (
+                          <Link
+                            to={`/colleges/${amb.collegeId}`}
+                            className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-text-main hover:text-warning font-semibold transition-colors"
+                          >
+                            <Building2 size={14} className="text-warning shrink-0" />
+                            <span className="underline decoration-warning/30 underline-offset-2">{amb.institute}</span>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center justify-center sm:justify-start gap-1.5 text-xs text-text-main font-semibold">
+                            <Building2 size={14} className="text-warning shrink-0" />
+                            <span>{amb.institute}</span>
+                          </div>
+                        )}
                         <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[11px] text-text-muted font-mono">
                           <MapPin size={13} className="text-text-muted/70 shrink-0" />
                           <span>{amb.location}</span>
@@ -299,11 +425,20 @@ export default function CampusAmbassadors() {
                   </div>
 
                   {/* Card Footer Actions */}
-                  <div className="px-6 sm:px-7 pb-6 pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between gap-3 relative z-10">
+                  <div className="px-6 sm:px-7 pb-6 pt-4 border-t border-black/5 dark:border-white/5 flex flex-wrap items-center justify-between gap-3 relative z-10">
                     <div className="flex items-center gap-1.5 text-[10px] font-mono text-emerald-500 font-bold uppercase">
                       <CheckCircle2 size={12} />
                       Official Credential Verified
                     </div>
+                    {amb.collegeId && (
+                      <Link
+                        to={`/colleges/${amb.collegeId}`}
+                        className="text-[11px] font-mono font-bold text-warning hover:underline inline-flex items-center gap-1 uppercase tracking-wider"
+                      >
+                        <span>College Profile</span>
+                        <ArrowRight size={12} />
+                      </Link>
+                    )}
                   </div>
                 </motion.div>
               ))}
