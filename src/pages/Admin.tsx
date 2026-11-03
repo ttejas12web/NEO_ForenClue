@@ -37,7 +37,7 @@ import {
 } from '@/services/quizService';
 import { CRIME_SCENE_DOCUMENTATION_QUESTIONS } from '@/data/crimeSceneQuestions';
 import { College, CollegeCourse } from '@/types/college';
-import { fetchColleges as fetchAdminColleges, saveCollege as saveAdminCollege, deleteCollege as deleteAdminCollege } from '@/services/collegeService';
+import { fetchColleges as fetchAdminColleges, saveCollege as saveAdminCollege, deleteCollege as deleteAdminCollege, normalizeCollegeImageUrl } from '@/services/collegeService';
 import { 
   MaintenanceConfig, 
   getDefaultIst1230Target, 
@@ -7691,7 +7691,7 @@ export default function Admin() {
                         <div className="space-y-1">
                           <label className="text-[10px] font-mono uppercase text-text-muted">Official Website URL</label>
                           <input
-                            type="url"
+                            type="text"
                             value={collegeForm.website}
                             onChange={(e) => setCollegeForm({ ...collegeForm, website: e.target.value })}
                             placeholder="https://nfsu.ac.in"
@@ -7743,26 +7743,52 @@ export default function Admin() {
                           />
                         </div>
 
-                        <div className="space-y-1 md:col-span-2">
+                        <div className="space-y-2 md:col-span-2">
                           <label className="text-[10px] font-mono uppercase text-text-muted">Campus Banner Image URL</label>
-                          <input
-                            type="url"
-                            value={collegeForm.bannerImage}
-                            onChange={(e) => setCollegeForm({ ...collegeForm, bannerImage: e.target.value })}
-                            placeholder="https://images.unsplash.com/..."
-                            className="w-full bg-background border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
-                          />
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="text"
+                              value={collegeForm.bannerImage}
+                              onChange={(e) => setCollegeForm({ ...collegeForm, bannerImage: e.target.value })}
+                              placeholder="https://... or /images/colleges/..."
+                              className="flex-1 bg-background border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
+                            />
+                            {collegeForm.bannerImage?.trim() && (
+                              <div className="w-20 h-11 rounded-lg overflow-hidden border border-warning/40 bg-crust shrink-0 relative">
+                                <img
+                                  key={collegeForm.bannerImage}
+                                  src={normalizeCollegeImageUrl(collegeForm.bannerImage)}
+                                  alt="Banner preview"
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
 
-                        <div className="space-y-1">
+                        <div className="space-y-2">
                           <label className="text-[10px] font-mono uppercase text-text-muted">Logo Image URL</label>
-                          <input
-                            type="url"
-                            value={collegeForm.logo}
-                            onChange={(e) => setCollegeForm({ ...collegeForm, logo: e.target.value })}
-                            placeholder="https://images.unsplash.com/..."
-                            className="w-full bg-background border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
-                          />
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="text"
+                              value={collegeForm.logo}
+                              onChange={(e) => setCollegeForm({ ...collegeForm, logo: e.target.value })}
+                              placeholder="https://... or /images/colleges/..."
+                              className="flex-1 bg-background border border-black/10 dark:border-white/10 rounded-xl p-3 text-xs font-bold text-text-main outline-none focus:border-warning"
+                            />
+                            {collegeForm.logo?.trim() && (
+                              <div className="w-11 h-11 rounded-lg overflow-hidden border border-warning/40 bg-white p-1 shrink-0 flex items-center justify-center">
+                                <img
+                                  key={collegeForm.logo}
+                                  src={normalizeCollegeImageUrl(collegeForm.logo)}
+                                  alt="Logo preview"
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-contain"
+                                />
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
@@ -8086,34 +8112,52 @@ export default function Admin() {
                                 }`}
                               >
                                 <div className="flex items-start justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-text-muted">
-                                      <span className="text-warning uppercase">{col.type}</span>
-                                      {col.shortName && (
-                                        <>
-                                          <span aria-hidden="true">·</span>
-                                          <span>{col.shortName}</span>
-                                        </>
-                                      )}
-                                      {col.featured && (
-                                        <>
-                                          <span aria-hidden="true">·</span>
-                                          <span className="text-amber-500 font-black uppercase">Featured</span>
-                                        </>
-                                      )}
-                                      {isBeingEdited && (
-                                        <>
-                                          <span aria-hidden="true">·</span>
-                                          <span className="text-emerald-400 font-black uppercase">Editing Above ↑</span>
-                                        </>
-                                      )}
+                                  <div className="flex items-start gap-3 min-w-0 flex-1">
+                                    {col.logo ? (
+                                      <div className="w-11 h-11 rounded-xl bg-white border border-warning/30 p-1 shrink-0 overflow-hidden flex items-center justify-center">
+                                        <img
+                                          src={normalizeCollegeImageUrl(col.logo)}
+                                          alt={col.shortName || col.name}
+                                          loading="lazy"
+                                          decoding="async"
+                                          referrerPolicy="no-referrer"
+                                          className="w-full h-full object-contain"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-11 h-11 rounded-xl bg-surface border border-warning/30 shrink-0 flex items-center justify-center text-warning">
+                                        <Building2 size={16} />
+                                      </div>
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                      <div className="flex items-center gap-2 flex-wrap text-[11px] font-bold text-text-muted">
+                                        <span className="text-warning uppercase">{col.type}</span>
+                                        {col.shortName && (
+                                          <>
+                                            <span aria-hidden="true">·</span>
+                                            <span>{col.shortName}</span>
+                                          </>
+                                        )}
+                                        {col.featured && (
+                                          <>
+                                            <span aria-hidden="true">·</span>
+                                            <span className="text-amber-500 font-black uppercase">Featured</span>
+                                          </>
+                                        )}
+                                        {isBeingEdited && (
+                                          <>
+                                            <span aria-hidden="true">·</span>
+                                            <span className="text-emerald-400 font-black uppercase">Editing Above ↑</span>
+                                          </>
+                                        )}
+                                      </div>
+                                      <h4 className="text-sm font-black text-text-main mt-1 group-hover:text-warning transition-colors">
+                                        {col.name}
+                                      </h4>
+                                      <p className="text-xs text-text-muted font-semibold flex items-center gap-1 mt-0.5">
+                                        <MapPin size={12} className="text-warning shrink-0" /> {col.city}, {col.state ? `${col.state}, ` : ''}{col.country}
+                                      </p>
                                     </div>
-                                    <h4 className="text-sm font-black text-text-main mt-1 group-hover:text-warning transition-colors">
-                                      {col.name}
-                                    </h4>
-                                    <p className="text-xs text-text-muted font-semibold flex items-center gap-1 mt-0.5">
-                                      <MapPin size={12} className="text-warning shrink-0" /> {col.city}, {col.state ? `${col.state}, ` : ''}{col.country}
-                                    </p>
                                   </div>
 
                                   <div className="flex items-center gap-1.5 shrink-0">

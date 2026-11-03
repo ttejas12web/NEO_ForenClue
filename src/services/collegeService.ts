@@ -8371,15 +8371,111 @@ function getLocalDeletedSet(): Set<string> {
   return deletedSet;
 }
 
+const ADMIN_COLLEGE_OVERRIDES_KEY = 'forenclue_admin_college_overrides_v1';
+
+export function normalizeCollegeImageUrl(rawUrl?: string): string {
+  if (!rawUrl || typeof rawUrl !== 'string') return '';
+  const trimmed = rawUrl.trim();
+  if (!trimmed) return '';
+
+  // Convert Google Drive file sharing links to fast direct image CDN links
+  const driveFileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+  if (driveFileMatch?.[1]) {
+    return `https://lh3.googleusercontent.com/d/${driveFileMatch[1]}=w1200`;
+  }
+  const driveIdMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?.*?id=([a-zA-Z0-9_-]+)/);
+  if (driveIdMatch?.[1]) {
+    return `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}=w1200`;
+  }
+
+  // Convert Dropbox preview links to direct raw stream links
+  if (trimmed.includes('dropbox.com/') && trimmed.includes('dl=0')) {
+    return trimmed.replace('dl=0', 'raw=1');
+  }
+
+  return trimmed;
+}
+
+const LEGACY_PLACEHOLDER_PATTERNS = [
+  'photo-1562774053-701939374585',
+  'photo-1541339907198-e08756dedf3f',
+  'photo-1523050854058-8df90110c9f1',
+  'photo-1498243691581-b145c3f54a5a',
+  'photo-1581091226825-a6a2a5aee158',
+  'photo-1532094349884-543bc11b234d',
+  'photo-1592280771190-3e2e4d571952',
+  'photo-1576495199011-eb94736d05d6',
+  'photo-1564981797816-1043664bf78d',
+  'upload.wikimedia.org',
+  'images.shiksha.com',
+  'image-static.collegedunia.com',
+  'collegebatch.com',
+];
+
+function isLegacyPlaceholderOrBrokenAsset(url?: string, sampleUrl?: string): boolean {
+  if (!url || typeof url !== 'string' || !url.trim()) return true;
+  const clean = url.trim();
+  // If sampleUrl is identical to url, it's not outdated
+  if (sampleUrl && clean === sampleUrl.trim()) return false;
+  return LEGACY_PLACEHOLDER_PATTERNS.some(pattern => clean.includes(pattern));
+}
+
+function resolveCollegeAsset(firestoreUrl?: string, sampleUrl?: string, isAdminCustomized?: boolean): string {
+  const cleanFirestore = normalizeCollegeImageUrl(firestoreUrl);
+  const cleanSample = normalizeCollegeImageUrl(sampleUrl);
+
+  if (isAdminCustomized && cleanFirestore) {
+    return cleanFirestore;
+  }
+  if (cleanFirestore && !isLegacyPlaceholderOrBrokenAsset(cleanFirestore, cleanSample)) {
+    return cleanFirestore;
+  }
+  return cleanSample || cleanFirestore || '';
+}
+
+function getLocalAdminOverrides(): Record<string, Partial<College>> {
+  try {
+    const raw = localStorage.getItem(ADMIN_COLLEGE_OVERRIDES_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function saveLocalAdminOverride(id: string, data: Partial<College>): void {
+  try {
+    const current = getLocalAdminOverrides();
+    const key = id.toLowerCase().trim();
+    current[key] = { ...(current[key] || {}), ...data, id: key };
+    localStorage.setItem(ADMIN_COLLEGE_OVERRIDES_KEY, JSON.stringify(current));
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
 function getFallbackSampleColleges(deletedSet?: Set<string>): College[] {
   const del = deletedSet || getLocalDeletedSet();
+  const overrides = getLocalAdminOverrides();
   const seen = new Set<string>();
   const uniqueColleges: College[] = [];
   for (const c of SAMPLE_COLLEGES) {
     const key = c.id.toLowerCase().trim();
     if (!del.has(key) && !seen.has(key)) {
       seen.add(key);
-      uniqueColleges.push(c);
+      const ov = overrides[key];
+      if (ov) {
+        uniqueColleges.push({
+          ...c,
+          ...ov,
+          id: c.id,
+          logo: ov.logo ? normalizeCollegeImageUrl(ov.logo) : c.logo,
+          bannerImage: ov.bannerImage ? normalizeCollegeImageUrl(ov.bannerImage) : c.bannerImage,
+        });
+      } else {
+        uniqueColleges.push(c);
+      }
     }
   }
   return uniqueColleges.sort((a, b) => a.name.localeCompare(b.name));
@@ -8609,6 +8705,7 @@ export function getCachedColleges(): College[] | null {
 
 export async function fetchColleges(): Promise<College[]> {
   let deletedSet = getLocalDeletedSet();
+  const localOverrides = getLocalAdminOverrides();
   try {
     const sampleMap = new Map<string, College>();
     for (const s of SAMPLE_COLLEGES) {
@@ -8625,33 +8722,48 @@ export async function fetchColleges(): Promise<College[]> {
     const seenIds = new Set<string>();
     const missingFromFirestore: College[] = [];
 
+    // Deduplicate Firestore docs by canonicalId, preferring adminCustomized or newer updatedAt
+    const docsByCanonicalId = new Map<string, { id: string; data: any }>();
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
       const docIdLower = docSnap.id.toLowerCase().trim();
       const canonicalId = SLUG_ALIASES[docIdLower] || docIdLower;
 
-      // Skip records marked deleted or already seen
       if (
         data.isDeleted === true ||
         data.status === 'deleted' ||
         deletedSet.has(docIdLower) ||
-        deletedSet.has(canonicalId) ||
-        seenIds.has(canonicalId) ||
-        seenIds.has(docIdLower)
+        deletedSet.has(canonicalId)
       ) {
         return;
       }
 
+      const existing = docsByCanonicalId.get(canonicalId);
+      if (!existing) {
+        docsByCanonicalId.set(canonicalId, { id: docIdLower, data });
+      } else {
+        const existingAdmin = Boolean(existing.data.adminCustomized);
+        const incomingAdmin = Boolean(data.adminCustomized);
+        const existingTime = existing.data.updatedAt ? new Date(existing.data.updatedAt).getTime() : 0;
+        const incomingTime = data.updatedAt ? new Date(data.updatedAt).getTime() : 0;
+        if ((incomingAdmin && !existingAdmin) || (incomingAdmin === existingAdmin && incomingTime > existingTime)) {
+          docsByCanonicalId.set(canonicalId, { id: docIdLower, data });
+        }
+      }
+    });
+
+    docsByCanonicalId.forEach(({ id: docIdLower, data }, canonicalId) => {
       seenIds.add(canonicalId);
       seenIds.add(docIdLower);
       const sampleFallback = sampleMap.get(canonicalId) || sampleMap.get(docIdLower);
+      const localOverride = localOverrides[canonicalId] || localOverrides[docIdLower];
+      const isAdminCustomized = Boolean(data.adminCustomized || localOverride);
 
-      // Enrich courses if an older Firestore doc lacked specializations or newer courses from verified sample
       let coursesOffered = Array.isArray(data.coursesOffered) && data.coursesOffered.length > 0
         ? data.coursesOffered
         : (sampleFallback?.coursesOffered || []);
 
-      if (sampleFallback && coursesOffered.length > 0) {
+      if (sampleFallback && coursesOffered.length > 0 && !isAdminCustomized) {
         coursesOffered = coursesOffered.map((course: any) => {
           if (!course.specializations || course.specializations.length === 0) {
             const matchingSampleCourse = sampleFallback.coursesOffered.find(
@@ -8668,58 +8780,75 @@ export async function fetchColleges(): Promise<College[]> {
         }
       }
 
-      const isOutdatedSampleAssets =
+      const resolvedLogo = localOverride?.logo
+        ? normalizeCollegeImageUrl(localOverride.logo)
+        : resolveCollegeAsset(data.logo, sampleFallback?.logo, isAdminCustomized);
+      const resolvedBannerImage = localOverride?.bannerImage
+        ? normalizeCollegeImageUrl(localOverride.bannerImage)
+        : resolveCollegeAsset(data.bannerImage, sampleFallback?.bannerImage, isAdminCustomized);
+
+      const resolvedName = localOverride?.name || data.name || sampleFallback?.name || '';
+      const resolvedType = localOverride?.type || data.type || sampleFallback?.type || 'Government';
+      const resolvedCountry = localOverride?.country || data.country || sampleFallback?.country || 'India';
+      const effectiveFeatured = isAdminCustomized && typeof data.featured === 'boolean'
+        ? data.featured
+        : isEligibleFeaturedCampus({
+            id: canonicalId,
+            name: resolvedName,
+            type: resolvedType,
+            country: resolvedCountry,
+          });
+
+      // Only background-sync to Firestore if the Firestore document still had a legacy broken/placeholder asset and was NOT customized by Admin
+      const hadLegacyAssets =
+        !isAdminCustomized &&
         Boolean(sampleFallback) &&
-        (data.logo !== sampleFallback!.logo || data.bannerImage !== sampleFallback!.bannerImage);
+        (isLegacyPlaceholderOrBrokenAsset(data.logo, sampleFallback!.logo) ||
+         isLegacyPlaceholderOrBrokenAsset(data.bannerImage, sampleFallback!.bannerImage));
 
-      const preferSampleAssets =
-        isOutdatedSampleAssets ||
-        ((canonicalId === 'nsit-ifscs-ahmedabad' || canonicalId === 'sanskriti-university-mathura') &&
-        Boolean(sampleFallback));
-
-      const resolvedName = (preferSampleAssets && sampleFallback) ? sampleFallback.name : (data.name || sampleFallback?.name || '');
-      const resolvedType = data.type || sampleFallback?.type || 'Government';
-      const resolvedCountry = data.country || sampleFallback?.country || 'India';
-      const effectiveFeatured = isEligibleFeaturedCampus({
-        id: canonicalId,
-        name: resolvedName,
-        type: resolvedType,
-        country: resolvedCountry,
-      });
-
-      const isOutdatedFeaturedFlag = Boolean(data.featured) !== effectiveFeatured;
-      if ((isOutdatedSampleAssets || isOutdatedFeaturedFlag) && sampleFallback) {
+      if (hadLegacyAssets && sampleFallback) {
         missingFromFirestore.push({
           ...sampleFallback,
+          logo: resolvedLogo,
+          bannerImage: resolvedBannerImage,
           featured: effectiveFeatured,
+        });
+      }
+
+      if (data.adminCustomized) {
+        saveLocalAdminOverride(canonicalId, {
+          name: resolvedName,
+          shortName: data.shortName || sampleFallback?.shortName || '',
+          logo: resolvedLogo,
+          bannerImage: resolvedBannerImage,
         });
       }
 
       fetched.push({
         id: canonicalId,
         name: resolvedName,
-        shortName: (preferSampleAssets && sampleFallback) ? sampleFallback.shortName : (data.shortName || sampleFallback?.shortName || ''),
+        shortName: localOverride?.shortName || data.shortName || sampleFallback?.shortName || '',
         country: resolvedCountry,
-        state: data.state || sampleFallback?.state || '',
-        city: data.city || sampleFallback?.city || '',
+        state: localOverride?.state || data.state || sampleFallback?.state || '',
+        city: localOverride?.city || data.city || sampleFallback?.city || '',
         type: resolvedType,
-        website: (preferSampleAssets && sampleFallback) ? sampleFallback.website : (data.website || sampleFallback?.website || ''),
-        logo: sampleFallback?.logo || data.logo || '',
-        bannerImage: sampleFallback?.bannerImage || data.bannerImage || '',
-        description: ((canonicalId === 'amity-aifs' || preferSampleAssets) && sampleFallback) ? sampleFallback.description : (data.description || sampleFallback?.description || ''),
+        website: localOverride?.website || data.website || sampleFallback?.website || '',
+        logo: resolvedLogo,
+        bannerImage: resolvedBannerImage,
+        description: localOverride?.description || data.description || sampleFallback?.description || '',
         coursesOffered,
-        feesRange: data.feesRange || sampleFallback?.feesRange || '',
-        admissionProcess: data.admissionProcess || sampleFallback?.admissionProcess || '',
-        accreditation: data.accreditation || sampleFallback?.accreditation || '',
-        contactEmail: data.contactEmail || sampleFallback?.contactEmail || '',
-        contactPhone: data.contactPhone || sampleFallback?.contactPhone || '',
-        address: data.address || sampleFallback?.address || '',
-        ranking: data.ranking || sampleFallback?.ranking || '',
-        facilities: (Array.isArray(data.facilities) && data.facilities.length > 3) ? data.facilities : (sampleFallback?.facilities || (Array.isArray(data.facilities) ? data.facilities : [])),
+        feesRange: localOverride?.feesRange || data.feesRange || sampleFallback?.feesRange || '',
+        admissionProcess: localOverride?.admissionProcess || data.admissionProcess || sampleFallback?.admissionProcess || '',
+        accreditation: localOverride?.accreditation || data.accreditation || sampleFallback?.accreditation || '',
+        contactEmail: localOverride?.contactEmail || data.contactEmail || sampleFallback?.contactEmail || '',
+        contactPhone: localOverride?.contactPhone || data.contactPhone || sampleFallback?.contactPhone || '',
+        address: localOverride?.address || data.address || sampleFallback?.address || '',
+        ranking: localOverride?.ranking || data.ranking || sampleFallback?.ranking || '',
+        facilities: (Array.isArray(data.facilities) && data.facilities.length > 0) ? data.facilities : (sampleFallback?.facilities || []),
         featured: effectiveFeatured,
         createdBy: data.createdBy || 'ForenClue Admin',
         createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString(),
-        updatedAt: data.updatedAt ? (data.updatedAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.updatedAt) : new Date().toISOString()
+        updatedAt: data.updatedAt ? (data.updatedAt.seconds ? new Date(data.updatedAt.seconds * 1000).toISOString() : data.updatedAt) : new Date().toISOString()
       });
     });
 
@@ -8735,8 +8864,10 @@ export async function fetchColleges(): Promise<College[]> {
       ) {
         seenIds.add(sampleCanonical);
         seenIds.add(sampleIdLower);
-        fetched.push(sample);
-        missingFromFirestore.push(sample);
+        const ov = localOverrides[sampleCanonical] || localOverrides[sampleIdLower];
+        const mergedSample = ov ? { ...sample, ...ov, id: sampleCanonical } : sample;
+        fetched.push(mergedSample);
+        missingFromFirestore.push(mergedSample);
       }
     }
 
@@ -8773,10 +8904,21 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
   if (!cleanId) return null;
   const cleanLower = cleanId.toLowerCase();
   const resolvedSlug = SLUG_ALIASES[cleanLower] || cleanLower;
+  const localOverrides = getLocalAdminOverrides();
+  const localOv = localOverrides[resolvedSlug] || localOverrides[cleanLower];
 
   if (cachedColleges && cachedColleges.length > 0) {
     const fromCache = matchCollegeBySlug(cachedColleges, resolvedSlug);
-    if (fromCache) return fromCache;
+    if (fromCache) {
+      return localOv
+        ? {
+            ...fromCache,
+            ...localOv,
+            logo: localOv.logo ? normalizeCollegeImageUrl(localOv.logo) : fromCache.logo,
+            bannerImage: localOv.bannerImage ? normalizeCollegeImageUrl(localOv.bannerImage) : fromCache.bannerImage,
+          }
+        : fromCache;
+    }
   }
 
   let deletedSet = getLocalDeletedSet();
@@ -8791,38 +8933,44 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
       if (data.isDeleted === true || data.status === 'deleted') {
         return null;
       }
-      const sampleFallback = SAMPLE_COLLEGES.find(s => s.id.toLowerCase() === docSnap.id.toLowerCase());
-      const useSampleRruAssets =
-        docSnap.id.toLowerCase().startsWith('rru-') &&
-        sampleFallback &&
-        (data.logo !== sampleFallback.logo || data.bannerImage !== sampleFallback.bannerImage);
+      const sampleFallback = SAMPLE_COLLEGES.find(s => s.id.toLowerCase() === docSnap.id.toLowerCase() || s.id.toLowerCase() === resolvedSlug);
+      const isAdminCustomized = Boolean(data.adminCustomized || localOv);
+      const resolvedLogo = localOv?.logo
+        ? normalizeCollegeImageUrl(localOv.logo)
+        : resolveCollegeAsset(data.logo, sampleFallback?.logo, isAdminCustomized);
+      const resolvedBanner = localOv?.bannerImage
+        ? normalizeCollegeImageUrl(localOv.bannerImage)
+        : resolveCollegeAsset(data.bannerImage, sampleFallback?.bannerImage, isAdminCustomized);
+
       return {
         id: docSnap.id,
-        name: data.name || sampleFallback?.name || '',
-        shortName: data.shortName || sampleFallback?.shortName || '',
-        country: data.country || sampleFallback?.country || 'India',
-        state: data.state || sampleFallback?.state || '',
-        city: data.city || sampleFallback?.city || '',
-        type: data.type || sampleFallback?.type || 'Government',
-        website: (useSampleRruAssets && sampleFallback) ? sampleFallback.website : (data.website || sampleFallback?.website || ''),
-        logo: sampleFallback?.logo || data.logo || '',
-        bannerImage: sampleFallback?.bannerImage || data.bannerImage || '',
-        description: data.description || sampleFallback?.description || '',
+        name: localOv?.name || data.name || sampleFallback?.name || '',
+        shortName: localOv?.shortName || data.shortName || sampleFallback?.shortName || '',
+        country: localOv?.country || data.country || sampleFallback?.country || 'India',
+        state: localOv?.state || data.state || sampleFallback?.state || '',
+        city: localOv?.city || data.city || sampleFallback?.city || '',
+        type: localOv?.type || data.type || sampleFallback?.type || 'Government',
+        website: localOv?.website || data.website || sampleFallback?.website || '',
+        logo: resolvedLogo,
+        bannerImage: resolvedBanner,
+        description: localOv?.description || data.description || sampleFallback?.description || '',
         coursesOffered: (Array.isArray(data.coursesOffered) && data.coursesOffered.length > 0) ? data.coursesOffered : (sampleFallback?.coursesOffered || []),
-        feesRange: data.feesRange || sampleFallback?.feesRange || '',
-        admissionProcess: data.admissionProcess || sampleFallback?.admissionProcess || '',
-        accreditation: data.accreditation || sampleFallback?.accreditation || '',
-        contactEmail: data.contactEmail || sampleFallback?.contactEmail || '',
-        contactPhone: data.contactPhone || sampleFallback?.contactPhone || '',
-        address: data.address || sampleFallback?.address || '',
-        ranking: data.ranking || sampleFallback?.ranking || '',
+        feesRange: localOv?.feesRange || data.feesRange || sampleFallback?.feesRange || '',
+        admissionProcess: localOv?.admissionProcess || data.admissionProcess || sampleFallback?.admissionProcess || '',
+        accreditation: localOv?.accreditation || data.accreditation || sampleFallback?.accreditation || '',
+        contactEmail: localOv?.contactEmail || data.contactEmail || sampleFallback?.contactEmail || '',
+        contactPhone: localOv?.contactPhone || data.contactPhone || sampleFallback?.contactPhone || '',
+        address: localOv?.address || data.address || sampleFallback?.address || '',
+        ranking: localOv?.ranking || data.ranking || sampleFallback?.ranking || '',
         facilities: (Array.isArray(data.facilities) && data.facilities.length > 0) ? data.facilities : (sampleFallback?.facilities || []),
-        featured: isEligibleFeaturedCampus({
-          id: docSnap.id,
-          name: data.name || sampleFallback?.name || '',
-          type: data.type || sampleFallback?.type || 'Government',
-          country: data.country || sampleFallback?.country || 'India',
-        }),
+        featured: isAdminCustomized && typeof data.featured === 'boolean'
+          ? data.featured
+          : isEligibleFeaturedCampus({
+              id: docSnap.id,
+              name: data.name || sampleFallback?.name || '',
+              type: data.type || sampleFallback?.type || 'Government',
+              country: data.country || sampleFallback?.country || 'India',
+            }),
         createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString()
       };
     }
@@ -8834,33 +8982,43 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
         const data = d.data();
         if (data.isDeleted === true || data.status === 'deleted') return null;
         const sampleFallback = SAMPLE_COLLEGES.find(s => s.id.toLowerCase() === d.id.toLowerCase() || s.id.toLowerCase() === resolvedSlug);
+        const isAdminCustomized = Boolean(data.adminCustomized || localOv);
+        const resolvedLogo = localOv?.logo
+          ? normalizeCollegeImageUrl(localOv.logo)
+          : resolveCollegeAsset(data.logo, sampleFallback?.logo, isAdminCustomized);
+        const resolvedBanner = localOv?.bannerImage
+          ? normalizeCollegeImageUrl(localOv.bannerImage)
+          : resolveCollegeAsset(data.bannerImage, sampleFallback?.bannerImage, isAdminCustomized);
+
         return {
           id: d.id,
-          name: data.name || sampleFallback?.name || '',
-          shortName: data.shortName || sampleFallback?.shortName || '',
-          country: data.country || sampleFallback?.country || 'India',
-          state: data.state || sampleFallback?.state || '',
-          city: data.city || sampleFallback?.city || '',
-          type: data.type || sampleFallback?.type || 'Government',
-          website: data.website || sampleFallback?.website || '',
-          logo: sampleFallback?.logo || data.logo || '',
-          bannerImage: sampleFallback?.bannerImage || data.bannerImage || '',
-          description: data.description || sampleFallback?.description || '',
+          name: localOv?.name || data.name || sampleFallback?.name || '',
+          shortName: localOv?.shortName || data.shortName || sampleFallback?.shortName || '',
+          country: localOv?.country || data.country || sampleFallback?.country || 'India',
+          state: localOv?.state || data.state || sampleFallback?.state || '',
+          city: localOv?.city || data.city || sampleFallback?.city || '',
+          type: localOv?.type || data.type || sampleFallback?.type || 'Government',
+          website: localOv?.website || data.website || sampleFallback?.website || '',
+          logo: resolvedLogo,
+          bannerImage: resolvedBanner,
+          description: localOv?.description || data.description || sampleFallback?.description || '',
           coursesOffered: Array.isArray(data.coursesOffered) ? data.coursesOffered : (sampleFallback?.coursesOffered || []),
-          feesRange: data.feesRange || sampleFallback?.feesRange || '',
-          admissionProcess: data.admissionProcess || sampleFallback?.admissionProcess || '',
-          accreditation: data.accreditation || sampleFallback?.accreditation || '',
-          contactEmail: data.contactEmail || sampleFallback?.contactEmail || '',
-          contactPhone: data.contactPhone || sampleFallback?.contactPhone || '',
-          address: data.address || sampleFallback?.address || '',
-          ranking: data.ranking || sampleFallback?.ranking || '',
+          feesRange: localOv?.feesRange || data.feesRange || sampleFallback?.feesRange || '',
+          admissionProcess: localOv?.admissionProcess || data.admissionProcess || sampleFallback?.admissionProcess || '',
+          accreditation: localOv?.accreditation || data.accreditation || sampleFallback?.accreditation || '',
+          contactEmail: localOv?.contactEmail || data.contactEmail || sampleFallback?.contactEmail || '',
+          contactPhone: localOv?.contactPhone || data.contactPhone || sampleFallback?.contactPhone || '',
+          address: localOv?.address || data.address || sampleFallback?.address || '',
+          ranking: localOv?.ranking || data.ranking || sampleFallback?.ranking || '',
           facilities: Array.isArray(data.facilities) ? data.facilities : (sampleFallback?.facilities || []),
-          featured: isEligibleFeaturedCampus({
-            id: d.id,
-            name: data.name || sampleFallback?.name || '',
-            type: data.type || sampleFallback?.type || 'Government',
-            country: data.country || sampleFallback?.country || 'India',
-          }),
+          featured: isAdminCustomized && typeof data.featured === 'boolean'
+            ? data.featured
+            : isEligibleFeaturedCampus({
+                id: d.id,
+                name: data.name || sampleFallback?.name || '',
+                type: data.type || sampleFallback?.type || 'Government',
+                country: data.country || sampleFallback?.country || 'India',
+              }),
           createdAt: data.createdAt ? (data.createdAt.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : data.createdAt) : new Date().toISOString()
         };
       }
@@ -8873,7 +9031,14 @@ export async function fetchCollegeById(id: string): Promise<College | null> {
   if (!deletedSet.has(cleanLower) && !deletedSet.has(resolvedSlug)) {
     const fromSample = matchCollegeBySlug(SAMPLE_COLLEGES, resolvedSlug);
     if (fromSample && !deletedSet.has(fromSample.id.toLowerCase())) {
-      return fromSample;
+      return localOv
+        ? {
+            ...fromSample,
+            ...localOv,
+            logo: localOv.logo ? normalizeCollegeImageUrl(localOv.logo) : fromSample.logo,
+            bannerImage: localOv.bannerImage ? normalizeCollegeImageUrl(localOv.bannerImage) : fromSample.bannerImage,
+          }
+        : fromSample;
     }
   }
   
@@ -8886,6 +9051,10 @@ export async function saveCollege(collegeData: Partial<College> & { id?: string 
   const targetId = collegeData.id || `college_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const cleanId = targetId.trim();
   const lowerId = cleanId.toLowerCase();
+  const canonicalId = isUpdate ? (SLUG_ALIASES[lowerId] || cleanId) : cleanId;
+
+  const cleanLogo = normalizeCollegeImageUrl(collegeData.logo);
+  const cleanBannerImage = normalizeCollegeImageUrl(collegeData.bannerImage);
 
   const payload = {
     name: collegeData.name || 'Untitled College',
@@ -8895,8 +9064,8 @@ export async function saveCollege(collegeData: Partial<College> & { id?: string 
     city: collegeData.city || '',
     type: collegeData.type || 'Government',
     website: collegeData.website || '',
-    logo: collegeData.logo || '',
-    bannerImage: collegeData.bannerImage || '',
+    logo: cleanLogo,
+    bannerImage: cleanBannerImage,
     description: collegeData.description || '',
     coursesOffered: collegeData.coursesOffered || [],
     feesRange: collegeData.feesRange || '',
@@ -8908,31 +9077,45 @@ export async function saveCollege(collegeData: Partial<College> & { id?: string 
     ranking: collegeData.ranking || '',
     facilities: collegeData.facilities || [],
     featured: !!collegeData.featured,
+    adminCustomized: true,
     isDeleted: false,
     status: 'active',
     updatedAt: new Date().toISOString()
   };
 
+  // Immediately persist in localStorage so UI updates in 0ms across tabs/views
+  saveLocalAdminOverride(canonicalId, payload);
+  if (cleanId !== canonicalId) {
+    saveLocalAdminOverride(cleanId, payload);
+  }
+
   try {
-    const docRef = doc(db, COLLEGES_COLLECTION, cleanId);
+    const docRef = doc(db, COLLEGES_COLLECTION, canonicalId);
     if (!isUpdate) {
       (payload as any).createdAt = new Date().toISOString();
     }
     await setDoc(docRef, payload, { merge: true });
+
+    // If an alias doc ID was passed, also sync that doc so there is no stale conflict
+    if (cleanId !== canonicalId) {
+      await setDoc(doc(db, COLLEGES_COLLECTION, cleanId), payload, { merge: true }).catch(() => {});
+    }
 
     // Clean up any deleted status in localStorage
     try {
       const local = localStorage.getItem(DELETED_COLLEGES_KEY);
       if (local) {
         const arr = JSON.parse(local);
-        const filtered = (arr || []).filter((s: string) => s.toLowerCase() !== lowerId && s !== cleanId);
+        const filtered = (arr || []).filter(
+          (s: string) => s.toLowerCase() !== lowerId && s.toLowerCase() !== canonicalId.toLowerCase() && s !== cleanId
+        );
         localStorage.setItem(DELETED_COLLEGES_KEY, JSON.stringify(filtered));
       }
     } catch (_) {}
 
-    return cleanId;
+    return canonicalId;
   } catch (error) {
-    handleFirestoreError(error, isUpdate ? OperationType.UPDATE : OperationType.WRITE, `${COLLEGES_COLLECTION}/${cleanId}`);
+    handleFirestoreError(error, isUpdate ? OperationType.UPDATE : OperationType.WRITE, `${COLLEGES_COLLECTION}/${canonicalId}`);
     throw error;
   }
 }
