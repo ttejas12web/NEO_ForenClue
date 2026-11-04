@@ -20,7 +20,6 @@ import {
   matchCollegeBySlug,
   isEligibleFeaturedCampus,
   getFeaturedPriorityRank,
-  normalizeCollegeImageUrl,
 } from '@/services/collegeService';
 import { CollegeComparisonSystem, MAX_COMPARE_COLLEGES } from '@/components/colleges/CollegeComparisonModal';
 import { BookmarkedCollegesDrawer } from '@/components/colleges/BookmarkedCollegesDrawer';
@@ -322,49 +321,26 @@ function buildCollegeSearchIndex(college: College): string {
   return `${normalizeSearchText(rawParts)} ${normalizeAbbrevText(rawParts)}`;
 }
 
-// Build fast edge-cached WebP URL for external university images while keeping local compressed assets direct
-function buildOptimizedCollegeImageUrl(rawUrl: string, width: number, isLogo = false): { primary: string; direct: string } {
-  const normalized = normalizeCollegeImageUrl(rawUrl);
-  if (!normalized) return { primary: '', direct: '' };
+const preloadedImageUrls = new Set<string>();
 
-  // Local public assets, data URIs, blobs, or SVGs are already fast and served directly
-  if (
-    normalized.startsWith('/') ||
-    normalized.startsWith('data:') ||
-    normalized.startsWith('blob:') ||
-    /\.svg(\?|$)/i.test(normalized)
-  ) {
-    return { primary: normalized, direct: normalized };
+function preloadCollegeAssets(college: College) {
+  if (typeof window === 'undefined') return;
+  const urls = [college.logo?.trim(), college.bannerImage?.trim()].filter(Boolean) as string[];
+  for (const url of urls) {
+    if (!preloadedImageUrls.has(url)) {
+      preloadedImageUrls.add(url);
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = url;
+    }
   }
-
-  // Unsplash native parameters
-  if (normalized.includes('images.unsplash.com')) {
-    const unsplashOptimized = normalized
-      .replace(/w=\d+/, `w=${width}`)
-      .replace(/q=\d+/, 'q=75');
-    return { primary: unsplashOptimized, direct: unsplashOptimized };
-  }
-
-  if (normalized.includes('wsrv.nl')) {
-    return { primary: normalized, direct: normalized };
-  }
-
-  // External http/https university or image host URL: accelerate & resize via wsrv.nl global WebP CDN,
-  // with automatic fallback to direct normalized URL if the origin server blocks proxy requests
-  if (/^https?:\/\//i.test(normalized)) {
-    const cdnUrl = `https://wsrv.nl/?url=${encodeURIComponent(normalized)}&w=${width}&q=${isLogo ? 82 : 78}&output=webp`;
-    return { primary: cdnUrl, direct: normalized };
-  }
-
-  return { primary: normalized, direct: normalized };
 }
 
-// Resilient Banner Image with fast WebP optimization, multi-stage fallback, and instant cache detection
+// Direct, zero-buffering Banner Image that preserves exact college image links and renders immediately at full opacity
 function CollegeBannerImage({
   college,
   className,
   priority = false,
-  heroSize = false,
 }: {
   college: College;
   className?: string;
@@ -372,70 +348,32 @@ function CollegeBannerImage({
   heroSize?: boolean;
 }) {
   const fallbackSrc = useMemo(() => getFallbackBannerForCollege(college.id), [college.id]);
+  const rawSrc = college.bannerImage?.trim() || '';
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
 
-  const { primarySrc, directSrc } = useMemo(() => {
-    const raw = college.bannerImage?.trim() || '';
-    if (!raw) {
-      return { primarySrc: fallbackSrc, directSrc: fallbackSrc };
-    }
-    const { primary, direct } = buildOptimizedCollegeImageUrl(raw, heroSize ? 1100 : 640, false);
-    return {
-      primarySrc: primary || fallbackSrc,
-      directSrc: direct || fallbackSrc,
-    };
-  }, [college.bannerImage, fallbackSrc, heroSize]);
-
-  const [imgSrc, setImgSrc] = useState<string>(primarySrc);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    setImgSrc(primarySrc);
-    setIsLoaded(false);
-  }, [primarySrc]);
-
-  const handleImgRef = useCallback((node: HTMLImageElement | null) => {
-    if (node && node.complete && node.naturalWidth > 0) {
-      setIsLoaded(true);
-    }
-  }, []);
+  const activeSrc = rawSrc && failedUrl !== rawSrc ? rawSrc : fallbackSrc;
 
   return (
     <div className="relative w-full h-full overflow-hidden bg-slate-900">
-      {!isLoaded && (
-        <div
-          className="absolute inset-0 skeleton-shimmer bg-slate-900/90"
-          aria-hidden="true"
-        />
-      )}
       <img
-        ref={handleImgRef}
-        src={imgSrc}
+        key={activeSrc}
+        src={activeSrc}
         alt={`${college.name} campus`}
-        loading={priority ? 'eager' : 'lazy'}
+        loading="eager"
         fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
-        referrerPolicy="no-referrer"
-        onLoad={() => setIsLoaded(true)}
         onError={() => {
-          if (imgSrc === primarySrc && directSrc && directSrc !== primarySrc) {
-            setImgSrc(directSrc);
-          } else if (imgSrc !== fallbackSrc) {
-            setImgSrc(fallbackSrc);
-          } else {
-            setIsLoaded(true);
+          if (rawSrc && activeSrc === rawSrc) {
+            setFailedUrl(rawSrc);
           }
         }}
-        className={cn(
-          className,
-          'transition-opacity duration-200 ease-out',
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        )}
+        className={cn(className, 'block opacity-100')}
       />
     </div>
   );
 }
 
-// Resilient University Logo with fast WebP optimization, automatic monogram fallback, and instant cache detection
+// Direct, zero-buffering University Logo that preserves exact college logo links and renders immediately at full opacity
 function CollegeLogoBadge({
   college,
   size = 'md',
@@ -445,29 +383,9 @@ function CollegeLogoBadge({
   size?: 'sm' | 'md' | 'lg';
   priority?: boolean;
 }) {
-  const { primarySrc, directSrc } = useMemo(() => {
-    const raw = college.logo?.trim() || '';
-    if (!raw) return { primarySrc: '', directSrc: '' };
-    const { primary, direct } = buildOptimizedCollegeImageUrl(raw, size === 'lg' ? 220 : 128, true);
-    return { primarySrc: primary, directSrc: direct };
-  }, [college.logo, size]);
-
-  const [imgSrc, setImgSrc] = useState<string>(primarySrc);
-  const [hasError, setHasError] = useState(false);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const rawLogo = college.logo?.trim() || '';
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const initials = useMemo(() => getCollegeInitials(college), [college]);
-
-  useEffect(() => {
-    setImgSrc(primarySrc);
-    setHasError(false);
-    setIsLoaded(false);
-  }, [primarySrc, college.id]);
-
-  const handleImgRef = useCallback((node: HTMLImageElement | null) => {
-    if (node && node.complete && node.naturalWidth > 0) {
-      setIsLoaded(true);
-    }
-  }, []);
 
   const sizeClasses = {
     sm: 'w-11 h-11 rounded-xl text-xs',
@@ -475,7 +393,9 @@ function CollegeLogoBadge({
     lg: 'w-24 h-24 sm:w-28 sm:h-28 rounded-2xl text-xl',
   }[size];
 
-  if (!primarySrc || hasError) {
+  const hasError = !rawLogo || failedUrl === rawLogo;
+
+  if (hasError) {
     return (
       <div
         className={cn(
@@ -497,29 +417,15 @@ function CollegeLogoBadge({
         'relative bg-white dark:bg-surface border-2 border-warning/30 p-1.5 shadow-lg shrink-0 overflow-hidden flex items-center justify-center'
       )}
     >
-      {!isLoaded && (
-        <div className="absolute inset-0 skeleton-shimmer" aria-hidden="true" />
-      )}
       <img
-        ref={handleImgRef}
-        src={imgSrc}
+        key={rawLogo}
+        src={rawLogo}
         alt={`${college.shortName || college.name} logo`}
-        loading={priority ? 'eager' : 'lazy'}
+        loading="eager"
         fetchPriority={priority ? 'high' : 'auto'}
         decoding="async"
-        referrerPolicy="no-referrer"
-        onLoad={() => setIsLoaded(true)}
-        onError={() => {
-          if (imgSrc === primarySrc && directSrc && directSrc !== primarySrc) {
-            setImgSrc(directSrc);
-          } else {
-            setHasError(true);
-          }
-        }}
-        className={cn(
-          'w-full h-full object-contain transition-opacity duration-200 ease-out',
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        )}
+        onError={() => setFailedUrl(rawLogo)}
+        className="w-full h-full object-contain block opacity-100"
       />
     </div>
   );
@@ -4050,6 +3956,8 @@ export default function Colleges() {
                           ? 'border-warning/60 ring-1 ring-warning/40'
                           : 'border-black/5 dark:border-white/10'
                       )}
+                      onMouseEnter={() => preloadCollegeAssets(college)}
+                      onFocus={() => preloadCollegeAssets(college)}
                       onClick={() => handleOpenDetails(college)}
                     >
                       {/* Banner / Cover Header */}

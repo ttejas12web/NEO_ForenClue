@@ -8375,25 +8375,7 @@ const ADMIN_COLLEGE_OVERRIDES_KEY = 'forenclue_admin_college_overrides_v1';
 
 export function normalizeCollegeImageUrl(rawUrl?: string): string {
   if (!rawUrl || typeof rawUrl !== 'string') return '';
-  const trimmed = rawUrl.trim();
-  if (!trimmed) return '';
-
-  // Convert Google Drive file sharing links to fast direct image CDN links
-  const driveFileMatch = trimmed.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
-  if (driveFileMatch?.[1]) {
-    return `https://lh3.googleusercontent.com/d/${driveFileMatch[1]}=w1200`;
-  }
-  const driveIdMatch = trimmed.match(/drive\.google\.com\/(?:open|uc)\?.*?id=([a-zA-Z0-9_-]+)/);
-  if (driveIdMatch?.[1]) {
-    return `https://lh3.googleusercontent.com/d/${driveIdMatch[1]}=w1200`;
-  }
-
-  // Convert Dropbox preview links to direct raw stream links
-  if (trimmed.includes('dropbox.com/') && trimmed.includes('dl=0')) {
-    return trimmed.replace('dl=0', 'raw=1');
-  }
-
-  return trimmed;
+  return rawUrl.trim();
 }
 
 const LEGACY_PLACEHOLDER_PATTERNS = [
@@ -8401,21 +8383,11 @@ const LEGACY_PLACEHOLDER_PATTERNS = [
   'photo-1541339907198-e08756dedf3f',
   'photo-1523050854058-8df90110c9f1',
   'photo-1498243691581-b145c3f54a5a',
-  'photo-1581091226825-a6a2a5aee158',
-  'photo-1532094349884-543bc11b234d',
-  'photo-1592280771190-3e2e4d571952',
-  'photo-1576495199011-eb94736d05d6',
-  'photo-1564981797816-1043664bf78d',
-  'upload.wikimedia.org',
-  'images.shiksha.com',
-  'image-static.collegedunia.com',
-  'collegebatch.com',
 ];
 
 function isLegacyPlaceholderOrBrokenAsset(url?: string, sampleUrl?: string): boolean {
   if (!url || typeof url !== 'string' || !url.trim()) return true;
   const clean = url.trim();
-  // If sampleUrl is identical to url, it's not outdated
   if (sampleUrl && clean === sampleUrl.trim()) return false;
   return LEGACY_PLACEHOLDER_PATTERNS.some(pattern => clean.includes(pattern));
 }
