@@ -127,6 +127,13 @@ async function generateSitemap() {
       { path: '/simulations/microscope', priority: '0.8', changefreq: 'weekly' },
       { path: '/simulations/spectrophotometer', priority: '0.8', changefreq: 'weekly' },
       { path: '/quizzes', priority: '0.8', changefreq: 'daily' },
+      { path: '/colleges', priority: '0.95', changefreq: 'daily' },
+      { path: '/colleges?q=Delhi', priority: '0.9', changefreq: 'weekly' },
+      { path: '/colleges?country=India&amp;type=Private&amp;degree=Master', priority: '0.9', changefreq: 'weekly' },
+      { path: '/colleges?degree=Master&amp;fee=under-50k', priority: '0.9', changefreq: 'weekly' },
+      { path: '/colleges?country=India&amp;type=Government', priority: '0.9', changefreq: 'weekly' },
+      { path: '/colleges?degree=Bachelor&amp;fee=under-50k', priority: '0.85', changefreq: 'weekly' },
+      { path: '/colleges?q=NFSU+Campuses', priority: '0.9', changefreq: 'weekly' },
     ];
 
     staticPages.forEach((page) => {
@@ -297,6 +304,24 @@ async function generateSitemap() {
       console.warn("Could not load dynamic quizzes for sitemap:", err.message || err);
     }
 
+    // 5. Dynamic Colleges
+    let collegesFound = 0;
+    try {
+      const querySnapshot = await getDocs(collection(db, "colleges"));
+      querySnapshot.forEach((doc) => {
+        collegesFound++;
+        xml += `  <url>\n`;
+        xml += `    <loc>${baseUrl}/colleges/${doc.id}</loc>\n`;
+        xml += `    <lastmod>${currentIsoDate}</lastmod>\n`;
+        xml += `    <changefreq>weekly</changefreq>\n`;
+        xml += `    <priority>0.85</priority>\n`;
+        xml += `  </url>\n`;
+      });
+      console.log(`- Loaded ${collegesFound} dynamic college pages.`);
+    } catch (err) {
+      console.warn("Could not load dynamic colleges for sitemap:", err.message || err);
+    }
+
     xml += `</urlset>`;
 
     const publicDir = path.resolve(__dirname, '../public');
@@ -305,7 +330,7 @@ async function generateSitemap() {
     }
 
     fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), xml);
-    console.log(`✅ successfully generated sitemap.xml with ${staticPages.length} static pages and ${casesFound + coursesFound + ebooksFound + quizzesFound} dynamic pages`);
+    console.log(`✅ successfully generated sitemap.xml with ${staticPages.length} static pages and ${casesFound + coursesFound + ebooksFound + quizzesFound + collegesFound} dynamic pages`);
 
     process.exit(0);
 

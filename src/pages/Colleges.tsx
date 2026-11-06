@@ -24,6 +24,11 @@ import {
 import { CollegeComparisonSystem, MAX_COMPARE_COLLEGES } from '@/components/colleges/CollegeComparisonModal';
 import { BookmarkedCollegesDrawer } from '@/components/colleges/BookmarkedCollegesDrawer';
 import { ForenClueCollegesAI } from '@/components/colleges/ForenClueCollegesAI';
+import {
+  CollegesSEOAuthorityHub,
+  buildDynamicCollegesSEO,
+  ActiveCollegeFilters,
+} from '@/components/colleges/CollegesSEOAuthorityHub';
 import { getCampusAmbassadorsForCollege } from '@/pages/CampusAmbassadors';
 import { cn } from '@/lib/utils';
 
@@ -289,9 +294,28 @@ function buildCollegeSearchIndex(college: College): string {
   }
 
   const matchedAmbassadors = getCampusAmbassadorsForCollege(college);
+  const numericMinFee = parseNumericMinFee(college);
+  const feeTierKeywords: string[] = [];
+  if (numericMinFee <= 50000) {
+    feeTierKeywords.push('under 50000 under 50 000 under 50k below 50000 low fee affordable budget');
+  }
+  if (numericMinFee <= 100000) {
+    feeTierKeywords.push('under 100000 under 100k under 1 lakh');
+  }
+  const hayLoc = `${college.city || ''} ${college.state || ''} ${college.address || ''}`.toLowerCase();
+  if (
+    hayLoc.includes('delhi') ||
+    hayLoc.includes('noida') ||
+    hayLoc.includes('gurugram') ||
+    hayLoc.includes('gurgaon') ||
+    hayLoc.includes('rohini') ||
+    hayLoc.includes('faridabad') ||
+    hayLoc.includes('ghaziabad')
+  ) {
+    feeTierKeywords.push('delhi ncr new delhi');
+  }
 
-  // Only index the college's actual identity, location, accreditation, and offered course titles
-  // (Excluding prerequisite eligibility, generic syllabus sub-bullets, and prose descriptions to prevent false positives)
+  // Only index the college's actual identity, location, accreditation, fee tier, and offered course titles
   const rawParts = [
     college.id,
     college.name,
@@ -303,6 +327,8 @@ function buildCollegeSearchIndex(college: College): string {
     getDisplayInstitutionType(college),
     college.accreditation,
     college.address,
+    'college colleges university universities institute institutes campus campuses top best',
+    ...feeTierKeywords,
     ...degreeAliases,
     ...matchedAmbassadors.flatMap(amb => [
       amb.name,
@@ -319,6 +345,68 @@ function buildCollegeSearchIndex(college: College): string {
     .join(' ');
 
   return `${normalizeSearchText(rawParts)} ${normalizeAbbrevText(rawParts)}`;
+}
+
+const NATURAL_SEARCH_STOPWORDS = new Set([
+  'in',
+  'at',
+  'of',
+  'for',
+  'the',
+  'a',
+  'an',
+  'with',
+  'and',
+  'or',
+  'to',
+  'by',
+  'from',
+  'near',
+  'me',
+  'top',
+  'best',
+  'list',
+  'good',
+  'premier',
+  'ranked',
+  'ranking',
+  'college',
+  'colleges',
+  'university',
+  'universities',
+  'institute',
+  'institutes',
+  'campus',
+  'campuses',
+  'fee',
+  'fees',
+  'structure',
+  'course',
+  'courses',
+  'admission',
+  'admissions',
+]);
+
+function extractSearchableQueryTokens(rawQuery: string): {
+  tokens: string[];
+  requiresUnder50k: boolean;
+} {
+  const lower = rawQuery.toLowerCase();
+  const requiresUnder50k =
+    /\b(?:under|below|less\s+than)\s*(?:rs\.?|inr|₹)?\s*(?:50\s*,?\s*000|50k)\b/i.test(lower) ||
+    /\b(?:50\s*,?\s*000|50k)\b/i.test(lower);
+
+  const cleaned = lower
+    .replace(/\b(?:under|below|less\s+than)\s*(?:rs\.?|inr|₹)?\s*(?:50\s*,?\s*000|50k)\b/gi, ' ')
+    .replace(/\b(?:50\s*,?\s*000|50k)\b/gi, ' ');
+
+  const allTokens = normalizeAbbrevText(cleaned).split(' ').filter(Boolean);
+  const filteredTokens = allTokens.filter((t) => !NATURAL_SEARCH_STOPWORDS.has(t));
+
+  return {
+    tokens: filteredTokens.length > 0 ? filteredTokens : allTokens,
+    requiresUnder50k,
+  };
 }
 
 const preloadedImageUrls = new Set<string>();
@@ -1240,19 +1328,26 @@ export default function Colleges() {
       return colleges.filter(c => matchedQuick.matchesCollege(c)).slice(0, 5);
     }
     const norm = normalizeSearchText(q);
-    const tokens = normalizeAbbrevText(q).split(' ').filter(Boolean);
-    if (tokens.length === 0) return [];
+    const { tokens, requiresUnder50k } = extractSearchableQueryTokens(q);
+    if (tokens.length === 0 && !requiresUnder50k) return [];
 
     const matches: College[] = [];
     for (const c of colleges) {
+      if (requiresUnder50k) {
+        const minFee = collegeMetaMap.get(c.id)?.minFee ?? parseNumericMinFee(c);
+        if (minFee > 50000) continue;
+      }
       const nameNorm = normalizeSearchText(`${c.name} ${c.shortName || ''} ${c.city} ${c.state}`);
-      if (nameNorm.includes(norm) || tokens.every(t => (collegeSearchIndexMap.get(c.id) || '').includes(t))) {
+      if (
+        nameNorm.includes(norm) ||
+        tokens.every(t => (collegeSearchIndexMap.get(c.id) || '').includes(t))
+      ) {
         matches.push(c);
         if (matches.length >= 5) break;
       }
     }
     return matches;
-  }, [searchInput, colleges, collegeSearchIndexMap]);
+  }, [searchInput, colleges, collegeSearchIndexMap, collegeMetaMap]);
 
   // Derive unique Filter Options
   const countries = useMemo(() => {
@@ -1299,10 +1394,16 @@ export default function Colleges() {
   const filteredColleges = useMemo(() => {
     const rawQuery = searchQuery.trim();
     const normQuery = normalizeSearchText(rawQuery);
-    const abbrevQuery = normalizeAbbrevText(rawQuery);
-    const queryTokens = abbrevQuery ? abbrevQuery.split(' ').filter(Boolean) : [];
+    const { tokens: queryTokens, requiresUnder50k } = rawQuery
+      ? extractSearchableQueryTokens(rawQuery)
+      : { tokens: [], requiresUnder50k: false };
 
     const list = colleges.filter(college => {
+      if (requiresUnder50k) {
+        const minFee = collegeMetaMap.get(college.id)?.minFee ?? parseNumericMinFee(college);
+        if (minFee > 50000) return false;
+      }
+
       if (activeQuickTopic) {
         if (!activeQuickTopic.matchesCollege(college)) return false;
       } else if (queryTokens.length > 0) {
@@ -2381,22 +2482,39 @@ export default function Colleges() {
     );
   }
 
-  // Structured data for the directory listing page
-  const directorySchema = [
-    {
-      '@type': 'ItemList',
-      '@id': 'https://forenclue.in/colleges#directory-list',
-      'name': 'Forensic Science Colleges & Universities Directory',
-      'description': 'Verified directory of top universities and government institutes offering B.Sc., M.Sc., PG Diploma, and Ph.D. programs in Forensic Science and Cyber Forensics.',
-      'numberOfItems': filteredColleges.length,
-      'itemListElement': filteredColleges.slice(0, 25).map((c, idx) => ({
-        '@type': 'ListItem',
-        'position': idx + 1,
-        'name': c.name,
-        'url': `https://forenclue.in/colleges/${c.id}`,
-      })),
-    },
-  ];
+  // Dynamic search-intent-aware SEO & Structured Data for /colleges
+  const activeSeoFilters: ActiveCollegeFilters = {
+    searchQuery,
+    selectedCountry,
+    selectedState,
+    selectedCity,
+    selectedType,
+    selectedDegree,
+    selectedFeeRange,
+    featuredOnly,
+  };
+
+  const dynamicCollegesSEO = buildDynamicCollegesSEO(
+    colleges,
+    filteredColleges,
+    activeSeoFilters,
+    parseNumericMinFee,
+    formatFee
+  );
+
+  const handleApplySeoPreset = (preset: Partial<ActiveCollegeFilters>) => {
+    if (preset.searchQuery !== undefined) {
+      setSearchInput(preset.searchQuery);
+      setSearchQuery(preset.searchQuery);
+    }
+    if (preset.selectedCountry !== undefined) setSelectedCountry(preset.selectedCountry);
+    if (preset.selectedState !== undefined) setSelectedState(preset.selectedState);
+    if (preset.selectedCity !== undefined) setSelectedCity(preset.selectedCity);
+    if (preset.selectedType !== undefined) setSelectedType(preset.selectedType);
+    if (preset.selectedDegree !== undefined) setSelectedDegree(preset.selectedDegree);
+    if (preset.selectedFeeRange !== undefined) setSelectedFeeRange(preset.selectedFeeRange);
+    if (preset.featuredOnly !== undefined) setFeaturedOnly(preset.featuredOnly);
+  };
 
   // Render Colleges Directory Page
   return (
@@ -2409,15 +2527,17 @@ export default function Colleges() {
       style={{ overflowAnchor: 'none' }}
     >
       <SEOManager 
-        fallbackTitle="Forensic Science Colleges & Universities Directory"
-        fallbackDescription="Explore top global and Indian universities, NFSU campuses, and government institutes offering accredited B.Sc., M.Sc., PG Diploma, and Ph.D. forensic science degree programs."
+        fallbackTitle={dynamicCollegesSEO.title}
+        fallbackDescription={dynamicCollegesSEO.description}
+        keywords={dynamicCollegesSEO.keywords}
         canonicalPath="/colleges"
         fallbackImage="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png"
         breadcrumbs={[
           { name: 'Home', path: '/' },
-          { name: 'Forensic Colleges', path: '/colleges' },
+          { name: 'Forensic Science Colleges Directory', path: '/colleges' },
         ]}
-        customSchema={directorySchema}
+        faqs={dynamicCollegesSEO.faqs}
+        customSchema={dynamicCollegesSEO.customSchema}
       />
 
       {/* Hero Banner Header */}
@@ -4259,6 +4379,18 @@ export default function Colleges() {
           </div>
         </div>
       </div>
+
+      {/* Semantic SEO Authority Hub, High-Intent Search Presets & Structured FAQ */}
+      <CollegesSEOAuthorityHub
+        colleges={colleges}
+        filteredColleges={filteredColleges}
+        activeFilters={activeSeoFilters}
+        parseNumericMinFee={parseNumericMinFee}
+        formatFee={formatFee}
+        getDisplayInstitutionType={getDisplayInstitutionType}
+        onApplyPreset={handleApplySeoPreset}
+        onSelectCollege={handleOpenDetails}
+      />
 
       {/* Mobile Filter Bottom-Sheet / Off-Canvas Drawer */}
       <AnimatePresence>

@@ -8299,6 +8299,67 @@ const RAW_SAMPLE_COLLEGES: College[] = [
       'Separate Boys & Girls Hostels with 24/7 Security, Hygienic Mess & Transport Fleet across Bengaluru'
     ],
     featured: false
+  },
+  {
+    id: 'assam-down-town-university-guwahati',
+    name: 'Assam down town University',
+    shortName: 'AdtU Guwahati',
+    city: 'Guwahati',
+    state: 'Assam',
+    country: 'India',
+    type: 'Private',
+    logo: 'https://adtu.in/assets/images/adtu_updated_logo.png',
+    bannerImage: 'https://adtu.in/ncc/assets/images/banner-image.jpg',
+    website: 'https://adtu.in',
+    description: 'Assam down town University (AdtU), located at Panikhaiti, Guwahati, Assam, is one of Northeast India\'s leading multidisciplinary private universities, established in 2010 by the down town Charity Trust under the Assam Private Universities Act, 2007 and accredited with NAAC Grade A+. Through its Faculty of Science and Faculty of Paramedical Sciences, AdtU offers industry-aligned B.Sc. and M.Sc. Forensic Science programs featuring specialized training in Crime Scene Investigation, Forensic Toxicology, Serology & DNA Profiling, Questioned Documents, Fingerprint Examination, and Cyber Forensics, backed by advanced analytical laboratories and clinical/medico-legal exposure via the 300+ bed down town Hospital.',
+    coursesOffered: [
+      {
+        name: 'B.Sc. in Forensic Science',
+        degreeLevel: 'Bachelor',
+        duration: '3 / 4 Years (NEP 2020)',
+        eligibility: '10+2 in Science stream (Physics, Chemistry, and Biology/Mathematics) with minimum 45% aggregate marks (5% relaxation for reserved categories) from a recognized board',
+        estimatedFees: '₹90,000 - ₹1,00,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Crime Scene Investigation, Reconstruction & Physical Evidence Handling',
+          'Forensic Chemistry, Analytical Toxicology & Narcotics Profiling',
+          'Forensic Biology, Serology & DNA Fingerprinting',
+          'Questioned Documents, Handwriting & Fingerprint Analysis (Dactyloscopy)',
+          'Digital & Cyber Forensics Fundamentals'
+        ]
+      },
+      {
+        name: 'M.Sc. in Forensic Science',
+        degreeLevel: 'Master',
+        duration: '2 Years',
+        eligibility: 'B.Sc. in Forensic Science or Bachelor\'s degree in a relevant Science discipline from a recognized university with minimum qualifying aggregate marks',
+        estimatedFees: '₹1,00,000 - ₹1,15,000 / year',
+        mode: 'Full-time',
+        specializations: [
+          'Advanced Forensic Toxicology & Instrumental Methods of Analysis',
+          'Forensic Serology, Molecular Biology & DNA Profiling',
+          'Forensic Ballistics, Explosives & Criminalistics',
+          'Questioned Document Examination, Cyber Forensics & Dissertation Research'
+        ]
+      }
+    ],
+    feesRange: '₹90,000 - ₹1,15,000 / year',
+    admissionProcess: 'AdtU Common Entrance Test (AdtU-CET) / Merit-based on qualifying examination scores followed by personal interaction and document verification',
+    accreditation: 'UGC Recognized | NAAC Grade \'A+\' Accredited | AICTE, PCI & INC Approved | AIU Member',
+    contactEmail: 'admission@adtu.in',
+    contactPhone: '+91 98641 37777 / +91 361 2330008',
+    address: 'Sankar Madhab Path, Gandhi Nagar, Panikhaiti, Guwahati, Assam 781026, India',
+    ranking: 'NAAC A+ Accredited Premier Multidisciplinary University in Northeast India',
+    facilities: [
+      'Dedicated Forensic Science, Criminalistics & Analytical Instrumentation Laboratories',
+      'Simulated Crime Scene Investigation (CSI) & Evidence Reconstruction Unit',
+      'Forensic Biology, Serology, Microbiology & Biochemistry Research Labs',
+      'Clinical & Medico-Legal Exposure via Promoters\' Multi-Specialty down town Hospital',
+      'Central Digital Library with E-Journals, Forensic Reference Texts & Research Databases',
+      '50+ Acre Lush Green Riverfront Campus overlooking the Brahmaputra with Smart Classrooms',
+      'Separate Boys & Girls Hostels, Sports Complex, Gymnasium & Guwahati City Bus Fleet'
+    ],
+    featured: true
   }
 ];
 
@@ -8638,6 +8699,10 @@ const SLUG_ALIASES: Record<string, string> = {
   'harsha-institute': 'harsha-institute-of-management-studies-bangalore',
   'harsha-institute-of-management-studies': 'harsha-institute-of-management-studies-bangalore',
   'hims-bangalore': 'harsha-institute-of-management-studies-bangalore',
+  'adtu': 'assam-down-town-university-guwahati',
+  'adtu-guwahati': 'assam-down-town-university-guwahati',
+  'assam-down-town-university': 'assam-down-town-university-guwahati',
+  'assam-downtown-university': 'assam-down-town-university-guwahati',
 };
 
 export function matchCollegeBySlug(collegesList: College[], rawSlug: string): College | undefined {

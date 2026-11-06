@@ -135,8 +135,9 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
     type: 'website',
   },
   '/colleges': {
-    title: 'Forensic Science Colleges | ForenClue',
-    description: 'Discover forensic science colleges, courses, admissions information, and academic pathways.',
+    title: 'Top Forensic Science Colleges in India (2026) – B.Sc & M.Sc Fees, Govt, Private & NFSU | ForenClue',
+    description:
+      'Compare 120+ verified B.Sc. & M.Sc. Forensic Science colleges in India (Delhi NCR, Mumbai, Bangalore, NFSU, Govt & Private). Check M.Sc. Forensic Science colleges under ₹50,000 fees, CUET-PG/NFAT eligibility & placements.',
     image: COLLEGES_OG_IMAGE,
     imageType: 'image/png',
     imageWidth: 1200,
@@ -144,8 +145,9 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
     type: 'website',
   },
   '/college': {
-    title: 'Forensic Science Colleges | ForenClue',
-    description: 'Discover forensic science colleges, courses, admissions information, and academic pathways.',
+    title: 'Top Forensic Science Colleges in India (2026) – B.Sc & M.Sc Fees, Govt, Private & NFSU | ForenClue',
+    description:
+      'Compare 120+ verified B.Sc. & M.Sc. Forensic Science colleges in India (Delhi NCR, Mumbai, Bangalore, NFSU, Govt & Private). Check M.Sc. Forensic Science colleges under ₹50,000 fees, CUET-PG/NFAT eligibility & placements.',
     image: COLLEGES_OG_IMAGE,
     imageType: 'image/png',
     imageWidth: 1200,
@@ -716,6 +718,46 @@ function baseMetadata(url: URL): SocialMetadata {
     }
   }
 
+  if (path === '/colleges' || path === '/college') {
+    const q = (url.searchParams.get('q') || '').toLowerCase();
+    const state = (url.searchParams.get('state') || '').toLowerCase();
+    const city = (url.searchParams.get('city') || '').toLowerCase();
+    const type = (url.searchParams.get('type') || '').toLowerCase();
+    const degree = (url.searchParams.get('degree') || '').toLowerCase();
+    const fee = (url.searchParams.get('fee') || '').toLowerCase();
+
+    if (state.includes('delhi') || city.includes('delhi') || q.includes('delhi')) {
+      return {
+        ...defaults,
+        title: 'Top Forensic Science Colleges in Delhi NCR (2026) – NFSU, Govt & Private Fees | ForenClue',
+        description:
+          'Explore top forensic science colleges in Delhi & NCR including NFSU Delhi Campus (LNJN NICFS Rohini), Delhi University, Amity Noida, Galgotias & SGT University. Compare B.Sc. & M.Sc. fees & admission.',
+        canonicalUrl: canonicalFor(url),
+        dynamic: false,
+      };
+    }
+    if ((type === 'private' && degree === 'master') || (q.includes('private') && q.includes('msc'))) {
+      return {
+        ...defaults,
+        title: 'Best Private M.Sc. Forensic Science Colleges in India (2026) – Fees, NAAC & Placements | ForenClue',
+        description:
+          'Discover the best private M.Sc. Forensic Science colleges in India including Jain University Bangalore, Amity University, Chandigarh University, LPU, Kristu Jayanti & Galgotias.',
+        canonicalUrl: canonicalFor(url),
+        dynamic: false,
+      };
+    }
+    if (fee === 'under-50k' || q.includes('50,000') || q.includes('50000') || q.includes('50k')) {
+      return {
+        ...defaults,
+        title: 'Best M.Sc. Forensic Science Colleges Under ₹50,000 in India – Low Fee Govt Universities | ForenClue',
+        description:
+          'Complete list of the best M.Sc. Forensic Science colleges under ₹50,000 annual fees in India including IFSC Mumbai, GIFS Nagpur, Osmania University, Punjabi University & Pondicherry University.',
+        canonicalUrl: canonicalFor(url),
+        dynamic: false,
+      };
+    }
+  }
+
   if (!ROUTE_DEFAULTS[path] && path !== '/') {
     const lastSegment = path.split('/').filter(Boolean).at(-1);
     if (lastSegment) {
@@ -901,6 +943,7 @@ const PUBLIC_ROUTE_CONTEXT: Record<string, string> = {
   '/ebooks': 'The digital eLibrary organizes forensic science reference books, academic notes, research papers, and learning manuals by subject. Browse the catalog, open individual resources, and read the copyright and access notice for information about permitted use and reporting concerns.',
   '/quizzes': 'Practice forensic science concepts through published quizzes and completed weekly challenges. Available assessments cover evidence handling, crime-scene procedure, laboratory methods, and related disciplines, with clear empty states when no live challenge is running.',
   '/services': 'ForenClue provides educational workshops and webinars, ForenClue-issued completion credentials, and academic collaboration programs. Service pages explain the format, audience, scope, and next step before a visitor contacts the team.',
+  '/colleges': 'Your City, Your College — ForenClue Verified Forensic Science Colleges & Universities Directory in India. Compare 120+ accredited institutions for B.Sc. Forensic Science, M.Sc. Forensic Science, Cyber & Digital Forensics, PG Diploma, and Ph.D. programs. Top Forensic Science Colleges in Delhi NCR: National Forensic Sciences University (NFSU) Delhi Campus (LNJN NICFS, Rohini), University of Delhi, Amity University Noida, Galgotias University Greater Noida, Sharda University, and SGT University Gurugram. Best Private M.Sc. Forensic Science Colleges in India: Jain (Deemed-to-be University) Bangalore, Amity University, Chandigarh University, Lovely Professional University (LPU), Kristu Jayanti College Bengaluru, Galgotias University, and Parul University. Best M.Sc. Forensic Science Colleges Under ₹50,000 Annual Fees in India: Institute of Forensic Science Mumbai (₹6,000–₹15,000/year), Government Institute of Forensic Science Nagpur and Chhatrapati Sambhajinagar (₹5,000–₹15,000/year), Osmania University Hyderabad, Punjabi University Patiala, Pondicherry University, Banaras Hindu University (BHU), Dr. Harisingh Gour University Sagar, and Gujarat University Ahmedabad.',
   '/podcast': 'Listen to forensic science discussions and interviews about investigation practice, laboratory methods, digital evidence, education, and professional development.',
   '/webinar': 'Review upcoming and recorded forensic science learning sessions, including the topic, speaker information, schedule, and registration or playback details when available.',
   '/contact': 'Contact ForenClue Ventures for learner support, content corrections, workshop questions, institutional collaboration, privacy requests, and general enquiries.',
@@ -920,7 +963,7 @@ function progressiveContentMarkup(metadata: SocialMetadata): string {
     '<header><a href="/">ForenClue — Your Partner in Forensic Precision</a></header>',
     `<main><h1>${title}</h1><p>${description}</p><p>${body}</p></main>`,
     '<nav aria-label="Public learning sections">',
-    '<a href="/cases">Case Studies</a> · <a href="/courses">Courses</a> · <a href="/ebooks">E-Library</a> · <a href="/quizzes">Quizzes</a> · <a href="/about">About</a> · <a href="/contact">Contact</a>',
+    '<a href="/colleges">Forensic Science Colleges Directory</a> · <a href="/cases">Case Studies</a> · <a href="/courses">Courses</a> · <a href="/ebooks">E-Library</a> · <a href="/quizzes">Quizzes</a> · <a href="/about">About</a> · <a href="/contact">Contact</a>',
     '</nav>',
     '</div>',
   ].join('');

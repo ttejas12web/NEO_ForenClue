@@ -67,6 +67,10 @@ export default function Courses() {
     });
     dbCourses.forEach(c => {
       const parsedId = typeof c.id === 'string' ? parseInt(c.id, 10) : c.id;
+      const normalizedTitle = (c.title || '').trim().toLowerCase();
+      if (parsedId === 1 || normalizedTitle === 'introduction to forensic science') {
+        return;
+      }
       if (!isNaN(parsedId)) {
         dict[parsedId] = { ...dict[parsedId], ...c, id: parsedId };
       }
@@ -109,7 +113,7 @@ export default function Courses() {
   const [runningCourseAspectRatio, setRunningCourseAspectRatio] = useState<number | null>(null);
 
   useEffect(() => {
-    const runningC = publishedCourses.find(c => c.id === 1) || publishedCourses[0];
+    const runningC = publishedCourses[0];
     if (runningC?.thumbnail) {
       const img = new Image();
       img.src = runningC.thumbnail;
@@ -218,6 +222,10 @@ export default function Courses() {
 
     let activeUser = user;
     if (!activeUser) {
+      if (courseId === 7) {
+        navigate(`/player/${courseId}?enrolled=true`);
+        return;
+      }
       navigate('/login');
       return;
     }
@@ -555,240 +563,274 @@ export default function Courses() {
         ]}
       />
 
-      {/* Title Header with View Mode Segmented Controls */}
-      <div className="flex flex-col md:flex-row items-center justify-between mb-12 gap-8 border-b border-black/10 dark:border-white/5 pb-8">
-        <div className="text-left w-full md:w-auto">
-          <h1 className="text-4xl md:text-6xl font-heading font-black mb-3 uppercase tracking-tight relative z-10">
-            Explore <span className="text-warning">Courses</span>
+      {/* Executive Academic Header */}
+      <div className="mb-10 pb-8 border-b border-black/10 dark:border-white/10">
+        <div className="max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-warning/10 border border-warning/25 text-warning text-[10px] font-mono font-black uppercase tracking-widest mb-4">
+            <ShieldCheck size={13} /> ForenClue Academic & Certification Division
+          </div>
+          <h1 className="text-4xl md:text-5xl font-heading font-black mb-3 uppercase tracking-tight text-text-main">
+            Professional <span className="text-warning">Courses & Certifications</span>
           </h1>
-          <p className="text-base md:text-lg text-text-muted relative z-10">Explore Our Most Structured Forensic And Skills Courses</p>
+          <p className="text-sm md:text-base text-text-muted leading-relaxed">
+            Structured, competency-verified forensic science specialization programs featuring in-depth scientific dossiers, analytical casework, AutoCheck evaluations, and cryptographically verifiable PDF credentials.
+          </p>
         </div>
 
-        {/* View Mode Segmented Control */}
-        <div className="flex bg-base p-1 rounded-xl border border-black/10 dark:border-white/5 relative z-10 shrink-0">
-          <button
-            onClick={() => setViewMode('grid')}
-            className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all duration-300 cursor-pointer ${
-              viewMode === 'grid' 
-                ? 'bg-warning text-crust font-black hover:bg-warning/90' 
-                : 'text-text-muted hover:text-text-main hover:bg-black/5 dark:hover:bg-white/5'
-            }`}
-          >
-            Grid Shell
-          </button>
-          <button
-            onClick={() => setViewMode('path')}
-            className={`px-5 py-2.5 text-[10px] font-black uppercase tracking-widest rounded-lg transition-all duration-300 cursor-pointer ${
-              viewMode === 'path' 
-                ? 'bg-warning text-crust font-black hover:bg-warning/90' 
-                : 'text-text-muted hover:text-text-main hover:bg-black/5 dark:hover:bg-white/5'
-            }`}
-          >
-            Investigation Roadmap
-          </button>
+        {/* Integrated Search & Discipline Filter Bar */}
+        <div className="mt-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-surface p-3 rounded-xl border border-black/10 dark:border-white/10">
+          <div className="relative flex-1">
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search by course title, forensic discipline, or instructor (e.g., Mr. Rajat Pithadia)..."
+              className="w-full pl-10 pr-9 py-2.5 bg-base border border-black/10 dark:border-white/10 rounded-lg text-xs sm:text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:border-warning transition-colors"
+            />
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+          </div>
+
+          {categories.length > 1 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-3.5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                    selectedCategory === cat
+                      ? 'bg-warning text-crust font-black shadow-sm'
+                      : 'bg-base text-text-muted hover:text-text-main border border-black/5 dark:border-white/5'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
-
-
-
-
 
       {searchTerm && (
         <div className="mb-6 relative z-10">
           <p className="text-xs text-text-muted">
-            Found <span className="text-warning font-bold">{filteredCourses.length}</span> active record{filteredCourses.length !== 1 ? 's' : ''} matching "<span className="text-text-main">{searchTerm}</span>"
+            Found <span className="text-warning font-bold">{filteredCourses.length}</span> active program{filteredCourses.length !== 1 ? 's' : ''} matching &ldquo;<span className="text-text-main">{searchTerm}</span>&rdquo;
           </p>
         </div>
       )}
 
-      {viewMode === 'grid' ? (
-        <>
-          {filteredCourses.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
-              {filteredCourses.map((course, idx) => {
-                const isComingSoon = course.price > 0;
-                return (
-                  <motion.div 
-                    key={`course-grid-${course.id}-${idx}`} 
-                    whileHover={{ y: -4, scale: 1.01 }}
-                    onClick={() => setSelectedCourse(course)}
-                    className={`bg-surface border border-black/10 dark:border-white/5 overflow-hidden group hover:border-black/20 dark:hover:border-white/10 transition-colors flex flex-col shadow-sm rounded-xl cursor-pointer ${isComingSoon ? 'opacity-90 hover:opacity-100' : ''}`}
-                  >
-                    <div 
-                      className="relative overflow-hidden bg-black/5 dark:bg-white/5 w-full"
-                      style={runningCourseAspectRatio ? { aspectRatio: `${runningCourseAspectRatio}` } : {}}
-                    >
-                      <img 
-                        src={course.thumbnail} 
-                        alt={course.title} 
-                        className={`w-full h-full ${course.id === 1 ? 'object-contain' : 'object-cover'} group-hover:scale-105 transition-transform duration-500 ${isComingSoon ? 'filter saturate-75 contrast-95 group-hover:saturate-100 group-hover:contrast-100' : ''}`} 
-                        referrerPolicy="no-referrer"
-                      />
-                      
-                      {/* Left Status Badge Overlay */}
-                      <div className="absolute top-3 left-3 z-10 flex gap-2">
-                        {isComingSoon ? (
-                          <span className="bg-amber-500 text-black text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg border border-amber-400">
-                            Coming Soon
-                          </span>
-                        ) : (
-                          <span className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg border border-emerald-400 flex items-center gap-1.5 animate-pulse">
-                            <span className="h-1.5 w-1.5 rounded-full bg-white inline-block"></span>
-                            Running
+      {/* Default Professional Grid Layout */}
+      {filteredCourses.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+          {filteredCourses.map((course, idx) => {
+            const isComingSoon = course.price > 0;
+            const enrolled = isPurchased(course.id);
+            return (
+              <motion.div
+                key={`course-grid-${course.id}-${idx}`}
+                whileHover={{ y: -4 }}
+                onClick={() => setSelectedCourse(course)}
+                className={`bg-surface border border-black/10 dark:border-white/10 overflow-hidden group hover:border-warning/40 transition-all duration-300 flex flex-col shadow-lg rounded-2xl cursor-pointer ${
+                  isComingSoon ? 'opacity-90 hover:opacity-100' : ''
+                }`}
+              >
+                {/* Course Visual Header */}
+                <div className="relative overflow-hidden bg-black/10 dark:bg-white/5 w-full aspect-[16/10]">
+                  <img
+                    src={course.thumbnail}
+                    alt={course.title}
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${
+                      isComingSoon ? 'filter saturate-75 contrast-95 group-hover:saturate-100 group-hover:contrast-100' : ''
+                    }`}
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+
+                  {/* Top Left Status Badges */}
+                  <div className="absolute top-3.5 left-3.5 z-10 flex flex-wrap gap-2">
+                    {isComingSoon ? (
+                      <span className="bg-amber-500 text-black text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg border border-amber-400">
+                        Coming Soon
+                      </span>
+                    ) : (
+                      <>
+                        <span className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg border border-emerald-400 flex items-center gap-1.5">
+                          <span className="h-1.5 w-1.5 rounded-full bg-white inline-block animate-ping" />
+                          Live • Free Enrollment
+                        </span>
+                        {course.id === 7 && (
+                          <span className="bg-warning text-crust text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">
+                            Code: FT2601 • Self-Paced
                           </span>
                         )}
-                      </div>
+                      </>
+                    )}
+                  </div>
 
-                      <div className="absolute top-3 right-3 flex gap-2 z-10">
-                        <button 
-                          onClick={(e) => toggleWishlist(course.id, e)}
-                          className="p-2 bg-base/80 backdrop-blur-md rounded-full shadow-sm text-text-muted hover:text-warning transition-colors"
+                  {/* Top Right Wishlist Action */}
+                  <div className="absolute top-3.5 right-3.5 flex gap-2 z-10">
+                    <button
+                      onClick={(e) => toggleWishlist(course.id, e)}
+                      className="p-2 bg-base/85 backdrop-blur-md rounded-full shadow-sm text-text-muted hover:text-warning transition-colors"
+                      aria-label="Save to wishlist"
+                    >
+                      <Heart
+                        size={15}
+                        fill={isWishlisted(course.id) ? 'currentColor' : 'none'}
+                        className={isWishlisted(course.id) ? 'text-warning' : ''}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Bottom Left Category & Level Strip on Image */}
+                  <div className="absolute bottom-3 left-3.5 right-3.5 z-10 flex items-center justify-between text-white">
+                    <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning bg-black/65 backdrop-blur-sm px-2.5 py-1 rounded border border-warning/30">
+                      {course.id === 7 ? 'FT2601 • ' : ''}{course.category} • {course.level}
+                    </span>
+                    <span className="text-[11px] font-mono font-bold text-white/90 bg-black/65 backdrop-blur-sm px-2.5 py-1 rounded flex items-center gap-1">
+                      <Clock size={12} className="text-warning" /> {course.duration}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Card Body */}
+                <div className="p-6 flex-grow flex flex-col bg-surface">
+                  {course.id === 7 && (
+                    <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning mb-1">
+                      Course Code: FT2601
+                    </span>
+                  )}
+                  <h3 className="font-heading font-black text-xl mb-2.5 leading-snug text-text-main group-hover:text-warning transition-colors">
+                    {course.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-text-muted mb-5 line-clamp-3 leading-relaxed">
+                    {course.description}
+                  </p>
+
+                  {/* Key Syllabus Modules Preview */}
+                  {course.curriculum && course.curriculum.length > 0 && (
+                    <div className="mb-5 p-3.5 rounded-xl bg-base border border-black/5 dark:border-white/5 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-mono font-black uppercase tracking-widest text-text-muted">
+                          Key Syllabus Modules
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-warning">
+                          {course.curriculum.length} Modules
+                        </span>
+                      </div>
+                      <ul className="space-y-1.5">
+                        {course.curriculum.slice(0, 3).map((item, i) => (
+                          <li key={i} className="text-xs text-text-main/90 flex items-start gap-2 line-clamp-1">
+                            <span className="text-[10px] font-mono font-black text-warning mt-0.5">0{i + 1}.</span>
+                            <span className="truncate">{item.replace(/^Module \d+:\s*/i, '')}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      {course.curriculum.length > 3 && (
+                        <p className="text-[10px] font-mono text-text-muted pt-0.5">
+                          + {course.curriculum.length - 3} additional specialized modules in syllabus
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Instructor Attribution & Action Footer */}
+                  <div className="mt-auto pt-4 border-t border-black/10 dark:border-white/10 space-y-4">
+                    <div
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedInstructor(course.instructor);
+                      }}
+                      className="flex items-center gap-3 group/inst cursor-pointer"
+                    >
+                      <img
+                        src={course.instructorImage}
+                        alt={course.instructor}
+                        className="w-10 h-10 rounded-full object-cover object-top border border-warning/40 shrink-0"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] font-mono uppercase tracking-widest text-warning font-bold">
+                          Course Instructor
+                        </p>
+                        <p className="text-sm font-heading font-bold text-text-main truncate group-hover/inst:text-warning transition-colors">
+                          {course.instructor}
+                        </p>
+                        {course.id === 7 && (
+                          <p className="text-[11px] text-text-muted truncate">
+                            Assistant Professor, Parul University • Wiley Author
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2.5">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedCourse(course);
+                        }}
+                        className="py-2.5 px-3 rounded-lg bg-base border border-black/10 dark:border-white/10 text-text-main hover:border-warning/40 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                      >
+                        View Syllabus
+                      </button>
+                      {isComingSoon ? (
+                        <button
+                          type="button"
+                          disabled
+                          className="py-2.5 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] font-black uppercase tracking-wider cursor-not-allowed"
                         >
-                          <Heart size={16} fill={isWishlisted(course.id) ? "currentColor" : "none"} className={isWishlisted(course.id) ? "text-warning" : ""} />
+                          Coming Soon
                         </button>
-                      </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (enrolled || course.id === 7) {
+                              navigate(`/player/${course.id}?enrolled=true`);
+                            } else {
+                              handlePurchase(course.id, e);
+                            }
+                          }}
+                          className="py-2.5 px-3 rounded-lg bg-warning text-crust hover:bg-warning/90 text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                        >
+                          <span>{enrolled ? 'Enter Course' : 'Enroll Free'}</span>
+                          <ChevronRight size={14} />
+                        </button>
+                      )}
                     </div>
-                    
-                    <div className="p-5 flex-grow flex flex-col bg-surface">
-                      <div className="flex justify-between items-center mb-3">
-                        <span className="text-xs font-bold uppercase tracking-wider text-warning">{course.category} • {course.level}</span>
-                        <span className="text-xs text-text-muted flex items-center gap-1"><Clock size={12} /> {course.duration}</span>
-                      </div>
-                      
-                      <h3 className="font-heading font-bold text-lg mb-2 leading-tight text-text-main line-clamp-1 group-hover:text-warning transition-colors">{course.title}</h3>
-                      <p className="text-sm text-text-muted mb-4 line-clamp-2">{course.description}</p>
-                      
-                      <div className="mt-auto pt-4 border-t border-black/5 dark:border-white/5 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <img src={course.instructorImage} alt={course.instructor} className="w-6 h-6 rounded-full object-cover" />
-                          <span className="text-xs text-text-muted font-medium">{course.instructor}</span>
-                        </div>
-                        <div className="font-bold">
-                          {isComingSoon ? (
-                            <span className="text-amber-500 text-[10px] font-black uppercase tracking-widest bg-amber-500/10 px-2.5 py-1 rounded border border-amber-500/20">Coming Soon</span>
-                          ) : (
-                            <span className="text-success text-[10px] font-black uppercase tracking-widest bg-emerald-500/10 px-2.5 py-1 rounded border border-emerald-500/20">Running • Free</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          ) : (
-            <div className="py-20 text-center relative z-10 bg-surface/50 border border-black/10 dark:border-white/10 rounded-2xl border-dashed w-full max-w-4xl mx-auto animate-fade-in">
-              <BookOpen size={48} className="text-text-muted mx-auto mb-4 opacity-20" />
-              <h3 className="text-xl font-heading font-black mb-2 uppercase tracking-widest">No Investigations Found</h3>
-              <p className="text-text-muted mb-6 px-12">Your search parameters did not match any active cases in the lab. Please try adjusting your search terms or expanding your category selection.</p>
-              <button 
-                onClick={() => { setSearchTerm(''); setSelectedCategory('All'); }}
-                className="px-8 py-3 bg-warning text-crust font-black uppercase tracking-widest rounded-md hover:bg-warning/90 transition-all flex items-center gap-2 mx-auto cursor-pointer"
-              >
-                <CheckCircle size={18} /> Reset All Parameters
-              </button>
-            </div>
-          )}
-        </>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
       ) : (
-        <div className="relative z-10 py-12 flex flex-col items-center">
-          <div className="w-full max-w-4xl relative pb-20">
-            {/* Connecting Line */}
-            <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-1 bg-black/10 dark:bg-white/10 md:-translate-x-1/2 rounded-full hidden md:block"></div>
-            
-            {['Beginner', 'Intermediate', 'Advanced'].map((level, levelIdx) => (
-              <div key={level} className="mb-20 relative w-full">
-                <div className="flex items-center gap-4 mb-8 md:justify-center relative z-20 bg-base py-4">
-                  <div className="h-px flex-1 bg-black/10 dark:bg-white/10 md:hidden"></div>
-                  <h2 className="text-2xl font-heading font-black uppercase tracking-widest text-warning px-4 py-2 border border-warning/30 rounded-full bg-warning/5 drop-shadow-[0_0_15px_rgba(0,240,255,0.2)]">
-                    {level} Phase
-                  </h2>
-                  <div className="h-px flex-1 bg-black/10 dark:bg-white/10 md:hidden"></div>
-                </div>
-                
-                <div className="space-y-6 md:space-y-0 relative">
-                  {publishedCourses.filter(c => c.level === level).map((course, idx) => {
-                    const isComingSoon = course.price > 0;
-                    return (
-                      <div key={`course-list-${course.id}-${idx}`} className={`flex flex-col md:flex-row items-center gap-8 ${idx % 2 === 0 ? 'md:flex-row-reverse' : ''} mb-8`}>
-                        <div className="w-full md:w-1/2 flex justify-center">
-                          <motion.div 
-                            whileHover={{ scale: 1.05 }}
-                            onClick={() => setSelectedCourse(course)}
-                            className={`w-full max-w-sm bg-surface border border-black/10 dark:border-white/5 rounded-xl overflow-hidden cursor-pointer shadow-xl hover:border-warning/30 transition-colors group relative ${isComingSoon ? 'opacity-95' : ''}`}
-                          >
-                            <div 
-                              className="relative overflow-hidden w-full"
-                              style={runningCourseAspectRatio ? { aspectRatio: `${runningCourseAspectRatio}` } : {}}
-                            >
-                              <img 
-                                src={course.thumbnail} 
-                                alt={course.title} 
-                                className={`w-full h-full ${course.id === 1 ? 'object-contain' : 'object-cover'} group-hover:scale-110 transition-transform duration-700 ${isComingSoon ? 'filter grayscale saturate-50' : ''}`} 
-                              />
-                              <div className="absolute inset-0 bg-base/40 group-hover:bg-warning/10 transition-colors"></div>
-                              
-                              {/* Overlay badges */}
-                              <div className="absolute top-4 left-4 z-10 flex gap-2">
-                                {isComingSoon ? (
-                                  <span className="bg-amber-500 text-black text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded shadow-lg border border-amber-400">
-                                    Coming Soon
-                                  </span>
-                                ) : (
-                                  <span className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded shadow-lg border border-emerald-400 animate-pulse">
-                                    Running
-                                  </span>
-                                )}
-                              </div>
-
-                              <div className="absolute top-4 right-4 bg-warning text-crust text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded shadow-lg">
-                                Step {course.id}
-                              </div>
-                              <button 
-                                onClick={(e) => { e.stopPropagation(); setPreviewVideo(course.modules[0]?.lessons[0]?.videoUrl); }}
-                                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-warning/80 backdrop-blur-sm flex items-center justify-center text-crust opacity-0 group-hover:opacity-100 transition-opacity hover:scale-110 shadow-[0_0_20px_rgba(0,240,255,0.5)]"
-                              >
-                                <Play size={20} fill="currentColor" />
-                              </button>
-                            </div>
-                            <div className="p-4">
-                              <h3 className="font-heading font-bold text-lg group-hover:text-warning transition-colors mb-2 line-clamp-1">{course.title}</h3>
-                              <div className="flex items-center justify-between text-xs text-text-muted">
-                                <span className="flex items-center gap-1"><Clock size={12} /> {course.duration}</span>
-                                <span className="font-bold">
-                                  {isComingSoon ? (
-                                    <span className="text-amber-500 uppercase tracking-widest text-[9px] font-black bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">Coming Soon</span>
-                                  ) : (
-                                    <span className="text-success uppercase tracking-widest text-[9px] font-black bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">Running</span>
-                                  )}
-                                </span>
-                              </div>
-                            </div>
-                          </motion.div>
-                        </div>
-                        
-                        {/* Node connection point (desktop only) */}
-                        <div className="hidden md:flex w-12 h-12 rounded-full bg-surface border-4 border-base items-center justify-center shadow-[0_0_15px_rgba(0,0,0,0.2)] z-10 mx-auto relative shrink-0">
-                           {isPurchased(course.id) ? (
-                             <CheckCircle size={20} className="text-success" />
-                           ) : isComingSoon ? (
-                             <Lock size={18} className="text-amber-500/50" />
-                           ) : (
-                             <Lock size={20} className="text-text-muted" />
-                           )}
-                           {idx < publishedCourses.filter(c => c.level === level).length - 1 && (
-                             <div className="absolute top-full w-1 h-12 bg-black/10 dark:bg-white/10"></div>
-                           )}
-                        </div>
-                        
-                        <div className="hidden md:block w-full md:w-1/2"></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
-          </div>
+        <div className="py-20 text-center relative z-10 bg-surface/50 border border-black/10 dark:border-white/10 rounded-2xl border-dashed w-full max-w-4xl mx-auto animate-fade-in">
+          <BookOpen size={48} className="text-text-muted mx-auto mb-4 opacity-20" />
+          <h3 className="text-xl font-heading font-black mb-2 uppercase tracking-widest">No Courses Found</h3>
+          <p className="text-text-muted mb-6 px-12">
+            No courses matched your current filter or search query. Reset your filters to browse all available programs.
+          </p>
+          <button
+            onClick={() => {
+              setSearchTerm('');
+              setSelectedCategory('All');
+            }}
+            className="px-8 py-3 bg-warning text-crust font-black uppercase tracking-widest rounded-md hover:bg-warning/90 transition-all flex items-center gap-2 mx-auto cursor-pointer"
+          >
+            <CheckCircle size={18} /> Reset All Filters
+          </button>
         </div>
       )}
 

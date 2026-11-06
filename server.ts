@@ -1891,8 +1891,33 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
           image = '/images/og/profile.png';
         }
         else if (cleanPath === '/colleges' || cleanPath === '/college') {
-          title = 'Forensic Science Colleges | ForenClue';
-          summary = 'Discover forensic science colleges, courses, admissions information, and academic pathways.';
+          const qParam = String(req.query.q || '').toLowerCase();
+          const stateParam = String(req.query.state || '');
+          const cityParam = String(req.query.city || '');
+          const typeParam = String(req.query.type || '');
+          const degreeParam = String(req.query.degree || '');
+          const feeParam = String(req.query.fee || '');
+
+          if (
+            stateParam.toLowerCase().includes('delhi') ||
+            cityParam.toLowerCase().includes('delhi') ||
+            qParam.includes('delhi')
+          ) {
+            title = 'Top Forensic Science Colleges in Delhi NCR (2026) – NFSU, Govt & Private Fees | ForenClue';
+            summary = 'Compare top forensic science colleges in Delhi & NCR including NFSU Delhi Campus (LNJN NICFS Rohini), University of Delhi, Amity Noida, Galgotias & SGT University. Check B.Sc. & M.Sc. fees, CUET/NFAT admission & eligibility.';
+          } else if (
+            (typeParam.toLowerCase() === 'private' && degreeParam.toLowerCase() === 'master') ||
+            (qParam.includes('private') && qParam.includes('msc'))
+          ) {
+            title = 'Best Private M.Sc. Forensic Science Colleges in India (2026) – Fees, NAAC & Placements | ForenClue';
+            summary = 'Discover the best private M.Sc. Forensic Science colleges in India including Jain University Bangalore, Amity University, Chandigarh University, LPU, Kristu Jayanti & Galgotias. Compare fees, NAAC grades & specializations.';
+          } else if (feeParam === 'under-50k' || qParam.includes('50,000') || qParam.includes('50000') || qParam.includes('50k')) {
+            title = 'Best M.Sc. Forensic Science Colleges Under ₹50,000 in India – Low Fee Govt Universities | ForenClue';
+            summary = 'Explore the best M.Sc. and B.Sc. Forensic Science colleges under ₹50,000 annual fees in India including IFSC Mumbai, GIFS Nagpur, Osmania University, Punjabi University, Pondicherry University & Gujarat University.';
+          } else {
+            title = 'Top Forensic Science Colleges in India (2026) – B.Sc & M.Sc Fees, Govt, Private & NFSU | ForenClue';
+            summary = 'Compare 120+ verified B.Sc. & M.Sc. Forensic Science colleges in India (Delhi NCR, Mumbai, Bangalore, NFSU, Govt & Private). Check M.Sc. Forensic Science colleges under ₹50,000 fees, CUET-PG/NFAT eligibility & placements.';
+          }
           image = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEigBhuL76TN0HRboJtSqMyjwBxyV_Z-HYJ4W8QpLPhYiJQDfbLfXbXBZAYb9GHXpqDuOekfsthvORaaitUq59u3Mjvlv0SurAKv6xTR3VyP9zj1nriYXLqhFGBXzjHmjjAXiqHAn9yWldwtwDS336Sh55PhcfIGgf1PrqAu9iPhVgL-XEpaht8ActVJv_g/s1600/image.png';
         }
         else if (cleanPath.startsWith('/colleges/') || cleanPath.startsWith('/college/')) {
@@ -2031,6 +2056,39 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
         }
       ];
 
+      if (cleanPath === '/colleges' || cleanPath === '/college') {
+        jsonLdGraph.push({
+          '@type': 'FAQPage',
+          '@id': `https://${host}/colleges#faq`,
+          'mainEntity': [
+            {
+              '@type': 'Question',
+              'name': 'Which is the top forensic science college in Delhi and Delhi NCR?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'The top forensic science colleges in Delhi NCR include National Forensic Sciences University (NFSU) Delhi Campus (LNJN NICFS, Rohini), University of Delhi (Department of Anthropology), Amity University Noida, Galgotias University Greater Noida, Sharda University, and SGT University Gurugram.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Which is the best private M.Sc. Forensic Science college in India?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'The best private M.Sc. Forensic Science colleges in India include Jain (Deemed-to-be University) Bangalore, Amity University Noida, Chandigarh University Mohali, Lovely Professional University (LPU), Kristu Jayanti College Bengaluru, Galgotias University, and Parul University.'
+              }
+            },
+            {
+              '@type': 'Question',
+              'name': 'Which is the best M.Sc. Forensic Science college under 50,000 fees in India?',
+              'acceptedAnswer': {
+                '@type': 'Answer',
+                'text': 'The best M.Sc. Forensic Science colleges under ₹50,000 annual tuition fees in India include Institute of Forensic Science Mumbai (₹6,000–₹15,000/yr), Government Institute of Forensic Science Nagpur and Chhatrapati Sambhajinagar (₹5,000–₹15,000/yr), Osmania University Hyderabad, Punjabi University Patiala, Pondicherry University, Banaras Hindu University (BHU), and Gujarat University.'
+              }
+            }
+          ]
+        });
+      }
+
       const jsonLdData = {
         '@context': 'https://schema.org',
         '@graph': jsonLdGraph
@@ -2040,6 +2098,7 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
       const metaTags = `
     <!-- Dynamic server-side SEO & social media preview tags -->
     <meta name="description" content="${escapeHTML(summary)}" />
+    <meta name="keywords" content="top forensic science college in delhi, best private msc forensic science college in india, best msc forensic science college under 50,000, best msc forensic science college under 50000, government forensic science colleges in india, nfsu campuses fees, bsc forensic science colleges in india, forenclue colleges" />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="${absoluteUrl}" />
     <link rel="image_src" href="${ogImageUrl}" />

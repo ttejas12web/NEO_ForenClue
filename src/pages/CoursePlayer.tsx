@@ -53,6 +53,8 @@ import { doc, setDoc, updateDoc, serverTimestamp, onSnapshot, getDoc } from 'fir
 import { handleFirestoreError, OperationType } from "@/lib/firestoreUtils";
 import { LessonQuiz } from '@/components/Quiz';
 import { LectureQna } from '@/components/ui/LectureQna';
+import { ForensicToxicologyPlayer } from '@/components/courses/ForensicToxicologyPlayer';
+import { FORENSIC_TOXICOLOGY_COURSE_ID } from '@/services/forensicToxicologyCourse';
 import { 
   PieChart, 
   Pie, 
@@ -627,6 +629,14 @@ function ForenclueVideoPlayer({ videoUrl, title, isAdmin, onEditVideoLink }: { v
 
 export default function CoursePlayer() {
   const { courseId } = useParams();
+  if (parseInt(courseId || '0', 10) === FORENSIC_TOXICOLOGY_COURSE_ID) {
+    return <ForensicToxicologyPlayer />;
+  }
+  return <StandardCoursePlayer />;
+}
+
+function StandardCoursePlayer() {
+  const { courseId } = useParams();
   const navigate = useNavigate();
   const { user, userProfile, isAdmin, loading } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
@@ -658,13 +668,20 @@ export default function CoursePlayer() {
     let unsub: (() => void) | null = null;
 
     if (courseId) {
+      if (parseInt(courseId, 10) === 1) {
+        navigate('/courses');
+        return;
+      }
       const init = async () => {
         let baseCourse = COURSES.find(c => c.id === parseInt(courseId)) || null;
         if (!baseCourse) {
           try {
             const snap = await getDoc(doc(db, 'courses', courseId));
             if (snap.exists() && active) {
-              baseCourse = { id: parseInt(courseId), ...snap.data() } as Course;
+              const data = snap.data();
+              if ((data?.title || '').trim().toLowerCase() !== 'introduction to forensic science') {
+                baseCourse = { id: parseInt(courseId), ...data } as Course;
+              }
             }
           } catch (e) {
             console.error("Failed to fetch course", e);

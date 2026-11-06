@@ -33,6 +33,10 @@ export default function Dashboard() {
     });
     dbCourses.forEach(c => {
       const parsedId = typeof c.id === 'string' ? parseInt(c.id, 10) : c.id;
+      const normalizedTitle = (c.title || '').trim().toLowerCase();
+      if (parsedId === 1 || normalizedTitle === 'introduction to forensic science') {
+        return;
+      }
       if (!isNaN(parsedId)) {
          dict[parsedId] = { ...c, id: parsedId };
       }

@@ -43,6 +43,7 @@
     "motion": "^12.23.24",
     "multer": "^2.2.0",
     "nodemailer": "^9.0.5",
+    "pdf-lib": "^1.17.1",
     "postprocessing": "^6.39.1",
     "razorpay": "^2.9.6",
     "react": "^19.0.1",

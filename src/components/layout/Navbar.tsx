@@ -30,7 +30,7 @@ import { useAuth } from '@/contexts/AuthContext';
 const directLinks = [
   { name: 'Home', path: '/' },
   { name: 'Case Studies', path: '/cases' },
-  { name: 'Services', path: '/services' },
+  { name: 'Colleges', path: '/colleges' },
 ];
 
 const resourcesDropdown = [

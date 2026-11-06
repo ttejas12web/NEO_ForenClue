@@ -32,52 +32,6 @@ export interface Course {
 
 export const COURSES: Course[] = [
   {
-    id: 1,
-    title: "Introduction to Forensic Science",
-    instructor: "Mrunmayee Bodhe",
-    price: 0,
-    originalPrice: 1999,
-    level: "Beginner",
-    category: "General Forensics",
-    duration: "4 Weeks",
-    description: "Learn the fundamentals of forensic science, including evidence handling, crime scene analysis, and lab techniques.",
-    instructorImage: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjt-N4hwGU4tzUkx9XwNKGHv2Te4J3tbfxJWFRXS6Z3KzdZX1f9VKZB88MYTeF4OqePRwDcGMbqjmOpoROSJlsSHaZJnLEIMnP2S98gBLOlP6IDs33SBqLf7yhLEyWCICI90IfGk5XV06fUYonMDC5zufGitO8-sTe1sIExdZcckiMh0VuZmmmPJpxhGQs/s1352/IMG_0866.PNG",
-    curriculum: [
-      "History and Scope of Forensic Science",
-      "Crime Scene Documentation and Photography",
-      "Types of Evidence (Physical, Biological, Trace)",
-      "Chain of Custody Procedures",
-      "Introduction to Forensic Laboratory Analysis"
-    ],
-    instructorBio: "Mrunmayee Bodhe is the CEO Of ForenClue Ventures, a passionate forensic enthusiast, and dedicated to making learning stress-free.",
-    thumbnail: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgmKqsV247zENKr8rUZCgF2dR_u91jYMEP6mJaWF010Jgsdi-zMXXcbXRbWUfD-JZ2vfri_NLWtBPVFTNI8CphwPqMb8eofX8sT75dRzOhR_z4KecBMMSMPrynFsztPmNbZBppXGQn3lAAJERzwyeMdc9gAyxFV9sgHtptG4yOMtNQznPolTH3tORuRPBI/s1534/B45FFD8B-3B72-4FAB-B779-F5DFE99BC86F.jpeg",
-    publicationStatus: "published",
-    notices: [
-      { id: 1, date: "2024-03-20", content: "New module on 'Forensic Entomology' added. Check it out in the curriculum!" },
-      { id: 2, date: "2024-03-15", content: "Live Q&A session scheduled for next Friday at 6 PM IST." }
-    ],
-    modules: [
-      {
-        id: "m1",
-        title: "Week-1 Introduction to Forensics",
-        lessons: [
-          { id: "l_intro", title: "Course Introduction", duration: "8:57", videoUrl: "https://www.youtube.com/embed/MvVXE3bayMY" },
-          { id: "l1", title: "Forensic Science Introduction", duration: "15:00", videoUrl: "https://www.youtube.com/embed/m6_v3Z95YpM" },
-          { id: "l2", title: "History and Evolution", duration: "12:30", videoUrl: "https://www.youtube.com/embed/8-WNoI5Iu70" },
-          { id: "l3", title: "Scope of Investigation", duration: "10:45", videoUrl: "https://www.youtube.com/embed/m6_v3Z95YpM" }
-        ]
-      },
-      {
-        id: "m2",
-        title: "Week-2 Evidence Collection",
-        lessons: [
-          { id: "l4", title: "Types of Evidence", duration: "20:00", videoUrl: "https://www.youtube.com/embed/8-WNoI5Iu70" },
-          { id: "l5", title: "Chain of Custody", duration: "18:20", videoUrl: "https://www.youtube.com/embed/m6_v3Z95YpM" }
-        ]
-      }
-    ]
-  },
-  {
     id: 2,
     title: "Digital Forensics & Incident Response",
     instructor: "Tejas Tapse",
@@ -248,5 +202,65 @@ export const COURSES: Course[] = [
         ]
       }
     ]
+  },
+  {
+    id: 7,
+    title: "Certificate Course in Forensic Toxicology",
+    instructor: "Mr. Rajat Pithadia",
+    price: 0,
+    originalPrice: 2999,
+    level: "Advanced",
+    category: "Forensic Toxicology",
+    duration: "6 Modules • Self-Paced",
+    description: "Comprehensive 6-module self-paced certification course (Course Code: FT2601) covering Foundations of Forensic Toxicology, Pharmacokinetics & Pharmacodynamics, Isolation & Clean-Up of Poisons from Viscera (Stas-Otto, Ammonium Sulphate, Distillation, Conway Microdiffusion, Dialysis), Modern Extraction (SPE, SPME, ASE), Chromatography & Spectrometry (TLC, HPLC, GLC, AAS, ICP-MS, Ion Chromatography), Metallic Poisons & Toxic Anions, Volatiles & Liquor Estimation in Breath/Blood/Urine, Barbiturates/Chloral Hydrate/Tranquilizers, Pesticides, NDPS Drugs, Sports Doping Analysis, Alkaloids, Plant & Animal Poisons, Food Poisoning, Hair/Metabolite Analysis, and Section 329 BNSS Reporting.",
+    instructorImage: "https://blogger.googleusercontent.com/img/a/AVvXsEiseuO8LFJ74UtogyoZLu5orh44gH7WVqDM4oinlMLhD3u4grQKoinTCZYk-OfKJrXJjV8E9EZHoPbhefI60LoXmqO623wQXiv-4hXumhYmBrBJCh4HYvYk9ifZ4nSccrYe5qyJHQXAQvW_8Zgkdq3T7vCycYqiJy0aUSZYzhmqc8M12jhhUq3X1GoORws",
+    curriculum: [
+      "Module 1 (FT2601-M1): Foundations of Forensic Toxicology, Poisoning in India, Pharmacokinetics (ADME) & Pharmacodynamics (Receptors)",
+      "Module 2 (FT2601-M2): Isolation & Clean-Up Procedures of Poisons from Viscera, Sample Matrices & Classical Extraction (Stas-Otto, Ammonium Sulphate, Distillation, Conway, Dialysis)",
+      "Module 3 (FT2601-M3): Modern Extraction (Dry/Wet/Microwave Digestion, SPE, SPME, ASE), Chromatography (TLC, HPTLC, HPLC, GLC) & Spectrometry (UV-Vis, FTIR, MS, AAS, ICP-MS, IC)",
+      "Module 4 (FT2601-M4): General Study & Analysis of Metallic Poisons, Inorganic Anions, Volatiles, Liquor Estimation in Breath/Blood/Urine, Barbiturates/Chloral Hydrate/Tranquilizers & Pesticides",
+      "Module 5 (FT2601-M5): Narcotic Drugs & Psychotropic Substances (NDPS), Drugs of Abuse in Sports (WADA, GC-C-IRMS) & Alkaloid Characterization",
+      "Module 6 (FT2601-M6): Plant & Animal Poisons, Food Poisoning, Hair & Metabolite Analysis, and Section 329 BNSS Medico-Legal Reporting"
+    ],
+    instructorBio: "Mr. Rajat Pithadia is an Academic Mentor at ForenClue, Assistant Professor at Parul University, Wiley Author, Ph.D. Scholar (Genotoxicity & Mutagenicity), and UGC-NET & GSET Qualified educator holding an M.Sc. in Forensic Chemistry, Toxicology & Pharmacology.",
+    thumbnail: "https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?q=80&w=1000&auto=format&fit=crop",
+    publicationStatus: "published",
+    notices: [
+      { id: 1, date: "2026-11-04", content: "Self-Paced Certification Protocol (FT2601): Complete all 6 research modules, score ≥ 90% on each module quiz, and pass the Case Assignments on even-numbered modules (Modules 2, 4, and 6) to unlock your official Certificate PDF." },
+      { id: 2, date: "2026-11-04", content: "No video lectures are required—all research dossiers, interactive forensic calculators, quizzes, and case assignments are self-paced." }
+    ],
+    modules: [
+      {
+        id: "tox-mod-1",
+        title: "Module 1: Foundations, Poisoning in India, Pharmacokinetics & Pharmacodynamics",
+        lessons: [{ id: "m1-s1", title: "Self-Paced Research & Quiz (≥90%)", duration: "8 Hours", videoUrl: "" }]
+      },
+      {
+        id: "tox-mod-2",
+        title: "Module 2: Viscera Isolation & Clean-Up, Matrices & Classical Extraction",
+        lessons: [{ id: "m2-s1", title: "Self-Paced Research, Quiz (≥90%) & Case Assignment", duration: "8 Hours", videoUrl: "" }]
+      },
+      {
+        id: "tox-mod-3",
+        title: "Module 3: Modern Extraction, Chromatography & Spectrometric/Inorganic Analysis",
+        lessons: [{ id: "m3-s1", title: "Self-Paced Research & Quiz (≥90%)", duration: "8 Hours", videoUrl: "" }]
+      },
+      {
+        id: "tox-mod-4",
+        title: "Module 4: Metallic Poisons, Anions, Volatiles, Liquor Estimation, Depressants & Pesticides",
+        lessons: [{ id: "m4-s1", title: "Self-Paced Research, Quiz (≥90%) & Case Assignment", duration: "9 Hours", videoUrl: "" }]
+      },
+      {
+        id: "tox-mod-5",
+        title: "Module 5: NDPS Drugs, Sports Doping Analysis & Alkaloid Characterization",
+        lessons: [{ id: "m5-s1", title: "Self-Paced Research & Quiz (≥90%)", duration: "9 Hours", videoUrl: "" }]
+      },
+      {
+        id: "tox-mod-6",
+        title: "Module 6: Plant & Animal Poisons, Food Poisoning, Hair/Metabolites & Sec. 329 BNSS",
+        lessons: [{ id: "m6-s1", title: "Self-Paced Research, Quiz (≥90%) & Case Assignment", duration: "9 Hours", videoUrl: "" }]
+      }
+    ]
   }
 ];
+

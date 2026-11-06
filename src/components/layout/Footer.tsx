@@ -10,7 +10,7 @@ export function Footer() {
   }
 
   return (
-    <footer className="print:hidden bg-crust border-t border-black/10 dark:border-white/10 pt-16 pb-10">
+    <footer className="print:hidden bg-crust border-t border-black/10 dark:border-white/10 pt-16 pb-2 sm:pb-4 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Grid Section */}
@@ -78,6 +78,9 @@ export function Footer() {
               <li>
                 <Link to="/quizzes" className="hover:text-warning transition-colors duration-200">Quizzes & Assessments</Link>
               </li>
+              <li>
+                <Link to="/colleges" className="hover:text-warning transition-colors duration-200">Colleges Directory</Link>
+              </li>
             </ul>
           </div>
 
@@ -141,26 +144,22 @@ export function Footer() {
 
         </div>
 
-        {/* Bottom copyright and legal area */}
-        <div className="border-t border-black/10 dark:border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-xs text-text-muted">
-          <div className="flex flex-col md:flex-row items-center gap-4 text-center md:text-left">
-            <p>&copy; {new Date().getFullYear()} ForenClue. All rights reserved.</p>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] opacity-40 hidden md:inline">|</span>
-              <a 
-                href="https://www.dmca.com/r/8eqg90g" 
-                title="DMCA.com Protection Status" 
-                className="dmca-badge inline-block transition-opacity duration-200 hover:opacity-80"
-                target="_blank" 
-                rel="noopener noreferrer"
-              >
-                <img 
-                  src="https://images.dmca.com/Badges/DMCA_logo-grn-btn120w.png?ID=cf5061f2-85e0-4a93-981a-645cfa86336c" 
-                  alt="DMCA.com Protection Status" 
-                  className="h-7 w-auto"
-                />
-              </a>
-            </div>
+        {/* Legal Links & DMCA Row */}
+        <div className="border-t border-black/10 dark:border-white/10 pt-8 pb-6 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-text-muted">
+          <div className="flex items-center gap-3">
+            <a 
+              href="https://www.dmca.com/r/8eqg90g" 
+              title="DMCA.com Protection Status" 
+              className="dmca-badge inline-block transition-opacity duration-200 hover:opacity-80"
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <img 
+                src="https://images.dmca.com/Badges/DMCA_logo-grn-btn120w.png?ID=cf5061f2-85e0-4a93-981a-645cfa86336c" 
+                alt="DMCA.com Protection Status" 
+                className="h-7 w-auto"
+              />
+            </a>
           </div>
           
           <div className="flex flex-wrap items-center justify-center md:justify-end gap-x-6 gap-y-2">
@@ -169,6 +168,25 @@ export function Footer() {
             <Link className="hover:text-warning transition-colors font-medium" to="/refund-policy">Refund & Return Policy</Link>
             <Link className="hover:text-warning transition-colors font-medium" to="/shipping-policy">Shipping Policy</Link>
             <Link className="hover:text-warning transition-colors font-medium" to="/contact">Contact Us</Link>
+          </div>
+        </div>
+
+        {/* Centered Copyright & Fading Oversized ForenClue Wordmark */}
+        <div className="border-t border-black/10 dark:border-white/[0.07] pt-8 sm:pt-10 flex flex-col items-center text-center">
+          <p className="text-xs sm:text-sm md:text-[15px] font-medium text-slate-500 dark:text-slate-400/80 tracking-tight">
+            &copy; {new Date().getFullYear()} ForenClue EdTech Pvt. Ltd. All rights reserved.
+          </p>
+
+          {/* Oversized Vertically Fading ForenClue Watermark Text (Mobile & Desktop Optimised) */}
+          <div
+            aria-hidden="true"
+            className="w-full mt-5 sm:mt-7 md:mt-8 select-none pointer-events-none overflow-hidden flex justify-center"
+          >
+            <span
+              className="block w-full text-center font-sans font-extrabold tracking-[-0.045em] leading-[0.82] whitespace-nowrap text-[17.5vw] sm:text-[16vw] md:text-[15vw] lg:text-[11.5rem] xl:text-[13.25rem] bg-gradient-to-b from-slate-900/[0.12] via-slate-900/[0.04] to-transparent dark:from-slate-200/[0.07] dark:via-slate-300/[0.025] dark:to-transparent bg-clip-text text-transparent"
+            >
+              ForenClue
+            </span>
           </div>
         </div>
       </div>

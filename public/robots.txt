@@ -15,6 +15,12 @@ Allow: /terms
 Allow: /webinar
 Allow: /podcast
 Allow: /certificate
+Allow: /colleges
+Allow: /colleges/
+Allow: /quizzes
+Allow: /simulations
+Allow: /volunteers
+Allow: /ambassadors
 
 # Disallow private user/admin zones to save crawl budget
 Disallow: /dashboard

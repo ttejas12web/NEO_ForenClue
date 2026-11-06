@@ -10,6 +10,7 @@ import { ForensicGridCanvas } from '@/components/ui/ForensicGridCanvas';
 import { UpcomingQuizSection } from '@/components/quiz/UpcomingQuizSection';
 import { RecentELibrarySection } from '@/components/library/RecentELibrarySection';
 import { RecentQuizLeaderboardSection } from '@/components/quiz/RecentQuizLeaderboardSection';
+import { LandingColleges3DSlider } from '@/components/colleges/LandingColleges3DSlider';
 
 const MotionLink = motion.create(Link);
 
@@ -235,6 +236,9 @@ The ForenClue Curriculum Board
 
       <CrimeTape text="INVESTIGATION IN PROGRESS - DO NOT CROSS -" />
 
+      {/* 3D Animated Colleges Auto-Slider: "Your City, Your College" */}
+      <LandingColleges3DSlider />
+
       {/* Live Webinar Event Section */}
       <motion.section 
         initial={{ opacity: 0, y: 30 }}
@@ -414,9 +418,9 @@ The ForenClue Curriculum Board
                  path: "/simulations"
                },
                {
-                 title: "Plan a learning pathway",
-                 description: "Compare available courses, academic resources, webinars, and career guidance before choosing your next area of study.",
-                 path: "/courses"
+                 title: "Your City, Your College",
+                 description: "Discover forensic science universities and colleges across India with admission criteria, entrance exams, and fee structures.",
+                 path: "/colleges"
                }
              ].map((item, i) => (
                <Link key={i} to={item.path} className="bg-white/15 hover:bg-white/25 dark:bg-crust/5 dark:hover:bg-crust/10 p-6 rounded-xl flex flex-col justify-between transition-colors border border-white/25 dark:border-crust/10 shadow-sm">
