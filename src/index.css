@@ -407,10 +407,90 @@ div#root:nth-of-type(1) > div:nth-of-type(1) > div:nth-of-type(1) > main:nth-of-
   );
 }
 
+@keyframes diwaliFlameFlicker {
+  0%, 100% {
+    transform: scaleY(1) scaleX(1) rotate(-1deg);
+    opacity: 0.96;
+  }
+  25% {
+    transform: scaleY(1.08) scaleX(0.94) rotate(1.5deg);
+    opacity: 1;
+  }
+  50% {
+    transform: scaleY(0.95) scaleX(1.04) rotate(-2deg);
+    opacity: 0.9;
+  }
+  75% {
+    transform: scaleY(1.06) scaleX(0.96) rotate(1deg);
+    opacity: 1;
+  }
+}
+
+@keyframes diwaliBulbTwinkle {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.88);
+    filter: drop-shadow(0 0 2px rgba(251, 191, 36, 0.5));
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.14);
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.95));
+  }
+}
+
+@keyframes diwaliSparklePulse {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(0.7) rotate(0deg);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.15) rotate(20deg);
+  }
+}
+
+@keyframes diwaliAuraBreathe {
+  0%, 100% {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.04);
+  }
+}
+
+.animate-diwali-flame {
+  transform-origin: 50% 85%;
+  animation: diwaliFlameFlicker 2.1s ease-in-out infinite;
+}
+
+.animate-diwali-bulb {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: diwaliBulbTwinkle 2.6s ease-in-out infinite;
+}
+
+.animate-diwali-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: diwaliSparklePulse 3s ease-in-out infinite;
+}
+
+.animate-diwali-aura {
+  animation: diwaliAuraBreathe 3.8s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-college-title-gradient,
   .animate-college-beam,
-  .skeleton-shimmer::after {
+  .skeleton-shimmer::after,
+  .animate-diwali-flame,
+  .animate-diwali-bulb,
+  .animate-diwali-sparkle,
+  .animate-diwali-aura {
     animation: none !important;
   }
 }
+
