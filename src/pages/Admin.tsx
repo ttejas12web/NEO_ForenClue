@@ -3193,6 +3193,7 @@ export default function Admin() {
                 {activeTab === 'feedbacks' && (() => {
                   const WEBINAR_OPTIONS = [
                     { id: 'all', label: 'All Webinar Sessions' },
+                    { id: 'marks-of-truth-bite-mark-analysis', label: 'Session 5: Marks of Truth – Bite Mark Analysis Uncovered' },
                     { id: 'forensic-toxicology', label: 'Session 4: Forensic Toxicology Exclusive Webinar' },
                     { id: 'autopsy-the-silent-witness', label: 'Session 3: Autopsy – The Silent Witness' },
                     { id: 'beyond-the-smiles', label: 'Session 2: Beyond The Smiles' },
@@ -3203,6 +3204,9 @@ export default function Admin() {
                     if (selectedSession === 'all') return true;
                     if (item.eventId === selectedSession) return true;
                     const nameLower = (item.eventName || '').toLowerCase();
+                    if (selectedSession === 'marks-of-truth-bite-mark-analysis') {
+                      return item.eventSequence === 5 || nameLower.includes('marks of truth') || nameLower.includes('bite mark');
+                    }
                     if (selectedSession === 'forensic-toxicology') {
                       return item.eventSequence === 4 || nameLower.includes('toxicology');
                     }

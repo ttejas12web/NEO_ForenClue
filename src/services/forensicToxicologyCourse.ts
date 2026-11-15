@@ -1,4 +1,9 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import QRCode from 'qrcode';
+
+export const OFFICIAL_CERT_TEMPLATE_LOCAL_PATH = '/assets/certificates/forensic_toxicology_template.png';
+export const OFFICIAL_CERT_TEMPLATE_REMOTE_URL =
+  'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi5T1n0wW4JVguG1z-Zh1Mb9bKzknr_ou37R_lIOK5ZCRXhjWOf4XSzsv8VyC2TVOA90zuwyhkSVqv1MWdvXZQ7IymXTk9XtXXyRG4aZAPawhVXNUQLqKLycJ6Vsz7x_r-4HCgxXLPknjsT8_3BKuFwBkf-PdFtzFiBoPn1m4YcUV1rl-xAMfLf8TI0nxw/s1600/Purple%20and%20Gold%20Modern%20Training%20Completion%20Certificate.png';
 
 export interface ToxQuizQuestion {
   id: string;
@@ -125,22 +130,22 @@ export interface CertTemplateConfig {
 
 export const DEFAULT_CERT_TEMPLATE_CONFIG: CertTemplateConfig = {
   templateBlobUrl: '',
-  templateFileName: 'Default ForenClue Official Forensic Toxicology Template',
-  nameXPercent: 50,
-  nameYPercent: 52,
-  nameFontSize: 28,
-  nameColorHex: '#1E293B',
-  nameCentered: true,
-  dateXPercent: 28,
-  dateYPercent: 22,
-  dateFontSize: 13,
-  dateColorHex: '#334155',
-  dateCentered: true,
+  templateFileName: 'Purple and Gold Modern Training Completion Certificate',
+  nameXPercent: 33.8,
+  nameYPercent: 43.4,
+  nameFontSize: 32,
+  nameColorHex: '#111827',
+  nameCentered: false,
+  dateXPercent: 6.45,
+  dateYPercent: 59.6,
+  dateFontSize: 13.5,
+  dateColorHex: '#111827',
+  dateCentered: false,
   showCertId: true,
-  certIdXPercent: 72,
-  certIdYPercent: 22,
-  certIdFontSize: 11,
-  certIdColorHex: '#475569',
+  certIdXPercent: 90.45,
+  certIdYPercent: 26.4,
+  certIdFontSize: 9.5,
+  certIdColorHex: '#111827',
 };
 
 export const FORENSIC_TOXICOLOGY_COURSE_ID = 7;
@@ -296,7 +301,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
       },
       {
         id: 'm1-q2',
-        question: 'In Unit II Classification of Poisons and Factors Modifying Poison Action, why is oral Barium Sulfate (BaSO4) safe as a radiopaque X-ray contrast medium whereas oral Barium Chloride (BaCl2) or Barium Carbonate (BaCO3) is rapidly lethal?',
+        question: 'In Classification of Poisons and Factors Modifying Poison Action, why is oral Barium Sulfate (BaSO4) safe as a radiopaque X-ray contrast medium whereas oral Barium Chloride (BaCl2) or Barium Carbonate (BaCO3) is rapidly lethal?',
         options: [
           'Barium sulfate is a gas that is exhaled immediately',
           'Physical state & solubility modify poison action: Barium sulfate is practically insoluble in water and gastrointestinal fluids (preventing systemic Ba2+ absorption), whereas Barium chloride and carbonate dissolve in gastric acid to release free Ba2+ ions',
@@ -309,7 +314,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
       },
       {
         id: 'm1-q3',
-        question: 'Based on the Henderson-Hasselbalch pH-partition hypothesis in Pharmacokinetics (Unit II), why are weakly acidic poisons (such as Barbiturates and Salicylates, pKa 3.0–7.5) absorbed rapidly across the stomach mucosa (pH 1.5–2.0), whereas weakly basic alkaloids (Morphine, Strychnine, Atropine, pKa 8.0–10.0) are absorbed primarily in the small intestine?',
+        question: 'Based on the Henderson-Hasselbalch pH-partition hypothesis in Pharmacokinetics, why are weakly acidic poisons (such as Barbiturates and Salicylates, pKa 3.0–7.5) absorbed rapidly across the stomach mucosa (pH 1.5–2.0), whereas weakly basic alkaloids (Morphine, Strychnine, Atropine, pKa 8.0–10.0) are absorbed primarily in the small intestine?',
         options: [
           'Weak acids are completely ionized in gastric acid and actively pumped by H+/K+-ATPase',
           'At gastric pH (1.5–2.0) below their pKa, weak acids exist predominantly in the unionized, lipid-soluble form that diffuses across gastric mucosa, whereas weak bases are protonated (ionized/trapped) in the stomach and become unionized only in the alkaline intestine',
@@ -322,7 +327,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
       },
       {
         id: 'm1-q4',
-        question: 'In Pharmacokinetics (Unit II), how does Zero-Order (Michaelis-Menten saturation) elimination kinetics (seen with Ethanol, Phenytoin, and high-dose Salicylates) differ from First-Order elimination kinetics?',
+        question: 'In Pharmacokinetics, how does Zero-Order (Michaelis-Menten saturation) elimination kinetics (seen with Ethanol, Phenytoin, and high-dose Salicylates) differ from First-Order elimination kinetics?',
         options: [
           'In Zero-Order kinetics, metabolic enzymes are saturated so a constant MASS/AMOUNT of drug (e.g., 15–20 mg/dL/hr of ethanol) is eliminated per unit time regardless of plasma concentration; in First-Order kinetics, a constant FRACTION/PERCENTAGE is eliminated per unit time with a constant half-life (t1/2)',
           'Zero-order kinetics means zero drug is ever eliminated from the body',
@@ -348,7 +353,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
       },
       {
         id: 'm1-q6',
-        question: 'In Pharmacodynamics (Unit II: Receptors and Their Classification), which of the following correctly pairs the four major receptor superfamilies with their forensic toxin/drug targets?',
+        question: 'In Pharmacodynamics (Receptors and Their Classification), which of the following correctly pairs the four major receptor superfamilies with their forensic toxin/drug targets?',
         options: [
           '1. Ligand-Gated Ion Channels (Ionotropic: GABAA, Glycine [Strychnine], Nicotinic, NMDA [PCP]); 2. G-Protein Coupled Receptors (GPCRs: Muscarinic [Atropine], μ-Opioid [Morphine], CB1 [THC]); 3. Kinase-Linked Receptors (Insulin Tyrosine Kinase); 4. Intracellular/Nuclear Receptors (Anabolic Steroids, AhR)',
           'All receptors in the human body are nuclear DNA enzymes',
@@ -1150,7 +1155,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
               '1. Reinsch Test (Heavy Metal Screen on Minced Viscera): Bright electrolytically pure Copper foil strip is boiled with minced viscera in ~10% Hydrochloric Acid (HCl) for 15–30 minutes. A dark deposit on the copper strip indicates: Steel-Grey/Black = Arsenic; Purplish-Violet/Dark Film = Antimony; Shiny Silvery Mirror = Mercury; Black = Bismuth or Silver. To differentiate them, the washed and dried copper strip is heated gently inside a narrow dry sublimation tube (Redfern tube) and the sublimate is examined microscopically: (a) Arsenic sublimes as glistening White Octahedral / Tetrahedral Crystals of Arsenic Trioxide (As2O3); (b) Antimony forms an amorphous white deposit (or needle-like crystals close to the heated spot); (c) Mercury condenses as minute, shiny, spherical Metallic Globules under the microscope!',
               '2. Marsh-Berzelius Test (Exquisitely Sensitive for Arsenic vs. Antimony): Nascent hydrogen (generated from Arsenic-free Zinc + dilute H2SO4 or electrolytically) reduces Arsenic and Antimony compounds into volatile Arsine (AsH3) and Stibine (SbH3) gases. Passing the dried gas through a heated hard-glass constriction decomposes it into a dark metallic mirror. Differential Confirmation of the Mirror: (a) Arsenic Mirror is deposited BEYOND (downstream of) the flame, is garlic-scented, and DISSOLVES readily in Sodium Hypochlorite (NaOCl / bleaching powder solution); (b) Antimony Mirror is deposited ON BOTH SIDES of (or before) the flame (since SbH3 decomposes at lower temperature), is insoluble in Sodium Hypochlorite (NaOCl), and dissolves in Ammonium Polysulfide to give an orange residue of Sb2S3!',
               '3. Gutzeit Test (Screening Test for Arsenic & Phosphide): Evolved Arsine gas (AsH3) passes through cotton moistened with Lead Acetate (which traps interfering H2S gas!) and contacts a filter paper disc impregnated with Mercuric Chloride (HgCl2) or Mercuric Bromide (HgBr2), producing a bright Yellow-to-Orange/Brown stain.',
-              '4. General Study & Lab Examination of Toxic Inorganic Anions: (a) Nitrite (NO2-) & Nitrate (NO3-): Nitrites oxidize Fe2+ hemoglobin to chocolate-brown Methemoglobin (Fe3+; treated with IV Methylene Blue 1–2 mg/kg). Lab: Griess Ilosvay Test (Sulfanilic acid + alpha-naphthylamine → pink/red azo dye for Nitrite) and Diphenylamine Test / Brown Ring Test (FeSO4 + conc. H2SO4 → brown [Fe(H2O)5NO]2+ ring for Nitrate/Nitrite); (b) Sulphide (S2- / H2S "Sewer Gas"): Knock-down histotoxic asphyxiant smelling of rotten eggs; blackens Lead Acetate paper (forming black PbS) and turns Sodium Nitroprusside violet in alkaline medium; (c) Sulphate (SO42- / H2SO4 "Oil of Vitriol"): Causes black charring of stomach mucosa and clothing; forms white BaSO4 precipitate with Barium Chloride insoluble in conc. HNO3/HCl; (d) Phosphide (P3- / Aluminium & Zinc Phosphide): Liberates PH3 gas; blackens AgNO3 paper while Lead Acetate paper remains negative; (e) Chlorate (ClO3- — Potassium/Sodium Chlorate in match-heads & weedkillers): Powerful oxidizer causing acute intravascular hemolysis, chocolate-brown methemoglobinemia, and renal failure; turns Indigo Carmine blue solution yellow/colourless on adding sulfurous acid and gives blue colour with diphenylamine; (f) Borate (BO33- / Boric Acid & Borax): Causes "boiled lobster" erythematous rash and blue-green vomiting; Turmeric Paper Test turns reddish-brown on drying with HCl (turning greenish-black with NaOH), and burns with an Apple-Green edged flame when heated with Methanol + conc. H2SO4 (trimethyl borate); (g) Bromide (Br-) & Bromate (BrO3-): Chronic Bromide causes "Bromism" (acneiform rash, psychosis, ataxia); Acute Potassium Bromate (hair neutralizer) causes irreversible sensorineural deafness (ototoxicity) and acute renal failure; Lab: Fluorescein test (chlorine water liberates Br2 which converts yellow fluorescein paper into red Eosin!); (h) Fluoride (F- / Sodium Fluoride & Hydrofluoric Acid): Binds serum Ca2+ causing lethal hypocalcemia/tetany and inhibits enolase; Lab: Etches glass (SiF4) and bleaches pink Zirconium-Alizarin lake to yellow (Antidote: Calcium Gluconate).'
+              '4. General Study & Lab Examination of Toxic Inorganic Anions & Corrosive Acids/Alkalis: (a) Nitrite (NO2-) & Nitrate (NO3-): Nitrites oxidize Fe2+ hemoglobin to chocolate-brown Methemoglobin (Fe3+; treated with IV Methylene Blue 1–2 mg/kg). Lab: Griess Ilosvay Test (Sulfanilic acid + alpha-naphthylamine → pink/red azo dye for Nitrite) and Diphenylamine Test / Brown Ring Test (FeSO4 + conc. H2SO4 → brown [Fe(H2O)5NO]2+ ring for Nitrate/Nitrite); (b) Sulphide (S2- / H2S "Sewer Gas"): Knock-down histotoxic asphyxiant smelling of rotten eggs; blackens Lead Acetate paper (forming black PbS) and turns Sodium Nitroprusside violet in alkaline medium; (c) Sulphate & Sulfuric Acid (SO42- / H2SO4 "Oil of Vitriol"): Strong mineral acid causing coagulation necrosis, black charring/carbonization of stomach mucosa and clothing, and criminal acid throwing ("Vitriolage" under Sec. 124 BNS); forms white BaSO4 precipitate with Barium Chloride insoluble in conc. HNO3/HCl; Nitric Acid (HNO3) produces characteristic golden-yellow Xanthoproteic staining of skin and mucosa (picric acid formation), while Hydrochloric Acid (HCl) causes parchment-grey necrosis and white fumes of NH4Cl with ammonia; (d) Organic Corrosives — Oxalic Acid ("Salt of Sorrel") & Carbolic Acid (Phenol): Oxalic acid causes sour taste, coffee-ground emesis, profound hypocalcemic tetany, and pathognomonic octohedral "Envelope-Shaped" Calcium Oxalate crystals in urine and renal tubules (Antidote: IV/Oral Calcium Gluconate); Carbolic acid (Phenol / Lysol) causes painless white leathery hardened stomach mucosa (due to local nerve-ending anesthesia!), phenolic odor, and greenish-dark "Carboluria" on air oxidation of hydroquinone/pyrocatechol (confirmed by violet colour with Ferric Chloride and yellow tribromophenol precipitate with Bromine water); Caustic Alkalis (NaOH, KOH) cause brownish-soft liquefactive necrosis and fat saponification; (e) Phosphide (P3- / Aluminium & Zinc Phosphide): Liberates PH3 gas; blackens AgNO3 paper while Lead Acetate paper remains negative; (f) Chlorate (ClO3- — Potassium/Sodium Chlorate in match-heads & weedkillers): Powerful oxidizer causing acute intravascular hemolysis, chocolate-brown methemoglobinemia, and renal failure; turns Indigo Carmine blue solution yellow/colourless on adding sulfurous acid and gives blue colour with diphenylamine; (g) Borate (BO33- / Boric Acid & Borax): Causes "boiled lobster" erythematous rash and blue-green vomiting; Turmeric Paper Test turns reddish-brown on drying with HCl (turning greenish-black with NaOH), and burns with an Apple-Green edged flame when heated with Methanol + conc. H2SO4 (trimethyl borate); (h) Bromide (Br-) & Bromate (BrO3-): Chronic Bromide causes "Bromism" (acneiform rash, psychosis, ataxia); Acute Potassium Bromate (hair neutralizer) causes irreversible sensorineural deafness (ototoxicity) and acute renal failure; Lab: Fluorescein test (chlorine water liberates Br2 which converts yellow fluorescein paper into red Eosin!); (i) Fluoride (F- / Sodium Fluoride & Hydrofluoric Acid): Binds serum Ca2+ causing lethal hypocalcemia/tetany and inhibits enolase; Lab: Etches glass (SiF4) and bleaches pink Zirconium-Alizarin lake to yellow (Antidote: Calcium Gluconate).'
             ]
           }
         ],
@@ -1365,8 +1370,8 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
     ],
     assignment: {
       id: 'm4-assign',
-      title: 'Case Assignment 4 (Even Module): Unit III Widmark Liquor Estimation, Metallic Poison Differentiation & Inorganic Anion Analysis',
-      caseScenario: 'Case Part A (Traffic & Liquor Investigation): A 75 kg male driver (Widmark factor r = 0.68) is involved in a fatal highway collision. Venous blood drawn 3 hours after the crash shows a Blood Alcohol Concentration (c) of 120 mg/100 mL (1.2 g/kg) by HS-GC-FID and Kozelka-Hine dichromate titration. His zero-order elimination rate (β) is 15 mg/100 mL/hr. Case Part B (Unit III Metallic & Inorganic Anion Lab Case): The FSL receives viscera from two fatalities—Victim 1 shows white octahedral crystals in the Reinsch sublimate and a black Marsh deposit; Victim 2 ingested grain fumigant tablets that blackened Silver Nitrate paper while leaving Lead Acetate paper colourless.',
+      title: 'Case Assignment 4: Widmark Liquor Estimation, Metallic Poison Differentiation & Inorganic Anion Analysis',
+      caseScenario: 'Case Part A (Traffic & Liquor Investigation): A 75 kg male driver (Widmark factor r = 0.68) is involved in a fatal highway collision. Venous blood drawn 3 hours after the crash shows a Blood Alcohol Concentration (c) of 120 mg/100 mL (1.2 g/kg) by HS-GC-FID and Kozelka-Hine dichromate titration. His zero-order elimination rate (β) is 15 mg/100 mL/hr. Case Part B (Metallic & Inorganic Anion Lab Case): The FSL receives viscera from two fatalities—Victim 1 shows white octahedral crystals in the Reinsch sublimate and a black Marsh deposit; Victim 2 ingested grain fumigant tablets that blackened Silver Nitrate paper while leaving Lead Acetate paper colourless.',
       instructions: [
         'Calculate the total grams of pure ethanol (A) present in the 75 kg male driver (r = 0.68) at the time of blood draw when c = 1.2 g/kg [A = 1.2 × 75 × 0.68].',
         'Perform Retrograde Extrapolation: Calculate the driver’s BAC (in mg/100 mL) at the exact time of the crash 3 hours earlier [C0 = 120 + (15 × 3)].',
@@ -1430,8 +1435,8 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
       minWordCount: 35,
       requiredKeywords: [
         { groupLabel: 'Widmark & Liquor Estimation (Sec. 185 MV Act)', terms: ['widmark', '165', '30 mg', '185', 'dichromate', 'hs-gc', 'kozelka', 'cavett', '2100'] },
-        { groupLabel: 'Unit III Reinsch & Marsh Metallic Differentiation', terms: ['reinsch', 'marsh', 'arsenic', 'octahedral', 'hypochlorite', 'naocl', 'antimony'] },
-        { groupLabel: 'Unit III Phosphine & Inorganic Anion Confirmation', terms: ['phosphine', 'ph3', 'silver nitrate', 'lead acetate', 'h2s', 'molybdate'] }
+        { groupLabel: 'Reinsch & Marsh Metallic Differentiation', terms: ['reinsch', 'marsh', 'arsenic', 'octahedral', 'hypochlorite', 'naocl', 'antimony'] },
+        { groupLabel: 'Phosphine & Inorganic Anion Confirmation', terms: ['phosphine', 'ph3', 'silver nitrate', 'lead acetate', 'h2s', 'molybdate'] }
       ],
       sampleFrameworkHint: 'State that 165 mg/100 mL is 5.5× the 30 mg/100 mL statutory limit under Sec 185 MV Act (estimated via HS-GC-FID and Kozelka-Hine/Cavett dichromate oxidation), explain how Reinsch octahedral As2O3 crystals and NaOCl-soluble Marsh mirror confirm Arsenic over Antimony, and explain how AgNO3 (+) with Lead Acetate (-) and Ammonium Molybdate confirm Phosphine (PH3) over putrefactive H2S.'
     }
@@ -1468,7 +1473,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
           },
           {
             subtitle: 'Forensic Profiles of Specific NDPS Drugs: Cannabis, Heroin, Cocaine, Amphetamine, LSD, Phencyclidine, MDMA & Peyote',
-            body: 'Each of the eight core Unit IV drug classes exhibits diagnostic botanical/chemical features, presumptive spot tests, and definitive metabolic biomarkers:',
+            body: 'Each of the eight core NDPS drug classes exhibits diagnostic botanical/chemical features, presumptive spot tests, and definitive metabolic biomarkers:',
             keyPoints: [
               '1. Cannabis (Cannabis sativa / indica — Cannabaceae): Dioecious herb bearing unicellular curved "bear-claw" Cystolithic Trichomes (with basal calcium carbonate deposits that effervesce with dilute HCl under microscopy!) and glandular trichomes secreting C21 terpenophenolic Cannabinoids: Δ9-Tetrahydrocannabinol (Δ9-THC, primary psychoactive CB1 agonist), Cannabidiol (CBD), and Cannabinol (CBN, oxidative degradation marker of aged cannabis). Preparations: Bhang (dried leaves — excluded from NDPS definition unless mixed with tops/resin; controlled under State Excise), Ganja (flowering/fruiting tops of female plant, 3–8% THC; Small Qty = 1 kg, Commercial = 20 kg), Charas / Hashish (separated resin, 10–25% THC; Small Qty = 100 g, Commercial = 1 kg), and Hashish Oil (30–60% THC). Spot Tests: Duquenois-Levine Test (Vanillin + acetaldehyde + ethanol + conc. HCl → deep violet-purple colour that extracts selectively into the lower Chloroform layer!) and Fast Blue B Salt Test (red-purple cannabinoidphenolic coupling). Bioanalytical Marker: 11-nor-9-carboxy-Δ9-THC (THC-COOH) in urine/blood.',
               '2. Heroin (Diacetylmorphine — Semi-Synthetic Opioid): Synthesized by acetylating anhydrous Morphine (from Opium) with Acetic Anhydride (a controlled precursor). Street "Brown Sugar" contains 10–40% diacetylmorphine base cut with caffeine, paracetamol, procaine, or phenobarbital, plus manufacturing impurities (6-acetylcodeine, noscapine, papaverine). Rapidly deacetylated in blood (t1/2 ≈ 3 min) to 6-Monoacetylmorphine (6-MAM — the ONLY pathognomonic biomarker proving Heroin intake over medicinal morphine or poppy seeds!) and then to Morphine (conjugated to M3G and active M6G). Spot Tests: Marquis Reagent (Formaldehyde + conc. H2SO4 → Purple-Violet), Froehde’s Reagent (Purple → Green), Mecke’s Reagent (Deep Bluish-Green), and Nitric Acid (Yellow turning green on heating). NDPS Thresholds: Small = 5 g, Commercial = 250 g.',
@@ -1514,7 +1519,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
           },
           {
             subtitle: 'Specific Study: Hydromorphone, Methadone, Mescaline, Phencyclidine, Atropine & Cocaine',
-            body: 'In accordance with the Unit IV syllabus, forensic toxicologists must master the structure, toxicodynamics, and confirmatory characterization of these six specified alkaloids and synthetic analogs:',
+            body: 'Forensic toxicologists must master the structure, toxicodynamics, and confirmatory characterization of these six specified alkaloids and synthetic analogs:',
             keyPoints: [
               '1. Hydromorphone (Dihydromorphinone — "Dilaudid"): Semi-synthetic phenanthrene opioid ketone derivative of Morphine (5–8× more potent than Morphine as a full μ-opioid receptor agonist; contains a C6 ketone group and saturated C7–C8 bond while retaining the acidic C3 phenolic -OH, making it Amphoteric like morphine and requiring extraction at pH 8.5–9.0!). Also formed as a minor endogenous Phase I metabolite of high-dose Morphine or Hydrocodone (via CYP2D6). Metabolized primarily to Hydromorphone-3-glucuronide (H3G, neuroexcitatory at high renal-failure levels). Spot Tests: Marquis (Yellow → Red → Purple), Froehde (Purple → Blue), and forms a yellow hydrazone with 2,4-DNP due to its C6 ketone.',
               '2. Methadone (6-Dimethylamino-4,4-diphenyl-3-heptanone — "Dolophine"): Synthetic open-chain diphenylheptane full μ-opioid agonist AND non-competitive NMDA receptor antagonist, PLUS inhibitor of cardiac hERG Potassium channels (causing dose-dependent QTc prolongation and lethal Torsades de Pointes ventricular arrhythmia!). High oral bioavailability (~80%), high lipophilicity (Vd ≈ 4.0 L/kg — significant PMR!), and long, variable elimination half-life (24–55 hours), making fatal accumulation common during the first week of opioid maintenance induction. Metabolized via hepatic CYP3A4/CYP2B6 N-demethylation followed by spontaneous cyclization into its primary inactive urinary biomarker: EDDP (2-Ethylidene-1,5-dimethyl-3,3-diphenylpyrrolidine) and EMDP. Forensically, detecting EDDP in urine proves genuine in-vivo ingestion and rules out "spiking" (adding a drop of methadone directly into the urine cup at a clinic!). Spot Test: Mandelin’s (Green-to-Blue) & Cobalt Thiocyanate.',
@@ -1701,7 +1706,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
     ],
     assignment: {
       id: 'm5-assign',
-      title: 'Case Assignment 5: Unit IV NDPS Seizure Classification, Alkaloid Profiling & WADA Sports Doping GC-C-IRMS Evaluation',
+      title: 'Case Assignment 5: NDPS Seizure Classification, Alkaloid Profiling & WADA Sports Doping GC-C-IRMS Evaluation',
       caseScenario: 'Narcotics Control Bureau (NCB) officers intercept Packet A (320 g of Heroin) and Packet B (1.4 kg of Charas resin), alongside biological samples from a suspected Methadone and Tropane alkaloid overdose. Separately, a WADA-accredited sports doping laboratory screens an athlete’s urine showing a Testosterone/Epitestosterone (T/E) ratio above the screening threshold.',
       instructions: [
         'Enter the statutory NDPS Commercial Quantity threshold (in grams) for Heroin.',
@@ -1748,7 +1753,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
         },
         {
           id: 'methadone_biomarker',
-          label: 'Primary Urinary Metabolite Confirming Genuine Methadone Intake (Unit IV Alkaloid Profile)',
+          label: 'Primary Urinary Metabolite Confirming Genuine Methadone Intake (Alkaloid Profile)',
           type: 'select',
           options: [
             'EDDP (2-Ethylidene-1,5-dimethyl-3,3-diphenylpyrrolidine)',
@@ -1761,7 +1766,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
           hint: 'Methadone undergoes N-demethylation and cyclization to EDDP, proving in-vivo metabolism vs. sample spiking.'
         }
       ],
-      writtenPrompt: 'Summarize the Unit IV NDPS classification of Heroin (250 g Commercial) and Charas (1000 g Commercial), alkaloid characterization reagents (Dragendorff/Mayer/Wagner/Vitali-Morin), and WADA GC-C-IRMS confirmation of exogenous testosterone:',
+      writtenPrompt: 'Summarize the NDPS classification of Heroin (250 g Commercial) and Charas (1000 g Commercial), alkaloid characterization reagents (Dragendorff/Mayer/Wagner/Vitali-Morin), and WADA GC-C-IRMS confirmation of exogenous testosterone:',
       minWordCount: 30,
       requiredKeywords: [
         { groupLabel: 'NDPS & Biomarkers (6-MAM / EDDP)', terms: ['250', '6-mam', 'heroin', 'charas', 'ndps', 'eddp'] },
@@ -1779,9 +1784,9 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
     level: 'Advanced',
     estimatedHours: '9 Hours',
     learningObjectives: [
-      'Examine all sixteen statutory Plant Poisons (Unit V): Opium, Strychnos nux-vomica, Mexican prickly poppy (Argemone mexicana), Dhatura, Aconite, Atropa, Kaner, Madar, Cannabis, Abrus, Ricinus, Bhilawa, Plumbago, Poisonous fungi (Ergot), Cyanogenetic glycosides, and Poisonous mushrooms.',
+      'Examine all sixteen statutory Plant Poisons: Opium, Strychnos nux-vomica, Mexican prickly poppy (Argemone mexicana), Dhatura, Aconite, Atropa, Kaner, Madar, Cannabis, Abrus, Ricinus, Bhilawa, Plumbago, Poisonous fungi (Ergot), Cyanogenetic glycosides, and Poisonous mushrooms.',
       'Differentiate Animal & Venomous Poisons (Snake Big Four, Cantharidin, Scorpion, Insects, and Marine Toxins) alongside Bacterial and Chemical Food Poisoning (FSSAI vs. FSL roles).',
-      'Execute Hair Segmental Analysis (1.0 cm/month chronology, SoHT decontamination) and Drug Metabolism interpretation (EtG/EtS vs. microbial fermentation, CYP450 polymorphisms, parent-to-metabolite ratios).',
+      'Execute Hair Segmental Analysis (1.0 cm/month chronology, SoHT decontamination), Alternative Specialized Matrices (Oral Fluid/Saliva, Sweat, Meconium, Nails, Entomotoxicology), and Drug Metabolism interpretation (EtG/EtS vs. microbial fermentation, CYP450 polymorphisms, parent-to-metabolite ratios).',
       'Draft court-admissible Forensic Science Laboratory (FSL) Expert Reports under Section 329 BNSS (293 CrPC) and explain the scientific causes of negative chemical reports in true poisonings.'
     ],
     interactiveToolType: 'fsl_report_verifier',
@@ -1807,7 +1812,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
           },
           {
             subtitle: 'Irritant, Adulterant, Vesicant & Fungal/Glycosidic Plant Poisons: Argemone, Abrus, Ricinus, Bhilawa, Plumbago, Ergot, Cyanogenetic Glycosides & Mushrooms',
-            body: 'The remaining eight Unit V botanical classes produce distinctive vascular, ribosome-inactivating, vesicant, or hepatorenal syndromes:',
+            body: 'The remaining eight botanical classes produce distinctive vascular, ribosome-inactivating, vesicant, or hepatorenal syndromes:',
             keyPoints: [
               '9. Mexican Prickly Poppy (Argemone mexicana — Satyanashi / Bhatkataiya / Kateli): Prickly thistle-like weed with yellow flowers and dark brown-black spherical globular seeds bearing a netted/reticulated surface and prominent raphe that closely resemble Mustard Seeds (Brassica nigra)! Intentional or accidental adulteration of Mustard Oil with Argemone Oil (containing benzophenanthridine isoquinoline alkaloids Sanguinarine and Dihydrosanguinarine) causes "Epidemic Dropsy": Sanguinarine inhibits Na+/K+-ATPase and oxidizes pyruvate, causing generalized capillary endothelial leakage, bilateral pitting pedal edema, tender erythematous skin nodules (erythema/telangiectasia), non-inflammatory Open-Angle Glaucoma (visual loss), high-output congestive heart failure, and breathlessness without albuminuria! Confirmatory Chemical Tests for Argemone Oil: (a) Nitric Acid Test (shake oil with equal volume of conc. HNO3 → crimson-orange to reddish-brown colour in lower acid layer); (b) Ferric Chloride Test (shake oil in HCl + alcohol with FeCl3 → reddish-brown acicular needle crystals of ferric sanguinarine!); (c) Cupric Acetate Test & Paper Chromatography / HPTLC (bright orange fluorescence under 366 nm UV).',
               '10. Abrus precatorius (Ratti / Gunja / Jequirity / Rosary Pea): Oval scarlet-red seeds with a jet-black spot at one pole (or white/black varieties; uniform average weight ~105–120 mg used historically by Indian goldsmiths as the "Ratti" weight!). Contains the heat-labile Toxalbumin Abrin (Type II Ribosome-Inactivating Protein: A-chain depurinates 28S rRNA of 60S ribosome halting protein synthesis; B-chain binds galactose and agglutinates RBCs) plus abric acid and N-methyltryptophan (abrine). Boiling or cooking destroys Abrin, and swallowing whole unbroken seeds is harmless; however, chewing 1–2 raw seeds causes fatal hemorrhagic gastroenteritis, OR decorticating and grinding seeds with madar latex/opium/dhatura into sharp sun-dried conical needles ("Suis" / "Sutari", 15–20 mm long, ~90–120 mg) driven under the skin of cattle (to obtain cheap hides) or humans causes massive local edema, ecchymosis, and fatal necrosis closely mimicking a Viperid Snakebite! Differentiated at autopsy by dissecting the puncture site to recover fragmentary wooden/seed "Sui" remnants and performing anti-abrin agglutination/LC-MS.',
@@ -1876,7 +1881,8 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
             formula: 'Chronological Time Prior to Collection (Months) = Hair Segment Distance from Scalp Root (cm) / Average Growth Rate (1.0 cm/month)',
             keyPoints: [
               '1. Society of Hair Testing (SoHT) & SOFT Protocol: A pencil-thick lock (~100–200 strands) of scalp hair is cut (or plucked with roots for thallium/arsenic) from the Posterior Vertex (where blood supply is richest and ~85% of follicles are in uniform active Anagen growth at ~1.0 cm/month, range 0.7–1.4 cm/month). Because the hair follicle bulb sits 3–4 mm below the epidermis, a single drug dose takes 7–14 days to emerge above the scalp surface. In the laboratory, hair is aligned root-to-tip, segmented into 1.0 cm (or 0.5 cm) sections, and subjected to Sequential Decontamination Washes (dichloromethane/acetone + aqueous buffer) to remove external environmental smoke or sweat contamination before enzymatic/acid hydrolysis and LC-MS/MS or ICP-MS analysis. Systemic bloodstream incorporation is proven by: (a) a low Wash-to-Extract Ratio (<0.1), (b) detection of endogenous hepatic metabolites inside the hair shaft (e.g., Cocaethylene, Norcocaine, or 6-MAM/Morphine ratio > 0.05), and (c) adhering to SoHT cut-offs (e.g., Cocaine ≥ 500 pg/mg, 6-MAM ≥ 200 pg/mg, THC ≥ 50 pg/mg, EtG ≥ 30 pg/mg for chronic excessive drinking). Basic lipophilic drugs bind strongly to acidic eumelanin pigment (dark hair binds 5–10× more cocaine/codeine than blonde/grey hair), whereas acidic drugs incorporate poorly.',
-              '2. Drug Metabolism, Parent-to-Metabolite Ratios & Resolving Postmortem Microbial Ethanol: In postmortem interpretation, high Parent-to-Metabolite ratios in peripheral blood indicate acute rapid overdose (death occurred before significant hepatic Phase I/II conversion), whereas low Parent-to-Metabolite ratios indicate prolonged survival after ingestion or chronic therapy. In decomposed/submerged bodies, microbes (Candida albicans, Clostridium perfringens) ferment glucose into ethanol (up to 50–150 mg/dL in putrefied blood). Antemortem drinking is definitively differentiated from postmortem microbial fermentation by: (a) Concordant ethanol in Vitreous Humor (Vitreous : Blood ≈ 1.15 : 1; zero in microbial fermentation), (b) Non-oxidative hepatic Phase II conjugates Ethyl Glucuronide (EtG ≥ 0.1–0.5 mg/L) and Ethyl Sulfate (EtS — NEVER synthesized by bacteria postmortem!), and (c) Urinary Serotonin metabolite ratio 5-HTOL / 5-HIAA > 15 pmol/nmol.'
+              '2. Alternative Specialised Matrices (Oral Fluid / Saliva, Sweat Patches, Meconium, Nails & Entomotoxicology): (a) Oral Fluid (Saliva, pH 6.2–7.4 vs. plasma pH 7.4): Collected non-invasively under direct visual observation (preventing urine adulteration/substitution) for roadside Driving Under the Influence of Drugs (DUID) and workplace testing; because saliva is slightly more acidic than plasma, unionized weak bases (Amphetamines, Methamphetamine, MDMA, Cocaine, 6-MAM, Codeine, Methadone) undergo Henderson-Hasselbalch ion-trapping into oral fluid at concentrations higher than plasma, whereas Δ9-THC in oral fluid primarily reflects recent buccal mucosal contamination from smoking; (b) Sweat Patches (FDA/SAMHSA PharmChek cellulose pad worn for 7–14 days): Continuously accumulates parent drugs (Cocaine, 6-MAM, Amphetamines, Methadone, PCP) excreted via eccrine sweat in drug-court and probation monitoring; (c) Meconium & Umbilical Cord Tissue: First neonatal intestinal discharge (formed starting from the 12th–16th week of gestation) provides a cumulative 2nd- and 3rd-trimester gestational window of maternal drug/alcohol exposure (THC-COOH, Benzoylecgonine, Opioids, Fatty Acid Ethyl Esters [FAEEs] & EtG); (d) Nail Clippings & Scrapings: Fingernails grow at ~3.0 mm/month (3–5 month window) and toenails at ~1.1 mm/month (8–12 month window), Incorporating Arsenic (Aldrich-Mees lines), Thallium, Mercury, and basic drugs into disulfide-crosslinked hard keratin; (e) Entomotoxicology: When advanced putrefaction or skeletonization destroys soft tissues and fluids, necrophagous blowfly (Calliphoridae) larvae (maggots) and empty chitinized puparial cases bioaccumulate systemic poisons (Organophosphates, Barbiturates, Amitriptyline, Opioids, Cocaine, Arsenic, Mercury) while drug-induced accelerations (Cocaine/Methamphetamine speeding larval development) or retardations (Organophosphates/Malathion delaying pupation) must be factored into Post-Mortem Interval (PMI) estimation.',
+              '3. Drug Metabolism, Parent-to-Metabolite Ratios & Resolving Postmortem Microbial Ethanol: In postmortem interpretation, high Parent-to-Metabolite ratios in peripheral blood indicate acute rapid overdose (death occurred before significant hepatic Phase I/II conversion), whereas low Parent-to-Metabolite ratios indicate prolonged survival after ingestion or chronic therapy. In decomposed/submerged bodies, microbes (Candida albicans, Clostridium perfringens) ferment glucose into ethanol (up to 50–150 mg/dL in putrefied blood). Antemortem drinking is definitively differentiated from postmortem microbial fermentation by: (a) Concordant ethanol in Vitreous Humor (Vitreous : Blood ≈ 1.15 : 1; zero in microbial fermentation), (b) Non-oxidative hepatic Phase II conjugates Ethyl Glucuronide (EtG ≥ 0.1–0.5 mg/L) and Ethyl Sulfate (EtS — NEVER synthesized by bacteria postmortem!), and (c) Urinary Serotonin metabolite ratio 5-HTOL / 5-HIAA > 15 pmol/nmol.'
             ]
           },
           {
@@ -2035,14 +2041,14 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
     ],
     assignment: {
       id: 'm6-assign',
-      title: 'Case Assignment 6 (Even Module): Final Capstone — Unit V Plant/Animal Toxinology, Hair Chronology, EtG & Section 329 BNSS FSL Report',
+      title: 'Case Assignment 6: Final Capstone — Plant/Animal Toxinology, Hair Chronology, EtG & Section 329 BNSS FSL Report',
       caseScenario: 'Final Capstone Investigation: The Sessions Court refers a multi-exhibit toxicology file to your Forensic Science Laboratory: (1) Posterior vertex scalp hair (average growth rate = 1.0 cm/month) cut at the root from a chronic poisoning victim reveals a massive Arsenic & Thallium peak in the segment from 4.0 cm to 6.0 cm from the scalp. (2) Decomposed femoral blood from a river recovery shows 70 mg/dL ethanol, but Vitreous Humor ethanol is 0 mg/dL and urinary Ethyl Glucuronide (EtG) is 0.0 mg/L. (3) Village clinical and chemical exhibits include: Exhibit A—adulterated mustard oil from an outbreak of bilateral pitting pedal edema & glaucoma giving a crimson-orange layer with concentrated Nitric Acid; Exhibit B—a black pericarp seed extract turning deep purple with alcoholic KOH used to inflict a false bruise; and Exhibit C—a child hospitalized with severe pulmonary edema and priapism after an Indian Red Scorpion sting.',
       instructions: [
         'Calculate how many months prior to hair collection the start of the 4.0 cm hair segment corresponds to (at 1.0 cm/month growth rate).',
         'Enter the statutory Section of the Bharatiya Nagarik Suraksha Sanhita (BNSS) 2023 (formerly Sec. 293 CrPC) under which the FSL Director’s Toxicology Report is admissible.',
         'Select the correct forensic interpretation of the 70 mg/dL decomposed blood ethanol given Vitreous = 0 and EtG = 0.',
-        'Select the correct Unit V Plant & Animal Toxinology triad matching Exhibits A, B, and C.',
-        'Draft your Final Courtroom FSL Toxicology Expert Opinion citing Section 329 BNSS, explaining the 4–6 month hair segmental chronology, the EtG/Vitreous proof of postmortem microbial fermentation, the Unit V Plant/Animal findings (Argemone Sanguinarine, Semecarpus anacardium Bhilawa, and Mesobuthus tamulus Prazosin physiological antagonism), and at least two reasons why a true poisoning can yield a negative routine chemical report.'
+        'Select the correct Plant & Animal Toxinology triad matching Exhibits A, B, and C.',
+        'Draft your Final Courtroom FSL Toxicology Expert Opinion citing Section 329 BNSS, explaining the 4–6 month hair segmental chronology, the EtG/Vitreous proof of postmortem microbial fermentation, the Plant/Animal findings (Argemone Sanguinarine, Semecarpus anacardium Bhilawa, and Mesobuthus tamulus Prazosin physiological antagonism), and at least two reasons why a true poisoning can yield a negative routine chemical report.'
       ],
       structuredFields: [
         {
@@ -2082,7 +2088,7 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
         },
         {
           id: 'unit5_plant_animal_triad',
-          label: 'Unit V Plant & Animal Toxinology Confirmation for Exhibits A (Dropsy Oil), B (False Bruise Nut) & C (Scorpion Sting)',
+          label: 'Plant & Animal Toxinology Confirmation for Exhibits A (Dropsy Oil), B (False Bruise Nut) & C (Scorpion Sting)',
           type: 'select',
           options: [
             'Exhibit A: Argemone mexicana (Sanguinarine) | Exhibit B: Semecarpus anacardium (Bhilawanol) | Exhibit C: Prazosin (Alpha-1 Blocker) for Scorpion Autonomic Storm',
@@ -2091,16 +2097,16 @@ export const FORENSIC_TOXICOLOGY_MODULES: ToxModule[] = [
             'Exhibit A: Nerium odorum | Exhibit B: Calotropis gigantea | Exhibit C: N-Acetylcysteine'
           ],
           expectedValue: 'Exhibit A: Argemone mexicana (Sanguinarine) | Exhibit B: Semecarpus anacardium (Bhilawanol) | Exhibit C: Prazosin (Alpha-1 Blocker) for Scorpion Autonomic Storm',
-          criterionLabel: 'Accurate Unit V identification of Argemone (Sanguinarine), Bhilawa (Semecarpus anacardium), and Prazosin therapy for Scorpion envenomation',
+          criterionLabel: 'Accurate identification of Argemone (Sanguinarine), Bhilawa (Semecarpus anacardium), and Prazosin therapy for Scorpion envenomation',
           hint: 'Argemone oil (Sanguinarine) causes Epidemic Dropsy; Semecarpus anacardium (Marking Nut) turns purple with alcoholic KOH; Prazosin reverses scorpion autonomic storm.'
         }
       ],
-      writtenPrompt: 'Draft your Final Courtroom FSL Toxicology Expert Opinion (cite Section 329 BNSS, explain why the 4.0–6.0 cm hair segment proves chronic metal exposure 4 to 6 months prior, explain why negative EtG/EtS + negative Vitreous proves postmortem fermentation, detail the Unit V findings for Argemone Sanguinarine, Bhilawa, and Scorpion Prazosin therapy, and state why a true poisoning can yield a negative routine chemical report):',
+      writtenPrompt: 'Draft your Final Courtroom FSL Toxicology Expert Opinion (cite Section 329 BNSS, explain why the 4.0–6.0 cm hair segment proves chronic metal exposure 4 to 6 months prior, explain why negative EtG/EtS + negative Vitreous proves postmortem fermentation, detail the findings for Argemone Sanguinarine, Bhilawa, and Scorpion Prazosin therapy, and state why a true poisoning can yield a negative routine chemical report):',
       minWordCount: 40,
       requiredKeywords: [
         { groupLabel: 'Hair Segmental Chronology (1 cm/month)', terms: ['hair', '4', '6', 'month', 'segment', '1 cm'] },
         { groupLabel: 'EtG / EtS & Vitreous Fermentation Proof', terms: ['etg', 'ethyl glucuronide', 'vitreous', 'fermentation', 'microbial', 'postmortem'] },
-        { groupLabel: 'Section 329 BNSS, Negative Report & Unit V Plant/Animal Toxins', terms: ['329', 'bnss', '293', 'negative', 'metabolism', 'elimination', 'hydrolysis', 'volatile', 'argemone', 'sanguinarine', 'prazosin', 'bhilawa', 'semecarpus'] }
+        { groupLabel: 'Section 329 BNSS, Negative Report & Plant/Animal Toxins', terms: ['329', 'bnss', '293', 'negative', 'metabolism', 'elimination', 'hydrolysis', 'volatile', 'argemone', 'sanguinarine', 'prazosin', 'bhilawa', 'semecarpus'] }
       ],
       sampleFrameworkHint: 'Include: (1) Admissibility under Section 329 BNSS (293 CrPC), (2) Hair growth at 1 cm/month placing the 4–6 cm metal band at 4–6 months prior, (3) Negative EtG/EtS and vitreous humor proving the 70 mg/dL blood ethanol is postmortem microbial fermentation, (4) Sanguinarine in Argemone oil (Epidemic Dropsy), Bhilawa (alcoholic KOH purple), and Prazosin for Scorpion sting, and (5) Why delayed death/metabolism or labile/volatile toxins can produce a negative chemical report.'
     }
@@ -2474,10 +2480,61 @@ function toWinAnsiSafe(text: string): string {
     .replace(/[^\x20-\x7E\xA0-\xFF]/g, '');
 }
 
+let cachedOfficialTemplatePngBytes: Uint8Array | null = null;
+
+async function loadOfficialTemplatePngBytes(): Promise<Uint8Array | null> {
+  if (cachedOfficialTemplatePngBytes && cachedOfficialTemplatePngBytes.byteLength > 0) {
+    return cachedOfficialTemplatePngBytes;
+  }
+
+  const urlsToTry = [OFFICIAL_CERT_TEMPLATE_LOCAL_PATH, OFFICIAL_CERT_TEMPLATE_REMOTE_URL];
+  for (const url of urlsToTry) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) {
+        const buf = await res.arrayBuffer();
+        if (buf.byteLength > 1000) {
+          cachedOfficialTemplatePngBytes = new Uint8Array(buf);
+          return cachedOfficialTemplatePngBytes;
+        }
+      }
+    } catch (_) {
+      // Try next URL
+    }
+  }
+  return null;
+}
+
+export function formatCertificateDateDdMmYyyy(rawDate: string): string {
+  const trimmed = (rawDate || '').trim();
+  if (!trimmed) {
+    const now = new Date();
+    const dd = String(now.getDate()).padStart(2, '0');
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${now.getFullYear()}`;
+  }
+  // Already in DD/MM/YYYY or DD-MM-YYYY format
+  if (/^\d{1,2}[/-]\d{1,2}[/-]\d{4}$/.test(trimmed)) {
+    return trimmed.replace(/-/g, '/');
+  }
+  const parsed = new Date(trimmed);
+  if (!isNaN(parsed.getTime())) {
+    const dd = String(parsed.getDate()).padStart(2, '0');
+    const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+    return `${dd}/${mm}/${parsed.getFullYear()}`;
+  }
+  return trimmed;
+}
+
 /**
- * Generates the learner's Certificate PDF using either:
- * 1. The uploaded custom PDF/Image template (stamping ONLY the Registered Name, Date, and optional Certificate ID at the configured coordinates), OR
- * 2. The built-in official ForenClue Forensic Toxicology Certificate PDF template if no custom template bytes are supplied.
+ * Generates the learner's Certificate PDF using the official Purple & Gold ForenClue
+ * Completion Certificate template (or an admin-uploaded custom template), dynamically
+ * stamping for each individual candidate:
+ * 1. Completion Date (DD/MM/YYYY) next to "Date :"
+ * 2. Candidate's Full Name under "THIS IS TO CERTIFY THAT"
+ * 3. Course Title, Course Code (FT2601), 6-Module Specialization & Competency Details
+ * 4. Scannable Vector Verification QR Code inside the QR corner brackets
+ * 5. Unique Certificate Verification ID below the QR code
  */
 export async function generateForensicToxicologyCertificatePdf(params: {
   learnerName: string;
@@ -2489,275 +2546,338 @@ export async function generateForensicToxicologyCertificatePdf(params: {
 }): Promise<Uint8Array> {
   const { learnerName, issueDate, certificateNo, config, customTemplateBytes, customTemplateMimeType } = params;
 
-  let pdfDoc: PDFDocument;
-  let isCustomTemplateLoaded = false;
+  const pageWidth = 841.89; // A4 Landscape width in pt
+  const pageHeight = 595.28; // A4 Landscape height in pt
+
+  // Helpers to convert 1600 x 1131 template image pixel coordinates into PDF points
+  const pxX = (xImg: number) => (xImg / 1600) * pageWidth;
+  const pxY = (yImgFromTop: number) => ((1131 - yImgFromTop) / 1131) * pageHeight;
+  const pxW = (wImg: number) => (wImg / 1600) * pageWidth;
+  const pxH = (hImg: number) => (hImg / 1131) * pageHeight;
+
+  let pdfDoc = await PDFDocument.create();
+  let isCustomPdfLoaded = false;
+  let isOfficialPngBackgroundUsed = false;
 
   if (customTemplateBytes && customTemplateBytes.byteLength > 0) {
     try {
       if (customTemplateMimeType?.startsWith('image/')) {
-        pdfDoc = await PDFDocument.create();
         const isPng = customTemplateMimeType.includes('png');
         const embeddedImg = isPng
           ? await pdfDoc.embedPng(customTemplateBytes)
           : await pdfDoc.embedJpg(customTemplateBytes);
-        const page = pdfDoc.addPage([841.89, 595.28]); // A4 Landscape
+        const page = pdfDoc.addPage([pageWidth, pageHeight]);
         page.drawImage(embeddedImg, {
           x: 0,
           y: 0,
-          width: 841.89,
-          height: 595.28
+          width: pageWidth,
+          height: pageHeight
         });
-        isCustomTemplateLoaded = true;
+        isOfficialPngBackgroundUsed = true;
       } else {
-        // Native PDF template! Load the exact PDF template and stamp only Name & Date
         pdfDoc = await PDFDocument.load(customTemplateBytes, { ignoreEncryption: true });
-        isCustomTemplateLoaded = true;
+        isCustomPdfLoaded = true;
       }
     } catch (err) {
-      console.warn('Could not parse custom template bytes, using built-in official template:', err);
+      console.warn('Could not parse custom template bytes, falling back to official template:', err);
       pdfDoc = await PDFDocument.create();
     }
-  } else {
-    pdfDoc = await PDFDocument.create();
   }
 
-  const fontBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
-  const fontItalic = await pdfDoc.embedFont(StandardFonts.TimesRomanItalic);
+  if (!isCustomPdfLoaded && !isOfficialPngBackgroundUsed) {
+    const officialPngBytes = await loadOfficialTemplatePngBytes();
+    const page = pdfDoc.addPage([pageWidth, pageHeight]);
+    if (officialPngBytes) {
+      try {
+        const embeddedPng = await pdfDoc.embedPng(officialPngBytes);
+        page.drawImage(embeddedPng, {
+          x: 0,
+          y: 0,
+          width: pageWidth,
+          height: pageHeight
+        });
+        isOfficialPngBackgroundUsed = true;
+      } catch (embedErr) {
+        console.warn('Failed to embed official template PNG:', embedErr);
+      }
+    }
+  }
+
+  const fontSerifBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
   const fontSansBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
   const fontSans = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
-  const safeCertNo = toWinAnsiSafe(certificateNo.trim());
-
-  if (!isCustomTemplateLoaded) {
-    // Draw the Official ForenClue Forensic Toxicology Certificate Template on A4 Landscape (841.89 x 595.28 pt)
-    const width = 841.89;
-    const height = 595.28;
-    const page = pdfDoc.addPage([width, height]);
-
-    // Ivory parchment background
-    page.drawRectangle({
-      x: 0,
-      y: 0,
-      width,
-      height,
-      color: rgb(0.99, 0.985, 0.97)
-    });
-
-    // Outer deep navy border
-    page.drawRectangle({
-      x: 24,
-      y: 24,
-      width: width - 48,
-      height: height - 48,
-      borderColor: rgb(0.06, 0.11, 0.22),
-      borderWidth: 3.5
-    });
-
-    // Inner gold double hairline border
-    page.drawRectangle({
-      x: 34,
-      y: 34,
-      width: width - 68,
-      height: height - 68,
-      borderColor: rgb(0.76, 0.6, 0.22),
-      borderWidth: 1.5
-    });
-
-    // Top Header Banner
-    const orgTitle = toWinAnsiSafe('FORENCLUE VENTURES | DIVISION OF FORENSIC TOXICOLOGY');
-    const orgWidth = fontSansBold.widthOfTextAtSize(orgTitle, 11);
-    page.drawText(orgTitle, {
-      x: (width - orgWidth) / 2,
-      y: height - 78,
-      size: 11,
-      font: fontSansBold,
-      color: rgb(0.72, 0.54, 0.14)
-    });
-
-    const mainHeading = 'CERTIFICATE OF EXCELLENCE & COMPLETION';
-    const mainHeadingWidth = fontBold.widthOfTextAtSize(mainHeading, 26);
-    page.drawText(mainHeading, {
-      x: (width - mainHeadingWidth) / 2,
-      y: height - 118,
-      size: 26,
-      font: fontBold,
-      color: rgb(0.06, 0.11, 0.22)
-    });
-
-    const subText = 'This is to officially certify that';
-    const subWidth = fontItalic.widthOfTextAtSize(subText, 14);
-    page.drawText(subText, {
-      x: (width - subWidth) / 2,
-      y: height - 156,
-      size: 14,
-      font: fontItalic,
-      color: rgb(0.35, 0.4, 0.48)
-    });
-
-    // Decorative gold line under learner's name area
-    page.drawLine({
-      start: { x: 180, y: height * (config.nameYPercent / 100) - 10 },
-      end: { x: width - 180, y: height * (config.nameYPercent / 100) - 10 },
-      thickness: 1.2,
-      color: rgb(0.76, 0.6, 0.22)
-    });
-
-    // Course Completion Body Copy
-    const line1 = toWinAnsiSafe('has successfully completed all 6 Self-Paced Research Modules, Analytical Case Assignments,');
-    const line2 = toWinAnsiSafe('and Proctored AutoCheck Assessments (achieving >= 90% mastery in every module) for the');
-    const courseName = toWinAnsiSafe('CERTIFICATE COURSE IN FORENSIC TOXICOLOGY (COURSE CODE: FT2601)');
-    const syllabusLine = toWinAnsiSafe('Covering Toxicokinetics, Postmortem Redistribution, Heavy Metals, Agrochemicals, NDPS Act, GC-MS/LC-MS/MS & BNSS Sec. 329 Reporting');
-
-    page.drawText(line1, {
-      x: (width - fontSans.widthOfTextAtSize(line1, 12)) / 2,
-      y: height - 290,
-      size: 12,
-      font: fontSans,
-      color: rgb(0.2, 0.25, 0.33)
-    });
-    page.drawText(line2, {
-      x: (width - fontSans.widthOfTextAtSize(line2, 12)) / 2,
-      y: height - 308,
-      size: 12,
-      font: fontSans,
-      color: rgb(0.2, 0.25, 0.33)
-    });
-    page.drawText(courseName, {
-      x: (width - fontSansBold.widthOfTextAtSize(courseName, 14.5)) / 2,
-      y: height - 336,
-      size: 14.5,
-      font: fontSansBold,
-      color: rgb(0.06, 0.11, 0.22)
-    });
-    page.drawText(syllabusLine, {
-      x: (width - fontSans.widthOfTextAtSize(syllabusLine, 9.5)) / 2,
-      y: height - 358,
-      size: 9.5,
-      font: fontSans,
-      color: rgb(0.4, 0.45, 0.52)
-    });
-
-    // Footer labels for Date, Seal, and Signature
-    page.drawLine({
-      start: { x: 140, y: 118 },
-      end: { x: 330, y: 118 },
-      thickness: 1,
-      color: rgb(0.6, 0.65, 0.72)
-    });
-    const dateLabel = 'DATE OF ISSUANCE';
-    page.drawText(dateLabel, {
-      x: 235 - fontSansBold.widthOfTextAtSize(dateLabel, 8.5) / 2,
-      y: 102,
-      size: 8.5,
-      font: fontSansBold,
-      color: rgb(0.4, 0.45, 0.52)
-    });
-
-    // Center Seal Badge
-    page.drawCircle({
-      x: width / 2,
-      y: 122,
-      size: 32,
-      borderColor: rgb(0.76, 0.6, 0.22),
-      borderWidth: 2,
-      color: rgb(0.97, 0.94, 0.85)
-    });
-    const sealText1 = 'AUTOCHECK';
-    const sealText2 = 'VERIFIED >=90%';
-    page.drawText(sealText1, {
-      x: width / 2 - fontSansBold.widthOfTextAtSize(sealText1, 7) / 2,
-      y: 125,
-      size: 7,
-      font: fontSansBold,
-      color: rgb(0.55, 0.4, 0.08)
-    });
-    page.drawText(sealText2, {
-      x: width / 2 - fontSansBold.widthOfTextAtSize(sealText2, 6.5) / 2,
-      y: 114,
-      size: 6.5,
-      font: fontSansBold,
-      color: rgb(0.55, 0.4, 0.08)
-    });
-
-    // Right Signature & Credential ID Line
-    page.drawLine({
-      start: { x: width - 330, y: 118 },
-      end: { x: width - 140, y: 118 },
-      thickness: 1,
-      color: rgb(0.6, 0.65, 0.72)
-    });
-    const sigLabel = 'CREDENTIAL VERIFICATION CODE';
-    page.drawText(sigLabel, {
-      x: width - 235 - fontSansBold.widthOfTextAtSize(sigLabel, 8.5) / 2,
-      y: 102,
-      size: 8.5,
-      font: fontSansBold,
-      color: rgb(0.4, 0.45, 0.52)
-    });
-
-    const verifyUrlText = toWinAnsiSafe(`Verify authenticity online at: forenclue.in/certificate?id=${safeCertNo}`);
-    page.drawText(verifyUrlText, {
-      x: (width - fontSans.widthOfTextAtSize(verifyUrlText, 8.5)) / 2,
-      y: 52,
-      size: 8.5,
-      font: fontSans,
-      color: rgb(0.45, 0.5, 0.58)
-    });
-  }
-
-  // Stamp Registered Name, Issue Date, and optional Certificate ID on the first page of the PDF
+  const safeCertNo = toWinAnsiSafe(certificateNo.trim()) || `FC-${FORENSIC_TOXICOLOGY_COURSE_CODE}-${new Date().getFullYear()}`;
   const pages = pdfDoc.getPages();
   const firstPage = pages[0];
   const { width, height } = firstPage.getSize();
 
-  // 1. Stamp Learner's Registered Name
-  const cleanName = toWinAnsiSafe(learnerName.trim()) || 'Candidate';
-  const nameFontSize = config.nameFontSize || 28;
-  const nameTextWidth = fontBold.widthOfTextAtSize(cleanName, nameFontSize);
-  const rawNameX = (config.nameXPercent / 100) * width;
-  const nameX = config.nameCentered ? rawNameX - nameTextWidth / 2 : rawNameX;
-  const nameY = (config.nameYPercent / 100) * height;
+  // Ensure the 5 placeholder regions on the Purple & Gold template are masked in pure white
+  // even if the uncleaned remote PNG was loaded
+  if (isOfficialPngBackgroundUsed) {
+    const white = rgb(1, 1, 1);
+    // 1. Mask "DD/MM/YYYY" after "Date :"
+    firstPage.drawRectangle({
+      x: pxX(97),
+      y: pxY(465),
+      width: pxW(205),
+      height: pxH(30),
+      color: white
+    });
+    // 2. Mask "Person Name"
+    firstPage.drawRectangle({
+      x: pxX(530),
+      y: pxY(665),
+      width: pxW(680),
+      height: pxH(88),
+      color: white
+    });
+    // 3. Mask "Content of the course etc placed in this area"
+    firstPage.drawRectangle({
+      x: pxX(530),
+      y: pxY(825),
+      width: pxW(740),
+      height: pxH(135),
+      color: white
+    });
+    // 4. Mask "Certificate Generated scanable qr here" inside QR brackets
+    firstPage.drawRectangle({
+      x: pxX(1340),
+      y: pxY(743),
+      width: pxW(220),
+      height: pxH(71),
+      color: white
+    });
+    firstPage.drawRectangle({
+      x: pxX(1375),
+      y: pxY(778),
+      width: pxW(143),
+      height: pxH(142),
+      color: white
+    });
+    // 5. Mask "Certificate id here" below QR brackets
+    firstPage.drawRectangle({
+      x: pxX(1335),
+      y: pxY(855),
+      width: pxW(225),
+      height: pxH(48),
+      color: white
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // 1. STAMP COMPLETION DATE ("Date : DD/MM/YYYY")
+  // ---------------------------------------------------------------------------
+  const formattedDate = toWinAnsiSafe(formatCertificateDateDdMmYyyy(issueDate));
+  const useDefaultCoords =
+    config.nameXPercent === 50 && config.nameYPercent === 52 && config.dateXPercent === 28;
+  const effDateXPercent = useDefaultCoords ? DEFAULT_CERT_TEMPLATE_CONFIG.dateXPercent : config.dateXPercent;
+  const effDateYPercent = useDefaultCoords ? DEFAULT_CERT_TEMPLATE_CONFIG.dateYPercent : config.dateYPercent;
+  const effDateCentered = useDefaultCoords ? DEFAULT_CERT_TEMPLATE_CONFIG.dateCentered : config.dateCentered;
+  const dateFontSize = config.dateFontSize || 13.5;
+  const dateTextWidth = fontSerifBold.widthOfTextAtSize(formattedDate, dateFontSize);
+  const rawDateX = (effDateXPercent / 100) * width;
+  const dateX = effDateCentered ? rawDateX - dateTextWidth / 2 : rawDateX;
+  const dateY = (effDateYPercent / 100) * height;
+
+  firstPage.drawText(formattedDate, {
+    x: Math.max(10, dateX),
+    y: Math.max(10, dateY),
+    size: dateFontSize,
+    font: fontSerifBold,
+    color: hexToRgbColor(config.dateColorHex || '#111827')
+  });
+
+  // ---------------------------------------------------------------------------
+  // 2. STAMP CANDIDATE FULL NAME (Under "THIS IS TO CERTIFY THAT")
+  // ---------------------------------------------------------------------------
+  const cleanName = toWinAnsiSafe(learnerName.trim()) || 'Candidate Name';
+  const effNameXPercent = useDefaultCoords ? DEFAULT_CERT_TEMPLATE_CONFIG.nameXPercent : config.nameXPercent;
+  const effNameCentered = useDefaultCoords ? DEFAULT_CERT_TEMPLATE_CONFIG.nameCentered : config.nameCentered;
+
+  const maxContentWidth = pxW(700); // ~368 pt: stops at x_img=1241, leaving a clean 119 px (63 pt) margin before QR bracket at x_img=1360
+  let nameFontSize = 35;
+  while (nameFontSize > 20 && fontSansBold.widthOfTextAtSize(cleanName, nameFontSize) > maxContentWidth) {
+    nameFontSize -= 1;
+  }
+
+  const nameTextWidth = fontSansBold.widthOfTextAtSize(cleanName, nameFontSize);
+  const rawNameX = (effNameXPercent / 100) * width;
+  const nameX = effNameCentered ? rawNameX - nameTextWidth / 2 : rawNameX;
+  const nameY = pxY(606);
 
   firstPage.drawText(cleanName, {
     x: Math.max(10, nameX),
     y: Math.max(10, nameY),
     size: nameFontSize,
-    font: fontBold,
-    color: hexToRgbColor(config.nameColorHex || '#1E293B')
-  });
-
-  // 2. Stamp Completion Date
-  const cleanDate = toWinAnsiSafe(issueDate.trim());
-  const dateFontSize = config.dateFontSize || 13;
-  const dateTextWidth = fontSansBold.widthOfTextAtSize(cleanDate, dateFontSize);
-  const rawDateX = (config.dateXPercent / 100) * width;
-  const dateX = config.dateCentered ? rawDateX - dateTextWidth / 2 : rawDateX;
-  const dateY = (config.dateYPercent / 100) * height;
-
-  firstPage.drawText(cleanDate, {
-    x: Math.max(10, dateX),
-    y: Math.max(10, dateY),
-    size: dateFontSize,
     font: fontSansBold,
-    color: hexToRgbColor(config.dateColorHex || '#334155')
+    color: hexToRgbColor(config.nameColorHex || '#111827')
   });
 
-  // 3. Stamp Certificate Verification ID (if enabled)
+  // Crisp gold accent rule beneath Candidate Name
+  const underlineWidth = Math.min(maxContentWidth, Math.max(nameTextWidth + 36, pxW(540)));
+  firstPage.drawLine({
+    start: { x: Math.max(10, nameX), y: pxY(624) },
+    end: { x: Math.max(10, nameX) + underlineWidth, y: pxY(624) },
+    thickness: 1.6,
+    color: rgb(0.79, 0.56, 0.1)
+  });
+
+  // ---------------------------------------------------------------------------
+  // 3. STAMP PROFESSIONAL, HIGH-READABILITY COURSE COMPLETION & LEARNING DETAILS
+  // ---------------------------------------------------------------------------
+  const contentX = Math.max(10, nameX);
+  const drawFittedLine = (
+    text: string,
+    yPos: number,
+    preferredSize: number,
+    fontToUse: typeof fontSans,
+    colorVal: ReturnType<typeof rgb>
+  ) => {
+    const safeText = toWinAnsiSafe(text);
+    let sz = preferredSize;
+    while (sz > 8.5 && fontToUse.widthOfTextAtSize(safeText, sz) > maxContentWidth) {
+      sz -= 0.25;
+    }
+    firstPage.drawText(safeText, {
+      x: contentX,
+      y: yPos,
+      size: sz,
+      font: fontToUse,
+      color: colorVal
+    });
+  };
+
+  // Line 1: Crisp 11.8pt introductory citation
+  drawFittedLine(
+    'has successfully completed the 6-Module Self-Paced',
+    pxY(658),
+    11.8,
+    fontSansBold,
+    rgb(0.18, 0.22, 0.28)
+  );
+
+  // Line 2: Prominent 14.2pt Bold Royal Purple Course Title
+  drawFittedLine(
+    `CERTIFICATE COURSE IN FORENSIC TOXICOLOGY (${FORENSIC_TOXICOLOGY_COURSE_CODE})`,
+    pxY(694),
+    14.2,
+    fontSansBold,
+    rgb(0.24, 0.13, 0.45)
+  );
+
+  // Lines 3-5: What the learner learned across 3 balanced, large (10.6pt) readable lines
+  drawFittedLine(
+    'Covering Toxicokinetics, Postmortem Redistribution & Viscera Clean-Up,',
+    pxY(728),
+    10.6,
+    fontSans,
+    rgb(0.15, 0.2, 0.27)
+  );
+
+  drawFittedLine(
+    'GC-MS / ICP-MS Instrumentation, Metallic, Volatile & Pesticide Poisons,',
+    pxY(756),
+    10.6,
+    fontSans,
+    rgb(0.15, 0.2, 0.27)
+  );
+
+  drawFittedLine(
+    'NDPS Act Narcotics, Plant/Animal Toxinology & Sec. 329 BNSS Reporting.',
+    pxY(784),
+    10.6,
+    fontSans,
+    rgb(0.15, 0.2, 0.27)
+  );
+
+  // Line 6: High-contrast 10.6pt Gold Credential Verification Bar
+  drawFittedLine(
+    'Duration: 48 Hours (6 Modules)   |   Assessment Score: >= 90% (Verified)',
+    pxY(818),
+    10.6,
+    fontSansBold,
+    rgb(0.58, 0.38, 0.06)
+  );
+
+  // ---------------------------------------------------------------------------
+  // 4. STAMP SCANNABLE VERIFICATION QR CODE (Inside the 4 corner brackets)
+  // ---------------------------------------------------------------------------
+  const verifyUrl = `https://forenclue.in/certificate?id=${encodeURIComponent(safeCertNo)}`;
+  try {
+    const qrData = QRCode.create(verifyUrl, { errorCorrectionLevel: 'M' });
+    const moduleCount = qrData.modules.size;
+    const modules = qrData.modules.data;
+
+    // Center of QR brackets on 1600x1131 image is (1446.5, 706.5); inner box is ~132x132 px (~69.5 pt)
+    const qrBoxSizePt = pxW(126); // ~66.3 pt
+    const qrCenterX = pxX(1446.5);
+    const qrCenterY = pxY(706.5);
+    const qrStartX = qrCenterX - qrBoxSizePt / 2;
+    const qrStartY = qrCenterY - qrBoxSizePt / 2;
+    const cellSize = qrBoxSizePt / moduleCount;
+
+    // Draw crisp white quiet-zone backing inside the brackets
+    firstPage.drawRectangle({
+      x: qrStartX - 2,
+      y: qrStartY - 2,
+      width: qrBoxSizePt + 4,
+      height: qrBoxSizePt + 4,
+      color: rgb(1, 1, 1)
+    });
+
+    const darkColor = rgb(0.07, 0.07, 0.11);
+    for (let row = 0; row < moduleCount; row++) {
+      for (let col = 0; col < moduleCount; col++) {
+        if (modules[row * moduleCount + col]) {
+          // row 0 is top of QR code -> highest Y in PDF coordinates
+          const cellX = qrStartX + col * cellSize;
+          const cellY = qrStartY + (moduleCount - 1 - row) * cellSize;
+          firstPage.drawRectangle({
+            x: cellX,
+            y: cellY,
+            width: cellSize + 0.12,
+            height: cellSize + 0.12,
+            color: darkColor
+          });
+        }
+      }
+    }
+  } catch (qrErr) {
+    console.warn('Could not draw vector QR code on certificate PDF:', qrErr);
+  }
+
+  // ---------------------------------------------------------------------------
+  // 5. STAMP CERTIFICATE VERIFICATION ID (Cleanly spaced below the QR brackets)
+  // ---------------------------------------------------------------------------
   if (config.showCertId && safeCertNo) {
-    const certIdFontSize = config.certIdFontSize || 11;
+    const effCertXPercent = useDefaultCoords ? DEFAULT_CERT_TEMPLATE_CONFIG.certIdXPercent : config.certIdXPercent;
+    const certIdFontSize = config.certIdFontSize || 9.0;
+    const rawCertX = (effCertXPercent / 100) * width;
+
+    const idLabel = 'CERTIFICATE ID';
+    const idLabelWidth = fontSans.widthOfTextAtSize(idLabel, 7.0);
+    firstPage.drawText(idLabel, {
+      x: Math.max(10, rawCertX - idLabelWidth / 2),
+      y: pxY(818),
+      size: 7.0,
+      font: fontSans,
+      color: rgb(0.42, 0.45, 0.5)
+    });
+
     const certIdWidth = fontSansBold.widthOfTextAtSize(safeCertNo, certIdFontSize);
-    const rawCertX = (config.certIdXPercent / 100) * width;
     const certX = rawCertX - certIdWidth / 2;
-    const certY = (config.certIdYPercent / 100) * height;
 
     firstPage.drawText(safeCertNo, {
       x: Math.max(10, certX),
-      y: Math.max(10, certY),
+      y: pxY(838),
       size: certIdFontSize,
       font: fontSansBold,
-      color: hexToRgbColor(config.certIdColorHex || '#475569')
+      color: hexToRgbColor(config.certIdColorHex || '#111827')
     });
   }
 
   return await pdfDoc.save();
 }
+
+

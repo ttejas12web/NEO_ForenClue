@@ -3,11 +3,12 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   Clock, Sparkles, ArrowLeft, Calendar, User, 
   Linkedin, Play, ExternalLink, Star, MessageSquare, Send, Check,
-  ChevronLeft, ChevronRight, ThumbsUp, Radio, Youtube, Pin
+  ChevronLeft, ChevronRight, ThumbsUp, Radio, Youtube, Pin,
+  Users, Award, Mic, Video
 } from 'lucide-react';
 import { SEO } from '@/components/layout/SEO';
 import { SEOManager } from '@/components/layout/SEOManager';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from 'motion/react';
 import { collection, addDoc, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +51,28 @@ interface WebinarEvent {
 }
 
 const WEBINARS_DATA: WebinarEvent[] = [
+  {
+    id: "marks-of-truth-bite-mark-analysis",
+    sequence: 5,
+    title: "Marks of Truth : Bite Mark Analysis Uncovered",
+    subtitle: "A forensic exploration of bite marks — from evidence recognition to analysis and interpretation.",
+    date: "November 21, 2026",
+    time: "07:00 – 08:00 PM IST",
+    description: "Forensic Odontology Session exploring bite mark evidence recognition, morphological classification, examination methods, and evidentiary value with Dr. Riya Mariya.",
+    fullDetails: "ForenClue Webinar | Forensic Odontology Session: Marks of Truth : Bite Mark Analysis Uncovered with speaker Dr. Riya Mariya (Assistant Professor, Aurora University).\n\nA forensic exploration of bite marks — from evidence recognition to analysis and interpretation.\n\nKey Highlights:\n• Expert insights from Forensic Odontology\n• Scientific approach to bite mark analysis\n• Real-world forensic applications\n• Live Q&A with the expert\n\nWhat Will Be Covered?\n• Basics of bite marks and their significance\n• Morphological features and classification\n• Methods of bite mark examination and comparison\n• Interpretation, limitations, and evidentiary value\n• Case examples and practical insights\n\nPlatform: Online on Google Meet (G-Meet) & YouTube Live\nSchedule: Nov 21, 2026 (Saturday) | 7:00 – 8:00 PM (IST)\nPerks: Free & Open to All | E-Certificates To All Active Participants",
+    isUpcoming: true,
+    isFeedbackClosed: false,
+    speaker: {
+      name: "Dr. Riya Mariya",
+      role: "Assistant Professor | Aurora University | Forensic Odontology Session Speaker",
+      avatar: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgobEPn1woMfp278ivQTg-VZsKM02ZvNAQ8bxANMa26tSCP2gWdXJEQgPVcBBBkfeHLwlKdkCS9OlSdqpzE8dvmYtq8GlB1FwXSv49dakFckuCUgmPdsqZfNuqUZcJmIPUA3hRtnjbb1EAQyA4Nic4m9qSuZ3DOflHlZRT1s9ypVR8ob_hvGXnfowCKOgE/s1600/image.png",
+      linkedin: "https://www.linkedin.com/in/dr-riya-mariya/",
+      bio: "Forensic Odontologist | Dentist | Assistant Professor | UGC NET Qualified | FACT 2026 Qualified | PG Professional Diploma in Forensic Archaeology | Advisory Board Member"
+    },
+    poster: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgVITsqxqtKyBt2VQymU4ZI1jKD02DzT2MFM8_YuZEaJ2BC_JCJ61JVgtm8go7aXdL2xKMzsVzO-A8_enkL--1sVayipF-Ekj7ObYnNJuLcoH4JXM0C6rdi7f8nLpHWL99k7lA6lHxKXozCctbTHkiIsb3-bRuSasUPkxZKmUDpPa_KeS5HAP0DKp2kfvo/s1600/image.png",
+    tags: ["Forensic Odontology", "Bite Mark Analysis", "Upcoming Session", "Aurora University", "Patterned Evidence"],
+    feedbacks: []
+  },
   {
     id: "forensic-toxicology",
     sequence: 4,
@@ -214,6 +237,253 @@ const WEBINARS_DATA: WebinarEvent[] = [
     ]
   }
 ];
+
+interface WebinarMetric {
+  id: string;
+  target: number;
+  suffix: string;
+  label: string;
+  sublabel: string;
+  icon: typeof Video;
+  accentClass: string;
+  ringClass: string;
+  barClass: string;
+  glowClass: string;
+}
+
+const WEBINAR_METRICS: WebinarMetric[] = [
+  {
+    id: 'sessions',
+    target: 5,
+    suffix: '+',
+    label: 'Sessions',
+    sublabel: 'Live & Recorded Masterclasses',
+    icon: Video,
+    accentClass: 'text-sky-700 dark:text-cyan-400',
+    ringClass: 'border-sky-500/50 dark:border-cyan-400/50',
+    barClass: 'from-sky-500 via-cyan-400 to-sky-600 dark:from-cyan-400 dark:via-sky-400 dark:to-cyan-500',
+    glowClass: 'bg-sky-500/15 dark:bg-cyan-400/15'
+  },
+  {
+    id: 'participants',
+    target: 1000,
+    suffix: '+',
+    label: 'Participants',
+    sublabel: 'Learners & Forensic Aspirants',
+    icon: Users,
+    accentClass: 'text-amber-600 dark:text-warning',
+    ringClass: 'border-amber-500/50 dark:border-warning/50',
+    barClass: 'from-amber-500 via-yellow-400 to-orange-500 dark:from-warning dark:via-amber-300 dark:to-orange-400',
+    glowClass: 'bg-amber-500/15 dark:bg-warning/15'
+  },
+  {
+    id: 'speakers',
+    target: 5,
+    suffix: '+',
+    label: 'Speakers',
+    sublabel: 'Practitioners & Faculty',
+    icon: Mic,
+    accentClass: 'text-indigo-700 dark:text-indigo-400',
+    ringClass: 'border-indigo-500/50 dark:border-indigo-400/50',
+    barClass: 'from-indigo-500 via-violet-400 to-indigo-600 dark:from-indigo-400 dark:via-violet-400 dark:to-purple-400',
+    glowClass: 'bg-indigo-500/15 dark:bg-indigo-400/15'
+  },
+  {
+    id: 'certificates',
+    target: 100,
+    suffix: '%',
+    label: 'E-Certificates',
+    sublabel: 'Free for Active Attendees',
+    icon: Award,
+    accentClass: 'text-emerald-700 dark:text-emerald-400',
+    ringClass: 'border-emerald-500/50 dark:border-emerald-400/50',
+    barClass: 'from-emerald-500 via-teal-400 to-emerald-600 dark:from-emerald-400 dark:via-teal-300 dark:to-emerald-500',
+    glowClass: 'bg-emerald-500/15 dark:bg-emerald-400/15'
+  }
+];
+
+function WebinarStatCard3D({ metric, index }: { metric: WebinarMetric; index: number }) {
+  const [displayValue, setDisplayValue] = useState(0);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+  const springX = useSpring(mouseX, { stiffness: 260, damping: 24 });
+  const springY = useSpring(mouseY, { stiffness: 260, damping: 24 });
+  const tiltX = useTransform(springY, [-0.5, 0.5], ['10deg', '-10deg']);
+  const tiltY = useTransform(springX, [-0.5, 0.5], ['-10deg', '10deg']);
+
+  useEffect(() => {
+    let rafId = 0;
+    let startTime: number | null = null;
+    const delayMs = index * 120;
+    const durationMs = 1450;
+
+    const timeoutId = window.setTimeout(() => {
+      const step = (timestamp: number) => {
+        if (startTime === null) startTime = timestamp;
+        const elapsed = timestamp - startTime;
+        const progress = Math.min(elapsed / durationMs, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        setDisplayValue(Math.round(eased * metric.target));
+        setLoadProgress(Math.round(eased * 100));
+
+        if (progress < 1) {
+          rafId = window.requestAnimationFrame(step);
+        } else {
+          setDisplayValue(metric.target);
+          setLoadProgress(100);
+          setIsLoaded(true);
+        }
+      };
+      rafId = window.requestAnimationFrame(step);
+    }, delayMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+      if (rafId) window.cancelAnimationFrame(rafId);
+    };
+  }, [metric.target, index]);
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
+  };
+
+  const handleMouseLeave = () => {
+    mouseX.set(0);
+    mouseY.set(0);
+  };
+
+  const Icon = metric.icon;
+
+  return (
+    <motion.div
+      initial={{
+        opacity: 0,
+        rotateX: -48,
+        rotateY: index % 2 === 0 ? -18 : 18,
+        y: 28,
+        scale: 0.86
+      }}
+      animate={{
+        opacity: 1,
+        rotateX: 0,
+        rotateY: 0,
+        y: 0,
+        scale: 1
+      }}
+      transition={{
+        type: 'spring',
+        stiffness: 135,
+        damping: 16,
+        delay: 0.06 + index * 0.11
+      }}
+      style={{ transformStyle: 'preserve-3d' }}
+      className="h-full"
+    >
+      <motion.div
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
+        style={{
+          rotateX: tiltX,
+          rotateY: tiltY,
+          transformStyle: 'preserve-3d'
+        }}
+        className="group relative h-full rounded-xl sm:rounded-2xl border border-slate-200/95 dark:border-cyan-500/20 bg-white/95 dark:bg-crust/95 backdrop-blur-xl px-1.5 py-2 min-[420px]:px-2 min-[420px]:py-2.5 sm:px-3.5 sm:py-3.5 overflow-hidden shadow-[0_8px_22px_-6px_rgba(15,23,42,0.1)] dark:shadow-[0_10px_26px_-8px_rgba(6,182,212,0.16)] hover:border-sky-500/60 dark:hover:border-cyan-400/45 transition-colors duration-300"
+      >
+        {/* 3D Specular Sheen Sweep on Load */}
+        <motion.div
+          initial={{ x: '-120%', opacity: 0.7 }}
+          animate={{ x: '220%', opacity: 0 }}
+          transition={{ duration: 1.25, delay: 0.25 + index * 0.12, ease: 'easeInOut' }}
+          className="pointer-events-none absolute inset-y-0 w-1/2 -skew-x-12 bg-gradient-to-r from-transparent via-sky-300/25 dark:via-cyan-300/15 to-transparent"
+        />
+
+        {/* Ambient Radial Glow */}
+        <div
+          className={`pointer-events-none absolute -top-8 -right-8 w-20 h-20 rounded-full blur-2xl transition-opacity duration-500 ${metric.glowClass} opacity-75 group-hover:opacity-100`}
+        />
+
+        <div
+          style={{ transform: 'translateZ(20px)', transformStyle: 'preserve-3d' }}
+          className="relative z-10 flex flex-col items-center text-center space-y-1.5 sm:space-y-2"
+        >
+          {/* 3D Orbital Gyroscope Icon Loader */}
+          <div className="relative w-7 h-7 sm:w-9 sm:h-9 flex items-center justify-center">
+            {/* Outer Tilted 3D Ring */}
+            <motion.div
+              animate={{
+                rotateZ: isLoaded ? 360 : [0, 360],
+                rotateX: [62, 62]
+              }}
+              transition={{
+                rotateZ: {
+                  duration: isLoaded ? 14 : 1.4,
+                  repeat: Infinity,
+                  ease: 'linear'
+                },
+                rotateX: { duration: 0 }
+              }}
+              className={`absolute inset-0 rounded-full border-[1.5px] sm:border-2 border-dashed ${metric.ringClass}`}
+            />
+            {/* Secondary Counter-Rotating 3D Ring */}
+            <motion.div
+              animate={{
+                rotateZ: [360, 0],
+                rotateY: [58, 58]
+              }}
+              transition={{
+                rotateZ: {
+                  duration: isLoaded ? 18 : 1.8,
+                  repeat: Infinity,
+                  ease: 'linear'
+                },
+                rotateY: { duration: 0 }
+              }}
+              className={`absolute inset-0.5 sm:inset-1 rounded-full border border-dotted ${metric.ringClass} opacity-75`}
+            />
+            {/* Core Elevated Icon Badge */}
+            <div
+              style={{ transform: 'translateZ(10px)' }}
+              className={`relative w-5 h-5 sm:w-6 sm:h-6 rounded-lg ${metric.glowClass} border ${metric.ringClass} flex items-center justify-center shadow-2xs`}
+            >
+              <Icon className={`w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 ${metric.accentClass}`} />
+            </div>
+          </div>
+
+          {/* 3D Elevated Counter Value */}
+          <div style={{ transform: 'translateZ(28px)' }} className="space-y-0.5 min-w-0 w-full">
+            <div className="text-sm min-[400px]:text-base sm:text-xl md:text-2xl font-black tracking-tight tabular-nums leading-none text-slate-900 dark:text-white font-sans">
+              <span>{displayValue}</span>
+              <span className={metric.accentClass}>{metric.suffix}</span>
+            </div>
+            <p className="text-[8px] min-[400px]:text-[9px] sm:text-[11px] font-sans sm:font-mono font-extrabold uppercase tracking-tight sm:tracking-wider text-slate-800 dark:text-cyan-100 whitespace-nowrap truncate">
+              {metric.label}
+            </p>
+            <p className="hidden md:block text-[10px] text-slate-600 dark:text-zinc-400 font-medium leading-tight truncate">
+              {metric.sublabel}
+            </p>
+          </div>
+        </div>
+
+        {/* Synchronized 3D Loading Progress Track */}
+        <div
+          style={{ transform: 'translateZ(10px)' }}
+          className="relative z-10 mt-1.5 sm:mt-2.5 h-1 w-full rounded-full bg-slate-100 dark:bg-white/10 overflow-hidden"
+        >
+          <div
+            style={{ width: `${loadProgress}%` }}
+            className={`h-full rounded-full bg-gradient-to-r ${metric.barClass} transition-[width] duration-75 ease-out`}
+          />
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
 export default function Webinar() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -864,8 +1134,16 @@ export default function Webinar() {
                       <img
                         src={currentEvent.speaker.avatar}
                         alt={currentEvent.speaker.name}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-top"
                         referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          if (
+                            currentEvent.id === 'marks-of-truth-bite-mark-analysis' &&
+                            !e.currentTarget.src.endsWith('/assets/webinars/dr_riya_mariya_avatar.png')
+                          ) {
+                            e.currentTarget.src = '/assets/webinars/dr_riya_mariya_avatar.png';
+                          }
+                        }}
                       />
                     </div>
 
@@ -909,6 +1187,11 @@ export default function Webinar() {
                       alt={`${currentEvent.title} Promotional Poster`}
                       className="w-full h-auto block"
                       referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        if (currentEvent.id === 'marks-of-truth-bite-mark-analysis') {
+                          e.currentTarget.src = '/assets/webinars/upcoming_webinar_poster.png';
+                        }
+                      }}
                     />
                   </div>
                 </div>
@@ -1026,6 +1309,16 @@ export default function Webinar() {
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-sky-600 dark:bg-cyan-400 rounded-full blur-[5px]" />
               </div>
 
+              {/* 3D Loading Animated Webinar Metrics Showcase */}
+              <div
+                style={{ perspective: '1400px' }}
+                className="grid grid-cols-4 gap-1.5 min-[420px]:gap-2.5 sm:gap-4 w-full max-w-4xl mb-5 sm:mb-7"
+              >
+                {WEBINAR_METRICS.map((metric, idx) => (
+                  <WebinarStatCard3D key={metric.id} metric={metric} index={idx} />
+                ))}
+              </div>
+
               {/* Sleek Horizontal Category Liner */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 w-full max-w-5xl mb-2 border border-slate-200/95 dark:border-x-0 dark:border-y dark:border-cyan-500/10 py-4 sm:py-6 bg-white dark:bg-cyan-950/5 backdrop-blur-sm px-4 sm:px-6 rounded-2xl shadow-[0_6px_24px_-4px_rgba(15,23,42,0.06)] dark:shadow-none">
                 
@@ -1105,6 +1398,11 @@ export default function Webinar() {
                           alt={item.title}
                           className="w-full h-full object-cover opacity-100 dark:opacity-80 group-hover:scale-105 group-hover:opacity-100 transition-all duration-500"
                           referrerPolicy="no-referrer"
+                          onError={(e) => {
+                            if (item.id === 'marks-of-truth-bite-mark-analysis') {
+                              e.currentTarget.src = '/assets/webinars/upcoming_webinar_poster.png';
+                            }
+                          }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent dark:from-black/75 dark:via-transparent dark:to-transparent" />
 

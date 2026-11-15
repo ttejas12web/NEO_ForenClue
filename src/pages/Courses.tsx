@@ -531,7 +531,7 @@ export default function Courses() {
   };
 
   return (
-    <div className="py-20 px-4 max-w-7xl mx-auto">
+    <div className="pt-24 sm:pt-28 pb-14 sm:pb-20 px-3.5 sm:px-6 max-w-7xl mx-auto">
       <SEOManager 
         collectionName="courses"
         docId={selectedCourse?.id ? String(selectedCourse.id) : undefined}
@@ -564,48 +564,49 @@ export default function Courses() {
       />
 
       {/* Executive Academic Header */}
-      <div className="mb-10 pb-8 border-b border-black/10 dark:border-white/10">
+      <div className="mb-7 sm:mb-10 pb-6 sm:pb-8 border-b border-black/10 dark:border-white/10">
         <div className="max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-warning/10 border border-warning/25 text-warning text-[10px] font-mono font-black uppercase tracking-widest mb-4">
-            <ShieldCheck size={13} /> ForenClue Academic & Certification Division
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 rounded-md bg-warning/10 border border-warning/25 text-warning text-[9.5px] sm:text-[10px] font-mono font-black uppercase tracking-widest mb-3 sm:mb-4">
+            <ShieldCheck size={13} className="shrink-0" />
+            <span>ForenClue Academic & Certification Division</span>
           </div>
-          <h1 className="text-4xl md:text-5xl font-heading font-black mb-3 uppercase tracking-tight text-text-main">
+          <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl font-heading font-black mb-2.5 sm:mb-3 uppercase tracking-tight text-text-main leading-tight">
             Professional <span className="text-warning">Courses & Certifications</span>
           </h1>
-          <p className="text-sm md:text-base text-text-muted leading-relaxed">
-            Structured, competency-verified forensic science specialization programs featuring in-depth scientific dossiers, analytical casework, AutoCheck evaluations, and cryptographically verifiable PDF credentials.
+          <p className="text-xs sm:text-sm md:text-base text-text-muted leading-relaxed">
+            Structured, competency-verified forensic science specialization programs featuring in-depth scientific study guides, analytical casework, AutoCheck evaluations, and cryptographically verifiable PDF credentials.
           </p>
         </div>
 
-        {/* Integrated Search & Discipline Filter Bar */}
-        <div className="mt-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-surface p-3 rounded-xl border border-black/10 dark:border-white/10">
+        {/* Integrated Search & Discipline Filter Bar — Mobile Touch Optimized */}
+        <div className="mt-5 sm:mt-8 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 sm:gap-4 bg-surface p-2.5 sm:p-3 rounded-xl border border-black/10 dark:border-white/10">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search by course title, forensic discipline, or instructor (e.g., Mr. Rajat Pithadia)..."
-              className="w-full pl-10 pr-9 py-2.5 bg-base border border-black/10 dark:border-white/10 rounded-lg text-xs sm:text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:border-warning transition-colors"
+              placeholder="Search course, discipline, or instructor..."
+              className="w-full min-h-[42px] pl-10 pr-9 py-2.5 bg-base border border-black/10 dark:border-white/10 rounded-lg text-xs sm:text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:border-warning transition-colors"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-main"
+                className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-text-muted hover:text-text-main"
                 aria-label="Clear search"
               >
-                <X size={14} />
+                <X size={15} />
               </button>
             )}
           </div>
 
           {categories.length > 1 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 -mx-0.5 px-0.5 touch-pan-x">
               {categories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`px-3.5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer ${
+                  className={`min-h-[38px] sm:min-h-[40px] px-3.5 py-2 rounded-lg text-[11px] font-bold uppercase tracking-wider whitespace-nowrap transition-all cursor-pointer shrink-0 active:scale-95 ${
                     selectedCategory === cat
                       ? 'bg-warning text-crust font-black shadow-sm'
                       : 'bg-base text-text-muted hover:text-text-main border border-black/5 dark:border-white/5'
@@ -620,7 +621,7 @@ export default function Courses() {
       </div>
 
       {searchTerm && (
-        <div className="mb-6 relative z-10">
+        <div className="mb-5 sm:mb-6 relative z-10">
           <p className="text-xs text-text-muted">
             Found <span className="text-warning font-bold">{filteredCourses.length}</span> active program{filteredCourses.length !== 1 ? 's' : ''} matching &ldquo;<span className="text-text-main">{searchTerm}</span>&rdquo;
           </p>
@@ -629,7 +630,7 @@ export default function Courses() {
 
       {/* Default Professional Grid Layout */}
       {filteredCourses.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8 relative z-10">
           {filteredCourses.map((course, idx) => {
             const isComingSoon = course.price > 0;
             const enrolled = isPurchased(course.id);
@@ -652,38 +653,38 @@ export default function Courses() {
                     }`}
                     referrerPolicy="no-referrer"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent pointer-events-none" />
 
                   {/* Top Left Status Badges */}
-                  <div className="absolute top-3.5 left-3.5 z-10 flex flex-wrap gap-2">
+                  <div className="absolute top-3 left-3 right-14 z-10 flex flex-wrap gap-1.5 sm:gap-2">
                     {isComingSoon ? (
                       <span className="bg-amber-500 text-black text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg border border-amber-400">
                         Coming Soon
                       </span>
                     ) : (
                       <>
-                        <span className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg border border-emerald-400 flex items-center gap-1.5">
+                        <span className="bg-emerald-500 text-white text-[9px] font-black uppercase tracking-widest px-2 sm:px-2.5 py-1 rounded-md shadow-lg border border-emerald-400 flex items-center gap-1.5">
                           <span className="h-1.5 w-1.5 rounded-full bg-white inline-block animate-ping" />
-                          Live • Free Enrollment
+                          <span>Live • Free</span>
                         </span>
                         {course.id === 7 && (
-                          <span className="bg-warning text-crust text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md shadow-lg">
-                            Code: FT2601 • Self-Paced
+                          <span className="bg-warning text-crust text-[9px] font-black uppercase tracking-widest px-2 sm:px-2.5 py-1 rounded-md shadow-lg">
+                            FT2601 • Self-Paced
                           </span>
                         )}
                       </>
                     )}
                   </div>
 
-                  {/* Top Right Wishlist Action */}
-                  <div className="absolute top-3.5 right-3.5 flex gap-2 z-10">
+                  {/* Top Right Wishlist Action — 40px Touch Hitbox */}
+                  <div className="absolute top-2.5 right-2.5 flex gap-2 z-10">
                     <button
                       onClick={(e) => toggleWishlist(course.id, e)}
-                      className="p-2 bg-base/85 backdrop-blur-md rounded-full shadow-sm text-text-muted hover:text-warning transition-colors"
+                      className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center bg-base/85 backdrop-blur-md rounded-full shadow-sm text-text-muted hover:text-warning active:scale-95 transition-all"
                       aria-label="Save to wishlist"
                     >
                       <Heart
-                        size={15}
+                        size={16}
                         fill={isWishlisted(course.id) ? 'currentColor' : 'none'}
                         className={isWishlisted(course.id) ? 'text-warning' : ''}
                       />
@@ -691,33 +692,33 @@ export default function Courses() {
                   </div>
 
                   {/* Bottom Left Category & Level Strip on Image */}
-                  <div className="absolute bottom-3 left-3.5 right-3.5 z-10 flex items-center justify-between text-white">
-                    <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning bg-black/65 backdrop-blur-sm px-2.5 py-1 rounded border border-warning/30">
+                  <div className="absolute bottom-2.5 left-3 right-3 z-10 flex flex-wrap items-center justify-between gap-1.5 text-white">
+                    <span className="text-[9.5px] sm:text-[10px] font-mono font-black uppercase tracking-wider sm:tracking-widest text-warning bg-black/70 backdrop-blur-sm px-2 sm:px-2.5 py-1 rounded border border-warning/30 truncate max-w-[68%]">
                       {course.id === 7 ? 'FT2601 • ' : ''}{course.category} • {course.level}
                     </span>
-                    <span className="text-[11px] font-mono font-bold text-white/90 bg-black/65 backdrop-blur-sm px-2.5 py-1 rounded flex items-center gap-1">
-                      <Clock size={12} className="text-warning" /> {course.duration}
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-white/95 bg-black/70 backdrop-blur-sm px-2 sm:px-2.5 py-1 rounded flex items-center gap-1 shrink-0">
+                      <Clock size={11} className="text-warning shrink-0" /> {course.duration}
                     </span>
                   </div>
                 </div>
 
                 {/* Card Body */}
-                <div className="p-6 flex-grow flex flex-col bg-surface">
+                <div className="p-4 sm:p-6 flex-grow flex flex-col bg-surface">
                   {course.id === 7 && (
                     <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning mb-1">
                       Course Code: FT2601
                     </span>
                   )}
-                  <h3 className="font-heading font-black text-xl mb-2.5 leading-snug text-text-main group-hover:text-warning transition-colors">
+                  <h3 className="font-heading font-black text-lg sm:text-xl mb-2 leading-snug text-text-main group-hover:text-warning transition-colors">
                     {course.title}
                   </h3>
-                  <p className="text-xs sm:text-sm text-text-muted mb-5 line-clamp-3 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-text-muted mb-4 sm:mb-5 line-clamp-3 leading-relaxed">
                     {course.description}
                   </p>
 
                   {/* Key Syllabus Modules Preview */}
                   {course.curriculum && course.curriculum.length > 0 && (
-                    <div className="mb-5 p-3.5 rounded-xl bg-base border border-black/5 dark:border-white/5 space-y-2">
+                    <div className="mb-4 sm:mb-5 p-3 sm:p-3.5 rounded-xl bg-base border border-black/5 dark:border-white/5 space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-mono font-black uppercase tracking-widest text-text-muted">
                           Key Syllabus Modules
@@ -729,7 +730,7 @@ export default function Courses() {
                       <ul className="space-y-1.5">
                         {course.curriculum.slice(0, 3).map((item, i) => (
                           <li key={i} className="text-xs text-text-main/90 flex items-start gap-2 line-clamp-1">
-                            <span className="text-[10px] font-mono font-black text-warning mt-0.5">0{i + 1}.</span>
+                            <span className="text-[10px] font-mono font-black text-warning mt-0.5 shrink-0">0{i + 1}.</span>
                             <span className="truncate">{item.replace(/^Module \d+:\s*/i, '')}</span>
                           </li>
                         ))}
@@ -743,13 +744,13 @@ export default function Courses() {
                   )}
 
                   {/* Instructor Attribution & Action Footer */}
-                  <div className="mt-auto pt-4 border-t border-black/10 dark:border-white/10 space-y-4">
+                  <div className="mt-auto pt-3.5 sm:pt-4 border-t border-black/10 dark:border-white/10 space-y-3.5 sm:space-y-4">
                     <div
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedInstructor(course.instructor);
                       }}
-                      className="flex items-center gap-3 group/inst cursor-pointer"
+                      className="flex items-center gap-3 group/inst cursor-pointer py-0.5"
                     >
                       <img
                         src={course.instructorImage}
@@ -779,7 +780,7 @@ export default function Courses() {
                           e.stopPropagation();
                           setSelectedCourse(course);
                         }}
-                        className="py-2.5 px-3 rounded-lg bg-base border border-black/10 dark:border-white/10 text-text-main hover:border-warning/40 text-[11px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                        className="min-h-[44px] py-2.5 px-3 rounded-xl bg-base border border-black/10 dark:border-white/10 text-text-main hover:border-warning/40 text-[11px] font-bold uppercase tracking-wider transition-all cursor-pointer active:scale-[0.98]"
                       >
                         View Syllabus
                       </button>
@@ -787,7 +788,7 @@ export default function Courses() {
                         <button
                           type="button"
                           disabled
-                          className="py-2.5 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] font-black uppercase tracking-wider cursor-not-allowed"
+                          className="min-h-[44px] py-2.5 px-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-[11px] font-black uppercase tracking-wider cursor-not-allowed"
                         >
                           Coming Soon
                         </button>
@@ -802,10 +803,10 @@ export default function Courses() {
                               handlePurchase(course.id, e);
                             }
                           }}
-                          className="py-2.5 px-3 rounded-lg bg-warning text-crust hover:bg-warning/90 text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+                          className="min-h-[44px] py-2.5 px-3 rounded-xl bg-warning text-crust hover:bg-warning/90 text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-sm active:scale-[0.98]"
                         >
                           <span>{enrolled ? 'Enter Course' : 'Enroll Free'}</span>
-                          <ChevronRight size={14} />
+                          <ChevronRight size={14} className="shrink-0" />
                         </button>
                       )}
                     </div>
@@ -816,10 +817,10 @@ export default function Courses() {
           })}
         </div>
       ) : (
-        <div className="py-20 text-center relative z-10 bg-surface/50 border border-black/10 dark:border-white/10 rounded-2xl border-dashed w-full max-w-4xl mx-auto animate-fade-in">
-          <BookOpen size={48} className="text-text-muted mx-auto mb-4 opacity-20" />
-          <h3 className="text-xl font-heading font-black mb-2 uppercase tracking-widest">No Courses Found</h3>
-          <p className="text-text-muted mb-6 px-12">
+        <div className="py-14 sm:py-20 px-4 text-center relative z-10 bg-surface/50 border border-black/10 dark:border-white/10 rounded-2xl border-dashed w-full max-w-4xl mx-auto animate-fade-in">
+          <BookOpen size={44} className="text-text-muted mx-auto mb-4 opacity-20" />
+          <h3 className="text-lg sm:text-xl font-heading font-black mb-2 uppercase tracking-widest">No Courses Found</h3>
+          <p className="text-xs sm:text-sm text-text-muted mb-6 max-w-md mx-auto">
             No courses matched your current filter or search query. Reset your filters to browse all available programs.
           </p>
           <button
@@ -827,16 +828,16 @@ export default function Courses() {
               setSearchTerm('');
               setSelectedCategory('All');
             }}
-            className="px-8 py-3 bg-warning text-crust font-black uppercase tracking-widest rounded-md hover:bg-warning/90 transition-all flex items-center gap-2 mx-auto cursor-pointer"
+            className="min-h-[44px] px-6 sm:px-8 py-3 bg-warning text-crust text-xs font-black uppercase tracking-widest rounded-xl hover:bg-warning/90 transition-all flex items-center gap-2 mx-auto cursor-pointer"
           >
-            <CheckCircle size={18} /> Reset All Filters
+            <CheckCircle size={17} /> Reset All Filters
           </button>
         </div>
       )}
 
       <AnimatePresence>
         {showPaymentPopup && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
@@ -846,23 +847,23 @@ export default function Courses() {
             />
             
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-surface border border-black/10 dark:border-white/10 w-full max-w-md relative z-10 shadow-2xl rounded-2xl p-8 text-center"
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="bg-surface border-t sm:border border-black/10 dark:border-white/10 w-full max-w-md max-h-[92dvh] overflow-y-auto relative z-10 shadow-2xl rounded-t-3xl sm:rounded-2xl p-6 sm:p-8 text-center"
             >
-              <div className="w-20 h-20 bg-warning/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-warning/20">
-                 <CreditCard size={32} className="text-warning" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-warning/10 rounded-full flex items-center justify-center mx-auto mb-5 sm:mb-6 border border-warning/20">
+                 <CreditCard size={28} className="text-warning" />
               </div>
               
-              <h2 className="text-2xl font-heading font-black text-text-main uppercase tracking-tight mb-2">
+              <h2 className="text-xl sm:text-2xl font-heading font-black text-text-main uppercase tracking-tight mb-2">
                  Payment Required
               </h2>
-              <p className="text-text-muted text-sm leading-relaxed mb-8">
+              <p className="text-text-muted text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8">
                 To access <span className="text-text-main font-bold">{showPaymentPopup.title}</span> and unlock all investigative modules, please complete the payment process.
               </p>
 
-              <div className="bg-base rounded-xl p-6 mb-8 border border-black/10 dark:border-white/5">
+              <div className="bg-base rounded-xl p-5 sm:p-6 mb-6 sm:mb-8 border border-black/10 dark:border-white/5">
                  <div className="flex justify-between items-center mb-2">
                     <span className="text-[10px] font-black uppercase tracking-widest text-text-muted">Item Cost</span>
                     <span className="text-sm font-bold text-text-main">{showPaymentPopup.price} INR</span>
@@ -873,11 +874,11 @@ export default function Courses() {
                  </div>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-2.5 sm:gap-3">
                  <button 
                   onClick={executePayment}
                   disabled={purchasing === showPaymentPopup.id}
-                  className="w-full py-4 bg-warning text-crust font-black uppercase tracking-[0.2em] rounded-xl hover:bg-warning/90 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                  className="w-full min-h-[48px] py-3.5 sm:py-4 bg-warning text-crust font-black uppercase tracking-[0.18em] text-xs rounded-xl hover:bg-warning/90 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                 >
                   {purchasing === showPaymentPopup.id ? (
                     <><Loader2 size={20} className="animate-spin" /> Verifying Transaction...</>
@@ -889,13 +890,13 @@ export default function Courses() {
                 <button 
                   onClick={() => setShowPaymentPopup(null)}
                   disabled={!!purchasing}
-                  className="w-full py-4 text-text-muted font-black uppercase tracking-[0.2em] rounded-xl hover:text-text-main transition-colors text-[10px]"
+                  className="w-full min-h-[44px] py-3 text-text-muted font-black uppercase tracking-[0.2em] rounded-xl hover:text-text-main transition-colors text-[10px]"
                 >
                   Cancel and Return
                 </button>
               </div>
 
-              <div className="mt-8 flex items-center justify-center gap-2 text-[9px] font-black text-text-muted uppercase tracking-widest">
+              <div className="mt-6 sm:mt-8 flex items-center justify-center gap-2 text-[9px] font-black text-text-muted uppercase tracking-widest">
                  <ShieldCheck size={12} className="text-success" />
                  Secure payment gateway encryption active
               </div>
@@ -904,7 +905,7 @@ export default function Courses() {
         )}
 
         {selectedCourse && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
@@ -914,21 +915,42 @@ export default function Courses() {
             />
             
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              initial={{ opacity: 0, scale: 0.96, y: 24 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="bg-surface border border-black/10 dark:border-white/10 w-full max-w-5xl max-h-[90vh] overflow-y-auto relative z-10 shadow-2xl rounded-lg"
+              exit={{ opacity: 0, scale: 0.96, y: 24 }}
+              className="bg-surface border-t sm:border border-black/10 dark:border-white/10 w-full max-w-5xl max-h-[92dvh] sm:max-h-[90vh] overflow-y-auto relative z-10 shadow-2xl rounded-t-3xl sm:rounded-2xl"
             >
+              {/* Mobile Sticky Top Header inside Modal */}
+              <div className="sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 bg-surface/95 backdrop-blur-md border-b border-black/10 dark:border-white/10 lg:hidden">
+                <div className="min-w-0">
+                  <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning block">
+                    {selectedCourse.id === 7 ? 'Course Code: FT2601' : `Course #0${selectedCourse.id}`}
+                  </span>
+                  <h3 className="text-xs font-heading font-black uppercase text-text-main truncate">
+                    {selectedCourse.title}
+                  </h3>
+                </div>
+                <button 
+                  onClick={() => setSelectedCourse(null)}
+                  className="w-9 h-9 flex items-center justify-center bg-base hover:bg-black/5 dark:bg-white/10 rounded-full text-text-muted hover:text-text-main transition-colors shrink-0"
+                  aria-label="Close course syllabus"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Desktop Close Button */}
               <button 
                 onClick={() => setSelectedCourse(null)}
-                className="absolute top-4 right-4 p-2 bg-base hover:bg-black/5 dark:bg-white/10 rounded-full text-text-muted hover:text-text-main transition-colors z-20"
+                className="hidden lg:flex absolute top-4 right-4 w-10 h-10 items-center justify-center bg-base hover:bg-black/5 dark:bg-white/10 rounded-full text-text-muted hover:text-text-main transition-colors z-20 cursor-pointer"
+                aria-label="Close course modal"
               >
                 <X size={20} />
               </button>
 
               <div className="flex flex-col lg:flex-row">
                 {/* Course Header/Hero in Modal */}
-                <div className="lg:w-1/3 bg-base p-8 border-r border-black/10 dark:border-white/5 relative overflow-hidden flex flex-col">
+                <div className="lg:w-1/3 bg-base p-5 sm:p-7 lg:p-8 border-b lg:border-b-0 lg:border-r border-black/10 dark:border-white/5 relative overflow-hidden flex flex-col">
                   {/* Subtle Background Thumbnail */}
                   <img 
                     src={selectedCourse.thumbnail} 
@@ -938,9 +960,9 @@ export default function Courses() {
                   />
                   
                   <div className="relative z-10 flex-grow">
-                    <EvidenceMarker number={selectedCourse.id < 10 ? `0${selectedCourse.id}` : selectedCourse.id} className="mb-6" />
+                    <EvidenceMarker number={selectedCourse.id < 10 ? `0${selectedCourse.id}` : selectedCourse.id} className="mb-4 sm:mb-6" />
                     <div 
-                      className="mb-6 w-full rounded-lg overflow-hidden border border-black/10 dark:border-white/10 bg-black/20"
+                      className="mb-4 sm:mb-6 w-full rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-black/20"
                       style={runningCourseAspectRatio ? { aspectRatio: `${runningCourseAspectRatio}` } : {}}
                     >
                       <img 
@@ -950,16 +972,16 @@ export default function Courses() {
                         referrerPolicy="no-referrer"
                       />
                     </div>
-                    <h2 className="text-3xl font-heading font-black text-text-main mb-4 uppercase leading-tight tracking-tight">
+                    <h2 className="text-xl sm:text-2xl lg:text-3xl font-heading font-black text-text-main mb-3 sm:mb-4 uppercase leading-tight tracking-tight">
                       {selectedCourse.title}
                     </h2>
-                    <div className="flex flex-wrap gap-4 mb-6">
-                      <div className="flex items-center gap-2 text-warning">
-                        <Clock size={16} />
+                    <div className="flex flex-wrap gap-3 sm:gap-4 mb-4 sm:mb-6">
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-warning">
+                        <Clock size={15} />
                         <span className="text-xs font-bold uppercase tracking-widest">{selectedCourse.duration}</span>
                       </div>
-                      <div className="flex items-center gap-2 text-warning">
-                        <ShieldCheck size={16} />
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-warning">
+                        <ShieldCheck size={15} />
                         <span className="text-xs font-bold uppercase tracking-widest">{selectedCourse.level}</span>
                       </div>
                       {isSpecAdmin && (
@@ -967,26 +989,26 @@ export default function Courses() {
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
                           transition={{ duration: 0.3 }}
-                          className="flex items-center gap-2 text-warning/80"
+                          className="flex items-center gap-1.5 sm:gap-2 text-warning/80"
                         >
-                          <User size={16} />
+                          <User size={15} />
                           <span className="text-xs font-bold uppercase tracking-widest">{enrolledStudents.length} Enrolled</span>
                         </motion.div>
                       )}
                     </div>
-                    <p className="text-text-muted text-sm leading-relaxed mb-8">
+                    <p className="text-text-muted text-xs sm:text-sm leading-relaxed mb-6 sm:mb-8">
                       {selectedCourse.description}
                     </p>
                   </div>
 
                   <div 
                     onClick={() => setSelectedInstructor(selectedCourse.instructor)}
-                    className="p-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-lg relative z-10 cursor-pointer group hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                    className="p-3.5 sm:p-4 bg-black/5 dark:bg-white/5 border border-black/10 dark:border-white/10 rounded-xl relative z-10 cursor-pointer group hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
                   >
-                    <div className="flex items-center gap-4 mb-4">
-                      <img src={selectedCourse.instructorImage} alt={selectedCourse.instructor} className="w-12 h-12 rounded-full object-cover border border-warning/30 group-hover:scale-105 transition-transform" />
-                      <div>
-                        <h4 className="text-sm font-bold text-text-main uppercase tracking-wider group-hover:text-warning transition-colors">{selectedCourse.instructor}</h4>
+                    <div className="flex items-center gap-3.5 sm:gap-4 mb-3">
+                      <img src={selectedCourse.instructorImage} alt={selectedCourse.instructor} className="w-11 h-11 sm:w-12 sm:h-12 rounded-full object-cover border border-warning/30 group-hover:scale-105 transition-transform shrink-0" />
+                      <div className="min-w-0">
+                        <h4 className="text-xs sm:text-sm font-bold text-text-main uppercase tracking-wider group-hover:text-warning transition-colors truncate">{selectedCourse.instructor}</h4>
                         <p className="text-[10px] text-warning font-black uppercase tracking-widest">Lead Instructor</p>
                       </div>
                     </div>
@@ -996,54 +1018,53 @@ export default function Courses() {
                   </div>
 
                   {/* Trust Badges */}
-                  <div className="mt-8 grid grid-cols-2 gap-4">
-                    <div className="p-3 bg-black/5 dark:bg-white/5 rounded border border-black/10 dark:border-white/5 text-center">
-                       <ShieldCheck size={20} className="text-warning mx-auto mb-2" />
+                  <div className="mt-5 sm:mt-8 grid grid-cols-2 gap-3 sm:gap-4">
+                    <div className="p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/5 text-center">
+                       <ShieldCheck size={18} className="text-warning mx-auto mb-1.5" />
                        <p className="text-[10px] font-black uppercase tracking-widest text-text-main">Verified Content</p>
                     </div>
-                    <div className="p-3 bg-black/5 dark:bg-white/5 rounded border border-black/10 dark:border-white/5 text-center">
-                       <TrendingUp size={20} className="text-warning mx-auto mb-2" />
+                    <div className="p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-black/10 dark:border-white/5 text-center">
+                       <TrendingUp size={18} className="text-warning mx-auto mb-1.5" />
                        <p className="text-[10px] font-black uppercase tracking-widest text-text-main">Career Support</p>
                     </div>
                   </div>
                 </div>
 
                 {/* Course Curriculum, Notices & Action */}
-                <div className="lg:w-2/3 p-8 flex flex-col">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                <div className="lg:w-2/3 p-5 sm:p-7 lg:p-8 flex flex-col">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-10">
                     {/* Curriculum Section */}
                     <div>
-                      <div className="flex items-center gap-2 mb-6">
-                        <BookOpen size={20} className="text-warning" />
-                        <h3 className="text-xl font-heading font-black uppercase tracking-wide">Curriculum</h3>
+                      <div className="flex items-center gap-2 mb-4 sm:mb-6">
+                        <BookOpen size={19} className="text-warning" />
+                        <h3 className="text-lg sm:text-xl font-heading font-black uppercase tracking-wide">Curriculum</h3>
                       </div>
 
-                      <div className="space-y-4">
+                      <div className="space-y-3 sm:space-y-4">
                         {selectedCourse.curriculum.map((topic, index) => (
-                          <div key={index} className="flex items-start gap-4 p-4 bg-black/5 dark:bg-white/2 rounded-md border border-black/10 dark:border-white/5 group hover:border-warning/20 transition-colors">
-                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-warning/10 flex items-center justify-center text-[10px] font-black text-warning">
+                          <div key={index} className="flex items-start gap-3 sm:gap-4 p-3.5 sm:p-4 bg-black/5 dark:bg-white/2 rounded-xl border border-black/10 dark:border-white/5 group hover:border-warning/20 transition-colors">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-warning/10 flex items-center justify-center text-[10px] font-black text-warning mt-0.5">
                               {index + 1}
                             </span>
-                            <p className="text-sm text-text-muted group-hover:text-text-main transition-colors">{topic}</p>
+                            <p className="text-xs sm:text-sm text-text-muted group-hover:text-text-main transition-colors leading-relaxed">{topic}</p>
                           </div>
                         ))}
                       </div>
                     </div>
 
                     {/* Notice & Enrolled Investigators Section */}
-                    <div className="space-y-8">
+                    <div className="space-y-6 sm:space-y-8">
                       {/* Announcements Subsection */}
                       <div>
-                        <div className="flex items-center gap-2 mb-4">
+                        <div className="flex items-center gap-2 mb-3.5 sm:mb-4">
                           <Bell size={18} className="text-warning" />
-                          <h3 className="text-lg font-heading font-black uppercase tracking-wide">Announcements</h3>
+                          <h3 className="text-base sm:text-lg font-heading font-black uppercase tracking-wide">Announcements</h3>
                         </div>
 
                         <div className="space-y-3">
                           {courseAnnouncements.length > 0 ? (
                             courseAnnouncements.map((notice) => (
-                              <div key={notice.id} className="p-3 bg-warning/5 rounded-md border border-warning/10 relative overflow-hidden group">
-                                <div className="absolute top-0 left-0 w-0.5 h-full bg-warning opacity-50" />
+                              <div key={notice.id} className="p-3 bg-warning/5 rounded-xl border border-warning/15 relative overflow-hidden group">
                                 <div className="flex justify-between items-start mb-1">
                                   <span className="text-[9px] font-black text-warning uppercase tracking-widest bg-warning/10 px-1.5 py-0.5 rounded">Update</span>
                                   {notice.createdAt && (
@@ -1058,7 +1079,7 @@ export default function Courses() {
                               </div>
                             ))
                           ) : (
-                            <div className="p-4 border border-black/10 dark:border-white/5 border-dashed rounded-md flex flex-col items-center justify-center text-center">
+                            <div className="p-4 border border-black/10 dark:border-white/5 border-dashed rounded-xl flex flex-col items-center justify-center text-center">
                               <ShieldCheck size={24} className="text-text-main/10 mb-1" />
                               <p className="text-[10px] text-text-muted italic">No new investigation updates.</p>
                             </div>
@@ -1075,13 +1096,13 @@ export default function Courses() {
                         >
                           <div className="flex items-center gap-2 mb-4">
                             <Users size={18} className="text-warning" />
-                            <h3 className="text-lg font-heading font-black uppercase tracking-wide">Enrolled Investigators ({enrolledStudents.length})</h3>
+                            <h3 className="text-base sm:text-lg font-heading font-black uppercase tracking-wide">Enrolled Investigators ({enrolledStudents.length})</h3>
                           </div>
 
                           {enrolledStudents.length > 0 ? (
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-[180px] overflow-y-auto pr-1">
                               {enrolledStudents.map((student, idx) => (
-                                <div key={student.id || idx} className="flex items-center gap-3 p-2 bg-black/10 dark:bg-white/2 rounded border border-black/5 dark:border-white/5 hover:border-warning/20 transition-colors">
+                                <div key={student.id || idx} className="flex items-center gap-3 p-2 bg-black/10 dark:bg-white/2 rounded-lg border border-black/5 dark:border-white/5 hover:border-warning/20 transition-colors">
                                   {student.photoURL ? (
                                     <img 
                                       src={student.photoURL} 
@@ -1104,7 +1125,7 @@ export default function Courses() {
                               ))}
                             </div>
                           ) : (
-                            <div className="p-6 border border-black/10 dark:border-white/5 border-dashed rounded-md flex flex-col items-center justify-center text-center">
+                            <div className="p-6 border border-black/10 dark:border-white/5 border-dashed rounded-xl flex flex-col items-center justify-center text-center">
                               <Users size={24} className="text-text-main/15 mb-1.5" />
                               <p className="text-[10px] text-text-muted italic">Be the first investigator to enroll in this course!</p>
                             </div>
@@ -1112,27 +1133,28 @@ export default function Courses() {
                         </motion.div>
                       )}
 
-                      <div className="p-3 bg-base/50 border border-black/10 dark:border-white/5 rounded-md border-dashed">
-                        <p className="text-[9px] text-text-muted italic leading-relaxed">
+                      <div className="p-3 bg-base/50 border border-black/10 dark:border-white/5 rounded-xl border-dashed">
+                        <p className="text-[10px] text-text-muted italic leading-relaxed">
                           <span className="text-warning font-bold uppercase tracking-widest mr-1">Note:</span> Real-time forensic updates and agent registers are pushed directly to this console.
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-surface/80 backdrop-blur-sm pt-6 border-t border-black/10 dark:border-white/5 mt-auto">
-                    <div className="flex items-center justify-between mb-6">
+                  {/* Sticky Mobile Action Footer inside Modal */}
+                  <div className="sticky bottom-0 z-20 -mx-5 -mb-5 sm:mx-0 sm:mb-0 p-4 sm:p-0 sm:pt-6 bg-surface/95 backdrop-blur-md border-t border-black/10 dark:border-white/10 mt-auto">
+                    <div className="flex items-center justify-between mb-3.5 sm:mb-6">
                       <div>
-                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mb-1">Pricing Status</p>
+                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-text-muted mb-0.5 sm:mb-1">Pricing Status</p>
                          {selectedCourse.price === 0 ? (
-                           <div className="flex flex-col">
-                             <span className="text-3xl font-heading font-black text-emerald-500 tracking-[0.1em]">FREE</span>
-                             <span className="text-[9px] uppercase tracking-widest font-black text-emerald-400 mt-1">Operational & Live</span>
+                           <div className="flex items-baseline gap-2 sm:flex-col sm:items-start sm:gap-0">
+                             <span className="text-2xl sm:text-3xl font-heading font-black text-emerald-500 tracking-[0.1em]">FREE</span>
+                             <span className="text-[9px] uppercase tracking-widest font-black text-emerald-400 sm:mt-1">Operational & Live</span>
                            </div>
                          ) : (
-                           <div className="flex flex-col">
-                             <span className="text-2xl font-heading font-black text-amber-500 uppercase tracking-wider">COMING SOON</span>
-                             <span className="text-[9px] uppercase tracking-widest font-black text-amber-400 mt-1">Under Development</span>
+                           <div className="flex items-baseline gap-2 sm:flex-col sm:items-start sm:gap-0">
+                             <span className="text-xl sm:text-2xl font-heading font-black text-amber-500 uppercase tracking-wider">COMING SOON</span>
+                             <span className="text-[9px] uppercase tracking-widest font-black text-amber-400 sm:mt-1">Under Development</span>
                            </div>
                          )}
                       </div>
@@ -1153,29 +1175,29 @@ export default function Courses() {
                     {selectedCourse.price > 0 ? (
                       <button 
                         disabled
-                        className="w-full py-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 font-black uppercase tracking-[0.15em] text-xs rounded-lg flex items-center justify-center gap-3 cursor-not-allowed"
+                        className="w-full min-h-[48px] py-3.5 sm:py-4 bg-amber-500/10 text-amber-500 border border-amber-500/20 font-black uppercase tracking-[0.15em] text-xs rounded-xl flex items-center justify-center gap-2.5 cursor-not-allowed"
                       >
                         <Lock size={16} />
-                        Under Development • Coming Soon
+                        <span>Under Development • Coming Soon</span>
                       </button>
                     ) : isPurchased(selectedCourse.id) ? (
                       <button 
                         onClick={() => navigate(`/player/${selectedCourse.id}`)}
-                        className="w-full py-4 bg-success text-text-main font-black uppercase tracking-[0.2em] rounded-md hover:bg-success/90 transition-colors flex items-center justify-center gap-3"
+                        className="w-full min-h-[48px] py-3.5 sm:py-4 bg-success text-text-main font-black uppercase tracking-[0.18em] text-xs sm:text-sm rounded-xl hover:bg-success/90 transition-colors flex items-center justify-center gap-2.5 cursor-pointer"
                       >
-                        <CheckCircle size={20} />
-                        Go to Course
+                        <CheckCircle size={19} />
+                        <span>Go to Course</span>
                       </button>
                     ) : (
                       <button 
                         onClick={(e) => handlePurchase(selectedCourse.id, e)}
                         disabled={purchasing === selectedCourse.id || success === selectedCourse.id}
-                        className="w-full py-4 bg-warning text-crust font-black uppercase tracking-[0.2em] rounded-md hover:bg-warning/90 shadow-[0_4px_20px_rgba(0,240,255,0.2)] transition-all flex items-center justify-center gap-3 disabled:opacity-50"
+                        className="w-full min-h-[48px] py-3.5 sm:py-4 bg-warning text-crust font-black uppercase tracking-[0.18em] text-xs sm:text-sm rounded-xl hover:bg-warning/90 shadow-lg transition-all flex items-center justify-center gap-2.5 disabled:opacity-50 cursor-pointer"
                       >
                         {purchasing === selectedCourse.id ? (
-                          <><Loader2 size={20} className="animate-spin" /> {selectedCourse.price === 0 ? "Enrolling Investigator..." : "Analyzing Payment..."}</>
+                          <><Loader2 size={19} className="animate-spin" /> {selectedCourse.price === 0 ? "Enrolling Investigator..." : "Analyzing Payment..."}</>
                         ) : success === selectedCourse.id ? (
-                          <><CheckCircle size={20} /> Access Granted!</>
+                          <><CheckCircle size={19} /> Access Granted!</>
                         ) : (
                           <>Enroll Now <ChevronRight size={18} /></>
                         )}
@@ -1188,7 +1210,7 @@ export default function Courses() {
           </div>
         )}
         {selectedInstructor && (
-          <div className="fixed inset-0 z-[300] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[300] flex items-end sm:items-center justify-center p-0 sm:p-4">
             <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
@@ -1198,16 +1220,17 @@ export default function Courses() {
             />
             
             <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 10 }}
+              initial={{ opacity: 0, scale: 0.95, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 10 }}
-              className="bg-surface border border-black/10 dark:border-white/10 w-full max-w-2xl relative z-10 shadow-2xl rounded-2xl overflow-hidden"
+              exit={{ opacity: 0, scale: 0.95, y: 16 }}
+              className="bg-surface border-t sm:border border-black/10 dark:border-white/10 w-full max-w-2xl max-h-[90dvh] overflow-y-auto relative z-10 shadow-2xl rounded-t-3xl sm:rounded-2xl"
             >
               <button 
                 onClick={() => setSelectedInstructor(null)}
-                className="absolute top-4 right-4 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full transition-colors z-20"
+                className="absolute top-3.5 right-3.5 w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/60 text-white rounded-full transition-colors z-20"
+                aria-label="Close instructor profile"
               >
-                <X size={20} />
+                <X size={18} />
               </button>
 
               {(() => {
@@ -1215,24 +1238,24 @@ export default function Courses() {
                 const firstCourse = instructorCourses[0];
                 return (
                   <>
-                    <div className="h-32 bg-black relative">
+                    <div className="h-28 sm:h-32 bg-black relative">
                       <img src={firstCourse.thumbnail} alt="Cover" className="w-full h-full object-cover opacity-30" />
                       <div className="absolute inset-0 bg-gradient-to-t from-surface to-transparent"></div>
                     </div>
-                    <div className="px-8 pb-8 relative">
-                      <div className="w-24 h-24 rounded-full border-4 border-surface overflow-hidden -mt-12 mb-4 relative z-10 bg-base">
-                        <img src={firstCourse.instructorImage} alt={selectedInstructor} className="w-full h-full object-cover" />
+                    <div className="px-5 pb-6 sm:px-8 sm:pb-8 relative">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-surface overflow-hidden -mt-10 sm:-mt-12 mb-3 sm:mb-4 relative z-10 bg-base">
+                        <img src={firstCourse.instructorImage} alt={selectedInstructor} className="w-full h-full object-cover object-top" />
                       </div>
-                      <h2 className="text-3xl font-heading font-black text-text-main mb-1 uppercase tracking-tight">{selectedInstructor}</h2>
-                      <p className="text-warning text-xs font-black uppercase tracking-widest mb-6">Lead Forensic Instructor</p>
+                      <h2 className="text-2xl sm:text-3xl font-heading font-black text-text-main mb-1 uppercase tracking-tight">{selectedInstructor}</h2>
+                      <p className="text-warning text-xs font-black uppercase tracking-widest mb-4 sm:mb-6">Lead Forensic Instructor</p>
                       
-                      <div className="bg-black/5 dark:bg-white/5 p-4 items-center rounded-lg border border-black/10 dark:border-white/10 mb-8">
-                         <p className="text-sm text-text-muted leading-relaxed">
+                      <div className="bg-black/5 dark:bg-white/5 p-3.5 sm:p-4 items-center rounded-xl border border-black/10 dark:border-white/10 mb-6 sm:mb-8">
+                         <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
                            {firstCourse.instructorBio}
                          </p>
                       </div>
 
-                      <h3 className="text-lg font-heading font-black uppercase mb-4 tracking-wide flex items-center gap-2">
+                      <h3 className="text-base sm:text-lg font-heading font-black uppercase mb-3 sm:mb-4 tracking-wide flex items-center gap-2">
                          <BookOpen size={16} className="text-warning" />
                          Courses by {selectedInstructor}
                       </h3>
@@ -1242,16 +1265,16 @@ export default function Courses() {
                            <div 
                              key={c.id} 
                              onClick={() => { setSelectedInstructor(null); setSelectedCourse(c); }}
-                             className="flex items-center gap-4 p-3 rounded-lg border border-black/10 dark:border-white/10 hover:border-warning/30 bg-base/50 cursor-pointer group transition-colors"
+                             className="flex items-center gap-3.5 sm:gap-4 p-3 rounded-xl border border-black/10 dark:border-white/10 hover:border-warning/30 bg-base/50 cursor-pointer group transition-colors"
                            >
-                             <div className="w-16 h-12 bg-black rounded overflow-hidden flex-shrink-0">
+                             <div className="w-14 h-11 sm:w-16 sm:h-12 bg-black rounded-lg overflow-hidden flex-shrink-0">
                                <img src={c.thumbnail} alt={c.title} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
                              </div>
-                             <div className="flex-grow">
-                                <h4 className="text-sm font-bold text-text-main group-hover:text-warning transition-colors line-clamp-1">{c.title}</h4>
+                             <div className="flex-grow min-w-0">
+                                <h4 className="text-xs sm:text-sm font-bold text-text-main group-hover:text-warning transition-colors line-clamp-1">{c.title}</h4>
                                 <p className="text-[10px] text-text-muted uppercase tracking-widest">{c.level} • {c.duration}</p>
                              </div>
-                             <ChevronRight size={16} className="text-text-muted group-hover:text-warning" />
+                             <ChevronRight size={16} className="text-text-muted group-hover:text-warning shrink-0" />
                            </div>
                         ))}
                       </div>
@@ -1264,7 +1287,7 @@ export default function Courses() {
         )}
 
         {previewVideo && (
-          <div className="fixed inset-0 z-[400] flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[400] flex items-center justify-center p-3 sm:p-4">
             <motion.div 
                initial={{ opacity: 0 }}
                animate={{ opacity: 1 }}
@@ -1300,7 +1323,7 @@ export default function Courses() {
               </div>
               <button 
                 onClick={() => setPreviewVideo(null)}
-                className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black text-white rounded-full transition-colors z-20 backdrop-blur-sm"
+                className="absolute top-3 right-3 sm:top-4 sm:right-4 p-2 bg-black/60 hover:bg-black text-white rounded-full transition-colors z-20 backdrop-blur-sm"
               >
                 <X size={20} />
               </button>

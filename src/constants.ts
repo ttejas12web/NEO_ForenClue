@@ -227,7 +227,7 @@ export const COURSES: Course[] = [
     publicationStatus: "published",
     notices: [
       { id: 1, date: "2026-11-04", content: "Self-Paced Certification Protocol (FT2601): Complete all 6 research modules, score ≥ 90% on each module quiz, and pass the Case Assignments on even-numbered modules (Modules 2, 4, and 6) to unlock your official Certificate PDF." },
-      { id: 2, date: "2026-11-04", content: "No video lectures are required—all research dossiers, interactive forensic calculators, quizzes, and case assignments are self-paced." }
+      { id: 2, date: "2026-11-04", content: "No video lectures are required—all study guides, interactive forensic calculators, quizzes, and case assignments are self-paced." }
     ],
     modules: [
       {

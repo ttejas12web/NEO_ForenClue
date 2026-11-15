@@ -67,6 +67,9 @@ export function Footer() {
             </h4>
             <ul className="space-y-3.5 text-sm text-text-muted">
               <li>
+                <Link to="/courses" className="hover:text-warning transition-colors duration-200">Courses</Link>
+              </li>
+              <li>
                 <Link to="/simulations" className="hover:text-warning transition-colors duration-200">Virtual Labs</Link>
               </li>
               <li>

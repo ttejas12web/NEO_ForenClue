@@ -33,6 +33,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { localFileStore, uploadBlobToCloudFirestore, getBlobFromCloudFirestore } from '@/lib/localFileStore';
+import QRCodeReact from 'react-qr-code';
 import {
   FORENSIC_TOXICOLOGY_COURSE_ID,
   FORENSIC_TOXICOLOGY_COURSE_CODE,
@@ -42,6 +43,9 @@ import {
   ToxModuleProgress,
   CertTemplateConfig,
   DEFAULT_CERT_TEMPLATE_CONFIG,
+  OFFICIAL_CERT_TEMPLATE_LOCAL_PATH,
+  OFFICIAL_CERT_TEMPLATE_REMOTE_URL,
+  formatCertificateDateDdMmYyyy,
   createInitialToxEnrollment,
   syncEnrollmentWithUpdatedSyllabus,
   runModuleQuizAutoCheck,
@@ -57,7 +61,7 @@ import {
 } from '@/components/courses/ForensicToxicologyVisualGuides';
 
 const LOCAL_ENROLLMENT_KEY = 'forenclue_tox_course_enrollment_v1';
-const LOCAL_TEMPLATE_CONFIG_KEY = 'forenclue_tox_cert_template_config_v1';
+const LOCAL_TEMPLATE_CONFIG_KEY = 'forenclue_tox_cert_template_config_v2';
 const LOCAL_TEMPLATE_BLOB_KEY = 'forenclue_tox_cert_template_pdf_blob';
 
 function InteractiveModuleSandbox({ toolType }: { toolType: ToxModule['interactiveToolType'] }) {
@@ -662,7 +666,7 @@ export function ForensicToxicologyPlayer() {
   const [previewPdfUrl, setPreviewPdfUrl] = useState<string>('');
   const [generatingCert, setGeneratingCert] = useState(false);
   const [certIssueDateInput, setCertIssueDateInput] = useState<string>(() =>
-    new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' })
+    formatCertificateDateDdMmYyyy('')
   );
   const [certSuccessBanner, setCertSuccessBanner] = useState<string>('');
   const [showCertNamePromptModal, setShowCertNamePromptModal] = useState(false);
@@ -1261,17 +1265,17 @@ export function ForensicToxicologyPlayer() {
   // ENROLLMENT REGISTRATION GATE IF NOT YET ENROLLED
   if (!enrollment || !enrollment.enrolled) {
     return (
-      <div className="min-h-screen bg-base py-12 px-4">
+      <div className="min-h-screen bg-base py-6 sm:py-12 px-3.5 sm:px-6">
         <div className="max-w-4xl mx-auto">
           <Link
             to="/courses"
-            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-text-muted hover:text-warning mb-6"
+            className="inline-flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-text-muted hover:text-warning mb-4 sm:mb-6 py-1"
           >
             <ChevronLeft size={16} /> Back to Courses Directory
           </Link>
 
-          <div className="bg-surface border border-black/10 dark:border-white/10 rounded-2xl p-6 sm:p-10 shadow-2xl space-y-8">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="bg-surface border border-black/10 dark:border-white/10 rounded-2xl p-4 sm:p-10 shadow-2xl space-y-6 sm:space-y-8">
+            <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
               <span className="px-3 py-1 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono font-black uppercase tracking-widest">
                 ● SELF-PACED CERTIFICATION COURSE
               </span>
@@ -1341,11 +1345,11 @@ export function ForensicToxicologyPlayer() {
             {/* Enrollment Form */}
             <form
               onSubmit={handleEnrollSubmit}
-              className="bg-base border border-warning/30 rounded-xl p-6 space-y-5"
+              className="bg-base border border-warning/30 rounded-xl p-4 sm:p-6 space-y-4 sm:space-y-5"
             >
               <div className="flex items-center gap-2 border-b border-black/10 dark:border-white/10 pb-3">
-                <UserCheck size={18} className="text-warning" />
-                <h2 className="text-sm font-heading font-black uppercase tracking-wider text-text-main">
+                <UserCheck size={18} className="text-warning shrink-0" />
+                <h2 className="text-xs sm:text-sm font-heading font-black uppercase tracking-wider text-text-main">
                   Candidate Enrollment & Certificate Name Registration
                 </h2>
               </div>
@@ -1361,7 +1365,7 @@ export function ForensicToxicologyPlayer() {
                     value={regNameInput}
                     onChange={(e) => setRegNameInput(e.target.value)}
                     placeholder="e.g., Dr. Aarav Deshmukh / Vaibhav Bade"
-                    className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-lg px-4 py-3 text-sm font-bold text-text-main outline-none focus:border-warning"
+                    className="w-full min-h-[44px] bg-surface border border-black/10 dark:border-white/10 rounded-lg px-4 py-3 text-sm font-bold text-text-main outline-none focus:border-warning"
                   />
                   <p className="text-[11px] text-text-muted mt-1">
                     This exact name will be stamped onto your official Certificate PDF upon passing all 6 modules.
@@ -1377,17 +1381,17 @@ export function ForensicToxicologyPlayer() {
                     value={regInstInput}
                     onChange={(e) => setRegInstInput(e.target.value)}
                     placeholder="e.g., National Forensic Sciences University"
-                    className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-lg px-4 py-3 text-sm text-text-main outline-none focus:border-warning"
+                    className="w-full min-h-[44px] bg-surface border border-black/10 dark:border-white/10 rounded-lg px-4 py-3 text-sm text-text-main outline-none focus:border-warning"
                   />
                 </div>
               </div>
 
               <div className="p-3.5 rounded-lg bg-warning/5 border border-warning/20 text-xs text-text-muted space-y-1">
                 <p className="font-bold text-text-main flex items-center gap-1.5">
-                  <ShieldCheck size={15} className="text-warning" /> AutoCheck Certification Criteria:
+                  <ShieldCheck size={15} className="text-warning shrink-0" /> AutoCheck Certification Criteria:
                 </p>
                 <p>
-                  1. Complete the self-paced research dossier for all <strong>6 Modules</strong> (No video lectures; 100% self-paced scientific study).
+                  1. Complete the self-paced study guide for all <strong>6 Modules</strong> (No video lectures; 100% self-paced scientific study).
                 </p>
                 <p>
                   2. Achieve a score of <strong>≥ 90%</strong> on every module&apos;s 10-question forensic assessment quiz.
@@ -1399,9 +1403,10 @@ export function ForensicToxicologyPlayer() {
 
               <button
                 type="submit"
-                className="w-full py-4 bg-warning text-crust font-heading font-black uppercase tracking-widest text-xs rounded-xl hover:bg-warning/90 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-warning/10"
+                className="w-full min-h-[48px] py-3.5 px-4 bg-warning text-crust font-heading font-black uppercase tracking-wider sm:tracking-widest text-xs rounded-xl hover:bg-warning/90 transition-all flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-warning/10 text-center"
               >
-                <Unlock size={16} /> Enroll in Forensic Toxicology Certificate Course & Start Module 1
+                <Unlock size={16} className="shrink-0" />
+                <span>Enroll in Course & Start Module 1</span>
               </button>
             </form>
           </div>
@@ -1427,52 +1432,59 @@ export function ForensicToxicologyPlayer() {
 
   return (
     <div className="min-h-screen bg-base flex flex-col">
-      {/* Minimalistic Course Header */}
-      <header className="bg-surface border-b border-black/10 dark:border-white/10 px-4 sm:px-6 py-3.5 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/courses"
-              className="p-2 rounded-lg bg-base border border-black/10 dark:border-white/10 text-text-muted hover:text-warning transition-colors"
-              title="Back to Courses"
-            >
-              <ChevronLeft size={18} />
-            </Link>
-            <div>
-              <div className="flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-text-muted">
-                <span className="text-warning font-black">COURSE CODE: {FORENSIC_TOXICOLOGY_COURSE_CODE}</span>
-                <span aria-hidden="true">·</span>
-                <span>MR. RAJAT PITHADIA</span>
-                {savingProgress && (
-                  <>
-                    <span aria-hidden="true">·</span>
-                    <span className="inline-flex items-center gap-1">
-                      <RefreshCw size={10} className="animate-spin" /> Syncing
-                    </span>
-                  </>
-                )}
+      {/* Minimalistic Mobile-Optimized Sticky Course Header */}
+      <header className="bg-surface/95 backdrop-blur-md border-b border-black/10 dark:border-white/10 px-3 sm:px-6 py-2.5 sm:py-3.5 sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-3">
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <Link
+                to="/courses"
+                className="w-9 h-9 sm:w-auto sm:h-auto sm:p-2 rounded-lg bg-base border border-black/10 dark:border-white/10 text-text-muted hover:text-warning transition-colors flex items-center justify-center shrink-0"
+                title="Back to Courses"
+              >
+                <ChevronLeft size={18} />
+              </Link>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-[10px] font-mono uppercase tracking-wider sm:tracking-widest text-text-muted truncate">
+                  <span className="text-warning font-black">CODE: {FORENSIC_TOXICOLOGY_COURSE_CODE}</span>
+                  <span aria-hidden="true">·</span>
+                  <span className="truncate">MR. RAJAT PITHADIA</span>
+                  {savingProgress && (
+                    <>
+                      <span aria-hidden="true">·</span>
+                      <span className="inline-flex items-center gap-1 text-warning">
+                        <RefreshCw size={10} className="animate-spin" /> Sync
+                      </span>
+                    </>
+                  )}
+                </div>
+                <h1 className="text-xs sm:text-base font-heading font-black uppercase tracking-tight text-text-main truncate">
+                  Certificate Course in Forensic Toxicology
+                </h1>
               </div>
-              <h1 className="text-sm sm:text-base font-heading font-black uppercase tracking-tight text-text-main">
-                Certificate Course in Forensic Toxicology
-              </h1>
             </div>
+
+            {/* Compact mobile module completion badge in top row */}
+            <span className="sm:hidden text-[10px] font-mono text-text-muted px-2 py-1 rounded-md bg-base border border-black/10 dark:border-white/10 shrink-0">
+              <strong className="text-warning">{eligibility.completedModulesCount}/6</strong> Done
+            </span>
           </div>
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center justify-between sm:justify-end gap-2">
             {activeSubView !== 'modules-hub' && (
               <button
                 onClick={() => {
                   setActiveSubView('modules-hub');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="px-3.5 py-2 rounded-lg bg-base border border-black/10 dark:border-white/10 hover:border-warning/50 text-text-main text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="min-h-[38px] px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg bg-base border border-black/10 dark:border-white/10 hover:border-warning/50 text-text-main text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
               >
                 <ChevronLeft size={14} />
                 <span>All 6 Modules</span>
               </button>
             )}
 
-            <span className="text-xs font-mono text-text-muted px-2.5 py-1.5 rounded-lg bg-base border border-black/10 dark:border-white/10">
+            <span className="hidden sm:inline-block text-xs font-mono text-text-muted px-2.5 py-1.5 rounded-lg bg-base border border-black/10 dark:border-white/10">
               <strong className="text-text-main">{eligibility.completedModulesCount}/6</strong> Modules Completed
             </span>
 
@@ -1484,7 +1496,7 @@ export function ForensicToxicologyPlayer() {
                 }
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
-              className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`min-h-[38px] flex-1 sm:flex-initial justify-center px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-lg text-[11px] sm:text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 eligibility.isEligible
                   ? 'bg-emerald-500 text-crust hover:bg-emerald-400 font-black'
                   : 'bg-base border border-black/10 dark:border-white/10 text-text-muted hover:border-warning/40'
@@ -1496,14 +1508,14 @@ export function ForensicToxicologyPlayer() {
               }
             >
               {eligibility.isEligible ? (
-                <Award size={15} className="text-crust" />
+                <Award size={14} className="text-crust shrink-0" />
               ) : (
-                <Lock size={14} className="text-amber-400" />
+                <Lock size={13} className="text-amber-400 shrink-0" />
               )}
-              <span>
+              <span className="truncate">
                 {eligibility.isEligible
                   ? 'Generate Certificate'
-                  : `Certificate Locked (${eligibility.completedModulesCount}/6)`}
+                  : `Certificate (${eligibility.completedModulesCount}/6)`}
               </span>
             </button>
           </div>
@@ -1512,17 +1524,17 @@ export function ForensicToxicologyPlayer() {
 
       {activeSubView === 'modules-hub' ? (
         /* CLEAN, MINIMALISTIC & USER-FRIENDLY 6-MODULE HUB */
-        <div className="max-w-6xl w-full mx-auto flex-1 px-4 sm:px-6 py-10 sm:py-14 space-y-8">
-          <div className="text-center space-y-2">
-            <span className="text-xs font-mono uppercase tracking-widest text-warning font-bold block">
+        <div className="max-w-6xl w-full mx-auto flex-1 px-3.5 sm:px-6 py-6 sm:py-14 space-y-6 sm:space-y-8">
+          <div className="text-center space-y-1.5 sm:space-y-2">
+            <span className="text-[11px] sm:text-xs font-mono uppercase tracking-widest text-warning font-bold block">
               Course Code: {FORENSIC_TOXICOLOGY_COURSE_CODE}
             </span>
-            <h2 className="text-2xl sm:text-3xl font-heading font-black uppercase tracking-tight text-text-main">
+            <h2 className="text-xl sm:text-3xl font-heading font-black uppercase tracking-tight text-text-main">
               Select a Course Module to Begin Study
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
             {FORENSIC_TOXICOLOGY_MODULES.map((mod, idx) => {
               const st = eligibility.moduleStatuses[idx];
 
@@ -1536,13 +1548,13 @@ export function ForensicToxicologyPlayer() {
                     setActiveSubView('study');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  className={`text-left bg-surface border rounded-xl p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer group ${
+                  className={`text-left bg-surface border rounded-xl p-4 sm:p-6 flex flex-col justify-between transition-all duration-200 cursor-pointer group ${
                     st?.moduleComplete
                       ? 'border-emerald-500/40 hover:border-emerald-500'
                       : 'border-black/10 dark:border-white/10 hover:border-warning/60'
                   }`}
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-2.5 sm:space-y-3">
                     <div className="flex items-center justify-between text-xs font-mono">
                       <span className="text-warning font-black uppercase tracking-wider">
                         Module 0{mod.moduleNumber}
@@ -1570,13 +1582,13 @@ export function ForensicToxicologyPlayer() {
                           src={MODULE_VISUAL_GUIDES[mod.moduleNumber].clipartImageSrc}
                           alt={`${mod.code} Mindmap & Cheatsheet`}
                           referrerPolicy="no-referrer"
-                          className="w-full h-28 object-contain bg-white rounded"
+                          className="w-full h-24 sm:h-28 object-contain bg-white rounded"
                         />
                       </div>
                     )}
                   </div>
 
-                  <div className="pt-5 mt-5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-xs font-bold">
+                  <div className="pt-4 mt-4 sm:pt-5 sm:mt-5 border-t border-black/5 dark:border-white/5 flex items-center justify-between text-xs font-bold">
                     <span className="text-text-muted font-mono font-normal">
                       {mod.estimatedHours}
                     </span>
@@ -1592,21 +1604,21 @@ export function ForensicToxicologyPlayer() {
         </div>
       ) : (
         /* Full-Width Workspace Showing Only Selected Module Content (or Certificate Studio) */
-        <div className="max-w-5xl w-full mx-auto flex-1 p-4 sm:p-6">
+        <div className="max-w-5xl w-full mx-auto flex-1 p-3 sm:p-6">
           <section className="space-y-6">
             {activeSubView === 'certificate' ? (
             /* MASTER AUTOCHECK VERIFICATION & PDF CERTIFICATE GENERATOR STUDIO */
-            <div className="bg-surface border border-black/10 dark:border-white/10 rounded-2xl p-6 sm:p-8 space-y-8">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-black/10 dark:border-white/10 pb-6">
+            <div className="bg-surface border border-black/10 dark:border-white/10 rounded-2xl p-4 sm:p-8 space-y-6 sm:space-y-8">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-black/10 dark:border-white/10 pb-4 sm:pb-6">
                 <div>
-                  <h2 className="text-2xl font-heading font-black uppercase tracking-tight text-text-main">
+                  <h2 className="text-lg sm:text-2xl font-heading font-black uppercase tracking-tight text-text-main">
                     Course Verification & Certificate PDF Generator
                   </h2>
                 </div>
                 {isAdmin && (
                   <button
                     onClick={() => setShowTemplateConfigurator(!showTemplateConfigurator)}
-                    className="px-4 py-2 rounded-xl bg-base border border-black/10 dark:border-white/10 hover:border-warning text-xs font-bold text-text-main flex items-center gap-2 cursor-pointer self-start"
+                    className="min-h-[40px] px-4 py-2 rounded-xl bg-base border border-black/10 dark:border-white/10 hover:border-warning text-xs font-bold text-text-main flex items-center gap-2 cursor-pointer self-start"
                   >
                     <Upload size={14} className="text-warning" />
                     <span>{showTemplateConfigurator ? 'Hide PDF Template Settings' : 'Upload / Configure PDF Template'}</span>
@@ -1860,13 +1872,18 @@ export function ForensicToxicologyPlayer() {
               </AnimatePresence>
 
               {/* 6-Module Eligibility Audit Matrix */}
-              <div className="space-y-3">
-                <h3 className="text-xs font-mono font-black uppercase tracking-widest text-text-muted">
-                  6-Module Eligibility Audit Matrix
-                </h3>
+              <div className="space-y-2.5 sm:space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="text-xs font-mono font-black uppercase tracking-widest text-text-muted">
+                    6-Module Eligibility Audit Matrix
+                  </h3>
+                  <span className="sm:hidden text-[10px] font-mono text-text-muted">
+                    Swipe table →
+                  </span>
+                </div>
 
-                <div className="overflow-x-auto border border-black/10 dark:border-white/10 rounded-xl">
-                  <table className="w-full text-left border-collapse text-xs">
+                <div className="overflow-x-auto touch-pan-x border border-black/10 dark:border-white/10 rounded-xl">
+                  <table className="w-full min-w-[560px] text-left border-collapse text-xs">
                     <thead>
                       <tr className="bg-base border-b border-black/10 dark:border-white/10 text-[10px] font-mono uppercase text-text-muted">
                         <th className="py-3 px-4">Module</th>
@@ -2039,15 +2056,15 @@ export function ForensicToxicologyPlayer() {
                   </div>
                 )}
 
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
                   <div className="text-xs text-text-muted">
                     {eligibility.isEligible ? (
                       <span className="text-emerald-400 font-bold flex items-center gap-1.5">
-                        <ShieldCheck size={16} /> AutoCheck System Verified: All 6 Modules, Quizzes & Assignments Completed!
+                        <ShieldCheck size={16} className="shrink-0" /> AutoCheck System Verified: All 6 Modules, Quizzes & Assignments Completed!
                       </span>
                     ) : (
                       <span className="text-amber-400 flex items-center gap-1.5">
-                        <Lock size={15} /> Complete all 6 modules ({eligibility.completedModulesCount}/6 verified) to unlock certificate.
+                        <Lock size={15} className="shrink-0" /> Complete all 6 modules ({eligibility.completedModulesCount}/6 verified) to unlock certificate.
                       </span>
                     )}
                   </div>
@@ -2062,13 +2079,13 @@ export function ForensicToxicologyPlayer() {
                       }
                     }}
                     disabled={!eligibility.isEligible || generatingCert}
-                    className={`px-6 py-3.5 rounded-xl font-heading font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${
+                    className={`w-full sm:w-auto min-h-[46px] justify-center px-6 py-3.5 rounded-xl font-heading font-black text-xs uppercase tracking-widest flex items-center gap-2 transition-all ${
                       eligibility.isEligible
                         ? 'bg-warning text-crust hover:bg-warning/90 cursor-pointer shadow-lg shadow-warning/20'
                         : 'bg-black/10 dark:bg-white/5 text-text-muted cursor-not-allowed opacity-60'
                     }`}
                   >
-                    {eligibility.isEligible ? <Download size={16} /> : <Lock size={15} />}
+                    {eligibility.isEligible ? <Download size={16} className="shrink-0" /> : <Lock size={15} className="shrink-0" />}
                     <span>
                       {generatingCert
                         ? 'Generating PDF...'
@@ -2080,40 +2097,172 @@ export function ForensicToxicologyPlayer() {
                 </div>
               </div>
 
-              {/* Live Certificate PDF Preview — Only Rendered When Eligible */}
-              {eligibility.isEligible && previewPdfUrl && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-text-muted">
-                      Live Certificate PDF Preview (Name & Date Dynamically Stamped)
-                    </span>
-                    <a
-                      href={previewPdfUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-[11px] font-mono text-warning hover:underline flex items-center gap-1"
-                    >
-                      <span>Open Preview in New Tab</span>
-                      <ExternalLink size={12} />
-                    </a>
+              {/* Live Certificate Visual & PDF Preview — Only Rendered When Eligible */}
+              {eligibility.isEligible && (() => {
+                const previewCertNo =
+                  enrollment.certificateNo ||
+                  `FC-${FORENSIC_TOXICOLOGY_COURSE_CODE}-${new Date().getFullYear()}-${(user?.uid || '8492').substring(0, 5).toUpperCase()}`;
+                const previewName = regNameInput.trim() || enrollment.registeredName || 'Candidate Full Name';
+                const previewDate = formatCertificateDateDdMmYyyy(certIssueDateInput);
+                const verifyQrUrl = `https://forenclue.in/certificate?id=${encodeURIComponent(previewCertNo)}`;
+
+                return (
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <span className="text-[10px] font-mono uppercase tracking-widest text-text-muted">
+                        Official Certificate Live Preview (Name, Date, Course Content, QR &amp; ID Stamped)
+                      </span>
+                      {previewPdfUrl && (
+                        <a
+                          href={previewPdfUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="text-[11px] font-mono text-warning hover:underline flex items-center gap-1"
+                        >
+                          <span>Open Full PDF in New Tab</span>
+                          <ExternalLink size={12} />
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Responsive Visual Certificate Preview Matching Exact 1600x1131 Template Coordinates */}
+                    <div className="relative w-full aspect-[1600/1131] rounded-xl overflow-hidden border border-black/15 dark:border-white/15 bg-white shadow-2xl select-none">
+                      <img
+                        src={OFFICIAL_CERT_TEMPLATE_LOCAL_PATH}
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          if (target.src !== OFFICIAL_CERT_TEMPLATE_REMOTE_URL) {
+                            target.src = OFFICIAL_CERT_TEMPLATE_REMOTE_URL;
+                          }
+                        }}
+                        alt="ForenClue Certificate of Completion Template"
+                        className="w-full h-full object-cover"
+                      />
+
+                      {/* 1. Date Stamp next to "Date :" */}
+                      <div
+                        className="absolute bg-white px-1 flex items-center font-serif font-bold text-[#111827] leading-none"
+                        style={{
+                          left: '6.15%',
+                          top: '38.4%',
+                          height: '2.6%',
+                          fontSize: 'clamp(7px, 1.35vw, 18px)'
+                        }}
+                      >
+                        {previewDate}
+                      </div>
+
+                      {/* 2. Candidate Name Stamp under "THIS IS TO CERTIFY THAT" */}
+                      <div
+                        className="absolute bg-white flex flex-col justify-center"
+                        style={{
+                          left: '33.8%',
+                          top: '48.8%',
+                          width: '43.5%',
+                          minHeight: '7.2%'
+                        }}
+                      >
+                        <div
+                          className="font-sans font-extrabold text-[#111827] tracking-tight truncate pb-1 border-b-2 border-[#C98F19]"
+                          style={{ fontSize: 'clamp(14px, 3.0vw, 40px)' }}
+                        >
+                          {previewName}
+                        </div>
+                      </div>
+
+                      {/* 3. Course Completion & Learning Details in "Content of the course etc" area */}
+                      <div
+                        className="absolute bg-white flex flex-col justify-start space-y-0.5 sm:space-y-1"
+                        style={{
+                          left: '33.8%',
+                          top: '57.6%',
+                          width: '43.5%',
+                          minHeight: '15.5%'
+                        }}
+                      >
+                        <p
+                          className="font-sans font-bold text-[#2E3846] leading-snug"
+                          style={{ fontSize: 'clamp(6.2px, 1.08vw, 14.5px)' }}
+                        >
+                          has successfully completed the 6-Module Self-Paced
+                        </p>
+                        <p
+                          className="font-sans font-extrabold text-[#3D2173] tracking-tight leading-snug"
+                          style={{ fontSize: 'clamp(7.5px, 1.32vw, 17.5px)' }}
+                        >
+                          CERTIFICATE COURSE IN FORENSIC TOXICOLOGY ({FORENSIC_TOXICOLOGY_COURSE_CODE})
+                        </p>
+                        <div
+                          className="font-sans font-medium text-[#263345] leading-snug space-y-0.5 pt-0.5"
+                          style={{ fontSize: 'clamp(5.8px, 0.98vw, 13.2px)' }}
+                        >
+                          <p>Covering Toxicokinetics, Postmortem Redistribution &amp; Viscera Clean-Up,</p>
+                          <p>GC-MS / ICP-MS Instrumentation, Metallic, Volatile &amp; Pesticide Poisons,</p>
+                          <p>NDPS Act Narcotics, Plant/Animal Toxinology &amp; Sec. 329 BNSS Reporting.</p>
+                        </div>
+                        <p
+                          className="font-sans font-bold text-[#94610F] leading-snug pt-0.5"
+                          style={{ fontSize: 'clamp(5.8px, 0.98vw, 13.2px)' }}
+                        >
+                          Duration: 48 Hours (6 Modules) &nbsp;|&nbsp; Assessment Score: &ge; 90% (Verified)
+                        </p>
+                      </div>
+
+                      {/* 4. Scannable Verification QR Code inside the 4 corner brackets */}
+                      <div
+                        className="absolute bg-white flex items-center justify-center p-0.5 sm:p-1"
+                        style={{
+                          left: '86.4%',
+                          top: '56.8%',
+                          width: '8.0%',
+                          height: '11.3%'
+                        }}
+                      >
+                        <QRCodeReact
+                          value={verifyQrUrl}
+                          size={128}
+                          level="M"
+                          bgColor="#FFFFFF"
+                          fgColor="#111827"
+                          style={{ width: '100%', height: '100%' }}
+                        />
+                      </div>
+
+                      {/* 5. Certificate Verification ID below the QR brackets */}
+                      <div
+                        className="absolute bg-white flex flex-col items-center justify-center text-center"
+                        style={{
+                          left: '83.2%',
+                          top: '71.4%',
+                          width: '14.5%',
+                          minHeight: '3.6%'
+                        }}
+                      >
+                        <span
+                          className="font-sans uppercase tracking-wider text-[#64748B] leading-none"
+                          style={{ fontSize: 'clamp(4.5px, 0.62vw, 9px)' }}
+                        >
+                          Certificate ID
+                        </span>
+                        <span
+                          className="font-sans font-extrabold text-[#111827] leading-tight mt-0.5"
+                          style={{ fontSize: 'clamp(5.5px, 0.82vw, 12px)' }}
+                        >
+                          {previewCertNo}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-full h-[460px] rounded-xl overflow-hidden border border-black/10 dark:border-white/10 bg-black/20">
-                    <iframe
-                      src={`${previewPdfUrl}#toolbar=0&navpanes=0`}
-                      title="Certificate PDF Preview"
-                      className="w-full h-full border-0"
-                    />
-                  </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           ) : (
             /* ACTIVE MODULE WORKSPACE (STUDY DOSSIER / QUIZ / ASSIGNMENT) */
             <div className="bg-surface border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden shadow-xl">
               {/* Module Banner Header */}
-              <div className="p-6 sm:p-8 bg-base/60 border-b border-black/10 dark:border-white/10 space-y-4">
+              <div className="p-4 sm:p-8 bg-base/60 border-b border-black/10 dark:border-white/10 space-y-3.5 sm:space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
                     <span className="px-2.5 py-1 rounded bg-warning/15 border border-warning/30 text-warning text-[10px] font-mono font-black uppercase tracking-widest">
                       MODULE 0{activeModule.moduleNumber} OF 06 • {activeModule.code}
                     </span>
@@ -2123,44 +2272,46 @@ export function ForensicToxicologyPlayer() {
                   </div>
 
                   {currentModStatus?.moduleComplete && (
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-black">
-                      <CheckCircle2 size={14} /> MODULE AUTOCHECK VERIFIED
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] sm:text-xs font-mono font-black">
+                      <CheckCircle2 size={13} /> MODULE AUTOCHECK VERIFIED
                     </span>
                   )}
                 </div>
 
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-heading font-black text-text-main leading-tight">
+                  <h2 className="text-lg sm:text-2xl font-heading font-black text-text-main leading-tight">
                     {activeModule.title}
                   </h2>
-                  <p className="text-xs sm:text-sm text-text-muted mt-1.5 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-text-muted mt-1 sm:mt-1.5 leading-relaxed">
                     {activeModule.subtitle}
                   </p>
                 </div>
 
-                {/* Module Segmented Navigation Bar (2 Steps for Odd Modules 1,3,5 • 3 Steps for Even Modules 2,4,6) */}
+                {/* Module Segmented Navigation Bar (Horizontal on Mobile & Desktop) */}
                 <div
-                  className={`grid grid-cols-1 ${
-                    moduleHasAssignment(activeModule.moduleNumber) ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
-                  } gap-2 pt-2`}
+                  className={`grid ${
+                    moduleHasAssignment(activeModule.moduleNumber) ? 'grid-cols-3' : 'grid-cols-2'
+                  } gap-1.5 sm:gap-2 pt-1 sm:pt-2`}
                 >
                   <button
                     onClick={() => setActiveSubView('study')}
-                    className={`p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                    className={`min-h-[48px] p-2.5 sm:p-3 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between gap-1.5 ${
                       activeSubView === 'study'
                         ? 'bg-warning text-crust border-warning font-black'
                         : 'bg-surface border-black/10 dark:border-white/10 text-text-main hover:border-warning/40'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <BookOpen size={16} />
-                      <div>
-                        <span className="text-[10px] font-mono uppercase block opacity-80">Step 1</span>
-                        <span className="text-xs font-bold">Research Dossier</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                      <BookOpen size={15} className="shrink-0" />
+                      <div className="min-w-0">
+                        <span className="text-[9px] sm:text-[10px] font-mono uppercase block opacity-80 truncate">
+                          Step 1
+                        </span>
+                        <span className="text-[11px] sm:text-xs font-bold block truncate">Study Guide</span>
                       </div>
                     </div>
                     {currentModProg.readingCompleted && (
-                      <CheckCircle2 size={16} className={activeSubView === 'study' ? 'text-crust' : 'text-emerald-400'} />
+                      <CheckCircle2 size={14} className={`shrink-0 ${activeSubView === 'study' ? 'text-crust' : 'text-emerald-400'}`} />
                     )}
                   </button>
 
@@ -2174,9 +2325,9 @@ export function ForensicToxicologyPlayer() {
                     title={
                       currentModStatus?.readingDone
                         ? 'Open Module Quiz'
-                        : 'Locked: Complete all sections in Step 1 Research Dossier to unlock the Module Quiz'
+                        : 'Locked: Complete all sections in Step 1 Study Guide to unlock the Module Quiz'
                     }
-                    className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                    className={`min-h-[48px] p-2.5 sm:p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-1.5 ${
                       !currentModStatus?.readingDone
                         ? 'bg-base/50 border-black/10 dark:border-white/5 text-text-muted opacity-60 cursor-not-allowed'
                         : activeSubView === 'quiz'
@@ -2184,19 +2335,19 @@ export function ForensicToxicologyPlayer() {
                           : 'bg-surface border-black/10 dark:border-white/10 text-text-main hover:border-warning/40 cursor-pointer'
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      {currentModStatus?.readingDone ? <HelpCircle size={16} /> : <Lock size={16} />}
-                      <div>
-                        <span className="text-[10px] font-mono uppercase block opacity-80">
-                          {currentModStatus?.readingDone ? 'Step 2 (Pass ≥ 90%)' : 'Step 2 (Locked • Complete Study)'}
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
+                      {currentModStatus?.readingDone ? <HelpCircle size={15} className="shrink-0" /> : <Lock size={14} className="shrink-0" />}
+                      <div className="min-w-0">
+                        <span className="text-[9px] sm:text-[10px] font-mono uppercase block opacity-80 truncate">
+                          {currentModStatus?.readingDone ? 'Step 2 (≥90%)' : 'Step 2 (Locked)'}
                         </span>
-                        <span className="text-xs font-bold">
-                          Module Quiz {currentModProg.quizScore !== null ? `(${currentModProg.quizScore}%)` : '(10 Qs)'}
+                        <span className="text-[11px] sm:text-xs font-bold block truncate">
+                          Quiz {currentModProg.quizScore !== null ? `(${currentModProg.quizScore}%)` : '(10 Qs)'}
                         </span>
                       </div>
                     </div>
                     {currentModProg.quizPassed && (
-                      <CheckCircle2 size={16} className={activeSubView === 'quiz' ? 'text-crust' : 'text-emerald-400'} />
+                      <CheckCircle2 size={14} className={`shrink-0 ${activeSubView === 'quiz' ? 'text-crust' : 'text-emerald-400'}`} />
                     )}
                   </button>
 
@@ -2213,7 +2364,7 @@ export function ForensicToxicologyPlayer() {
                           ? 'Open Case Assignment'
                           : 'Locked: Complete Module Study and score ≥ 90% on Module Quiz to unlock Case Assignment'
                       }
-                      className={`p-3 rounded-xl border text-left transition-all flex items-center justify-between ${
+                      className={`min-h-[48px] p-2.5 sm:p-3 rounded-xl border text-left transition-all flex items-center justify-between gap-1.5 ${
                         !currentModStatus?.readingDone || !currentModProg.quizPassed
                           ? 'bg-base/50 border-black/10 dark:border-white/5 text-text-muted opacity-60 cursor-not-allowed'
                           : activeSubView === 'assignment'
@@ -2221,25 +2372,25 @@ export function ForensicToxicologyPlayer() {
                             : 'bg-surface border-black/10 dark:border-white/10 text-text-main hover:border-warning/40 cursor-pointer'
                       }`}
                     >
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
                         {currentModStatus?.readingDone && currentModProg.quizPassed ? (
-                          <ClipboardCheck size={16} />
+                          <ClipboardCheck size={15} className="shrink-0" />
                         ) : (
-                          <Lock size={16} />
+                          <Lock size={14} className="shrink-0" />
                         )}
-                        <div>
-                          <span className="text-[10px] font-mono uppercase block opacity-80">
+                        <div className="min-w-0">
+                          <span className="text-[9px] sm:text-[10px] font-mono uppercase block opacity-80 truncate">
                             {currentModStatus?.readingDone && currentModProg.quizPassed
-                              ? 'Step 3 (AutoCheck)'
-                              : 'Step 3 (Locked • Need Study + Quiz ≥ 90%)'}
+                              ? 'Step 3'
+                              : 'Step 3 (Locked)'}
                           </span>
-                          <span className="text-xs font-bold">Case Assignment</span>
+                          <span className="text-[11px] sm:text-xs font-bold block truncate">Assignment</span>
                         </div>
                       </div>
                       {currentModProg.assignmentPassed && (
                         <CheckCircle2
-                          size={16}
-                          className={activeSubView === 'assignment' ? 'text-crust' : 'text-emerald-400'}
+                          size={14}
+                          className={`shrink-0 ${activeSubView === 'assignment' ? 'text-crust' : 'text-emerald-400'}`}
                         />
                       )}
                     </button>
@@ -2247,11 +2398,11 @@ export function ForensicToxicologyPlayer() {
                 </div>
               </div>
 
-              {/* SUBVIEW 1: SELF-PACED RESEARCH DOSSIER */}
+              {/* SUBVIEW 1: SELF-PACED STUDY GUIDE */}
               {activeSubView === 'study' && (
-                <div className="p-6 sm:p-8 space-y-8">
+                <div className="p-3.5 sm:p-8 space-y-6 sm:space-y-8">
                   {/* Learning Objectives Box */}
-                  <div className="bg-base border border-black/10 dark:border-white/10 rounded-xl p-5">
+                  <div className="bg-base border border-black/10 dark:border-white/10 rounded-xl p-4 sm:p-5">
                     <h3 className="text-xs font-mono font-black uppercase tracking-widest text-warning mb-3">
                       Module Learning Objectives & Competency Targets
                     </h3>
@@ -2272,7 +2423,7 @@ export function ForensicToxicologyPlayer() {
                   <ModuleVisualMindmapAndCheatsheet moduleNumber={activeModule.moduleNumber} />
 
                   {/* Detailed Research Sections */}
-                  <div className="space-y-8">
+                  <div className="space-y-6 sm:space-y-8">
                     {activeModule.sections.map((sec, secIdx) => {
                       const isSecDone = currentModProg.completedSectionIds?.includes(sec.id);
                       return (
@@ -2280,19 +2431,19 @@ export function ForensicToxicologyPlayer() {
                           key={sec.id}
                           className="border border-black/10 dark:border-white/10 rounded-2xl overflow-hidden bg-base/40"
                         >
-                          <div className="p-5 bg-base border-b border-black/10 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="p-4 sm:p-5 bg-base border-b border-black/10 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                             <div>
                               <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning">
                                 {sec.badge}
                               </span>
-                              <h3 className="text-lg font-heading font-black text-text-main mt-0.5">
+                              <h3 className="text-base sm:text-lg font-heading font-black text-text-main mt-0.5 leading-snug">
                                 {sec.heading}
                               </h3>
                               <p className="text-xs text-text-muted mt-0.5">{sec.summary}</p>
                             </div>
                             <button
                               onClick={() => handleToggleSectionRead(sec.id)}
-                              className={`px-3.5 py-2 rounded-lg text-xs font-mono font-bold flex items-center gap-2 shrink-0 cursor-pointer transition-all ${
+                              className={`min-h-[42px] w-full sm:w-auto justify-center px-3.5 py-2 rounded-lg text-xs font-mono font-bold flex items-center gap-2 shrink-0 cursor-pointer transition-all ${
                                 isSecDone
                                   ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                                   : 'bg-surface border border-black/10 dark:border-white/10 text-text-muted hover:text-text-main'
@@ -2303,7 +2454,7 @@ export function ForensicToxicologyPlayer() {
                             </button>
                           </div>
 
-                          <div className="p-5 sm:p-6 space-y-6">
+                          <div className="p-4 sm:p-6 space-y-5 sm:space-y-6">
                             {/* Section-Specific White-Background Professional Clipart Flow Diagram */}
                             <SectionClipartDiagram
                               moduleNumber={activeModule.moduleNumber}
@@ -2342,11 +2493,16 @@ export function ForensicToxicologyPlayer() {
 
                             {sec.referenceTable && (
                               <div className="space-y-2 pt-2">
-                                <p className="text-xs font-mono font-bold text-warning">
-                                  {sec.referenceTable.caption}
-                                </p>
-                                <div className="overflow-x-auto border border-black/10 dark:border-white/10 rounded-xl">
-                                  <table className="w-full text-left border-collapse text-xs">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-xs font-mono font-bold text-warning">
+                                    {sec.referenceTable.caption}
+                                  </p>
+                                  <span className="sm:hidden text-[10px] font-mono text-text-muted shrink-0">
+                                    Swipe →
+                                  </span>
+                                </div>
+                                <div className="overflow-x-auto touch-pan-x border border-black/10 dark:border-white/10 rounded-xl">
+                                  <table className="w-full min-w-[520px] text-left border-collapse text-xs">
                                     <thead>
                                       <tr className="bg-surface border-b border-black/10 dark:border-white/10 text-[10px] font-mono uppercase text-text-muted">
                                         {sec.referenceTable.headers.map((h, hIdx) => (
@@ -2382,12 +2538,12 @@ export function ForensicToxicologyPlayer() {
                     })}
                   </div>
 
-                  {/* Complete Module Research Footer Button */}
-                  <div className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  {/* Complete Module Study Guide Footer Button */}
+                  <div className="p-4 sm:p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
                     <div>
                       <p className="text-xs font-bold text-text-main">
                         {currentModProg.readingCompleted
-                          ? '✓ Module Research Dossier Completed'
+                          ? '✓ Module Study Guide Completed'
                           : 'Finished studying all sections and tables in this module?'}
                       </p>
                       <p className="text-[11px] text-text-muted">
@@ -2396,10 +2552,10 @@ export function ForensicToxicologyPlayer() {
                     </div>
                     <button
                       onClick={handleMarkAllSectionsComplete}
-                      className="px-6 py-3 rounded-xl bg-warning text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-warning/90 transition-all flex items-center gap-2 cursor-pointer shrink-0"
+                      className="w-full sm:w-auto min-h-[46px] justify-center px-5 py-3 rounded-xl bg-warning text-crust font-heading font-black text-xs uppercase tracking-wider sm:tracking-widest hover:bg-warning/90 transition-all flex items-center gap-2 cursor-pointer shrink-0"
                     >
-                      <CheckCircle2 size={16} />
-                      <span>Complete Research & Proceed to Module Quiz</span>
+                      <CheckCircle2 size={16} className="shrink-0" />
+                      <span>Complete Study Guide & Start Quiz</span>
                     </button>
                   </div>
                 </div>
@@ -2412,7 +2568,7 @@ export function ForensicToxicologyPlayer() {
                     <Lock size={22} />
                   </div>
                   <h3 className="text-lg font-heading font-black uppercase text-text-main">
-                    Module Quiz Locked — Complete Module Research Dossier First
+                    Module Quiz Locked — Complete Module Study Guide First
                   </h3>
                   <p className="text-xs sm:text-sm text-text-muted max-w-md mx-auto leading-relaxed">
                     You must study and complete all sections of <strong>Module 0{activeModule.moduleNumber}</strong> before unlocking the 10-question competency quiz.
@@ -2429,13 +2585,13 @@ export function ForensicToxicologyPlayer() {
               )}
 
               {activeSubView === 'quiz' && currentModStatus?.readingDone && (
-                <div className="p-6 sm:p-8 space-y-6">
+                <div className="p-3.5 sm:p-8 space-y-5 sm:space-y-6">
                   <div className="p-4 rounded-xl bg-base border border-black/10 dark:border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                       <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning">
                         AUTOCHECK MODULE ASSESSMENT • 10 QUESTIONS
                       </span>
-                      <h3 className="text-lg font-heading font-black text-text-main">
+                      <h3 className="text-base sm:text-lg font-heading font-black text-text-main">
                         {activeModule.code} Competency Quiz (Minimum Passing Score: 90%)
                       </h3>
                       <p className="text-xs text-text-muted">
@@ -2446,7 +2602,7 @@ export function ForensicToxicologyPlayer() {
                     {quizFeedbackState && (
                       <div className="flex flex-wrap items-center gap-3 shrink-0">
                         <div
-                          className={`px-4 py-2.5 rounded-xl border text-right ${
+                          className={`px-4 py-2.5 rounded-xl border text-left sm:text-right w-full sm:w-auto ${
                             quizFeedbackState.passed
                               ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-400'
                               : 'bg-red-500/15 border-red-500/30 text-red-400'
@@ -2464,7 +2620,7 @@ export function ForensicToxicologyPlayer() {
                           <button
                             type="button"
                             onClick={handleRetryQuiz}
-                            className="px-4 py-3 rounded-xl bg-warning text-crust font-heading font-black text-xs uppercase tracking-wider hover:bg-warning/90 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
+                            className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-3 rounded-xl bg-warning text-crust font-heading font-black text-xs uppercase tracking-wider hover:bg-warning/90 transition-all flex items-center gap-1.5 cursor-pointer shadow-sm"
                           >
                             <RefreshCw size={14} />
                             <span>Retry Quiz</span>
@@ -2490,7 +2646,7 @@ export function ForensicToxicologyPlayer() {
                       <button
                         type="button"
                         onClick={handleRetryQuiz}
-                        className="px-4 py-2.5 rounded-lg bg-red-500 text-white font-heading font-black text-xs uppercase tracking-wider hover:bg-red-400 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
+                        className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2.5 rounded-lg bg-red-500 text-white font-heading font-black text-xs uppercase tracking-wider hover:bg-red-400 transition-colors flex items-center gap-1.5 shrink-0 cursor-pointer"
                       >
                         <RefreshCw size={14} />
                         <span>Retry Quiz Now</span>
@@ -2499,7 +2655,7 @@ export function ForensicToxicologyPlayer() {
                   )}
 
                   {/* Questions List */}
-                  <div className="space-y-5">
+                  <div className="space-y-4 sm:space-y-5">
                     {activeModule.quiz.map((q, qIdx) => {
                       const selectedOpt = currentModProg.quizAnswers?.[q.id];
                       const fb = quizFeedbackState?.questionFeedback.find((f) => f.questionId === q.id);
@@ -2507,7 +2663,7 @@ export function ForensicToxicologyPlayer() {
                       return (
                         <div
                           key={q.id}
-                          className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 space-y-3"
+                          className="p-4 sm:p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 space-y-3"
                         >
                           <div className="flex items-start justify-between gap-3">
                             <p className="text-xs sm:text-sm font-bold text-text-main leading-relaxed">
@@ -2541,9 +2697,9 @@ export function ForensicToxicologyPlayer() {
                                   key={oIdx}
                                   type="button"
                                   onClick={() => handleSelectQuizAnswer(q.id, oIdx)}
-                                  className={`w-full text-left p-3 rounded-lg border text-xs transition-all cursor-pointer flex items-start gap-2.5 ${optionStyle}`}
+                                  className={`w-full min-h-[44px] text-left p-3 rounded-lg border text-xs transition-all cursor-pointer flex items-start gap-2.5 ${optionStyle}`}
                                 >
-                                  <span className="font-mono font-bold uppercase">
+                                  <span className="font-mono font-bold uppercase mt-0.5">
                                     {String.fromCharCode(65 + oIdx)}.
                                   </span>
                                   <span className="flex-1 leading-relaxed">{opt}</span>
@@ -2576,7 +2732,7 @@ export function ForensicToxicologyPlayer() {
                   </div>
 
                   {/* Quiz Submit / Retry / Next Action */}
-                  <div className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="p-4 sm:p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                     <div className="text-xs text-text-muted">
                       Answered{' '}
                       <strong className="text-text-main">
@@ -2594,12 +2750,12 @@ export function ForensicToxicologyPlayer() {
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
                       {quizFeedbackState && !quizFeedbackState.passed && (
                         <button
                           type="button"
                           onClick={handleRetryQuiz}
-                          className="px-5 py-3 rounded-xl bg-surface border border-warning/40 text-warning font-heading font-black text-xs uppercase tracking-widest hover:bg-warning hover:text-crust transition-all flex items-center gap-1.5 cursor-pointer"
+                          className="w-full sm:w-auto min-h-[44px] justify-center px-5 py-3 rounded-xl bg-surface border border-warning/40 text-warning font-heading font-black text-xs uppercase tracking-widest hover:bg-warning hover:text-crust transition-all flex items-center gap-1.5 cursor-pointer"
                         >
                           <RefreshCw size={14} />
                           <span>Retry Quiz (Clear Answers)</span>
@@ -2609,7 +2765,7 @@ export function ForensicToxicologyPlayer() {
                       <button
                         type="button"
                         onClick={handleSubmitQuizAutoCheck}
-                        className="px-6 py-3 rounded-xl bg-warning text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-warning/90 transition-all cursor-pointer"
+                        className="w-full sm:w-auto min-h-[46px] justify-center px-6 py-3 rounded-xl bg-warning text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-warning/90 transition-all cursor-pointer"
                       >
                         {quizFeedbackState ? 'Re-Submit Quiz' : 'Submit Quiz'}
                       </button>
@@ -2622,14 +2778,14 @@ export function ForensicToxicologyPlayer() {
                               setActiveSubView('assignment');
                               window.scrollTo({ top: 0, behavior: 'smooth' });
                             }}
-                            className="px-5 py-3 rounded-xl bg-emerald-500 text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="w-full sm:w-auto min-h-[46px] justify-center px-5 py-3 rounded-xl bg-emerald-500 text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>Proceed to Case Assignment</span>
                             <ChevronRight size={15} />
                           </button>
                         ) : (
-                          <span className="px-4 py-3 rounded-xl bg-black/10 dark:bg-white/5 text-text-muted text-xs font-mono flex items-center gap-1.5 opacity-70 cursor-not-allowed">
-                            <Lock size={14} />
+                          <span className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-3 rounded-xl bg-black/10 dark:bg-white/5 text-text-muted text-xs font-mono flex items-center gap-1.5 opacity-70 cursor-not-allowed">
+                            <Lock size={14} className="shrink-0" />
                             <span>Case Assignment Locked (Need ≥ 90%)</span>
                           </span>
                         )
@@ -2647,7 +2803,7 @@ export function ForensicToxicologyPlayer() {
                                 window.scrollTo({ top: 0, behavior: 'smooth' });
                               }
                             }}
-                            className="px-5 py-3 rounded-xl bg-emerald-500 text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all flex items-center gap-1.5 cursor-pointer"
+                            className="w-full sm:w-auto min-h-[46px] justify-center px-5 py-3 rounded-xl bg-emerald-500 text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all flex items-center gap-1.5 cursor-pointer"
                           >
                             <span>Next: Module 0{activeModuleIdx + 2}</span>
                             <ChevronRight size={15} />
@@ -2682,217 +2838,570 @@ export function ForensicToxicologyPlayer() {
                 </div>
               )}
 
-              {activeSubView === 'assignment' && moduleHasAssignment(activeModule.moduleNumber) && currentModProg.quizPassed && (
-                <div className="p-6 sm:p-8 space-y-6">
-                  <div className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 space-y-3">
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning">
-                        PRACTICAL FORENSIC CASEWORK ASSIGNMENT • AUTOCHECK RUBRIC
-                      </span>
-                      {currentModProg.assignmentPassed ? (
-                        <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-black">
-                          ✓ ALL ASSIGNMENT CRITERIA VERIFIED (100%)
-                        </span>
-                      ) : (
-                        <span className="px-3 py-1 rounded-full bg-warning/10 border border-warning/20 text-warning text-xs font-mono font-bold">
-                          Pending AutoCheck Verification
-                        </span>
-                      )}
-                    </div>
+              {activeSubView === 'assignment' && moduleHasAssignment(activeModule.moduleNumber) && currentModProg.quizPassed && (() => {
+                const fieldValues = currentModProg.assignmentFieldValues || {};
+                const writtenText = currentModProg.assignmentWrittenResponse || '';
+                const liveCheck = runModuleAssignmentAutoCheck(activeModule, fieldValues, writtenText);
+                const totalCriteriaCount = liveCheck.criteriaResults.length;
+                const passedCriteriaCount = liveCheck.criteriaResults.filter((c) => c.passed).length;
+                const readinessPercent = totalCriteriaCount > 0 ? Math.round((passedCriteriaCount / totalCriteriaCount) * 100) : 0;
 
-                    <h3 className="text-lg font-heading font-black text-text-main">
-                      {activeModule.assignment.title}
-                    </h3>
+                const currentWords = writtenText
+                  .trim()
+                  .split(/\s+/)
+                  .filter(Boolean).length;
+                const wordProgressPct = Math.min(
+                  100,
+                  Math.round((currentWords / Math.max(1, activeModule.assignment.minWordCount)) * 100)
+                );
 
-                    <div className="p-4 rounded-lg bg-surface border-l-4 border-warning text-xs sm:text-sm text-text-main leading-relaxed">
-                      <strong className="text-warning font-mono uppercase block text-[10px] mb-1">
-                        Official Medico-Legal Case Scenario:
-                      </strong>
-                      {activeModule.assignment.caseScenario}
-                    </div>
+                // Module-specific guided sentences per keyword group so learners can build their report interactively
+                const getGuidedSentenceForGroup = (modNum: number, groupIdx: number): string => {
+                  if (modNum === 2) {
+                    if (groupIdx === 0) {
+                      return '1. Autopsy Sampling & PMR: Because Amitriptyline exhibits marked postmortem redistribution from the lungs and myocardium (C/P ratio = 4.5), clamped peripheral femoral blood preserved in 1% NaF and 500 g of liver in Bottle II with a preservative control blank (Bottle IV) are mandatory.';
+                    }
+                    if (groupIdx === 1) {
+                      return '2. Classical Deproteinization & pH Fractionation: Following Ammonium Sulphate or Stas-Otto deproteinization, Acid-Ether extraction separates strong acids (Salicylate via 5% NaHCO3) from weak acid barbiturates (Phenobarbital via 0.45 N NaOH), Alkaline-Chloroform isolates basic alkaloids, and Isoelectric extraction at pH 8.5–9.0 isolates amphoteric Morphine.';
+                    }
+                    return '3. Volatile & Inorganic Isolation: Acidic steam distillation and the Conway microdiffusion cell trap volatile cyanide (HCN) into alkaline NaOH, while membrane dialysis and electrodialysis isolate water-soluble Nitrite and Chlorate anions.';
+                  }
+                  if (modNum === 4) {
+                    if (groupIdx === 0) {
+                      return '1. Widmark & Liquor Estimation: The driver’s total body ethanol is 61.2 g and retrograde extrapolated BAC at crash time is 165 mg/100 mL (5.5× the 30 mg/100 mL statutory limit under Section 185 MV Act), quantified via HS-GC-FID, Henry’s 2100:1 breath law, and Kozelka-Hine/Cavett dichromate oxidation.';
+                    }
+                    if (groupIdx === 1) {
+                      return '2. Metallic Poison Differentiation: In Victim 1, Reinsch test sublimate showing white octahedral As2O3 crystals and a Marsh test hair-pin mirror that dissolves readily in Sodium Hypochlorite (NaOCl) confirms Arsenic and excludes Antimony.';
+                    }
+                    return '3. Phosphine Confirmation: In Victim 2, blackening of Silver Nitrate (AgNO3) filter paper with a negative Lead Acetate strip (excluding putrefactive H2S) and positive Ammonium Molybdate test confirms lethal Phosphine (PH3) gas from Aluminium Phosphide.';
+                  }
+                  // Module 6
+                  if (groupIdx === 0) {
+                    return '1. Hair Segmental Chronology: At the standard posterior vertex scalp hair growth rate of 1.0 cm/month, the Arsenic and Thallium band between 4.0 cm and 6.0 cm from the root establishes chronic toxic exposure 4 to 6 months prior to collection.';
+                  }
+                  if (groupIdx === 1) {
+                    return '2. Postmortem Fermentation Proof: Although decomposed femoral blood showed 70 mg/dL ethanol, the complete absence of ethanol in vitreous humor (0 mg/dL) and urinary Ethyl Glucuronide (EtG = 0.0 mg/L) proves postmortem microbial fermentation with no antemortem alcohol intake.';
+                  }
+                  return '3. Section 329 BNSS & Plant/Animal Toxinology Findings: Submitted under Section 329 BNSS (formerly Sec. 293 CrPC), Exhibit A confirms Argemone oil (Sanguinarine) Epidemic Dropsy, Exhibit B confirms Semecarpus anacardium (Bhilawa) false bruise, and Exhibit C requires Prazosin alpha-1 blockade for Red Scorpion envenomation; delayed death, metabolic elimination, or volatile/hydrolyzed toxins explain why true poisonings can yield a negative routine report.';
+                };
 
-                    <div className="space-y-1.5 pt-1">
-                      <p className="text-xs font-bold text-text-main uppercase tracking-wider">
-                        Assignment Instructions:
-                      </p>
-                      <ul className="space-y-1 text-xs text-text-muted">
-                        {activeModule.assignment.instructions.map((inst, idx) => (
-                          <li key={idx} className="flex items-start gap-2">
-                            <span className="text-warning font-mono font-bold">{idx + 1}.</span>
-                            <span>{inst}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
+                const handleAppendSentence = (sentence: string) => {
+                  const trimmed = writtenText.trim();
+                  const nextText = trimmed ? `${trimmed}\n\n${sentence}` : sentence;
+                  handleAssignmentWrittenChange(nextText);
+                };
 
-                  {/* Part A: Structured Quantitative & Protocol Parameters */}
-                  <div className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 space-y-4">
-                    <h4 className="text-xs font-mono font-black uppercase tracking-widest text-warning">
-                      Part A: Quantitative Calculations & Protocol Determinations
-                    </h4>
+                const handleLoadFullGuidedDraft = () => {
+                  const fullDraft = activeModule.assignment.requiredKeywords
+                    .map((_, idx) => getGuidedSentenceForGroup(activeModule.moduleNumber, idx))
+                    .join('\n\n');
+                  handleAssignmentWrittenChange(fullDraft);
+                };
 
-                    <div className="grid grid-cols-1 gap-4">
-                      {activeModule.assignment.structuredFields.map((field) => {
-                        const val = currentModProg.assignmentFieldValues?.[field.id] ?? '';
-                        return (
+                return (
+                  <div className="p-4 sm:p-8 space-y-6">
+                    {/* Top Interactive Assignment Header & Live Readiness Tracker */}
+                    <div className="p-5 rounded-2xl bg-base border border-black/10 dark:border-white/10 space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2.5 py-1 rounded-md bg-warning/15 border border-warning/30 text-[10px] font-mono font-black uppercase tracking-widest text-warning">
+                            Step 3 • Interactive Case Assignment
+                          </span>
+                          <span className="text-[11px] font-mono text-text-muted">
+                            Module 0{activeModule.moduleNumber}
+                          </span>
+                        </div>
+                        {currentModProg.assignmentPassed ? (
+                          <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-black flex items-center gap-1.5">
+                            <CheckCircle2 size={14} />
+                            <span>Assignment Completed & Verified (100%)</span>
+                          </span>
+                        ) : liveCheck.passed ? (
+                          <span className="px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold">
+                            ✓ Ready to Submit (All {totalCriteriaCount}/{totalCriteriaCount} Checks Met)
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 rounded-full bg-warning/10 border border-warning/20 text-warning text-xs font-mono font-bold">
+                            Live Progress: {passedCriteriaCount} / {totalCriteriaCount} Checks Ready ({readinessPercent}%)
+                          </span>
+                        )}
+                      </div>
+
+                      <h3 className="text-base sm:text-lg font-heading font-black text-text-main">
+                        {activeModule.assignment.title.replace(/^Case Assignment \d+ \(Even Module\):\s*/i, '').replace(/Unit [I|V|X]+\s*/gi, '')}
+                      </h3>
+
+                      {/* Live Interactive Progress Bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] font-mono">
+                          <span className="text-text-muted">Interactive Assignment Readiness</span>
+                          <span className={readinessPercent === 100 ? 'text-emerald-400 font-black' : 'text-warning font-bold'}>
+                            {readinessPercent}% Complete
+                          </span>
+                        </div>
+                        <div className="w-full h-2.5 rounded-full bg-surface overflow-hidden border border-black/10 dark:border-white/10">
                           <div
-                            key={field.id}
-                            className="p-4 rounded-lg bg-surface border border-black/5 dark:border-white/5 space-y-1.5"
-                          >
-                            <label className="text-xs font-bold text-text-main block">
-                              {field.label}
-                            </label>
-                            {field.type === 'select' ? (
-                              <select
-                                value={val}
-                                onChange={(e) => handleAssignmentFieldChange(field.id, e.target.value)}
-                                className="w-full bg-base border border-black/10 dark:border-white/10 rounded-lg px-3 py-2.5 text-xs font-bold text-text-main outline-none focus:border-warning"
-                              >
-                                <option value="">-- Select Official Protocol Determination --</option>
-                                {field.options?.map((opt) => (
-                                  <option key={opt} value={opt}>
-                                    {opt}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : (
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="number"
-                                  step="any"
-                                  value={val}
-                                  onChange={(e) => handleAssignmentFieldChange(field.id, e.target.value)}
-                                  placeholder={field.placeholder}
-                                  className="w-full bg-base border border-black/10 dark:border-white/10 rounded-lg px-3 py-2.5 text-xs font-mono font-bold text-text-main outline-none focus:border-warning"
-                                />
-                                {field.unit && (
-                                  <span className="text-xs font-mono font-bold text-warning shrink-0">
-                                    {field.unit}
+                            className={`h-full transition-all duration-300 rounded-full ${
+                              readinessPercent === 100 ? 'bg-emerald-500' : 'bg-warning'
+                            }`}
+                            style={{ width: `${readinessPercent}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Case Scenario Card */}
+                      <div className="p-4 rounded-xl bg-surface border-l-4 border-warning space-y-2">
+                        <div className="flex items-center justify-between gap-2">
+                          <strong className="text-warning font-mono uppercase text-[10px] tracking-wider flex items-center gap-1.5">
+                            <FlaskConical size={13} />
+                            <span>Case Scenario & Lab Evidence Summary</span>
+                          </strong>
+                        </div>
+                        <p className="text-xs sm:text-sm text-text-main leading-relaxed">
+                          {activeModule.assignment.caseScenario}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* PART A: INTERACTIVE LAB CALCULATIONS & PROTOCOL CARDS */}
+                    <div className="p-5 rounded-2xl bg-base border border-black/10 dark:border-white/10 space-y-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/10 dark:border-white/10 pb-3">
+                        <div>
+                          <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning block">
+                            Part A • Interactive Lab Workstation
+                          </span>
+                          <h4 className="text-sm sm:text-base font-heading font-black text-text-main">
+                            Quantitative Calculations & Protocol Selection
+                          </h4>
+                        </div>
+                        <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-lg bg-surface border border-black/10 dark:border-white/10 text-text-main">
+                          {
+                            activeModule.assignment.structuredFields.filter((f) => {
+                              const c = liveCheck.criteriaResults.find((r) => r.criterionId === `field-${f.id}`);
+                              return c?.passed;
+                            }).length
+                          }{' '}
+                          / {activeModule.assignment.structuredFields.length} Tasks Solved
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 gap-4">
+                        {activeModule.assignment.structuredFields.map((field, fIdx) => {
+                          const val = fieldValues[field.id] ?? '';
+                          const hasVal = val.toString().trim().length > 0;
+                          const fieldCriterion = liveCheck.criteriaResults.find(
+                            (c) => c.criterionId === `field-${field.id}`
+                          );
+                          const isFieldCorrect = Boolean(fieldCriterion?.passed);
+
+                          return (
+                            <div
+                              key={field.id}
+                              className={`p-4 sm:p-5 rounded-xl border transition-all space-y-3 ${
+                                isFieldCorrect
+                                  ? 'bg-emerald-500/[0.06] border-emerald-500/35'
+                                  : hasVal
+                                    ? 'bg-amber-500/[0.06] border-amber-500/35'
+                                    : 'bg-surface border-black/10 dark:border-white/10'
+                              }`}
+                            >
+                              <div className="flex flex-wrap items-start justify-between gap-2">
+                                <div className="flex items-start gap-2.5">
+                                  <span
+                                    className={`w-6 h-6 rounded-lg text-xs font-mono font-black flex items-center justify-center shrink-0 mt-0.5 ${
+                                      isFieldCorrect
+                                        ? 'bg-emerald-500 text-crust'
+                                        : 'bg-warning/15 text-warning border border-warning/30'
+                                    }`}
+                                  >
+                                    {isFieldCorrect ? <Check size={14} /> : fIdx + 1}
+                                  </span>
+                                  <div>
+                                    <label className="text-xs sm:text-sm font-bold text-text-main block leading-snug">
+                                      {field.label.replace(/Unit [I|V|X]+\s*/gi, '')}
+                                    </label>
+                                    <p className="text-[11px] text-text-muted mt-0.5">
+                                      💡 {field.hint}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {isFieldCorrect ? (
+                                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-black uppercase tracking-wider shrink-0">
+                                    ✓ Verified
+                                  </span>
+                                ) : hasVal ? (
+                                  <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider shrink-0">
+                                    Check Value
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 rounded-full bg-base text-text-muted text-[10px] font-mono uppercase tracking-wider shrink-0">
+                                    Task {fIdx + 1}
                                   </span>
                                 )}
                               </div>
-                            )}
-                            <p className="text-[11px] text-text-muted">
-                              <em>Guidance: {field.hint}</em>
-                            </p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
 
-                  {/* Part B: Written Forensic Toxicology Case Opinion */}
-                  <div className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                      <h4 className="text-xs font-mono font-black uppercase tracking-widest text-warning">
-                        Part B: Written Forensic Toxicology Case Opinion
-                      </h4>
-                      <span className="text-[11px] font-mono text-text-muted">
-                        Word Count:{' '}
-                        <strong className="text-text-main">
-                          {(currentModProg.assignmentWrittenResponse || '')
-                            .trim()
-                            .split(/\s+/)
-                            .filter(Boolean).length}
-                        </strong>{' '}
-                        / Required ≥ {activeModule.assignment.minWordCount} words
-                      </span>
-                    </div>
+                              {field.type === 'number' ? (
+                                <div className="space-y-2.5 pl-0 sm:pl-8">
+                                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                                    <div className="relative flex-1 flex items-center">
+                                      <input
+                                        type="number"
+                                        step="any"
+                                        value={val}
+                                        onChange={(e) => handleAssignmentFieldChange(field.id, e.target.value)}
+                                        placeholder={field.placeholder}
+                                        className={`w-full min-h-[44px] bg-base border rounded-xl px-3.5 py-2.5 text-xs sm:text-sm font-mono font-bold text-text-main outline-none transition-colors ${
+                                          isFieldCorrect
+                                            ? 'border-emerald-500/50 focus:border-emerald-400'
+                                            : 'border-black/15 dark:border-white/15 focus:border-warning'
+                                        }`}
+                                      />
+                                      {field.unit && (
+                                        <span className="ml-2 px-2.5 py-2.5 rounded-lg bg-base border border-black/10 dark:border-white/10 text-xs font-mono font-bold text-warning shrink-0">
+                                          {field.unit}
+                                        </span>
+                                      )}
+                                    </div>
 
-                    <p className="text-xs text-text-main font-medium">
-                      {activeModule.assignment.writtenPrompt}
-                    </p>
+                                    {!isFieldCorrect && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          handleAssignmentFieldChange(field.id, String(field.expectedValue))
+                                        }
+                                        className="w-full sm:w-auto min-h-[44px] justify-center px-3.5 py-2.5 rounded-xl bg-warning/15 hover:bg-warning text-warning hover:text-crust border border-warning/30 text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
+                                        title="Auto-calculate and fill the verified forensic value"
+                                      >
+                                        <Calculator size={13} className="shrink-0" />
+                                        <span>
+                                          Auto-Calculate ({field.expectedValue}
+                                          {field.unit ? ` ${field.unit}` : ''})
+                                        </span>
+                                      </button>
+                                    )}
+                                  </div>
 
-                    <textarea
-                      rows={5}
-                      value={currentModProg.assignmentWrittenResponse || ''}
-                      onChange={(e) => handleAssignmentWrittenChange(e.target.value)}
-                      placeholder="Write your detailed forensic toxicological opinion here..."
-                      className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-4 text-xs sm:text-sm text-text-main leading-relaxed outline-none focus:border-warning"
-                    />
+                                  {hasVal && !isFieldCorrect && (
+                                    <p className="text-[11px] text-amber-400 font-medium">
+                                      Expected result is <strong>{field.expectedValue}{field.unit ? ` ${field.unit}` : ''}</strong>. Click &ldquo;Auto-Calculate&rdquo; above or type <strong>{field.expectedValue}</strong>.
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                /* Interactive Clickable Lab Option Cards instead of raw dropdown */
+                                <div className="grid grid-cols-1 gap-2 pl-0 sm:pl-8">
+                                  {field.options?.map((opt, optIdx) => {
+                                    const isSelected = val === opt;
+                                    const isCorrectOption =
+                                      opt.toLowerCase() === String(field.expectedValue).toLowerCase();
+                                    return (
+                                      <button
+                                        key={opt}
+                                        type="button"
+                                        onClick={() => handleAssignmentFieldChange(field.id, opt)}
+                                        className={`w-full text-left p-3 rounded-xl border text-xs transition-all flex items-start justify-between gap-3 cursor-pointer ${
+                                          isSelected && isCorrectOption
+                                            ? 'bg-emerald-500/15 border-emerald-500/50 text-text-main font-bold shadow-xs'
+                                            : isSelected && !isCorrectOption
+                                              ? 'bg-amber-500/15 border-amber-500/50 text-text-main font-semibold'
+                                              : 'bg-base/80 hover:bg-base border-black/10 dark:border-white/10 text-text-muted hover:text-text-main hover:border-warning/40'
+                                        }`}
+                                      >
+                                        <div className="flex items-start gap-2.5">
+                                          <span
+                                            className={`w-5 h-5 rounded-md text-[10px] font-mono font-black flex items-center justify-center shrink-0 mt-0.5 ${
+                                              isSelected && isCorrectOption
+                                                ? 'bg-emerald-500 text-crust'
+                                                : isSelected && !isCorrectOption
+                                                  ? 'bg-amber-500 text-crust'
+                                                  : 'bg-surface border border-black/10 dark:border-white/10 text-text-muted'
+                                            }`}
+                                          >
+                                            {String.fromCharCode(65 + optIdx)}
+                                          </span>
+                                          <span className="leading-relaxed">{opt}</span>
+                                        </div>
 
-                    <div className="p-3 rounded-lg bg-surface/70 border border-black/5 dark:border-white/5 text-[11px] text-text-muted">
-                      <strong className="text-warning">AutoCheck Rubric Hint:</strong>{' '}
-                      {activeModule.assignment.sampleFrameworkHint}
-                    </div>
-                  </div>
-
-                  {/* AutoCheck Rubric Criteria Evaluation Breakdown */}
-                  {currentModProg.assignmentCriteriaResults &&
-                    currentModProg.assignmentCriteriaResults.length > 0 && (
-                      <div className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 space-y-3">
-                        <h4 className="text-xs font-mono font-black uppercase tracking-widest text-text-main">
-                          AutoCheck Assignment Rubric Verification Report
-                        </h4>
-                        <div className="space-y-2">
-                          {currentModProg.assignmentCriteriaResults.map((crit) => (
-                            <div
-                              key={crit.criterionId}
-                              className={`p-3 rounded-lg border text-xs flex items-start justify-between gap-3 ${
-                                crit.passed
-                                  ? 'bg-emerald-500/10 border-emerald-500/20'
-                                  : 'bg-red-500/10 border-red-500/20'
-                              }`}
-                            >
-                              <div className="space-y-0.5">
-                                <p className="font-bold text-text-main">{crit.label}</p>
-                                <p className="text-text-muted">{crit.feedback}</p>
-                              </div>
-                              <span
-                                className={`px-2 py-0.5 rounded text-[10px] font-mono font-black shrink-0 ${
-                                  crit.passed
-                                    ? 'bg-emerald-500/20 text-emerald-400'
-                                    : 'bg-red-500/20 text-red-400'
-                                }`}
-                              >
-                                {crit.passed ? 'PASSED' : 'REVISION NEEDED'}
-                              </span>
+                                        {isSelected && (
+                                          <span
+                                            className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded shrink-0 ${
+                                              isCorrectOption
+                                                ? 'bg-emerald-500/20 text-emerald-400'
+                                                : 'bg-amber-500/20 text-amber-400'
+                                            }`}
+                                          >
+                                            {isCorrectOption ? '✓ Correct' : 'Try Another'}
+                                          </span>
+                                        )}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
                             </div>
-                          ))}
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* PART B: INTERACTIVE GUIDED FORENSIC REPORT BUILDER */}
+                    <div className="p-5 rounded-2xl bg-base border border-black/10 dark:border-white/10 space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/10 dark:border-white/10 pb-3">
+                        <div>
+                          <span className="text-[10px] font-mono font-black uppercase tracking-widest text-warning block">
+                            Part B • Interactive Forensic Report Builder
+                          </span>
+                          <h4 className="text-sm sm:text-base font-heading font-black text-text-main">
+                            Written Forensic Toxicology Case Opinion
+                          </h4>
+                        </div>
+
+                        {/* Quick Report Builder Action Buttons */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={handleLoadFullGuidedDraft}
+                            className="px-3.5 py-2 rounded-xl bg-warning/15 hover:bg-warning text-warning hover:text-crust border border-warning/30 text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                            title="Populate a structured forensic opinion draft covering all 3 required scientific concepts"
+                          >
+                            <Sparkles size={13} />
+                            <span>Insert Guided Report Draft</span>
+                          </button>
+                          {writtenText.trim().length > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleAssignmentWrittenChange('')}
+                              className="px-3 py-2 rounded-xl bg-surface hover:bg-red-500/15 text-text-muted hover:text-red-400 border border-black/10 dark:border-white/10 text-xs font-mono transition-all cursor-pointer"
+                            >
+                              Clear Text
+                            </button>
+                          )}
                         </div>
                       </div>
-                    )}
 
-                  {/* Submit Assignment to AutoCheck Footer */}
-                  <div className="p-5 rounded-xl bg-base border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-xs text-text-muted">
-                      AutoCheck verifies all quantitative parameters, required scientific mechanisms, and minimum technical depth.
+                      <p className="text-xs text-text-muted leading-relaxed">
+                        Write your case opinion below, or click the <strong>+ Add Finding to Report</strong> buttons on each concept card below to build your forensic report step by step.
+                      </p>
+
+                      {/* Interactive Scientific Concept Cards (Live Checklist + 1-Click Sentence/Keyword Insertion) */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {activeModule.assignment.requiredKeywords.map((group, idx) => {
+                          const normalized = writtenText.toLowerCase();
+                          const matchedTerms = group.terms.filter((t) =>
+                            normalized.includes(t.toLowerCase())
+                          );
+                          const isCovered = matchedTerms.length > 0;
+
+                          return (
+                            <div
+                              key={group.groupLabel}
+                              className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between gap-3 ${
+                                isCovered
+                                  ? 'bg-emerald-500/[0.06] border-emerald-500/35'
+                                  : 'bg-surface border-black/10 dark:border-white/10'
+                              }`}
+                            >
+                              <div className="space-y-2">
+                                <div className="flex items-start justify-between gap-2">
+                                  <span className="text-[11px] font-bold text-text-main leading-snug">
+                                    Concept {idx + 1}: {group.groupLabel.replace(/Unit [I|V|X]+\s*/gi, '')}
+                                  </span>
+                                  <span
+                                    className={`px-2 py-0.5 rounded text-[9px] font-mono font-black uppercase shrink-0 ${
+                                      isCovered
+                                        ? 'bg-emerald-500/20 text-emerald-400'
+                                        : 'bg-warning/15 text-warning'
+                                    }`}
+                                  >
+                                    {isCovered ? '✓ Covered' : 'Required'}
+                                  </span>
+                                </div>
+
+                                {/* Clickable Keyword Chips */}
+                                <div className="flex flex-wrap gap-1">
+                                  {group.terms.slice(0, 5).map((term) => {
+                                    const termPresent = normalized.includes(term.toLowerCase());
+                                    return (
+                                      <button
+                                        key={term}
+                                        type="button"
+                                        onClick={() => {
+                                          if (!termPresent) {
+                                            const sep = writtenText.trim().length > 0 ? ' ' : '';
+                                            handleAssignmentWrittenChange(`${writtenText}${sep}${term}`);
+                                          }
+                                        }}
+                                        className={`px-2 py-0.5 rounded text-[10px] font-mono transition-all cursor-pointer ${
+                                          termPresent
+                                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold'
+                                            : 'bg-base hover:bg-warning/15 text-text-muted hover:text-warning border border-black/10 dark:border-white/10'
+                                        }`}
+                                        title={termPresent ? `"${term}" is included in your report` : `Click to insert "${term}"`}
+                                      >
+                                        {termPresent ? `✓ ${term}` : `+ ${term}`}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleAppendSentence(getGuidedSentenceForGroup(activeModule.moduleNumber, idx))
+                                }
+                                className={`w-full py-1.5 px-2.5 rounded-lg text-[10px] font-mono font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                                  isCovered
+                                    ? 'bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30'
+                                    : 'bg-warning/15 text-warning hover:bg-warning hover:text-crust border border-warning/30'
+                                }`}
+                              >
+                                <span>{isCovered ? '+ Re-Insert Finding' : '+ Add Finding to Report'}</span>
+                              </button>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Word Count Progress Bar */}
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-text-muted">
+                            Report Word Count:{' '}
+                            <strong className={currentWords >= activeModule.assignment.minWordCount ? 'text-emerald-400' : 'text-text-main'}>
+                              {currentWords} words
+                            </strong>{' '}
+                            (Minimum required: {activeModule.assignment.minWordCount} words)
+                          </span>
+                          <span
+                            className={`text-[10px] font-bold uppercase ${
+                              currentWords >= activeModule.assignment.minWordCount
+                                ? 'text-emerald-400'
+                                : 'text-warning'
+                            }`}
+                          >
+                            {currentWords >= activeModule.assignment.minWordCount
+                              ? '✓ Word Count Target Met'
+                              : `${activeModule.assignment.minWordCount - currentWords} more words needed`}
+                          </span>
+                        </div>
+                        <div className="w-full h-1.5 rounded-full bg-surface overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-300 ${
+                              currentWords >= activeModule.assignment.minWordCount ? 'bg-emerald-500' : 'bg-warning'
+                            }`}
+                            style={{ width: `${wordProgressPct}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      <textarea
+                        rows={6}
+                        value={writtenText}
+                        onChange={(e) => handleAssignmentWrittenChange(e.target.value)}
+                        placeholder="Write your forensic toxicological opinion here, or click 'Insert Guided Report Draft' / '+ Add Finding to Report' above to build your response interactively..."
+                        className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl p-4 text-xs sm:text-sm text-text-main leading-relaxed outline-none focus:border-warning transition-colors"
+                      />
                     </div>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={handleSubmitAssignmentAutoCheck}
-                        className="px-6 py-3 rounded-xl bg-warning text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-warning/90 transition-all cursor-pointer"
-                      >
-                        Run AutoCheck on Assignment
-                      </button>
 
-                      {currentModStatus?.moduleComplete && (
+                    {/* Live / Submitted Rubric Verification Breakdown */}
+                    {currentModProg.assignmentCriteriaResults &&
+                      currentModProg.assignmentCriteriaResults.length > 0 && (
+                        <div className="p-5 rounded-2xl bg-base border border-black/10 dark:border-white/10 space-y-3">
+                          <h4 className="text-xs font-mono font-black uppercase tracking-widest text-text-main">
+                            Assignment Rubric Verification Summary
+                          </h4>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                            {currentModProg.assignmentCriteriaResults.map((crit) => (
+                              <div
+                                key={crit.criterionId}
+                                className={`p-3 rounded-xl border text-xs flex items-start justify-between gap-3 ${
+                                  crit.passed
+                                    ? 'bg-emerald-500/10 border-emerald-500/25'
+                                    : 'bg-amber-500/10 border-amber-500/25'
+                                }`}
+                              >
+                                <div className="space-y-0.5">
+                                  <p className="font-bold text-text-main">
+                                    {crit.label.replace(/Unit [I|V|X]+\s*/gi, '')}
+                                  </p>
+                                  <p className="text-[11px] text-text-muted">{crit.feedback}</p>
+                                </div>
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] font-mono font-black shrink-0 ${
+                                    crit.passed
+                                      ? 'bg-emerald-500/20 text-emerald-400'
+                                      : 'bg-amber-500/20 text-amber-400'
+                                  }`}
+                                >
+                                  {crit.passed ? '✓ PASSED' : 'REVIEW'}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {/* Submit & Next Action Footer */}
+                    <div className="p-4 sm:p-5 rounded-2xl bg-base border border-black/10 dark:border-white/10 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                      <div className="text-xs text-text-muted">
+                        {liveCheck.passed ? (
+                          <span className="text-emerald-400 font-bold">
+                            ✓ All {totalCriteriaCount} assignment checks are ready! Click the button to verify and complete Module 0{activeModule.moduleNumber}.
+                          </span>
+                        ) : (
+                          <span>
+                            Complete the remaining checks above ({passedCriteriaCount}/{totalCriteriaCount} ready), then click <strong>Verify & Complete Assignment</strong>.
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2.5 sm:gap-3">
                         <button
                           type="button"
-                          onClick={() => {
-                            if (activeModuleIdx < FORENSIC_TOXICOLOGY_MODULES.length - 1) {
-                              setActiveModuleIdx(activeModuleIdx + 1);
-                              setActiveSubView('study');
-                            } else {
-                              setActiveSubView('certificate');
-                            }
-                          }}
-                          className="px-5 py-3 rounded-xl bg-emerald-500 text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all flex items-center gap-1.5 cursor-pointer"
+                          onClick={handleSubmitAssignmentAutoCheck}
+                          className={`w-full sm:w-auto min-h-[46px] justify-center px-6 py-3 rounded-xl font-heading font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 cursor-pointer ${
+                            liveCheck.passed
+                              ? 'bg-warning text-crust hover:bg-warning/90 shadow-lg shadow-warning/15'
+                              : 'bg-surface border border-warning/40 text-warning hover:bg-warning hover:text-crust'
+                          }`}
                         >
+                          <CheckCircle2 size={16} className="shrink-0" />
                           <span>
-                            {activeModuleIdx < FORENSIC_TOXICOLOGY_MODULES.length - 1
-                              ? `Next: Module 0${activeModuleIdx + 2}`
-                              : 'All Modules Done! Open Certificate PDF Studio'}
+                            {currentModProg.assignmentPassed
+                              ? 'Re-Verify Case Assignment'
+                              : 'Verify & Complete Case Assignment'}
                           </span>
-                          <ChevronRight size={15} />
                         </button>
-                      )}
+
+                        {currentModStatus?.moduleComplete && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (activeModuleIdx < FORENSIC_TOXICOLOGY_MODULES.length - 1) {
+                                setActiveModuleIdx(activeModuleIdx + 1);
+                                setActiveSubView('study');
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              } else {
+                                setActiveSubView('certificate');
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                              }
+                            }}
+                            className="w-full sm:w-auto min-h-[46px] justify-center px-5 py-3 rounded-xl bg-emerald-500 text-crust font-heading font-black text-xs uppercase tracking-widest hover:bg-emerald-400 transition-all flex items-center gap-1.5 cursor-pointer"
+                          >
+                            <span>
+                              {activeModuleIdx < FORENSIC_TOXICOLOGY_MODULES.length - 1
+                                ? `Next: Module 0${activeModuleIdx + 2}`
+                                : 'All Modules Done! Open Certificate PDF Studio'}
+                            </span>
+                            <ChevronRight size={15} className="shrink-0" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
             </div>
           )}
           </section>

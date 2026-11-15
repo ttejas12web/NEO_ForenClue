@@ -257,8 +257,8 @@ The ForenClue Curriculum Board
               {/* Creative Exclusive Event Text */}
               <div className="flex justify-center">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-warning/15 border border-warning/30 rounded-full text-[10px] font-mono uppercase tracking-[0.2em] text-warning font-black shadow-sm">
-                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                  Featured Masterclass &bull; Video Available
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+                  Upcoming Live Webinar &bull; Nov 21, 2026 (7:00 PM IST)
                 </span>
               </div>
 
@@ -268,16 +268,16 @@ The ForenClue Curriculum Board
                 className="relative rounded-2xl overflow-hidden border border-black/15 dark:border-white/10 shadow-lg bg-black/50 w-full cursor-zoom-in group transition-all duration-300 hover:border-warning/50 hover:shadow-warning/10"
               >
                 <img 
-                  src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpYn8CExwzqv9CrcbHqeYMI9TX0iOypg6BM_HeSUPn52oz5KJIzP-9746Z3Fp6O3-wtS-Y8ejm32Izylt2rMctCIQKklo1KH-7YdHHA1YSYQyzIYSV2zxny9OxxdkEXnA8fnliEjalVfGxwslh6ej-b14Ub6IzQj-lO7XUgXjHjO32NRLgjuqpHenbnEM/s1600/Forensic%20toxicology2.png"
-                  alt="Official Forensic Toxicology Webinar Event Poster"
+                  src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgVITsqxqtKyBt2VQymU4ZI1jKD02DzT2MFM8_YuZEaJ2BC_JCJ61JVgtm8go7aXdL2xKMzsVzO-A8_enkL--1sVayipF-Ekj7ObYnNJuLcoH4JXM0C6rdi7f8nLpHWL99k7lA6lHxKXozCctbTHkiIsb3-bRuSasUPkxZKmUDpPa_KeS5HAP0DKp2kfvo/s1600/image.png"
+                  alt="Official Upcoming Webinar Poster: Marks of Truth - Bite Mark Analysis Uncovered"
                   className="w-full h-auto block object-cover"
                   referrerPolicy="no-referrer"
                   loading="eager"
                   decoding="async"
                   onError={(e) => {
                     const target = e.currentTarget;
-                    if (!target.src.includes('blogger.googleusercontent.com')) {
-                      target.src = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpYn8CExwzqv9CrcbHqeYMI9TX0iOypg6BM_HeSUPn52oz5KJIzP-9746Z3Fp6O3-wtS-Y8ejm32Izylt2rMctCIQKklo1KH-7YdHHA1YSYQyzIYSV2zxny9OxxdkEXnA8fnliEjalVfGxwslh6ej-b14Ub6IzQj-lO7XUgXjHjO32NRLgjuqpHenbnEM/s1600/Forensic%20toxicology2.png';
+                    if (!target.src.endsWith('/assets/webinars/upcoming_webinar_poster.png')) {
+                      target.src = '/assets/webinars/upcoming_webinar_poster.png';
                     }
                   }}
                 />
@@ -296,11 +296,11 @@ The ForenClue Curriculum Board
               <div className="space-y-4">
                 {/* 3D Touchable View Event Button */}
                 <Link 
-                  to="/webinar?event=forensic-toxicology"
+                  to="/webinar?event=marks-of-truth-bite-mark-analysis"
                   className="group relative w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-warning hover:bg-warning-dark text-crust font-black uppercase tracking-wider rounded-xl text-xs sm:text-sm shadow-[0_6px_0_0_#9a3412] hover:shadow-[0_4px_0_0_#9a3412] active:shadow-[0_0px_0_0_#9a3412] active:translate-y-[6px] border border-amber-500/20 transition-all text-center cursor-pointer font-sans"
                 >
                   <Video size={16} className="text-crust" />
-                  <span>Watch Forensic Toxicology Webinar</span>
+                  <span>Explore Upcoming Webinar Session</span>
                 </Link>
               </div>
 
@@ -457,7 +457,7 @@ The ForenClue Curriculum Board
             onClick={(e) => e.stopPropagation()}
           >
             <img 
-              src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpYn8CExwzqv9CrcbHqeYMI9TX0iOypg6BM_HeSUPn52oz5KJIzP-9746Z3Fp6O3-wtS-Y8ejm32Izylt2rMctCIQKklo1KH-7YdHHA1YSYQyzIYSV2zxny9OxxdkEXnA8fnliEjalVfGxwslh6ej-b14Ub6IzQj-lO7XUgXjHjO32NRLgjuqpHenbnEM/s1600/Forensic%20toxicology2.png"
+              src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgVITsqxqtKyBt2VQymU4ZI1jKD02DzT2MFM8_YuZEaJ2BC_JCJ61JVgtm8go7aXdL2xKMzsVzO-A8_enkL--1sVayipF-Ekj7ObYnNJuLcoH4JXM0C6rdi7f8nLpHWL99k7lA6lHxKXozCctbTHkiIsb3-bRuSasUPkxZKmUDpPa_KeS5HAP0DKp2kfvo/s1600/image.png"
               alt="Official Upcoming Webinar Event Poster - Full Screen"
               className="max-w-full max-h-[90vh] md:max-h-[95vh] object-contain rounded-lg shadow-2xl"
               referrerPolicy="no-referrer"
@@ -465,8 +465,8 @@ The ForenClue Curriculum Board
               decoding="async"
               onError={(e) => {
                 const target = e.currentTarget;
-                if (!target.src.includes('blogger.googleusercontent.com')) {
-                  target.src = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgpYn8CExwzqv9CrcbHqeYMI9TX0iOypg6BM_HeSUPn52oz5KJIzP-9746Z3Fp6O3-wtS-Y8ejm32Izylt2rMctCIQKklo1KH-7YdHHA1YSYQyzIYSV2zxny9OxxdkEXnA8fnliEjalVfGxwslh6ej-b14Ub6IzQj-lO7XUgXjHjO32NRLgjuqpHenbnEM/s1600/Forensic%20toxicology2.png';
+                if (!target.src.endsWith('/assets/webinars/upcoming_webinar_poster.png')) {
+                  target.src = '/assets/webinars/upcoming_webinar_poster.png';
                 }
               }}
             />

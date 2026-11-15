@@ -29,6 +29,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const directLinks = [
   { name: 'Home', path: '/' },
+  { name: 'Courses', path: '/courses' },
   { name: 'Case Studies', path: '/cases' },
   { name: 'Colleges', path: '/colleges' },
 ];
