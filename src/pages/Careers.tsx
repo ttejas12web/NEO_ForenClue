@@ -1238,29 +1238,6 @@ export default function Careers() {
           </div>
         </div>
 
-        {/* --- DYNAMIC HANDBOOK REDIRECT CALL TO ACTION --- */}
-        <div className="mt-16 bg-gradient-to-r from-[#202124] to-surface p-8 border border-white/5 rounded-2xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-warning/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="flex flex-col md:flex-row items-center gap-5 text-center md:text-left">
-            <div className="p-3.5 bg-warning/10 text-warning rounded-xl border border-warning/20">
-              <BookOpen className="w-7 h-7" />
-            </div>
-            <div>
-              <h3 className="text-lg font-heading font-black text-white uppercase tracking-tight">Need a Comprehensive Physical Syllabus?</h3>
-              <p className="text-xs text-text-muted mt-1 leading-relaxed max-w-lg">
-                Unlock deeper forensic methodologies with other physical copies. Access exact guidelines, forensic syllabus modules, laboratory standards, and interview strategies.
-              </p>
-            </div>
-          </div>
-          <button 
-            onClick={() => navigate('/?scroll=book-mockup')}
-            className="w-full md:w-auto px-6 py-3 bg-white/5 hover:bg-white/10 text-white font-black font-sans uppercase tracking-widest text-xs rounded-xl shadow border border-white/10 hover:border-white/20 transition-all cursor-pointer flex items-center justify-center gap-2"
-          >
-            <span>Get Career Syllabus</span>
-            <ArrowRight size={13} />
-          </button>
-        </div>
-
       </div>
     </div>
   );

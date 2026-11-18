@@ -163,18 +163,6 @@ export default function About() {
       ]
     },
     {
-      name: "Mrunmayee Bodhe",
-      role: "Chief Executive Officer",
-      image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjt-N4hwGU4tzUkx9XwNKGHv2Te4J3tbfxJWFRXS6Z3KzdZX1f9VKZB88MYTeF4OqePRwDcGMbqjmOpoROSJlsSHaZJnLEIMnP2S98gBLOlP6IDs33SBqLf7yhLEyWCICI90IfGk5XV06fUYonMDC5zufGitO8-sTe1sIExdZcckiMh0VuZmmmPJpxhGQs/s1352/IMG_0866.PNG",
-      linkedin: "https://www.linkedin.com/in/mrunmayee-bodhe-bb3a8a394/",
-      email: "mrunmayeebodhe118@gmail.com",
-      points: [
-        "CEO Of ForenClue Ventures",
-        "Forensic Enthusiast",
-        "Academic Counselor"
-      ]
-    },
-    {
       name: "Ayush Gaikwad",
       role: "Co-Founder",
       image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjsllQMEHs5qT_GJSyZnGVcFH64Zadagai4Y9rlbFHQ9vuaVgX-3CgkApXQu660nTDPB0C3mEMJoZSnhLnOpBtTOt5mlEEADPKcOZbzcem8pq3flsJWbG6adC-aDmg9tlmyu4nGyaDh-TLzHanJ4dde67VUggiI5rMCb-4dVVUzRhY-A_EJKmiQgLkJez4/s1462/IMG_0859%20(1).PNG",
@@ -282,16 +270,6 @@ export default function About() {
       member: [
         {
           '@type': 'Person',
-          '@id': 'https://forenclue.in/about#mrunmayee-bodhe',
-          name: 'Mrunmayee Bodhe',
-          jobTitle: 'Chief Executive Officer',
-          image:
-            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjt-N4hwGU4tzUkx9XwNKGHv2Te4J3tbfxJWFRXS6Z3KzdZX1f9VKZB88MYTeF4OqePRwDcGMbqjmOpoROSJlsSHaZJnLEIMnP2S98gBLOlP6IDs33SBqLf7yhLEyWCICI90IfGk5XV06fUYonMDC5zufGitO8-sTe1sIExdZcckiMh0VuZmmmPJpxhGQs/s1352/IMG_0866.PNG',
-          worksFor: { '@id': 'https://forenclue.in/#organization' },
-          sameAs: ['https://www.linkedin.com/in/mrunmayee-bodhe-bb3a8a394/'],
-        },
-        {
-          '@type': 'Person',
           '@id': 'https://forenclue.in/about#pranav-kale-patil',
           name: 'Pranav Kale Patil',
           jobTitle: 'Managing Director (MD)',
@@ -330,7 +308,7 @@ export default function About() {
       <SEO 
         title="About ForenClue – Mission, Leadership & Academic Mentors"
         description="Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform. Meet our leadership team, founders, and academic mentors."
-        keywords="about forenclue, forenclue founders, tejas tapse, mrunmayee bodhe, ayush gaikwad, pranav kale patil, punam gadade, rajat pithadia, forensic science edtech india, cybersecurity learning platform, msme registered forensic platform, forensic academic mentor"
+        keywords="about forenclue, forenclue founders, tejas tapse, ayush gaikwad, pranav kale patil, punam gadade, rajat pithadia, forensic science edtech india, cybersecurity learning platform, msme registered forensic platform, forensic academic mentor"
         canonicalPath="/about"
         breadcrumbs={[
           { name: 'Home', path: '/' },
@@ -343,7 +321,7 @@ export default function About() {
           },
           {
             question: "Who are the leaders and founders of ForenClue?",
-            answer: "ForenClue is led by Founder Tejas Tapse, Chief Executive Officer (CEO) Mrunmayee Bodhe, Co-Founder Ayush Gaikwad, Managing Director (MD) Pranav Kale Patil, and Chief Technology Officer (CTO) Punam Gadade."
+            answer: "ForenClue is led by Founder Tejas Tapse, Co-Founder Ayush Gaikwad, Managing Director (MD) Pranav Kale Patil, and Chief Technology Officer (CTO) Punam Gadade."
           },
           {
             question: "Who is the Academic Mentor at ForenClue?",

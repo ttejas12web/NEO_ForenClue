@@ -32,7 +32,6 @@ export const REAL_INITIAL_POSTS: LinkedInPost[] = [
     timeAgo: '1d ago',
     content: '🔬 Real-world Forensic Intelligence: ForenClue is revolutionizing crime scene analysis & digital evidence examination in India. From comparison microscopy to automated bloodstain trajectory modeling, empowering students, researchers, and forensic experts.',
     hashtags: ['#ForenClue', '#ForensicScience', '#PuneStartups', '#DigitalForensics', '#EdTechIndia'],
-    image: 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png',
     likes: 312,
     comments: 45,
     reposts: 28,

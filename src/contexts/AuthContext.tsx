@@ -68,7 +68,6 @@ interface AuthContextType {
 export const adminEmails = [
   'ayushgaikwad7050@gmail.com', 
   'ayushgaikwad705o@gmail.com', 
-  'mrunmayeebodhe118@gmail.com', 
   'webcreator500@gmail.com', 
   'forenclue@gmail.com', 
   'ttapse12@gmail.com',

@@ -61,7 +61,6 @@ const Cases = lazyWithRetry(() => import('./pages/Cases'));
 const Careers = lazyWithRetry(() => import('./pages/Careers'));
 const Services = lazyWithRetry(() => import('./pages/Services'));
 const EBooks = lazyWithRetry(() => import('./pages/EBooks'));
-const Files = lazyWithRetry(() => import('./pages/Files'));
 const Contact = lazyWithRetry(() => import('./pages/Contact'));
 const Profile = lazyWithRetry(() => import('./pages/Profile'));
 const Podcast = lazyWithRetry(() => import('./pages/Podcast'));
@@ -133,7 +132,7 @@ function AppMain() {
             <Route path="/careers" element={<Careers />} />
             <Route path="/services" element={<Services />} />
             <Route path="/ebooks" element={<EBooks />} />
-            <Route path="/files" element={<Files />} />
+            <Route path="/files" element={<Navigate to="/ebooks" replace />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/terms" element={<TermsOfService />} />

@@ -89,7 +89,7 @@ export function PdfViewerModal({ isOpen, onClose, resource }: PdfViewerModalProp
         return;
       }
 
-      const targetUrl = resource.pdfUrl || 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png';
+      const targetUrl = resource.pdfUrl || '';
 
       if (targetUrl.startsWith('localdb://') || targetUrl.startsWith('firestore-blob://')) {
         const url = await resolveFileUrl(targetUrl);

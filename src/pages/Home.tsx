@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, useMotionValue, useTransform } from 'motion/react';
 import { CrimeTape } from '@/components/ui/CrimeTape';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { ArrowRight, Search, ShieldAlert, BookOpen, Users, Star, Download, Calendar, Video, Award, Clock, Sparkles, X, ZoomIn } from 'lucide-react';
 import { EvidenceMarker } from '@/components/ui/EvidenceMarker';
 import { EditableText } from '@/components/ui/EditableText';
@@ -71,21 +71,6 @@ export default function Home() {
 
   const [waitlistEmail, setWaitlistEmail] = useState('');
   const [isJoined, setIsJoined] = useState(false);
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  useEffect(() => {
-    const scrollTarget = searchParams.get('scroll');
-    if (scrollTarget === 'book-mockup') {
-      const element = document.getElementById('book-mockup-section');
-      if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        // Clean up the search parameter so it doesn't scroll again on manual reloads
-        const newParams = new URLSearchParams(searchParams);
-        newParams.delete('scroll');
-        setSearchParams(newParams, { replace: true });
-      }
-    }
-  }, [searchParams, setSearchParams]);
 
   function handleMouseMove(event: React.MouseEvent<HTMLElement>) {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -317,70 +302,6 @@ The ForenClue Curriculum Board
 
       {/* Official Recent Quiz Leaderboard */}
       <RecentQuizLeaderboardSection />
-
-
-
-
-
-      {/* Exclusive Forensic Handbook / Book Section */}
-      <motion.section 
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.6 }}
-        id="book-mockup-section" className="py-24 bg-base relative overflow-hidden border-t border-black/10 dark:border-white/5"
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
-            {/* Book Mockup & Download Block (12 cols) */}
-            <div className="lg:col-span-12 flex flex-col items-center justify-center">
-              {/* Available Now Tag */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-warning/15 border border-warning/30 rounded-full text-warning text-xs font-black uppercase tracking-widest mb-6">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                Available Now
-              </div>
-
-              <Link to="/files" className="relative group max-w-sm w-full block cursor-pointer">
-                {/* Subtle Ambient Glow */}
-                <div className="absolute -inset-1 bg-gradient-to-r from-warning to-amber-500 rounded-2xl blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200" />
-                
-                <div className="relative bg-surface border border-black/10 dark:border-white/5 p-6 rounded-2xl shadow-2xl flex flex-col items-center text-center animate-fadeIn transition-colors hover:bg-surface-hover">
-                  {/* Book Image */}
-                  <div className="relative overflow-hidden rounded-xl border border-black/10 dark:border-white/10 aspect-[3/4] w-full max-w-[280px] mb-6 shadow-xl transition-all duration-500 group-hover:scale-105">
-                    <img 
-                      src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png" 
-                      alt="Careers in Forensic Science Handbook Cover" 
-                      className="w-full h-full object-cover"
-                      referrerPolicy="no-referrer"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <div className="absolute top-3 right-3 bg-warning text-crust text-[9px] font-black uppercase tracking-wider px-2 py-1 rounded shadow-lg">
-                      Kindle Edition
-                    </div>
-                  </div>
-
-                  {/* Title / Description under book */}
-                  <h3 className="font-heading font-black text-xl mb-2 uppercase tracking-tight text-text-main group-hover:text-warning transition-colors">
-                    Careers in Forensic Science
-                  </h3>
-                  
-                  <p className="text-xs text-text-muted mb-6 leading-relaxed max-w-xs">
-                    Comprehensive Handbook For Careers In Forensic Science. Tap to view pathways, entrance examinations guidelines, admission guides, and reader reviews.
-                  </p>
-
-                  <div className="w-full px-6 py-3 bg-warning hover:bg-warning-dark text-crust font-black uppercase tracking-wider rounded-xl transition-all duration-300 flex items-center justify-center gap-2 text-xs shadow-lg hover:shadow-warning/20">
-                    <span>View Handbook Details</span>
-                    <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </Link>
-            </div>
-
-          </div>
-        </div>
-      </motion.section>
 
       {/* Transparent learning outcomes (no anonymous or unverifiable testimonials) */}
       <motion.section 

@@ -96,7 +96,12 @@ export default function Employees() {
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        setEmployee(docSnap.data() as EmployeeData);
+        const empData = docSnap.data() as EmployeeData;
+        if (empData.fullName?.trim().toLowerCase() === 'mrunmayee bodhe') {
+          setError(`No active credentials found matching employee ID: "${id}". Please verify and try again.`);
+        } else {
+          setEmployee(empData);
+        }
       } else {
         setError(`No active credentials found matching employee ID: "${id}". Please verify and try again.`);
       }
@@ -524,7 +529,7 @@ export default function Employees() {
                                 </span>
                                 <span className="block text-[6px] text-text-muted font-mono uppercase mt-1">VALIDITY</span>
                                 <span className="text-[8px] font-mono font-bold text-text-main">
-                                  {['tejas tapse', 'mrunmayee bodhe', 'ayush gaikwad'].includes(employee.fullName.toLowerCase()) ? 'N/A' : `THRU ${employee.expiryDate}`}
+                                  {['tejas tapse', 'ayush gaikwad'].includes(employee.fullName.toLowerCase()) ? 'N/A' : `THRU ${employee.expiryDate}`}
                                 </span>
                               </div>
                               
@@ -659,7 +664,7 @@ export default function Employees() {
                                 <div className="bg-neutral-950/50 border border-white/5 rounded-lg p-2 flex flex-col justify-between">
                                   <span className="block text-[6px] text-text-muted uppercase tracking-wider font-mono">EXPIRY THRESHOLD</span>
                                   <span className="font-bold text-text-main text-[10px]">
-                                    {['tejas tapse', 'mrunmayee bodhe', 'ayush gaikwad'].includes(employee.fullName.toLowerCase()) ? 'N/A' : employee.expiryDate}
+                                    {['tejas tapse', 'ayush gaikwad'].includes(employee.fullName.toLowerCase()) ? 'N/A' : employee.expiryDate}
                                   </span>
                                 </div>
                                 <div className="col-span-2 bg-neutral-950/50 border border-white/5 rounded-lg p-2 flex flex-col justify-between">
@@ -742,27 +747,25 @@ export default function Employees() {
                                 </span>
                               </div>
 
-                              {/* CEO Signature (Mrunmayee Bodhe) */}
+                              {/* Authorized Signatory (Founder) */}
                               <div className="text-right flex flex-col items-end relative min-w-[120px]">
-                                {/* Amber ink stamp watermark circle for CEO */}
+                                {/* Amber ink stamp watermark circle */}
                                 <div className="absolute right-0 bottom-4 w-12 h-12 rounded-full border border-amber-500/35 text-amber-500/40 flex items-center justify-center select-none -rotate-12 pointer-events-none text-[4.5px] font-mono font-bold leading-none uppercase text-center">
                                   <div className="scale-75">
-                                    FC OFFICE<br/>CEO SEAL
+                                    FC OFFICE<br/>AUTH SEAL
                                   </div>
                                 </div>
                                 
-                                {/* Procedural CEO Signature Line */}
+                                {/* Procedural Signature Line */}
                                 <svg className="w-20 h-8 text-amber-400 opacity-95 drop-shadow-[0_0_1px_rgba(245,158,11,0.5)] relative z-40" viewBox="0 0 100 40" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                  {/* Elegant cursive "Mrunmayee Bodhe" flow */}
-                                  <path d="M8,26 C15,3 18,30 24,18 C28,11 31,27 35,21 C39,13 42,25 46,17 C50,11 53,23 58,19 C66,13 72,11 82,14 C87,15 78,23 90,19" />
-                                  <path d="M10,24 Q45,29 80,22" stroke="currentColor" strokeWidth="0.8" opacity="0.6" />
-                                  <path d="M15,22 L75,18" stroke="currentColor" strokeWidth="0.5" strokeDasharray="1 2" opacity="0.3" />
+                                  <path d="M10,12 L42,10 M24,11 C22,22 20,28 24,26 C30,22 36,16 42,22 C46,25 50,15 56,21 C62,25 70,13 86,18" />
+                                  <path d="M12,26 Q48,30 84,23" stroke="currentColor" strokeWidth="0.8" opacity="0.6" />
                                 </svg>
                                 <span className="text-[5.5px] font-mono text-warning font-black uppercase tracking-widest block mt-0.5 relative z-40">
-                                  MRUNMAYEE BODHE
+                                  TEJAS TAPSE
                                 </span>
                                 <span className="text-[4.5px] font-mono text-text-muted uppercase tracking-widest block relative z-40 leading-none">
-                                  CHIEF EXECUTIVE OFFICER
+                                  FOUNDER &amp; DIRECTOR
                                 </span>
                               </div>
                             </div>

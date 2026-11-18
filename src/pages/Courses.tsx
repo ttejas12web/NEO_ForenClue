@@ -23,7 +23,6 @@ export default function Courses() {
   const { user, userProfile, loading, isAdmin } = useAuth();
   const isSpecAdmin = useMemo(() => {
     return !!(isAdmin && user?.email && (
-      user.email.toLowerCase() === 'mrunmayeebodhe118@gmail.com' ||
       user.email.toLowerCase() === 'webcreator500@gmail.com'
     ));
   }, [isAdmin, user?.email]);

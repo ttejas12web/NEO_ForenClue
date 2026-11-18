@@ -30,9 +30,6 @@ import { PdfViewerModal } from '@/components/ui/PdfViewerModal';
 import { ResilientImage } from '@/lib/localFileStore';
 import { buildSocialShareUrl } from '@/lib/socialShare';
 
-// Static book cover asset (same as original/fallback)
-const bookCoverUrl = 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEive7NdnBis_kLLqaN2d8q37014tEMd2ftmqFkeCIiLjxkG2sDfip5VQldxh9izJC-KTsD4ZfXnILFWEOG2jmJkwdKww8-jqW-2jAqpTsv4AOE47MkqpHHibGcBN4GhPqN3OIF1xxIbs0KQLRgxfk2XJRsdlQyY_JqqRnajm2-pB1xoiZN4BnkdtDc9ICU/s1500/1779707899.png';
-
 interface ForensicResource {
   id: string;
   title: string;
@@ -89,6 +86,11 @@ export default function EBooks() {
       const list: ForensicResource[] = [];
       snapshot.forEach((docSnap) => {
         const d = docSnap.data();
+        const titleLower = String(d.title || '').toLowerCase();
+        const authorLower = String(d.author || '').toLowerCase();
+        if (titleLower.includes('careers in forensic science') || authorLower.includes('mrunmayee bodhe')) {
+          return;
+        }
         list.push({
           id: docSnap.id,
           title: d.title || 'Untitled Reference',
@@ -169,15 +171,16 @@ export default function EBooks() {
   });
 
   const handleDownload = (item: ForensicResource) => {
+    if (!item.pdfUrl) return;
     try {
       const link = document.createElement('a');
-      link.href = item.pdfUrl || bookCoverUrl;
+      link.href = item.pdfUrl;
       link.setAttribute('download', `${item.title}.pdf`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (_) {
-      window.open(item.pdfUrl || bookCoverUrl, '_blank');
+      window.open(item.pdfUrl, '_blank');
     }
   };
 
