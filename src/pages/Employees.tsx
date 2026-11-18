@@ -747,12 +747,12 @@ export default function Employees() {
                                 </span>
                               </div>
 
-                              {/* Authorized Signatory (Founder) */}
+                              {/* Authorized Signatory (Founder & CEO) */}
                               <div className="text-right flex flex-col items-end relative min-w-[120px]">
                                 {/* Amber ink stamp watermark circle */}
                                 <div className="absolute right-0 bottom-4 w-12 h-12 rounded-full border border-amber-500/35 text-amber-500/40 flex items-center justify-center select-none -rotate-12 pointer-events-none text-[4.5px] font-mono font-bold leading-none uppercase text-center">
                                   <div className="scale-75">
-                                    FC OFFICE<br/>AUTH SEAL
+                                    FC OFFICE<br/>CEO SEAL
                                   </div>
                                 </div>
                                 
@@ -765,7 +765,7 @@ export default function Employees() {
                                   TEJAS TAPSE
                                 </span>
                                 <span className="text-[4.5px] font-mono text-text-muted uppercase tracking-widest block relative z-40 leading-none">
-                                  FOUNDER &amp; DIRECTOR
+                                  FOUNDER &amp; CEO
                                 </span>
                               </div>
                             </div>

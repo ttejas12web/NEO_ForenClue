@@ -151,7 +151,7 @@ export default function About() {
   const team = [
     {
       name: "Tejas Tapse",
-      role: "Founder",
+      role: "Founder & CEO",
       image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhBbTT3QCs_EHXasFjAT9pC1laU-vAIRhIQ7qjpQHS3ErsprqykE9eT63H-XnATqutTGhCjq-zzbmvCeFhHfE0_DZ1wtZmu8pmARltV1makLhdqyCwftxjW55J0qyPbmjn6H6Abb6OzIHPUrkbkYOwmDeVxLmGyH_0nbr9qOnWtWKEg3NaPIvEJKTNg8vU/s1323/IMG_0865.PNG",
       linkedin: "https://www.linkedin.com/in/ttapse12/",
       youtube: "https://www.youtube.com/@TejasTapse",
@@ -247,7 +247,7 @@ export default function About() {
           '@type': 'Person',
           '@id': 'https://forenclue.in/about#tejas-tapse',
           name: 'Tejas Tapse',
-          jobTitle: 'Founder',
+          jobTitle: 'Founder & CEO',
           image:
             'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEhBbTT3QCs_EHXasFjAT9pC1laU-vAIRhIQ7qjpQHS3ErsprqykE9eT63H-XnATqutTGhCjq-zzbmvCeFhHfE0_DZ1wtZmu8pmARltV1makLhdqyCwftxjW55J0qyPbmjn6H6Abb6OzIHPUrkbkYOwmDeVxLmGyH_0nbr9qOnWtWKEg3NaPIvEJKTNg8vU/s1323/IMG_0865.PNG',
           worksFor: { '@id': 'https://forenclue.in/#organization' },
@@ -321,7 +321,7 @@ export default function About() {
           },
           {
             question: "Who are the leaders and founders of ForenClue?",
-            answer: "ForenClue is led by Founder Tejas Tapse, Co-Founder Ayush Gaikwad, Managing Director (MD) Pranav Kale Patil, and Chief Technology Officer (CTO) Punam Gadade."
+            answer: "ForenClue is led by Founder & CEO Tejas Tapse, Co-Founder Ayush Gaikwad, Managing Director (MD) Pranav Kale Patil, and Chief Technology Officer (CTO) Punam Gadade."
           },
           {
             question: "Who is the Academic Mentor at ForenClue?",

@@ -981,7 +981,7 @@ export default function Admin() {
         {
           employeeId: 'FC-EMP-519',
           fullName: 'Tejas Tapse',
-          position: 'Senior Security Analyst & Instructor',
+          position: 'Founder & CEO',
           department: 'Cybersecurity & Digital Forensics',
           joiningDate: '2024-02-15',
           expiryDate: '2029-02-15',
