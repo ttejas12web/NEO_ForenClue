@@ -19,6 +19,7 @@ interface SEOProps {
   // Dynamic SEO Structured Data extensions
   authorName?: string;
   publishDate?: string;
+  modifiedDate?: string;
   courseDetails?: {
     name: string;
     description?: string;
@@ -28,6 +29,31 @@ interface SEOProps {
   faqs?: Array<{ question: string; answer: string }>;
   breadcrumbs?: Array<{ name: string; path: string }>;
   customSchema?: any[];
+}
+
+export function normalizePublicSocialImageUrl(raw?: string): string {
+  const fallback =
+    'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
+  if (!raw || typeof raw !== 'string') return fallback;
+  const trimmed = raw.trim();
+  if (!trimmed || trimmed.startsWith('data:') || trimmed.startsWith('blob:') || trimmed.startsWith('localdb://')) {
+    return fallback;
+  }
+  if (trimmed.startsWith('firestore-blob://')) {
+    const blobId = trimmed.replace('firestore-blob://', '').trim();
+    return blobId ? `https://forenclue.in/api/social-image/${encodeURIComponent(blobId)}` : fallback;
+  }
+  if (trimmed.includes('firestore-blob://')) {
+    const match = trimmed.match(/firestore-blob:\/\/([A-Za-z0-9_-]+)/);
+    if (match?.[1]) {
+      return `https://forenclue.in/api/social-image/${encodeURIComponent(match[1])}`;
+    }
+  }
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed.replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
+  }
+  const cleanPath = trimmed.startsWith('/') ? trimmed : `/${trimmed}`;
+  return `https://forenclue.in${cleanPath}`;
 }
 
 export function SEO({
@@ -40,6 +66,7 @@ export function SEO({
   noindex = false,
   authorName,
   publishDate,
+  modifiedDate,
   courseDetails,
   faqs,
   breadcrumbs,
@@ -47,22 +74,18 @@ export function SEO({
 }: SEOProps) {
   const location = useLocation();
   const siteTitle = 'ForenClue | Your Partner In Forensic Precision';
-  const formattedTitle = title ? `${title} | ForenClue` : siteTitle;
+  const formattedTitle = title
+    ? title.includes('ForenClue')
+      ? title
+      : `${title} | ForenClue`
+    : siteTitle;
   const shareTitle = title ? `${title} | Forensic Science Hub` : 'ForenClue - Master Forensic Science & Investigations';
   const metaKeywords = keywords || 'forensic science, forensic courses, crime scene investigation, forenclue, digital forensics, forensic career, learn finger print lifting, india forensics';
   const resolvedCanonicalPath = canonicalPath || location.pathname || '/';
   const absoluteCanonicalUrl = `https://forenclue.in${resolvedCanonicalPath.startsWith('/') ? resolvedCanonicalPath : `/${resolvedCanonicalPath}`}`;
 
-  // Determine optimal image URL (must be absolute for social crawlers)
-  let ogImg = 'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
-  if (image) {
-    if (image.startsWith('http://') || image.startsWith('https://')) {
-      ogImg = image;
-    } else {
-      const cleanPath = image.startsWith('/') ? image : `/${image}`;
-      ogImg = `https://forenclue.in${cleanPath}`;
-    }
-  }
+  // Determine optimal image URL (must be absolute public HTTPS URL for social crawlers)
+  let ogImg = normalizePublicSocialImageUrl(image);
 
   // Optimize Blogger and Google User Content image parameters to deliver high-res sizes for social crawlers
   if (ogImg && ogImg.includes('googleusercontent.com')) {
@@ -92,6 +115,13 @@ export function SEO({
       '@id': 'https://forenclue.in/#organization',
       'name': 'ForenClue',
       'url': 'https://forenclue.in',
+      'address': {
+        '@type': 'PostalAddress',
+        'addressLocality': 'Pune',
+        'addressRegion': 'Maharashtra',
+        'addressCountry': 'IN'
+      },
+      'email': 'forenclue@gmail.com',
       'logo': {
         '@type': 'ImageObject',
         'url': 'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEj7yfh9aP-3k7exKSgvW9ynV7lb9j62shvwJrpkiEi_9yiWUSxntW5Poc-MOXQCA0fd635VLo8C35glEPFtlSByqxDDepzEAX6D5T4SzFX-8fyKDIoo7_wV3EXH6u-UDF6P344Q4RRlRFY-qfqITWnuSXa7feb89eDlR9SCODoodogdY89rBez2K7fOiQI/s1600/4b5616a4-6069-44a7-ba52-88f965165067.png'
@@ -131,6 +161,7 @@ export function SEO({
     };
     if (authorName) articleNode.author = { '@type': 'Person', 'name': authorName };
     if (publishDate) articleNode.datePublished = publishDate;
+    if (modifiedDate) articleNode.dateModified = modifiedDate;
     graphData.push(articleNode);
   }
 
@@ -192,29 +223,15 @@ export function SEO({
   };
 
   useEffect(() => {
-    const printSEODebug = () => {
+    window.debugSEO = () => {
       const currentTitle = document.title;
       const ogTitle = document.querySelector('meta[property="og:title"]')?.getAttribute('content');
       const ogDesc = document.querySelector('meta[property="og:description"]')?.getAttribute('content');
       const ogImage = document.querySelector('meta[property="og:image"]')?.getAttribute('content');
       const ogUrl = document.querySelector('meta[property="og:url"]')?.getAttribute('content');
       const canonical = document.querySelector('link[rel="canonical"]')?.getAttribute('href');
-
-      console.groupCollapsed(`🔍 [SEO Debugger] ${currentTitle || formattedTitle}`);
-      console.log('📌 Document Title:', currentTitle);
-      console.log('🔗 OpenGraph Title:', ogTitle);
-      console.log('📝 OpenGraph Description:', ogDesc);
-      console.log('🖼️ OpenGraph Image:', ogImage);
-      console.log('🌐 OpenGraph URL:', ogUrl);
-      console.log('🎯 Canonical URL:', canonical);
-      console.groupEnd();
+      return { currentTitle, ogTitle, ogDesc, ogImage, ogUrl, canonical };
     };
-
-    window.debugSEO = printSEODebug;
-
-    // Small delay to allow react-helmet-async to reflect tags in DOM
-    const timer = setTimeout(printSEODebug, 150);
-    return () => clearTimeout(timer);
   }, [formattedTitle, description, ogImg, absoluteCanonicalUrl, shareTitle]);
 
   return (
@@ -224,10 +241,10 @@ export function SEO({
       <meta name="robots" content={noindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1'} />
       <meta name="content-language" content="en-IN" />
       <meta name="keywords" content={metaKeywords} />
-      <meta name="geo.region" content="IN-DL" />
-      <meta name="geo.placename" content="Delhi" />
-      <meta name="geo.position" content="28.6139;77.2090" />
-      <meta name="ICBM" content="28.6139, 77.2090" />
+      <meta name="geo.region" content="IN-MH" />
+      <meta name="geo.placename" content="Pune" />
+      <meta name="geo.position" content="18.5204;73.8567" />
+      <meta name="ICBM" content="18.5204, 73.8567" />
 
       <link rel="canonical" href={absoluteCanonicalUrl} />
 

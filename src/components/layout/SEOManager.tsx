@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { SEO } from './SEO';
+import { SEO, normalizePublicSocialImageUrl } from './SEO';
 
 export interface SEOManagerProps {
   collectionName?: 'quizzes' | 'cases' | 'caseStudies' | 'courses' | 'ebooks' | 'podcasts' | 'webinars' | 'certificates' | string;
@@ -140,16 +140,7 @@ export function SEOManager({
     data.cover || 
     fallbackImage;
 
-  let resolvedImage = rawImage;
-  if (resolvedImage) {
-    resolvedImage = resolvedImage.replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
-    if (!resolvedImage.startsWith('http://') && !resolvedImage.startsWith('https://')) {
-      const clean = resolvedImage.startsWith('/') ? resolvedImage : `/${resolvedImage}`;
-      resolvedImage = `https://forenclue.in${clean}`;
-    }
-  } else {
-    resolvedImage = 'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
-  }
+  const resolvedImage = normalizePublicSocialImageUrl(rawImage || fallbackImage);
 
   const resolvedAuthor = authorName || data.author || data.createdBy || 'ForenClue Editorial Team';
 

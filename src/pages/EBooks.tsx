@@ -236,8 +236,30 @@ export default function EBooks() {
 
         <aside className="mb-8 rounded-2xl border border-warning/20 bg-warning/5 p-5 text-sm text-text-muted leading-relaxed">
           <p className="font-bold text-text-main mb-1">Copyright and access notice</p>
-          <p>Resources must be owned by the uploader, licensed for redistribution, in the public domain, or shared with the rights holder's permission. Attribution alone does not grant redistribution rights. If you own rights to a listed work or believe a resource is shared incorrectly, contact <a href="mailto:support@forenclue.in" className="text-warning hover:underline">support@forenclue.in</a> for review and removal.</p>
+          <p>Resources must be owned by the uploader, licensed for redistribution, in the public domain, or shared with the rights holder's permission. Attribution alone does not grant redistribution rights. If you own rights to a listed work or believe a resource is shared incorrectly, contact <a href="mailto:forenclue@gmail.com" className="text-warning hover:underline">forenclue@gmail.com</a> or <a href="mailto:support@forenclue.in" className="text-warning hover:underline">support@forenclue.in</a> for review and removal.</p>
         </aside>
+
+        {selectedResource && (
+          <article className="mb-8 rounded-2xl border border-warning/40 bg-surface p-6 sm:p-8 space-y-4 shadow-md">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <span className="text-xs font-mono uppercase tracking-wider text-warning font-bold">
+                Selected Academic Resource Overview • {selectedResource.category || 'Forensic Science'}
+              </span>
+              <span className="text-xs font-mono text-text-muted">
+                Format: {selectedResource.type || 'PDF Reference'} • Year: {selectedResource.year || '2025'}
+              </span>
+            </div>
+            <h2 className="text-2xl font-heading font-bold text-text-main">
+              {selectedResource.title}
+            </h2>
+            <p className="text-sm sm:text-base text-text-muted leading-relaxed">
+              {selectedResource.desc || 'This academic reference work provides structured coverage of forensic science principles, standard laboratory operating procedures, and evidentiary documentation practices for university coursework and competitive examination preparation.'}
+            </p>
+            <div className="pt-2 text-xs text-text-muted">
+              <strong>Key Study Applications:</strong> B.Sc. &amp; M.Sc. Forensic Science university revision, UGC-NET (Code 82) &amp; FACT examination preparation, and crime scene / laboratory SOP reference.
+            </div>
+          </article>
+        )}
 
         {/* --- FILTER CONTROL BAR --- */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 bg-surface border border-black/10 dark:border-white/5 rounded-2xl mb-8">
@@ -347,6 +369,83 @@ export default function EBooks() {
             )}
           </motion.div>
         </AnimatePresence>
+
+        {/* --- ACADEMIC CURRICULUM OVERVIEW & LEARNING OBJECTIVES --- */}
+        <article className="mt-16 pt-12 border-t border-black/10 dark:border-white/10 space-y-8">
+          <div className="space-y-3">
+            <span className="text-xs font-mono uppercase tracking-widest text-warning font-bold">
+              ForenClue Open Forensic Reference Curriculum
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-text-main">
+              Academic Overview, Core Forensic Disciplines &amp; Study Objectives
+            </h2>
+            <p className="text-sm sm:text-base text-text-muted leading-relaxed">
+              The ForenClue Digital eLibrary is curated to support undergraduate (B.Sc.) and postgraduate (M.Sc.) Forensic Science students, doctoral scholars, and candidates preparing for the University Grants Commission National Eligibility Test (UGC-NET Subject Code 82: Forensic Science) and the Forensic Aptitude and Caliber Test (FACT). Rather than functioning solely as a document repository, each discipline is organized around standardized laboratory methodologies and statutory Indian evidentiary frameworks.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <section className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-2.5">
+              <h3 className="text-lg font-heading font-bold text-text-main">
+                1. Crime Scene Management &amp; Physical Criminalistics
+              </h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Covers Edmund Locard’s Principle of Exchange, systematic search patterns (spiral, grid, strip/line, and quadrant/zone), NIST/ABFO scale photomacrography, substrate-specific evidence packaging, and unbroken Chain of Custody documentation under the Bharatiya Nagarik Suraksha Sanhita (BNSS) and Bharatiya Sakshya Adhiniyam (BSA), 2023.
+              </p>
+            </section>
+
+            <section className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-2.5">
+              <h3 className="text-lg font-heading font-bold text-text-main">
+                2. Analytical Forensic Chemistry &amp; Toxicology
+              </h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Addresses postmortem viscera preservation, Stas-Otto and Solid-Phase Extraction (SPE) of acidic and basic xenobiotics, presumptive color spot tests (Marquis, Duquenois-Levine, Scott, Dillie-Koppanyi), and confirmatory instrumental analysis via UV-Vis Spectrophotometry, GC-MS, LC-MS/MS, and ICP-MS for heavy metal poisoning.
+              </p>
+            </section>
+
+            <section className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-2.5">
+              <h3 className="text-lg font-heading font-bold text-text-main">
+                3. Forensic Biology, Serology &amp; DNA Profiling
+              </h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Examines presumptive catalytic blood screening (Luminol chemiluminescence, Kastle-Meyer phenolphthalein) versus confirmatory crystal assays (Teichmann and Takayama hemochromogen tests), seminal acid phosphatase and prostate-specific antigen (p30), trichological hair morphology, and multiplex PCR amplification of polymorphic Short Tandem Repeat (STR) and Y-STR loci.
+              </p>
+            </section>
+
+            <section className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-2.5">
+              <h3 className="text-lg font-heading font-bold text-text-main">
+                4. Questioned Documents, Dactyloscopy &amp; Digital Forensics
+              </h3>
+              <p className="text-sm text-text-muted leading-relaxed">
+                Details Henry-Galton fingerprint classification, Level 1–3 ridge minutiae, porous/non-porous latent print development (Ninhydrin, DFO, Cyanoacrylate fuming), Electro-Static Detection Apparatus (ESDA) for indented writing, Video Spectral Comparator (VSC) ink discrimination, and ISO/IEC 27037 digital disk and memory acquisition.
+              </p>
+            </section>
+          </div>
+
+          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-3">
+            <h3 className="text-base font-heading font-bold text-text-main">
+              Key Learning Objectives for Students &amp; Researchers
+            </h3>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm text-text-muted">
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+                <span>Differentiate presumptive orientation screening tests from court-admissible confirmatory analytical methods.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+                <span>Synthesize peer-reviewed research literature with Directorate of Forensic Science Services (DFSS) working procedure manuals.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+                <span>Master quantitative formulas including Rf values in TLC, Beer-Lambert absorbance, Medullary Index, and angle-of-impact bloodstain trigonometry.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+                <span>Apply statutory rules of expert testimony and electronic record certification under Indian criminal procedure.</span>
+              </li>
+            </ul>
+          </div>
+        </article>
 
       </div>
 

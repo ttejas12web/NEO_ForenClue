@@ -604,6 +604,20 @@ export async function uploadFileResilient(
 }
 
 /**
+ * Converts any internal firestore-blob://<id> URI into a public HTTPS /api/social-image/<id> URL
+ * so that <img src>, OpenGraph tags, and sitemaps never expose custom schemes.
+ */
+export function normalizePublicBlobUrl(url: string | null | undefined): string {
+  if (!url || typeof url !== 'string') return '';
+  const trimmed = url.trim();
+  if (trimmed.startsWith('firestore-blob://')) {
+    const blobId = trimmed.replace('firestore-blob://', '').trim();
+    return blobId ? `https://forenclue.in/api/social-image/${encodeURIComponent(blobId)}` : '';
+  }
+  return trimmed;
+}
+
+/**
  * Resolves any firestore-blob:// or localdb:// URL or Base64 string to a usable web URL for images and media files.
  * Also parses and optimizes third-party hosted files like Dropbox to ensure compatibility with native HTML5 media streaming.
  */
@@ -611,12 +625,12 @@ export async function resolveFileUrl(url: string | null | undefined): Promise<st
   if (!url) return '';
 
   if (url.startsWith('firestore-blob://')) {
-    const blobId = url.replace('firestore-blob://', '');
+    const blobId = url.replace('firestore-blob://', '').trim();
     const blob = await getBlobFromCloudFirestore(blobId);
     if (blob) {
       return URL.createObjectURL(blob);
     }
-    return '';
+    return blobId ? `https://forenclue.in/api/social-image/${encodeURIComponent(blobId)}` : '';
   }
 
   if (url.startsWith('localdb://')) {
@@ -689,7 +703,10 @@ export function ResilientImage({
   const [resolvedSrc, setResolvedSrc] = useState<string>(() => {
     if (!src) return '';
     if (blobUrlCache.has(src)) return blobUrlCache.get(src)!;
-    if (!src.startsWith('localdb://') && !src.startsWith('firestore-blob://')) {
+    if (src.startsWith('firestore-blob://')) {
+      return normalizePublicBlobUrl(src);
+    }
+    if (!src.startsWith('localdb://')) {
       return src;
     }
     return '';
@@ -698,7 +715,7 @@ export function ResilientImage({
   const [isLoading, setIsLoading] = useState<boolean>(() => {
     if (!src) return false;
     if (blobUrlCache.has(src)) return false;
-    return src.startsWith('localdb://') || src.startsWith('firestore-blob://');
+    return src.startsWith('localdb://');
   });
 
   useEffect(() => {
@@ -717,7 +734,21 @@ export function ResilientImage({
       return;
     }
 
-    if (src.startsWith('localdb://') || src.startsWith('firestore-blob://')) {
+    if (src.startsWith('firestore-blob://')) {
+      const publicUrl = normalizePublicBlobUrl(src);
+      setResolvedSrc(publicUrl);
+      setIsLoading(false);
+      resolveFileUrl(src)
+        .then((url) => {
+          if (active && url) {
+            blobUrlCache.set(src, url);
+            setResolvedSrc(url);
+          }
+        })
+        .catch(() => {
+          // Keep public HTTPS fallback
+        });
+    } else if (src.startsWith('localdb://')) {
       setIsLoading(true);
       resolveFileUrl(src)
         .then((url) => {

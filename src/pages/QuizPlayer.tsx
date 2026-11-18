@@ -2122,6 +2122,38 @@ export default function QuizPlayer() {
             </div>
           )}
         </AnimatePresence>
+
+        {/* Educational Assessment Overview & Learning Objectives for Detail Page */}
+        <article className="mt-12 pt-8 border-t border-black/10 dark:border-white/10 space-y-4 text-left">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <span className="text-xs font-mono uppercase tracking-wider text-warning font-bold">
+              ForenClue Academic Assessment Module • {quiz?.category || 'Forensic Science'}
+            </span>
+            <Link to="/articles" className="text-xs font-bold text-warning hover:underline">
+              Review Companion Forensic Editorial Guides →
+            </Link>
+          </div>
+          <h2 className="text-xl sm:text-2xl font-heading font-bold text-text-main">
+            {quiz?.title ? `${quiz.title} — Study Overview & Learning Objectives` : 'Forensic Science Competency Assessment & Learning Objectives'}
+          </h2>
+          <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
+            {quiz?.description || 'This forensic science assessment evaluates core competency across crime scene investigation protocols, laboratory analytical instrumentation, biological and trace evidence examination, and Indian statutory admissibility under the Bharatiya Sakshya Adhiniyam (BSA), 2023.'}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 text-xs text-text-muted">
+            <div className="p-4 rounded-xl bg-surface border border-black/10 dark:border-white/10">
+              <strong className="text-text-main block mb-1">1. Analytical Methodology</strong>
+              Tests selection of presumptive screening reagents versus confirmatory spectroscopic and chromatographic techniques (GC-MS, LC-MS/MS, UV-Vis, and PCR-STR).
+            </div>
+            <div className="p-4 rounded-xl bg-surface border border-black/10 dark:border-white/10">
+              <strong className="text-text-main block mb-1">2. Evidentiary Continuity</strong>
+              Evaluates substrate-specific collection, preservation, anti-contamination controls, and cryptographic hash verification for physical and digital exhibits.
+            </div>
+            <div className="p-4 rounded-xl bg-surface border border-black/10 dark:border-white/10">
+              <strong className="text-text-main block mb-1">3. Examination Readiness</strong>
+              Aligned with B.Sc./M.Sc. Forensic Science curricula, UGC-NET (Code 82), NFAT, and FACT assessment standards, with post-attempt rationale review.
+            </div>
+          </div>
+        </article>
       </div>
     </div>
   );

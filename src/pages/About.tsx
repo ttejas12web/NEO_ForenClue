@@ -195,7 +195,7 @@ export default function About() {
   const academicMentors = [
     {
       name: "Rajat Pithadia",
-      role: "Academic Mentor",
+      role: "Academic Mentor & Editorial Reviewer",
       image: "https://blogger.googleusercontent.com/img/a/AVvXsEiseuO8LFJ74UtogyoZLu5orh44gH7WVqDM4oinlMLhD3u4grQKoinTCZYk-OfKJrXJjV8E9EZHoPbhefI60LoXmqO623wQXiv-4hXumhYmBrBJCh4HYvYk9ifZ4nSccrYe5qyJHQXAQvW_8Zgkdq3T7vCycYqiJy0aUSZYzhmqc8M12jhhUq3X1GoORws",
       linkedin: "https://www.linkedin.com/in/rajatresearch",
       points: [
@@ -205,6 +205,19 @@ export default function About() {
         "Ph.D. Scholar (Genotoxicity & Mutagenicity)",
         "M.Sc. (Forensic Chemistry, Toxicology & Pharmacology)"
       ]
+    },
+    {
+      name: "Dr. Riya Mariya",
+      role: "Advisory Board Member & Forensic Odontologist",
+      image: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgobEPn1woMfp278ivQTg-VZsKM02ZvNAQ8bxANMa26tSCP2gWdXJEQgPVcBBBkfeHLwlKdkCS9OlSdqpzE8dvmYtq8GlB1FwXSv49dakFckuCUgmPdsqZfNuqUZcJmIPUA3hRtnjbb1EAQyA4Nic4m9qSuZ3DOflHlZRT1s9ypVR8ob_hvGXnfowCKOgE/s1600/image.png",
+      linkedin: "https://www.linkedin.com/in/dr-riya-mariya/",
+      points: [
+        "Forensic Odontologist & Dentist",
+        "Assistant Professor",
+        "UGC NET Qualified & FACT 2026 Qualified",
+        "PG Professional Diploma in Forensic Archaeology",
+        "ForenClue Advisory Board Member"
+      ]
     }
   ];
 
@@ -213,9 +226,9 @@ export default function About() {
       '@type': 'AboutPage',
       '@id': 'https://forenclue.in/about#aboutpage',
       url: 'https://forenclue.in/about',
-      name: 'About ForenClue – Mission, Vision, Leadership & Academic Mentors',
+      name: 'About ForenClue – Mission, Editorial Standards, Leadership & Academic Faculty',
       description:
-        "Learn about ForenClue, India's MSME Udyam registered Forensic Science and Cybersecurity EdTech platform founded in 2025. Meet our leadership team and academic mentors.",
+        "Learn about ForenClue, India's MSME Udyam registered Forensic Science and Cybersecurity EdTech publication and learning platform headquartered in Pune, Maharashtra, India.",
       inLanguage: 'en-IN',
       isPartOf: { '@id': 'https://forenclue.in/#website' },
       mainEntity: { '@id': 'https://forenclue.in/#organization' },
@@ -227,18 +240,25 @@ export default function About() {
       alternateName: 'ForenClue Ventures',
       url: 'https://forenclue.in',
       foundingDate: '2025',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Pune',
+        addressRegion: 'Maharashtra',
+        addressCountry: 'IN',
+      },
       areaServed: {
         '@type': 'Country',
         name: 'India',
       },
       description:
-        'Founded in 2025, ForenClue is a dedicated Forensic Science and Cybersecurity EdTech platform registered under MSME Udyam, Government of India, empowering students, educators, and investigators through practical learning, virtual labs, and case studies.',
+        'Founded in 2025 and headquartered in Pune, Maharashtra, India, ForenClue is a dedicated Forensic Science and Cybersecurity EdTech platform registered under MSME Udyam, Government of India, empowering students, educators, and investigators through peer-reviewed forensic guides, virtual labs, and documented case studies.',
       knowsAbout: [
         'Forensic Science',
         'Cyber Security',
         'Digital Forensics',
         'Crime Scene Investigation',
         'Forensic Toxicology',
+        'Forensic Odontology',
         'Questioned Documents & Fingerprints',
         'UGC-NET Forensic Science Preparation',
       ],
@@ -291,13 +311,25 @@ export default function About() {
           '@type': 'Person',
           '@id': 'https://forenclue.in/about#rajat-pithadia',
           name: 'Rajat Pithadia',
-          jobTitle: 'Academic Mentor',
+          jobTitle: 'Academic Mentor & Editorial Reviewer',
           description:
             'UGC-NET & GSET Qualified Assistant Professor at Parul University, Wiley Author, Ph.D. Scholar (Genotoxicity & Mutagenicity), and M.Sc. in Forensic Chemistry, Toxicology & Pharmacology.',
           image:
             'https://blogger.googleusercontent.com/img/a/AVvXsEiseuO8LFJ74UtogyoZLu5orh44gH7WVqDM4oinlMLhD3u4grQKoinTCZYk-OfKJrXJjV8E9EZHoPbhefI60LoXmqO623wQXiv-4hXumhYmBrBJCh4HYvYk9ifZ4nSccrYe5qyJHQXAQvW_8Zgkdq3T7vCycYqiJy0aUSZYzhmqc8M12jhhUq3X1GoORws',
           worksFor: { '@id': 'https://forenclue.in/#organization' },
           sameAs: ['https://www.linkedin.com/in/rajatresearch'],
+        },
+        {
+          '@type': 'Person',
+          '@id': 'https://forenclue.in/about#dr-riya-mariya',
+          name: 'Dr. Riya Mariya',
+          jobTitle: 'Advisory Board Member & Forensic Odontologist',
+          description:
+            'Forensic Odontologist, Dentist, Assistant Professor, UGC NET Qualified, FACT 2026 Qualified, PG Professional Diploma in Forensic Archaeology, and ForenClue Advisory Board Member.',
+          image:
+            'https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgobEPn1woMfp278ivQTg-VZsKM02ZvNAQ8bxANMa26tSCP2gWdXJEQgPVcBBBkfeHLwlKdkCS9OlSdqpzE8dvmYtq8GlB1FwXSv49dakFckuCUgmPdsqZfNuqUZcJmIPUA3hRtnjbb1EAQyA4Nic4m9qSuZ3DOflHlZRT1s9ypVR8ob_hvGXnfowCKOgE/s1600/image.png',
+          worksFor: { '@id': 'https://forenclue.in/#organization' },
+          sameAs: ['https://www.linkedin.com/in/dr-riya-mariya/'],
         },
       ],
     },
@@ -306,9 +338,9 @@ export default function About() {
   return (
     <div className="py-20 px-4 max-w-7xl mx-auto relative perspective-[2000px]">
       <SEO 
-        title="About ForenClue – Mission, Leadership & Academic Mentors"
-        description="Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform. Meet our leadership team, founders, and academic mentors."
-        keywords="about forenclue, forenclue founders, tejas tapse, ayush gaikwad, pranav kale patil, punam gadade, rajat pithadia, forensic science edtech india, cybersecurity learning platform, msme registered forensic platform, forensic academic mentor"
+        title="About ForenClue – Mission, Editorial Standards, Leadership & Academic Mentors"
+        description="Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform headquartered in Pune, Maharashtra. Review our editorial standards, leadership team, and academic faculty."
+        keywords="about forenclue, forenclue pune, forenclue founders, tejas tapse, ayush gaikwad, pranav kale patil, punam gadade, rajat pithadia, dr riya mariya, forensic science edtech india, forensic editorial standards"
         canonicalPath="/about"
         breadcrumbs={[
           { name: 'Home', path: '/' },
@@ -316,26 +348,26 @@ export default function About() {
         ]}
         faqs={[
           {
-            question: "What is ForenClue and when was it founded?",
-            answer: "Founded in 2025, ForenClue is an official MSME Udyam registered Forensic Science and Cybersecurity EdTech platform in India dedicated to practical investigation training, real-world case studies, virtual laboratory simulations, and academic mentorship."
+            question: "What is ForenClue and where is it headquartered?",
+            answer: "Founded in 2025 and headquartered in Pune, Maharashtra, India, ForenClue (ForenClue Ventures) is an official MSME Udyam registered Forensic Science and Cybersecurity EdTech platform dedicated to peer-reviewed educational guides, documented case studies, virtual laboratory simulations, and academic mentorship."
           },
           {
             question: "Who are the leaders and founders of ForenClue?",
             answer: "ForenClue is led by Founder & CEO Tejas Tapse, Co-Founder Ayush Gaikwad, Managing Director (MD) Pranav Kale Patil, and Chief Technology Officer (CTO) Punam Gadade."
           },
           {
-            question: "Who is the Academic Mentor at ForenClue?",
-            answer: "Rajat Pithadia serves as Academic Mentor at ForenClue. He is UGC-NET & GSET qualified, an Assistant Professor at Parul University, a published Wiley Author, and a Ph.D. Scholar specializing in Genotoxicity & Mutagenicity with an M.Sc. in Forensic Chemistry, Toxicology & Pharmacology."
+            question: "Who are the Academic Mentors and Advisory Board Members at ForenClue?",
+            answer: "ForenClue's academic review board includes Rajat Pithadia (UGC-NET & GSET Qualified Assistant Professor at Parul University, Wiley Author, and Ph.D. Scholar in Genotoxicity & Mutagenicity) and Dr. Riya Mariya (Forensic Odontologist, Assistant Professor, UGC-NET & FACT 2026 Qualified, PG Diploma in Forensic Archaeology)."
           },
           {
-            question: "What is the mission and vision of ForenClue?",
-            answer: "ForenClue's mission is to democratize top-tier forensic science and cybersecurity education by bridging the gap between academic theory and real-world crime scene and digital investigation practices."
+            question: "What are ForenClue's editorial and fact-checking standards?",
+            answer: "Every article, laboratory manual, and forensic case study published on ForenClue undergoes academic review against standard operating procedures from the Directorate of Forensic Science Services (DFSS), Central Forensic Science Laboratories (CFSL), Bharatiya Sakshya Adhiniyam (BSA), and peer-reviewed literature, with primary citations included on every dossier."
           }
         ]}
         customSchema={aboutCustomSchema}
       />
 
-      <div className="max-w-4xl mx-auto mb-24 text-left">
+      <article className="max-w-4xl mx-auto mb-24 text-left">
         <motion.h1 
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -351,11 +383,14 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-surface p-8 border border-black/10 dark:border-white/10 mb-12 relative overflow-hidden rounded-xl"
+          className="bg-surface p-8 border border-black/10 dark:border-white/10 mb-12 relative overflow-hidden rounded-xl space-y-4"
         >
           <div className="absolute top-0 left-0 w-32 h-32 bg-warning/5 rounded-full blur-[50px] -z-10"></div>
           <p className="text-base text-text-muted leading-relaxed relative z-10">
-            Founded in 2025, ForenClue is a dedicated Forensic Science and Cybersecurity EdTech platform, officially registered under MSME Udyam, Government of India. We are committed to empowering students, educators, researchers, and professionals through practical learning, expert-led content, real-world case studies, research resources, and industry-focused skill development. By bridging the gap between academic knowledge and real-world investigation practices, ForenClue aims to nurture the next generation of skilled forensic and cybersecurity professionals equipped to meet the evolving challenges of the digital and investigative landscape.
+            Founded in 2025 and headquartered in <strong className="text-text-main">Pune, Maharashtra, India</strong>, <strong className="text-text-main">ForenClue</strong> (operated by ForenClue Ventures) is a dedicated Forensic Science and Cybersecurity educational publication and learning platform, officially registered under <strong className="text-text-main">MSME Udyam, Government of India</strong>. We are committed to empowering university students, educators, legal practitioners, researchers, and law enforcement personnel through peer-reviewed technical articles, virtual laboratory instrumentation simulators, documented forensic case studies, open reference textbooks, and structured academic mentorship.
+          </p>
+          <p className="text-base text-text-muted leading-relaxed relative z-10">
+            By bridging the gap between university curricula (B.Sc./M.Sc. Forensic Science, UGC-NET Code 82, NFAT, and FACT) and real-world laboratory and crime-scene investigation protocols, ForenClue cultivates the next generation of forensic scientists and digital forensics specialists across India and globally.
           </p>
         </motion.div>
         
@@ -364,12 +399,12 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="bg-surface p-8 border border-black/10 dark:border-white/10 mb-12 relative overflow-hidden"
+          className="bg-surface p-8 border border-black/10 dark:border-white/10 mb-12 relative overflow-hidden rounded-xl"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-warning/5 rounded-full blur-[50px] -z-10"></div>
           <h2 className="text-2xl font-heading font-bold mb-4 text-warning uppercase tracking-widest">Our Vision</h2>
           <p className="text-lg text-text-muted leading-relaxed relative z-10">
-            At ForenClue, we envision a future where top-tier forensic education is democratized and accessible to every passionate student. We aim to bridge the gap between theoretical knowledge and real-world application, cultivating a new generation of investigators equipped to solve the challenges of modern crime and digital forensics globally.
+            At ForenClue, we envision a future where rigorous, laboratory-grade forensic science education is democratized and accessible to every passionate student regardless of geographic or institutional constraints. We aim to standardize forensic pedagogy by combining peer-reviewed scientific writing with interactive 3D instrumentation and documented judicial precedents.
           </p>
         </motion.div>
 
@@ -378,33 +413,81 @@ export default function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-50px" }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="bg-surface p-8 border border-black/10 dark:border-white/10 mb-12 relative overflow-hidden"
+          className="bg-surface p-8 border border-black/10 dark:border-white/10 mb-12 relative overflow-hidden rounded-xl"
         >
           <div className="absolute bottom-0 left-0 w-32 h-32 bg-warning/5 rounded-full blur-[50px] -z-10"></div>
-          <h2 className="text-2xl font-heading font-bold mb-4 text-warning uppercase tracking-widest">Our Mission</h2>
+          <h2 className="text-2xl font-heading font-bold mb-4 text-warning uppercase tracking-widest">Our Educational Mission</h2>
           <p className="text-lg text-text-muted leading-relaxed mb-6 relative z-10">
-            Our mission is to empower aspiring forensic scientists through practical, engaging, and career-driven learning experiences. We are dedicated to:
+            Our mission is to empower aspiring forensic scientists through practical, evidence-led, and career-driven learning experiences. We are dedicated to:
           </p>
           <ul className="space-y-4 text-text-muted text-base relative z-10">
             <li className="flex gap-4 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0"></div>
-              <span><strong className="text-text-main">Demystifying Forensics:</strong> Breaking down complex scientific concepts into accessible, easy-to-understand modules.</span>
+              <span><strong className="text-text-main">Demystifying Forensic Analytical Science:</strong> Breaking down complex analytical chemistry, toxicology, microscopy, DNA profiling, and digital forensics concepts into rigorous, structured educational articles and laboratory manuals.</span>
             </li>
             <li className="flex gap-4 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0"></div>
-              <span><strong className="text-text-main">Practical Empowerment:</strong> Providing hands-on tools, simulated case studies, and real-world exposure that textbooks simply cannot offer.</span>
+              <span><strong className="text-text-main">Practical Laboratory Empowerment:</strong> Providing interactive 3D virtual laboratory simulations (Compound &amp; Comparison Microscopy, UV-Vis Spectrophotometry) and methodological case studies that complement university benchwork.</span>
             </li>
             <li className="flex gap-4 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0"></div>
-              <span><strong className="text-text-main">Community Building:</strong> Fostering India’s strongest inclusive network for forensic discussion, collaboration, and career mentorship.</span>
+              <span><strong className="text-text-main">Academic &amp; Institutional Transparency:</strong> Maintaining India&apos;s most comprehensive verified directory of 120+ Forensic Science Universities &amp; Colleges alongside free UGC-NET and NFAT diagnostic assessments.</span>
             </li>
-             <li className="flex gap-4 items-start">
+            <li className="flex gap-4 items-start">
               <div className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0"></div>
-              <span><strong className="text-text-main">Career Advancement:</strong> Offering certifications and pathways that actively boost professional profiles.</span>
+              <span><strong className="text-text-main">Community &amp; Career Advancement:</strong> Fostering an inclusive national network of forensic educators, university ambassadors, and researchers with verifiable digital credentials.</span>
             </li>
           </ul>
         </motion.div>
-      </div>
+
+        {/* Editorial Standards, Peer Review & Fact-Checking Policy */}
+        <motion.div 
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.6, delay: 0.25 }}
+          className="bg-surface p-8 border border-black/10 dark:border-white/10 mb-12 relative overflow-hidden rounded-xl space-y-4"
+        >
+          <h2 className="text-2xl font-heading font-bold text-warning uppercase tracking-widest">
+            Editorial Standards, Peer Review &amp; Fact-Checking Policy
+          </h2>
+          <p className="text-sm sm:text-base text-text-muted leading-relaxed">
+            ForenClue adheres to strict academic publishing and editorial governance standards across all Forensic Guides (<code className="text-warning">/articles</code>), Case Studies (<code className="text-warning">/cases</code>), and Virtual Laboratory Manuals (<code className="text-warning">/simulations</code>):
+          </p>
+          <ul className="space-y-3 text-sm text-text-muted leading-relaxed">
+            <li className="flex gap-3 items-start">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+              <span><strong className="text-text-main">Credentialed Authorship &amp; Academic Review:</strong> All technical guides and curriculum modules are authored or reviewed by qualified forensic science faculty and subject-matter specialists holding advanced degrees (M.Sc./Ph.D./M.D.S.) and national qualifications (UGC-NET Code 82, GSET, FACT).</span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+              <span><strong className="text-text-main">Primary Statutory &amp; Scientific Citations:</strong> Every article and case study cites verifiable primary sources, including Supreme Court and High Court of India judgments, Central Forensic Science Laboratory (CFSL) and Directorate of Forensic Science Services (DFSS) manuals, ISO/IEC 17025 and 27037 standards, and peer-reviewed textbooks.</span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+              <span><strong className="text-text-main">Non-Sensational, Methodological Framing:</strong> Historical criminal cases are documented strictly as academic forensic case studies examining chain of custody, evidentiary admissibility, and analytical methodology—never as sensationalized or graphic crime reporting.</span>
+            </li>
+            <li className="flex gap-3 items-start">
+              <span className="w-1.5 h-1.5 rounded-full bg-warning mt-2 shrink-0" />
+              <span><strong className="text-text-main">Corrections &amp; Updates Protocol:</strong> Readers, university faculty, and legal practitioners may submit citation updates or technical corrections directly to <a href="mailto:forenclue@gmail.com" className="text-warning hover:underline">forenclue@gmail.com</a>. All substantive revisions are timestamped on the respective publication page.</span>
+            </li>
+          </ul>
+          <div className="pt-4 border-t border-black/10 dark:border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-text-muted">
+            <div>
+              <span className="font-mono uppercase text-[10px] text-warning block">Registered Entity</span>
+              <strong className="text-text-main">ForenClue Ventures (MSME Udyam Registered)</strong>
+            </div>
+            <div>
+              <span className="font-mono uppercase text-[10px] text-warning block">Headquarters Base</span>
+              <strong className="text-text-main">Pune, Maharashtra, India</strong>
+            </div>
+            <div>
+              <span className="font-mono uppercase text-[10px] text-warning block">Editorial &amp; Support Desk</span>
+              <a href="mailto:forenclue@gmail.com" className="text-warning font-bold hover:underline">forenclue@gmail.com</a>
+            </div>
+          </div>
+        </motion.div>
+      </article>
 
       <motion.div 
         initial={{ opacity: 0, y: 30 }}
@@ -413,9 +496,9 @@ export default function About() {
         transition={{ duration: 0.6 }}
         className="max-w-7xl mx-auto perspective-[2000px]"
       >
-        <h2 className="text-3xl font-heading font-black mb-12 text-center">Meet Our Leaders</h2>
+        <h2 className="text-3xl font-heading font-black mb-12 text-center">Meet Our Leadership Team</h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 justify-center">
           {team.map((member, i) => (
             <TeamCard key={i} member={member} index={i} />
           ))}
@@ -429,9 +512,12 @@ export default function About() {
         transition={{ duration: 0.6 }}
         className="max-w-7xl mx-auto mt-24 perspective-[2000px]"
       >
-        <h2 className="text-3xl font-heading font-black mb-12 text-center">Academic Mentor</h2>
+        <h2 className="text-3xl font-heading font-black mb-4 text-center">Academic Mentors &amp; Editorial Advisory Board</h2>
+        <p className="text-sm text-text-muted text-center max-w-2xl mx-auto mb-12">
+          Our curriculum, laboratory simulation guides, and forensic case studies are authored and peer-reviewed by credentialed university educators and forensic specialists.
+        </p>
         
-        <div className="max-w-md mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           {academicMentors.map((mentor, i) => (
             <TeamCard key={i} member={mentor} index={i} />
           ))}

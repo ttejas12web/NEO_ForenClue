@@ -222,6 +222,74 @@ export default function Quizzes() {
           </div>
         )}
 
+        {/* Written Educational Overview & Assessment Methodology */}
+        <article className="mt-16 pt-12 border-t border-black/10 dark:border-white/10 space-y-8">
+          <div className="space-y-3 max-w-4xl">
+            <span className="text-xs font-mono uppercase tracking-widest text-warning font-bold">
+              Competency-Based Forensic Science Assessment Framework
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-text-main">
+              Educational Overview, Syllabus Alignment &amp; Key Learning Objectives
+            </h2>
+            <p className="text-sm sm:text-base text-text-muted leading-relaxed">
+              ForenClue’s Weekly Quiz Challenges and Practice Assessments are structured around the official syllabus of the University Grants Commission National Eligibility Test (UGC-NET Subject Code 82: Forensic Science), the National Forensic Admission Test (NFAT), CUET-PG Forensic Science, and the Forensic Aptitude and Caliber Test (FACT) conducted by the Ministry of Home Affairs. Each assessment tests analytical reasoning, laboratory protocol selection, and statutory legal admissibility rather than rote memorization.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <section className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-2.5">
+              <h3 className="text-lg font-heading font-bold text-text-main">
+                Core Syllabus Units (I–IV)
+              </h3>
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
+                Covers the organizational structure of FSLs/CFSLs in India, crime scene documentation, Bharatiya Sakshya Adhiniyam (BSA) 2023 evidentiary sections, optical and electron microscopy, UV-Vis/FTIR/AAS spectroscopy, and chromatographic separations (TLC, GC-MS, HPLC).
+              </p>
+            </section>
+
+            <section className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-2.5">
+              <h3 className="text-lg font-heading font-bold text-text-main">
+                Biological &amp; Chemical Units (V–VII)
+              </h3>
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
+                Evaluates catalytic and crystal blood identification, seminal/salivary body fluid typing, autosomal and Y-STR DNA profiling, postmortem redistribution in forensic toxicology, extraction of acidic/basic poisons, and alcohol headspace analysis.
+              </p>
+            </section>
+
+            <section className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-2.5">
+              <h3 className="text-lg font-heading font-bold text-text-main">
+                Physical &amp; Digital Units (VIII–X)
+              </h3>
+              <p className="text-xs sm:text-sm text-text-muted leading-relaxed">
+                Tests internal/external/terminal ballistics, GSR primer element analysis (Pb, Ba, Sb), glass refractive index (Becke line method), dactyloscopy ridge minutiae, VSC/ESDA questioned document examination, forensic odontology/anthropology, and cyber forensics.
+              </p>
+            </section>
+          </div>
+
+          <div className="rounded-2xl border border-black/10 dark:border-white/10 bg-surface p-6 space-y-3">
+            <h3 className="text-base font-heading font-bold text-text-main">
+              Key Learning Objectives of ForenClue Assessments
+            </h3>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm text-text-muted">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 size={15} className="text-warning shrink-0 mt-0.5" />
+                <span>Apply quantitative forensic equations (Beer-Lambert Law, Rf calculation, Medullary Index, and bloodstain angle of impact) under timed conditions.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 size={15} className="text-warning shrink-0 mt-0.5" />
+                <span>Distinguish class characteristics from individualizing characteristics across toolmarks, footwear impressions, and firearms striations.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 size={15} className="text-warning shrink-0 mt-0.5" />
+                <span>Review detailed post-submission explanations and rationale for every multiple-choice item to reinforce conceptual mastery.</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 size={15} className="text-warning shrink-0 mt-0.5" />
+                <span>Prepare systematically for university semester examinations, CUET-PG, NFAT, and national forensic recruitment assessments.</span>
+              </li>
+            </ul>
+          </div>
+        </article>
+
       </div>
     </div>
   );

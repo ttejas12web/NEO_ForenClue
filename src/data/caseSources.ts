@@ -5,15 +5,25 @@ export interface CaseSource {
 
 const CASE_SOURCES_BY_TITLE: Record<string, CaseSource[]> = {
   'burari deaths (2018)': [
-  {
-    "title": "NDTV / PTI (14 September 2018): psychological autopsy findings",
-    "url": "https://www.ndtv.com/delhi-news/delhis-burari-deaths-not-suicide-but-an-accident-psychological-autopsy-report-1916739"
-  },
-  {
-    "title": "Times of India (21 October 2021): police closure report",
-    "url": "https://timesofindia.indiatimes.com/city/delhi/burari-deaths-police-closure-report-mentions-no-foul-play/articleshow/87169901.cms"
-  }
-],
+    {
+      title: 'NDTV / PTI (14 September 2018): psychological autopsy findings',
+      url: 'https://www.ndtv.com/delhi-news/delhis-burari-deaths-not-suicide-but-an-accident-psychological-autopsy-report-1916739',
+    },
+    {
+      title: 'Times of India (21 October 2021): police closure report',
+      url: 'https://timesofindia.indiatimes.com/city/delhi/burari-deaths-police-closure-report-mentions-no-foul-play/articleshow/87169901.cms',
+    },
+  ],
+  'burari case study (2018): psychological autopsy & crime scene reconstruction': [
+    {
+      title: 'NDTV / PTI (14 September 2018): psychological autopsy findings',
+      url: 'https://www.ndtv.com/delhi-news/delhis-burari-deaths-not-suicide-but-an-accident-psychological-autopsy-report-1916739',
+    },
+    {
+      title: 'Times of India (21 October 2021): police closure report',
+      url: 'https://timesofindia.indiatimes.com/city/delhi/burari-deaths-police-closure-report-mentions-no-foul-play/articleshow/87169901.cms',
+    },
+  ],
   'priyadarshini mattoo case': [
     {
       title: 'Supreme Court judgment: Santosh Kumar Singh v. State through CBI',
@@ -31,6 +41,18 @@ const CASE_SOURCES_BY_TITLE: Record<string, CaseSource[]> = {
     },
   ],
   'geeta chopra and sanjay chopra double murder kidnapping cass': [
+    {
+      title: 'Supreme Court judgment: Kuljeet Singh @ Ranga v. Union of India',
+      url: 'https://indiankanoon.org/doc/582949/',
+    },
+  ],
+  'geeta chopra and sanjay chopra double murder kidnapping case': [
+    {
+      title: 'Supreme Court judgment: Kuljeet Singh @ Ranga v. Union of India',
+      url: 'https://indiankanoon.org/doc/582949/',
+    },
+  ],
+  'geeta chopra and sanjay chopra case': [
     {
       title: 'Supreme Court judgment: Kuljeet Singh @ Ranga v. Union of India',
       url: 'https://indiankanoon.org/doc/582949/',
@@ -118,26 +140,116 @@ const CASE_SOURCES_BY_TITLE: Record<string, CaseSource[]> = {
   ],
 };
 
+/**
+ * Policy-safe academic title mapping for documented forensic case studies.
+ * Fixes typos (e.g. "CASS" -> "Case") and converts sensational/graphic headlines
+ * into formal forensic science and legal case-study titles.
+ */
+const ACADEMIC_CASE_TITLE_MAP: Record<string, string> = {
+  'geeta chopra and sanjay chopra double murder kidnapping cass':
+    'Geeta Chopra and Sanjay Chopra Case (1978): Forensic Trace, Fingerprint & Medical Evidence Analysis',
+  'geeta chopra and sanjay chopra double murder kidnapping case':
+    'Geeta Chopra and Sanjay Chopra Case (1978): Forensic Trace, Fingerprint & Medical Evidence Analysis',
+  'burari deaths (2018)':
+    'Burari Case Study (2018): Psychological Autopsy & Scene Reconstruction Methodology',
+  'priyadarshini mattoo case':
+    'Priyadarshini Mattoo Case: Autosomal DNA Profiling & Appellate Evidentiary Review',
+  'the jason rohde murder case':
+    'State v. Jason Rohde Case: Staged Scene Reconstruction & Medico-Legal Pathology',
+  'mysuru-bengaluru highway cases':
+    'Mysuru–Bengaluru Highway Case: Vehicular Forensics & Collision Kinematics',
+  'r.g kar medical college rape and murder case':
+    'R.G. Kar Medical College Case: Biological Trace Evidence & Digital Timeline Verification',
+  'citibank–mphasis call center fraud case':
+    'Citibank–MphasiS Call Center Case: Cyber Forensics & IT Act Section 43/66 Investigation',
+  'jessica murder':
+    'Jessica Lal Case (1999): Firearms Ballistics & Cartridge Breechface Comparison',
+  'the nithari serial murders':
+    'Nithari Case Study: Forensic Anthropology, Skeletal Recovery & Evidentiary Standards',
+  'amravati sex scandal':
+    'Amravati Digital Evidence Case: Electronic Device Seizure Protocols & Cyber Forensics',
+  'blue drum case':
+    'Meerut Forensic Case Study: Postmortem Reconstruction & Physical Evidence Chain of Custody',
+  'the sheena bora murder case':
+    'Sheena Bora Case: Skeletal Identification, Craniofacial Superimposition & DNA Profiling',
+  'the satyam computer services scandal':
+    'Satyam Computer Services Case: Forensic Accounting & Digital Audit Trail Reconstruction',
+  'tandoor murder case':
+    'State v. Sushil Sharma (1995): DNA Paternity Identification & Forensic Pathology',
+};
+
 export function normalizeCaseTitle(value: unknown): string {
   return String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
+export function formatPolicySafeCaseTitle(rawTitle: unknown): string {
+  const raw = String(rawTitle || '').trim();
+  if (!raw) return 'Forensic Investigation Case Study';
+
+  const normalized = normalizeCaseTitle(raw);
+  if (ACADEMIC_CASE_TITLE_MAP[normalized]) {
+    return ACADEMIC_CASE_TITLE_MAP[normalized];
+  }
+
+  // Fix "CASS" -> "Case" typo and sanitize overly graphic terms into formal academic framing
+  let cleaned = raw.replace(/\bCASS\b/gi, 'Case');
+  cleaned = cleaned
+    .replace(/\bdouble murder kidnapping\b/gi, 'Forensic Investigation')
+    .replace(/\brape and murder\b/gi, 'Medico-Legal & Forensic')
+    .replace(/\bserial murders\b/gi, 'Forensic Anthropology Case')
+    .replace(/\bsex scandal\b/gi, 'Digital Evidence Case')
+    .replace(/\bmurder case\b/gi, 'Forensic Case Study')
+    .replace(/\bmurder\b/gi, 'Forensic Case Study');
+
+  // If the string was ALL CAPS, convert to clean Title Case
+  if (cleaned === cleaned.toUpperCase() && cleaned.length > 6) {
+    cleaned = cleaned
+      .toLowerCase()
+      .replace(/\b\w/g, (ch) => ch.toUpperCase());
+  }
+
+  return cleaned;
+}
+
+export function formatPolicySafeCaseCategory(rawType: unknown): string {
+  const t = String(rawType || '').trim();
+  if (!t) return 'Criminalistics';
+  const lower = t.toLowerCase();
+  if (lower === 'homicide') return 'Medico-Legal Criminalistics';
+  if (lower === 'death investigation') return 'Forensic Pathology & Reconstruction';
+  if (lower === 'cyber') return 'Digital & Cyber Forensics';
+  if (lower === 'cold case') return 'Archival Evidence Review';
+  return t;
+}
+
 export function hasValidCaseSources(value: unknown): value is CaseSource[] {
-  return Array.isArray(value) && value.length > 0 && value.every((source) => {
-    if (!source || typeof source !== 'object') return false;
-    const record = source as Record<string, unknown>;
-    if (typeof record.title !== 'string' || !record.title.trim()) return false;
-    if (typeof record.url !== 'string') return false;
-    try {
-      return new URL(record.url).protocol === 'https:';
-    } catch {
-      return false;
-    }
-  });
+  return (
+    Array.isArray(value) &&
+    value.length > 0 &&
+    value.every((source) => {
+      if (!source || typeof source !== 'object') return false;
+      const record = source as Record<string, unknown>;
+      if (typeof record.title !== 'string' || !record.title.trim()) return false;
+      if (typeof record.url !== 'string') return false;
+      try {
+        return new URL(record.url).protocol === 'https:';
+      } catch {
+        return false;
+      }
+    })
+  );
 }
 
 export function getCuratedCaseSources(title: unknown): CaseSource[] {
-  return CASE_SOURCES_BY_TITLE[normalizeCaseTitle(title)]?.map((source) => ({ ...source })) || [];
+  const norm = normalizeCaseTitle(title);
+  if (CASE_SOURCES_BY_TITLE[norm]) {
+    return CASE_SOURCES_BY_TITLE[norm].map((source) => ({ ...source }));
+  }
+  const fixedTypo = norm.replace(/\bcass\b/g, 'case');
+  if (CASE_SOURCES_BY_TITLE[fixedTypo]) {
+    return CASE_SOURCES_BY_TITLE[fixedTypo].map((source) => ({ ...source }));
+  }
+  return [];
 }
 
 export function ensureCaseSources(title: unknown, existingSources?: unknown): CaseSource[] {
@@ -148,11 +260,11 @@ export function ensureCaseSources(title: unknown, existingSources?: unknown): Ca
   if (curated.length > 0) {
     return curated;
   }
-  const safeTitle = String(title || 'Forensic Investigation').trim();
+  const safeTitle = formatPolicySafeCaseTitle(title);
   return [
     {
       title: `${safeTitle} - Forensic Investigation Archive & Reference`,
-      url: 'https://forenclue.in'
-    }
+      url: 'https://forenclue.in',
+    },
   ];
 }

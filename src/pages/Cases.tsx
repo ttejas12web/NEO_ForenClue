@@ -22,7 +22,14 @@ import { PdfViewerModal } from '@/components/ui/PdfViewerModal';
 import { WhatsAppIcon } from '@/components/ui/WhatsAppIcon';
 import { ResilientImage } from '@/lib/localFileStore';
 import { buildSocialShareUrl } from '@/lib/socialShare';
-import { getCuratedCaseSources, hasValidCaseSources, ensureCaseSources } from '@/data/caseSources';
+import {
+  getCuratedCaseSources,
+  hasValidCaseSources,
+  ensureCaseSources,
+  formatPolicySafeCaseTitle,
+  formatPolicySafeCaseCategory,
+} from '@/data/caseSources';
+import { EditorialAuthorCard } from '@/components/editorial/EditorialAuthorCard';
 
 // --- Types ---
 interface CaseFile {
@@ -301,10 +308,17 @@ export default function Cases() {
     const q = query(collection(db, 'cases'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       const casesData: CaseFile[] = [];
-      snapshot.forEach((doc) => {
-        const data = doc.data();
-        const sources = ensureCaseSources(data.title, data.sources);
-        casesData.push({ id: doc.id, ...data, sources } as CaseFile);
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const rawTitle = String(data.title || '').trim();
+        const sources = ensureCaseSources(rawTitle, data.sources);
+        const academicTitle = formatPolicySafeCaseTitle(rawTitle);
+        casesData.push({
+          id: docSnap.id,
+          ...data,
+          title: academicTitle,
+          sources,
+        } as CaseFile);
       });
       setDbCases(casesData);
     }, (error) => {
@@ -399,14 +413,14 @@ export default function Cases() {
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
           {!selectedCase ? (
             <>
-              {/* Header */}
-          <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
+          {/* Header */}
+          <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-8">
             <div>
               <h1 className="text-5xl md:text-7xl font-heading font-black uppercase tracking-tighter mb-4">
-                Case <span className="text-warning">Archive</span>
+                Forensic <span className="text-warning">Case Studies</span>
               </h1>
-              <p className="text-lg text-text-muted max-w-xl font-medium">
-                Get the case studies to deep dive into forensic investigation
+              <p className="text-lg text-text-muted max-w-2xl font-medium">
+                Academic breakdowns of documented forensic investigations, laboratory methodology, evidentiary chain of custody, and appellate judicial precedent.
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -414,7 +428,7 @@ export default function Cases() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-text-muted" size={16} />
                 <input 
                   type="text" 
-                  placeholder="Search cases..."
+                  placeholder="Search case methodology..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-surface border border-black/10 dark:border-white/10 rounded-xl py-3 pl-12 pr-4 text-xs font-bold focus:border-warning/50 outline-none transition-all"
@@ -422,13 +436,19 @@ export default function Cases() {
               </div>
               <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
                 <Filter size={14} className="text-warning shrink-0" />
-                {['All', 'Homicide', 'Cold Case', 'Cyber', 'Death Investigation'].map(t => (
+                {[
+                  { id: 'All', label: 'All Disciplines' },
+                  { id: 'Homicide', label: 'Criminalistics' },
+                  { id: 'Cold Case', label: 'Archival Review' },
+                  { id: 'Cyber', label: 'Digital Forensics' },
+                  { id: 'Death Investigation', label: 'Forensic Pathology' },
+                ].map(t => (
                   <button 
-                    key={t}
-                    onClick={() => setFilterType(t)}
-                    className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all shrink-0 ${filterType === t ? 'bg-warning/10 border-warning text-warning' : 'border-black/10 dark:border-white/5 text-text-muted hover:border-black/10 dark:border-white/10'}`}
+                    key={t.id}
+                    onClick={() => setFilterType(t.id)}
+                    className={`px-4 py-2 rounded-lg text-[9px] font-black uppercase tracking-widest border transition-all shrink-0 ${filterType === t.id ? 'bg-warning/10 border-warning text-warning' : 'border-black/10 dark:border-white/5 text-text-muted hover:border-black/10 dark:border-white/10'}`}
                   >
-                    {t}
+                    {t.label}
                   </button>
                 ))}
                 {isAdmin && (
@@ -445,6 +465,20 @@ export default function Cases() {
               </div>
             </div>
           </div>
+
+          {/* Academic & Editorial Framing Disclaimer */}
+          <aside
+            aria-label="Academic and Editorial Disclaimer"
+            className="mb-10 rounded-2xl border border-warning/25 bg-surface p-5 sm:p-6 text-xs sm:text-sm text-text-muted leading-relaxed"
+          >
+            <div className="flex items-center gap-2 text-warning font-mono font-bold uppercase tracking-wider text-xs mb-1.5">
+              <BookOpen size={15} />
+              <span>Academic Framing &amp; Medico-Legal Educational Disclaimer</span>
+            </div>
+            <p>
+              All case studies in the ForenClue Archive are compiled strictly for university-level forensic science, criminalistics, cybersecurity, and legal education. Each dossier focuses on analytical laboratory methodology (DNA profiling, toxicology, ballistics, dactyloscopy, and digital forensics), evidentiary chain of custody, and published judicial judgments. Non-essential sensational details are omitted in accordance with academic publishing standards.
+            </p>
+          </aside>
 
           {/* Case Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -558,6 +592,14 @@ export default function Cases() {
             </div>
           </div>
 
+          {/* Academic Case Study Framing Notice */}
+          <aside className="rounded-2xl border border-warning/25 bg-surface p-4 sm:p-5 text-xs sm:text-sm text-text-muted leading-relaxed">
+            <strong className="text-warning uppercase font-mono tracking-wider block mb-1">
+              Academic Case Study Dossier • Forensic Methodology &amp; Evidentiary Review
+            </strong>
+            This case study is presented strictly for educational analysis of forensic science techniques, crime scene reconstruction protocols, and judicial admissibility standards based on public court judgments and documented records.
+          </aside>
+
           {/* Hero Banner Grid Area */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 space-y-4">
@@ -567,8 +609,8 @@ export default function Cases() {
                 </span>
 
               </div>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-heading font-black uppercase tracking-tight italic text-text-main leading-tight">
-                {selectedCase.title}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-heading font-black tracking-tight text-text-main leading-tight">
+                {formatPolicySafeCaseTitle(selectedCase.title)}
               </h1>
             </div>
 
@@ -581,8 +623,8 @@ export default function Cases() {
               </div>
               <div className="p-3 sm:p-4 bg-black/5 dark:bg-white/5 rounded-xl sm:rounded-2xl text-center border border-black/10 dark:border-white/5">
                 <Target size={16} className="mx-auto text-warning mb-2" />
-                <span className="text-[10px] sm:text-[11px] font-black uppercase text-text-muted block mb-1">Category</span>
-                <span className="text-xs sm:text-sm font-black uppercase block text-text-main">{selectedCase.type}</span>
+                <span className="text-[10px] sm:text-[11px] font-black uppercase text-text-muted block mb-1">Discipline</span>
+                <span className="text-xs sm:text-sm font-black uppercase block text-text-main">{formatPolicySafeCaseCategory(selectedCase.type)}</span>
               </div>
             </div>
           </div>
@@ -923,6 +965,13 @@ export default function Cases() {
                     </div>
                   )}
                 </motion.div>
+
+                {/* Author Bio & Editorial Review Card at the bottom of every case study */}
+                <EditorialAuthorCard
+                  contextLabel="ForenClue Case Study Editorial & Academic Review"
+                  publishedDate={selectedCase.year || '2025'}
+                  updatedDate="March 2026"
+                />
               </div>
             </div>
           </div>

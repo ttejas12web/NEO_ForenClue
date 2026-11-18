@@ -215,19 +215,33 @@ export default function PrivacyPolicy() {
           </div>
         </section>
 
-        {/* 10. Advertising Cookies */}
+        {/* 10. Google AdSense, DoubleClick DART Cookies & Third-Party Advertising Disclosures */}
         <section className="bg-surface p-8 border border-black/10 dark:border-white/10 rounded-xl space-y-4">
           <h2 className="text-2xl font-heading font-bold text-text-main uppercase tracking-wide">
-            10. Advertising Cookies and User Choices
+            10. Google AdSense, DoubleClick Cookies &amp; Third-Party Advertising Disclosures
           </h2>
-          <p className="text-sm">
-            Third-party vendors, including Google, may use cookies to serve advertising based on a visitor&apos;s previous visits to this Platform or to other websites. Google&apos;s use of advertising cookies enables Google and its partners to show ads that may be relevant to a visitor based on those visits.
+          <p className="text-sm leading-relaxed">
+            <strong>Third-Party Advertising &amp; Google AdSense:</strong> We use Google AdSense and third-party advertising companies to serve advertisements when you visit our Platform (<a href="https://forenclue.in" className="text-warning hover:underline">https://forenclue.in</a>). Third-party vendors, including Google, use cookies (such as the Google DoubleClick DART cookie) and web beacons to serve ads based on a user&apos;s prior visits to this website or other websites on the internet.
           </p>
-          <p className="text-sm">
-            Visitors can manage or opt out of personalized advertising through <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer" className="text-warning hover:underline">Google Ads Settings</a>. Where required by applicable law, we will request consent before using non-essential advertising or measurement cookies. Other advertising partners may use their own cookies subject to their respective privacy policies and opt-out mechanisms.
+          <p className="text-sm leading-relaxed">
+            <strong>Personalized &amp; Non-Personalized Ads:</strong> Google&apos;s use of advertising cookies enables Google and its partners to serve personalized and non-personalized advertisements to our users based on their visit to ForenClue and/or other sites across the Internet. These cookies collect non-personally identifiable browsing signals (such as pages visited, approximate geographic region, browser type, and device category) for frequency capping, aggregated ad reporting, and combating fraud and abuse.
           </p>
-          <p className="text-sm">
-            Advertising cookies are separate from information received through Google APIs. As stated above, Google API user data is not used by ForenClue for advertising.
+          <div className="p-4 bg-base/50 rounded-lg border border-black/5 dark:border-white/5 text-sm space-y-2">
+            <h3 className="font-bold text-text-main">How to Opt Out of Personalized Advertising:</h3>
+            <ul className="list-disc pl-5 space-y-1.5 text-text-muted">
+              <li>
+                Users may opt out of personalized advertising by visiting <a href="https://adssettings.google.com/" target="_blank" rel="noopener noreferrer" className="text-warning hover:underline font-medium">Google Ads Settings (https://adssettings.google.com/)</a> or <a href="https://myadcenter.google.com/" target="_blank" rel="noopener noreferrer" className="text-warning hover:underline font-medium">Google My Ad Center</a>.
+              </li>
+              <li>
+                Alternatively, you can opt out of a third-party vendor&apos;s use of cookies for personalized advertising by visiting the Digital Advertising Alliance consumer choice portal at <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="text-warning hover:underline font-medium">www.aboutads.info/choices</a> or the Network Advertising Initiative opt-out page at <a href="https://optout.networkadvertising.org/" target="_blank" rel="noopener noreferrer" className="text-warning hover:underline font-medium">optout.networkadvertising.org</a>.
+              </li>
+              <li>
+                You can also configure your web browser settings to block or delete third-party cookies at any time.
+              </li>
+            </ul>
+          </div>
+          <p className="text-sm leading-relaxed">
+            Where required by applicable data protection laws (including GDPR/EEA/UK consent requirements and the Indian Digital Personal Data Protection Act, 2023), we request user consent before setting non-essential advertising or measurement cookies. Advertising cookies are strictly separate from information received through Google APIs; Google API user data is never used by ForenClue for advertising.
           </p>
         </section>
 

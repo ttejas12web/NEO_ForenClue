@@ -271,6 +271,24 @@ export const ROUTE_SEO_CONFIG: Record<string, RouteSEOConfig> = {
     type: 'website',
     badge: 'Verified Forensic Institutions',
     tag: 'COLLEGES DIRECTORY'
+  },
+  '/articles': {
+    title: 'Forensic Science & Cybersecurity Editorial Guides, SOPs & Articles | ForenClue',
+    description: 'Read comprehensive, peer-reviewed forensic science and cybersecurity articles covering chain of custody under BSA 2023, postmortem toxicology, optical microscopy, UV-Vis spectrophotometry, forensic odontology, and DFIR.',
+    keywords: 'forensic science articles, forensic toxicology guide, chain of custody bsa 2023, optical microscopy criminalistics, uv vis spectrophotometry beer lambert law, forensic odontology bite mark analysis, digital forensics dfir',
+    image: 'https://forenclue.in/images/og/case-studies.png',
+    type: 'article',
+    badge: 'Peer-Reviewed Forensic Guides',
+    tag: 'EDITORIAL GUIDES'
+  },
+  '/guides': {
+    title: 'Forensic Science & Cybersecurity Editorial Guides, SOPs & Articles | ForenClue',
+    description: 'Read comprehensive, peer-reviewed forensic science and cybersecurity articles covering chain of custody under BSA 2023, postmortem toxicology, optical microscopy, UV-Vis spectrophotometry, forensic odontology, and DFIR.',
+    keywords: 'forensic science articles, forensic toxicology guide, chain of custody bsa 2023, optical microscopy criminalistics, uv vis spectrophotometry beer lambert law, forensic odontology bite mark analysis, digital forensics dfir',
+    image: 'https://forenclue.in/images/og/case-studies.png',
+    type: 'article',
+    badge: 'Peer-Reviewed Forensic Guides',
+    tag: 'EDITORIAL GUIDES'
   }
 };
 

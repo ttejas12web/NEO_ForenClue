@@ -28,17 +28,21 @@ import { Logo } from '@/components/ui/Logo';
 import { useAuth } from '@/contexts/AuthContext';
 
 const directLinks = [
-  { name: 'Home', path: '/' },
-  { name: 'Courses', path: '/courses' },
-  { name: 'Case Studies', path: '/cases' },
+  { name: 'Articles', path: '/articles' },
+  { name: 'Cases', path: '/cases' },
+  { name: 'Simulations', path: '/simulations' },
   { name: 'Colleges', path: '/colleges' },
+  { name: 'Ebooks', path: '/ebooks' },
+  { name: 'About', path: '/about' },
+  { name: 'Contact', path: '/contact' },
 ];
 
 const resourcesDropdown = [
+  { name: 'Courses & Training', path: '/courses', icon: BookOpen },
   { name: 'Quizzes & Challenges', path: '/quizzes', icon: Trophy },
-  { name: 'E-Library', path: '/ebooks', icon: BookOpen },
-  { name: 'Webinars', path: '/webinar', icon: Video },
-  { name: 'Simulations', path: '/simulations', icon: Microscope },
+  { name: 'Webinars & Events', path: '/webinar', icon: Video },
+  { name: 'Forensic Guides', path: '/articles', icon: FileText },
+  { name: 'Virtual Lab Simulations', path: '/simulations', icon: Microscope },
 ];
 
 const verifyDropdown = [
@@ -77,7 +81,7 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (['/quizzes', '/ebooks', '/webinar', '/simulations'].includes(location.pathname)) {
+    if (['/courses', '/quizzes', '/webinar'].includes(location.pathname)) {
       setIsMobileResourcesOpen(true);
     }
     if (['/certificate', '/employees'].includes(location.pathname)) {
@@ -135,7 +139,7 @@ export function Navbar() {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
 
-  const isResourcesActive = resourcesDropdown.some(item => isActiveRoute(item.path));
+  const isResourcesActive = ['/courses', '/quizzes', '/webinar'].some(p => isActiveRoute(p));
   const isVerifyActive = verifyDropdown.some(item => isActiveRoute(item.path));
   const isTeamActive = teamDropdown.some(item => isActiveRoute(item.path));
 
@@ -144,7 +148,7 @@ export function Navbar() {
   }
   
   return (
-    <nav className="print:hidden fixed top-0 left-0 right-0 z-50 bg-crust/90 backdrop-blur-md border-b border-black/10 dark:border-white/10">
+    <nav aria-label="Main Navigation" className="print:hidden fixed top-0 left-0 right-0 z-50 bg-crust/90 backdrop-blur-md border-b border-black/10 dark:border-white/10">
       {quotaError && (
         <div className="bg-amber-500/15 border-b border-amber-500/30 text-amber-300 px-4 py-2 text-xs flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 max-w-7xl mx-auto truncate">
@@ -157,24 +161,24 @@ export function Navbar() {
         </div>
       )}
       <div className="max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-3 h-20">
-          <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center justify-between gap-2 h-20">
+          <div className="flex items-center gap-2 min-w-0 shrink-0">
             {/* Logo */}
             <Link 
               to="/" 
               className="group flex flex-col justify-center min-w-0 py-1 focus:outline-none"
             >
               <div className="flex flex-col items-start min-w-0">
-                <Logo imgClassName="h-9 xs:h-10 sm:h-12 lg:h-14 transition-transform duration-200 group-hover:scale-[1.01]" />
-                <span className="text-[8px] xs:text-[9px] sm:text-[10.5px] lg:text-[11px] text-text-muted uppercase tracking-wider xs:tracking-widest mt-0.5 sm:mt-1 font-bold group-hover:text-warning transition-colors whitespace-nowrap select-none">
+                <Logo imgClassName="h-9 xs:h-10 sm:h-12 lg:h-12 transition-transform duration-200 group-hover:scale-[1.01]" />
+                <span className="text-[8px] xs:text-[9px] sm:text-[10px] text-text-muted uppercase tracking-wider xs:tracking-widest mt-0.5 font-bold group-hover:text-warning transition-colors whitespace-nowrap select-none">
                   Your Partner in Forensic Precision
                 </span>
               </div>
             </Link>
           </div>
 
-          {/* Desktop Nav */}
-          <div className="hidden lg:flex items-center gap-0 xl:gap-1">
+          {/* Desktop Nav - Direct Text Links for Crawlers & Visitors */}
+          <div className="hidden lg:flex items-center gap-0.5 xl:gap-1">
             {directLinks.map((link) => {
               const active = isActiveRoute(link.path);
               return (
@@ -182,7 +186,7 @@ export function Navbar() {
                   key={link.path}
                   to={link.path}
                   className={cn(
-                    "px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors rounded-md whitespace-nowrap",
+                    "px-2 xl:px-3 py-2 font-medium text-[13px] xl:text-sm transition-colors rounded-md whitespace-nowrap",
                     active
                       ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
                       : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
@@ -193,22 +197,23 @@ export function Navbar() {
               );
             })}
 
-            {/* Resources Dropdown */}
+            {/* More Programs & Verification Dropdown */}
             <div className="relative group/resources-dropdown">
               <button
                 className={cn(
-                  "flex items-center gap-1 px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors cursor-default rounded-md whitespace-nowrap",
-                  isResourcesActive
+                  "flex items-center gap-1 px-2 xl:px-3 py-2 font-medium text-[13px] xl:text-sm transition-colors cursor-default rounded-md whitespace-nowrap",
+                  (isResourcesActive || isVerifyActive || isTeamActive)
                     ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
                     : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                 )}
               >
-                Resources
+                More
                 <ChevronDown size={14} className="transition-transform duration-200 group-hover/resources-dropdown:rotate-180" />
               </button>
 
-              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover/resources-dropdown:opacity-100 group-hover/resources-dropdown:visible transition-all duration-200 z-50">
-                <div className="w-56 bg-surface border border-black/10 dark:border-white/10 rounded-md shadow-xl overflow-hidden py-1">
+              <div className="absolute right-0 top-full pt-2 opacity-0 invisible group-hover/resources-dropdown:opacity-100 group-hover/resources-dropdown:visible transition-all duration-200 z-50">
+                <div className="w-60 bg-surface border border-black/10 dark:border-white/10 rounded-md shadow-xl overflow-hidden py-1.5">
+                  <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-text-muted">Learning & Events</div>
                   {resourcesDropdown.map((link) => {
                     const Icon = link.icon;
                     const active = isActiveRoute(link.path);
@@ -217,38 +222,20 @@ export function Navbar() {
                         key={link.path}
                         to={link.path}
                         className={cn(
-                          "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
+                          "flex items-center gap-2.5 px-4 py-2 text-sm transition-colors",
                           active
                             ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
                             : "text-text-muted hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                         )}
                       >
-                        <Icon size={16} className={active ? "text-warning" : "text-warning/80"} />
+                        <Icon size={15} className={active ? "text-warning" : "text-warning/80"} />
                         <span>{link.name}</span>
                       </Link>
                     );
                   })}
-                </div>
-              </div>
-            </div>
-
-            {/* Verify Dropdown */}
-            <div className="relative group/verify-dropdown">
-              <button
-                className={cn(
-                  "flex items-center gap-1 px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors cursor-default rounded-md whitespace-nowrap",
-                  isVerifyActive
-                    ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
-                    : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
-                )}
-              >
-                Verify
-                <ChevronDown size={14} className="transition-transform duration-200 group-hover/verify-dropdown:rotate-180" />
-              </button>
-
-              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover/verify-dropdown:opacity-100 group-hover/verify-dropdown:visible transition-all duration-200 z-50">
-                <div className="w-60 bg-surface border border-black/10 dark:border-white/10 rounded-md shadow-xl overflow-hidden py-1">
-                  {verifyDropdown.map((link) => {
+                  <div className="my-1 border-t border-black/10 dark:border-white/10" />
+                  <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-widest text-text-muted">Verification & Network</div>
+                  {[...verifyDropdown, ...teamDropdown].map((link) => {
                     const Icon = link.icon;
                     const active = isActiveRoute(link.path);
                     return (
@@ -256,13 +243,13 @@ export function Navbar() {
                         key={link.path}
                         to={link.path}
                         className={cn(
-                          "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
+                          "flex items-center gap-2.5 px-4 py-2 text-sm transition-colors",
                           active
                             ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
                             : "text-text-muted hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
                         )}
                       >
-                        <Icon size={16} className={active ? "text-warning" : "text-warning/80"} />
+                        <Icon size={15} className={active ? "text-warning" : "text-warning/80"} />
                         <span>{link.name}</span>
                       </Link>
                     );
@@ -270,58 +257,6 @@ export function Navbar() {
                 </div>
               </div>
             </div>
-
-            {/* Team Dropdown */}
-            <div className="relative group/team-dropdown">
-              <button
-                className={cn(
-                  "flex items-center gap-1 px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors cursor-default rounded-md whitespace-nowrap",
-                  isTeamActive
-                    ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
-                    : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
-                )}
-              >
-                Team
-                <ChevronDown size={14} className="transition-transform duration-200 group-hover/team-dropdown:rotate-180" />
-              </button>
-
-              <div className="absolute left-1/2 -translate-x-1/2 top-full pt-2 opacity-0 invisible group-hover/team-dropdown:opacity-100 group-hover/team-dropdown:visible transition-all duration-200 z-50">
-                <div className="w-56 bg-surface border border-black/10 dark:border-white/10 rounded-md shadow-xl overflow-hidden py-1">
-                  {teamDropdown.map((link) => {
-                    const Icon = link.icon;
-                    const active = isActiveRoute(link.path);
-                    return (
-                      <Link
-                        key={link.path}
-                        to={link.path}
-                        className={cn(
-                          "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
-                          active
-                            ? "text-warning font-bold bg-warning/10 dark:bg-warning/20"
-                            : "text-text-muted hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
-                        )}
-                      >
-                        <Icon size={16} className={active ? "text-warning" : "text-warning/80"} />
-                        <span>{link.name}</span>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-
-            {/* About Us */}
-            <Link
-              to="/about"
-              className={cn(
-                "px-2 xl:px-4 py-2 font-medium text-[13px] xl:text-sm transition-colors rounded-md whitespace-nowrap",
-                isActiveRoute('/about')
-                  ? "text-warning font-bold bg-warning/10 dark:bg-warning/20 shadow-xs"
-                  : "text-text-main dark:text-white hover:text-warning hover:bg-black/5 dark:hover:bg-white/5"
-              )}
-            >
-              About Us
-            </Link>
 
             <button
               onClick={toggleTheme}

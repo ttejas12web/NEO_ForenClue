@@ -3,7 +3,15 @@ import {
   onRequestGet as completeLinkedInGet,
   onRequestPost as completeLinkedInPost,
 } from './functions/api/auth/linkedin/callback';
-import { getCuratedCaseSources, hasValidCaseSources } from './src/data/caseSources';
+import {
+  getCuratedCaseSources,
+  hasValidCaseSources,
+  formatPolicySafeCaseTitle,
+} from './src/data/caseSources';
+import {
+  FORENSIC_ARTICLES,
+  getForensicArticleBySlug,
+} from './src/data/forensicArticles';
 
 interface Env {
   ASSETS: {
@@ -80,51 +88,86 @@ const COLLEGES_OG_IMAGE =
 
 const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dynamic'>> = {
   '/': {
-    title: 'ForenClue | Your Partner in Forensic Precision',
+    title: 'ForenClue | Forensic Science & Cybersecurity Educational Publication & Virtual Lab',
     description:
-      "India's dedicated forensic science education platform for practical learning, case studies, simulations, quizzes, and professional resources.",
+      "India's peer-reviewed forensic science and cybersecurity learning platform. Explore long-form forensic guides, documented case studies, 3D laboratory simulations, and verified university directories.",
+    image: DEFAULT_IMAGE,
+    type: 'website',
+  },
+  '/articles': {
+    title: 'Forensic Science & Cybersecurity Editorial Guides & Monograph Archive | ForenClue',
+    description:
+      'Peer-reviewed long-form articles on crime scene protocol, GC-MS toxicology, trace microscopy, UV-Vis spectrophotometry, forensic odontology, and digital incident response.',
+    image: DEFAULT_IMAGE,
+    type: 'website',
+  },
+  '/guides': {
+    title: 'Forensic Science & Cybersecurity Editorial Guides & Monograph Archive | ForenClue',
+    description:
+      'Peer-reviewed long-form articles on crime scene protocol, GC-MS toxicology, trace microscopy, UV-Vis spectrophotometry, forensic odontology, and digital incident response.',
     image: DEFAULT_IMAGE,
     type: 'website',
   },
   '/about': {
-    title: 'About ForenClue – Mission, Leadership & Academic Mentors | ForenClue',
+    title: 'About ForenClue – Mission, Editorial Standards, Leadership & Academic Mentors | ForenClue',
     description:
-      "Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform. Meet our leadership team, founders, and academic mentors.",
+      "Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform headquartered in Pune, Maharashtra. Meet our leadership team and academic review board.",
+    image: DEFAULT_IMAGE,
+    type: 'website',
+  },
+  '/contact': {
+    title: 'Contact ForenClue – Forensic Education Support, Editorial Desk & Pune Office | ForenClue',
+    description:
+      'Contact ForenClue Ventures in Pune, Maharashtra, India (forenclue@gmail.com). Reach our editorial board, student support desk, or institutional partnership team.',
+    image: DEFAULT_IMAGE,
+    type: 'website',
+  },
+  '/privacy': {
+    title: 'Privacy Policy & Cookie Disclosures | ForenClue',
+    description:
+      'Read the ForenClue Privacy Policy, including DPDP Act compliance, Google AdSense & DoubleClick DART cookie disclosures, and user opt-out choices.',
+    image: DEFAULT_IMAGE,
+    type: 'website',
+  },
+  '/terms': {
+    title: 'Terms and Conditions | ForenClue',
+    description:
+      'Review the official Terms and Conditions governing educational content, virtual labs, courses, and user accounts on ForenClue.',
     image: DEFAULT_IMAGE,
     type: 'website',
   },
   '/ebooks': {
-    title: 'Academic eLibrary - Reference Textbook Vault | ForenClue',
+    title: 'Academic eLibrary - Forensic Reference Textbook Vault & Study Guides | ForenClue',
     description:
-      'Browse forensic science books, academic notes, research papers, and learning resources in the ForenClue eLibrary.',
+      'Browse forensic science reference books, academic notes, research papers, and learning objectives in the ForenClue eLibrary.',
     image: `${SITE_ORIGIN}/images/og/library.png`,
     type: 'website',
   },
   '/cases': {
-    title: 'Forensic Case Studies | ForenClue',
+    title: 'Academic Forensic Case Studies & Evidentiary Analysis Archive | ForenClue',
     description:
-      'Explore evidence-led forensic case studies, investigative methods, findings, and professional learning resources.',
+      'Explore peer-reviewed forensic case studies examining crime-scene reconstruction, DNA profiling, toxicology, ballistics, and judicial admissibility.',
     image: DEFAULT_IMAGE,
     type: 'website',
   },
   '/courses': {
-    title: 'Forensic Science Courses | ForenClue',
+    title: 'Forensic Science Courses & Structured Curriculum | ForenClue',
     description:
       'Explore practical forensic science courses, structured learning paths, and professional training from ForenClue.',
     image: DEFAULT_IMAGE,
     type: 'website',
   },
   '/quizzes': {
-    title: 'Forensic Quizzes and Assessments | ForenClue',
+    title: 'Forensic Science Diagnostic Quizzes & UGC-NET / NFAT Assessments | ForenClue',
     description:
-      'Test forensic science knowledge through live challenges, practice quizzes, and structured assessments.',
+      'Test forensic science knowledge through UGC-NET (Code 82) and NFAT aligned practice quizzes, weekly challenges, and structured diagnostic assessments.',
     image: DEFAULT_IMAGE,
     type: 'website',
   },
   '/webinar': {
-    title: 'Forensic Webinars and Events | ForenClue',
+    title: 'Forensic Webinars and Academic Events | ForenClue',
     description:
-      'Watch forensic science webinars, expert sessions, and professional events from the ForenClue community.',
+      'Watch forensic science webinars, expert faculty sessions, and professional events from the ForenClue community.',
     image: `${SITE_ORIGIN}/images/og/webinars.png`,
     type: 'website',
   },
@@ -161,21 +204,35 @@ const ROUTE_DEFAULTS: Record<string, Omit<SocialMetadata, 'canonicalUrl' | 'dyna
     type: 'website',
   },
   '/simulations': {
-    title: 'Virtual Forensic Labs | ForenClue',
-    description: 'Practice forensic laboratory skills through interactive virtual simulations.',
+    title: 'Virtual Forensic Laboratory Simulations – 3D Microscope & UV-Vis Spectrophotometer | ForenClue',
+    description: 'Practice forensic laboratory instrumentation and standard operating procedures through interactive 3D virtual simulations and comprehensive lab manuals.',
     image: DEFAULT_IMAGE,
     type: 'website',
   },
-  '/files': {
-    title: 'Careers in Forensic Science Handbook | ForenClue',
-    description: 'Explore forensic science careers, pathways, entrance examinations, and admission guidance.',
+  '/simulations/microscope': {
+    title: 'Virtual Compound Light Microscope Simulator & Forensic Trace Evidence Manual | ForenClue',
+    description: 'Interactive 3D compound light microscope simulator with a comprehensive educational manual on Köhler illumination, Numerical Aperture, hair medullary index, and diatom analysis.',
     image: DEFAULT_IMAGE,
-    type: 'book',
+    type: 'article',
+  },
+  '/simulations/spectrophotometer': {
+    title: 'UV-Vis Spectrophotometer Simulator & Beer-Lambert Law Forensic Chemistry Guide | ForenClue',
+    description: 'Interactive 3D UV-Vis spectrophotometer simulator with an educational manual on Beer-Lambert Law (A = εbc), CO-oximetry, questioned document ink analysis, and drug quantification.',
+    image: DEFAULT_IMAGE,
+    type: 'article',
+  },
+  '/files': {
+    title: 'Forensic Academic Reference Resources | ForenClue',
+    description: 'Explore forensic science study guides, entrance examination syllabi, and academic reference materials.',
+    image: DEFAULT_IMAGE,
+    type: 'website',
   },
 };
 
 const STATIC_PAGE_PATHS = new Set([
   '/',
+  '/articles',
+  '/guides',
   '/about',
   '/courses',
   '/cases',
@@ -216,6 +273,7 @@ const STATIC_PAGE_PATHS = new Set([
 ]);
 
 const DYNAMIC_PAGE_PATTERNS = [
+  /^\/(?:articles|guides)\/[^/]+$/,
   /^\/(?:cases|case-studies)\/[^/]+$/,
   /^\/player\/[^/]+$/,
   /^\/quizzes\/[^/]+(?:\/leaderboard)?$/,
@@ -706,6 +764,31 @@ function baseMetadata(url: URL): SocialMetadata {
   const path = url.pathname.replace(/\/$/, '') || '/';
   const defaults = ROUTE_DEFAULTS[path] || ROUTE_DEFAULTS[routeRoot(path)] || ROUTE_DEFAULTS['/'];
 
+  const articleMatch = path.match(/^\/(?:articles|guides)\/([^/]+)$/);
+  if (articleMatch) {
+    const article = getForensicArticleBySlug(articleMatch[1]);
+    if (article) {
+      return {
+        title: `${article.title} | ForenClue Forensic Guides`,
+        description: article.metaDescription || article.abstract,
+        image: article.heroImage || DEFAULT_IMAGE,
+        canonicalUrl: `${SITE_ORIGIN}/articles/${article.slug}`,
+        ogUrl: `${SITE_ORIGIN}/articles/${article.slug}`,
+        type: 'article',
+        dynamic: false,
+      };
+    }
+  }
+
+  if (path === '/guides') {
+    return {
+      ...defaults,
+      canonicalUrl: `${SITE_ORIGIN}/articles`,
+      ogUrl: `${SITE_ORIGIN}/articles`,
+      dynamic: false,
+    };
+  }
+
   if (path === '/webinar') {
     const eventId = url.searchParams.get('id') || url.searchParams.get('event');
     if (eventId) {
@@ -732,7 +815,7 @@ function baseMetadata(url: URL): SocialMetadata {
         title: 'Top Forensic Science Colleges in Delhi NCR (2026) – NFSU, Govt & Private Fees | ForenClue',
         description:
           'Explore top forensic science colleges in Delhi & NCR including NFSU Delhi Campus (LNJN NICFS Rohini), Delhi University, Amity Noida, Galgotias & SGT University. Compare B.Sc. & M.Sc. fees & admission.',
-        canonicalUrl: canonicalFor(url),
+        canonicalUrl: `${SITE_ORIGIN}/colleges`,
         dynamic: false,
       };
     }
@@ -742,7 +825,7 @@ function baseMetadata(url: URL): SocialMetadata {
         title: 'Best Private M.Sc. Forensic Science Colleges in India (2026) – Fees, NAAC & Placements | ForenClue',
         description:
           'Discover the best private M.Sc. Forensic Science colleges in India including Jain University Bangalore, Amity University, Chandigarh University, LPU, Kristu Jayanti & Galgotias.',
-        canonicalUrl: canonicalFor(url),
+        canonicalUrl: `${SITE_ORIGIN}/colleges`,
         dynamic: false,
       };
     }
@@ -752,10 +835,15 @@ function baseMetadata(url: URL): SocialMetadata {
         title: 'Best M.Sc. Forensic Science Colleges Under ₹50,000 in India – Low Fee Govt Universities | ForenClue',
         description:
           'Complete list of the best M.Sc. Forensic Science colleges under ₹50,000 annual fees in India including IFSC Mumbai, GIFS Nagpur, Osmania University, Punjabi University & Pondicherry University.',
-        canonicalUrl: canonicalFor(url),
+        canonicalUrl: `${SITE_ORIGIN}/colleges`,
         dynamic: false,
       };
     }
+    return {
+      ...defaults,
+      canonicalUrl: `${SITE_ORIGIN}/colleges`,
+      dynamic: false,
+    };
   }
 
   if (!ROUTE_DEFAULTS[path] && path !== '/') {
@@ -779,8 +867,13 @@ function metadataFromDocument(
   data: Record<string, unknown>,
   fallback: SocialMetadata,
 ): SocialMetadata {
-  const rawTitle = firstText(data, ['title', 'name', 'fullName', 'courseTitle', 'quizTitle']);
-  if (!rawTitle) return fallback;
+  const rawDocumentTitle = firstText(data, ['title', 'name', 'fullName', 'courseTitle', 'quizTitle']);
+  if (!rawDocumentTitle) return fallback;
+
+  const rawTitle =
+    target.collection === 'cases'
+      ? formatPolicySafeCaseTitle(rawDocumentTitle)
+      : rawDocumentTitle;
 
   const rawDescription = firstText(data, [
     'desc',
@@ -936,19 +1029,24 @@ function metadataMarkup(metadata: SocialMetadata): string {
 }
 
 const PUBLIC_ROUTE_CONTEXT: Record<string, string> = {
-  '/': 'ForenClue is a forensic science learning platform for students, educators, and professionals. Explore evidence-led case studies, practical learning paths, interactive quizzes, virtual laboratory simulations, webinars, and academic resources. Public learning pages are available without an account.',
-  '/about': 'Learn about ForenClue Ventures, its forensic education mission, leadership team, and focus on connecting academic concepts with practical investigation methods. The platform serves learners who want structured exposure to forensic science and cybersecurity.',
-  '/cases': 'The case archive explains how crime-scene documentation, pathology, DNA profiling, fingerprints, digital evidence, ballistics, and trace evidence contribute to investigations. Each published case is presented for education and should be read alongside the sources and official records listed in the case file.',
-  '/courses': 'Browse currently published forensic science learning paths. Course pages explain the topic, intended level, estimated duration, instructor, and curriculum before enrollment. Unfinished courses remain private until they are ready.',
-  '/ebooks': 'The digital eLibrary organizes forensic science reference books, academic notes, research papers, and learning manuals by subject. Browse the catalog, open individual resources, and read the copyright and access notice for information about permitted use and reporting concerns.',
-  '/quizzes': 'Practice forensic science concepts through published quizzes and completed weekly challenges. Available assessments cover evidence handling, crime-scene procedure, laboratory methods, and related disciplines, with clear empty states when no live challenge is running.',
-  '/services': 'ForenClue provides educational workshops and webinars, ForenClue-issued completion credentials, and academic collaboration programs. Service pages explain the format, audience, scope, and next step before a visitor contacts the team.',
-  '/colleges': 'Your City, Your College — ForenClue Verified Forensic Science Colleges & Universities Directory in India. Compare 120+ accredited institutions for B.Sc. Forensic Science, M.Sc. Forensic Science, Cyber & Digital Forensics, PG Diploma, and Ph.D. programs. Top Forensic Science Colleges in Delhi NCR: National Forensic Sciences University (NFSU) Delhi Campus (LNJN NICFS, Rohini), University of Delhi, Amity University Noida, Galgotias University Greater Noida, Sharda University, and SGT University Gurugram. Best Private M.Sc. Forensic Science Colleges in India: Jain (Deemed-to-be University) Bangalore, Amity University, Chandigarh University, Lovely Professional University (LPU), Kristu Jayanti College Bengaluru, Galgotias University, and Parul University. Best M.Sc. Forensic Science Colleges Under ₹50,000 Annual Fees in India: Institute of Forensic Science Mumbai (₹6,000–₹15,000/year), Government Institute of Forensic Science Nagpur and Chhatrapati Sambhajinagar (₹5,000–₹15,000/year), Osmania University Hyderabad, Punjabi University Patiala, Pondicherry University, Banaras Hindu University (BHU), Dr. Harisingh Gour University Sagar, and Gujarat University Ahmedabad.',
+  '/': 'ForenClue is a peer-reviewed forensic science and cybersecurity educational publication and virtual laboratory headquartered in Pune, Maharashtra, India. Explore long-form forensic guides, documented criminalistics case studies, interactive 3D microscopy and UV-Vis spectrophotometry simulators, UGC-NET (Code 82) and NFAT diagnostic assessments, and a verified directory of 120+ forensic science universities.',
+  '/articles': 'The ForenClue Editorial Monograph & Forensic Guides Archive publishes peer-reviewed educational articles on crime-scene chain of custody (BNSS/BSA Section 63), GC-MS postmortem toxicology, compound & comparison light microscopy, UV-Vis spectrophotometry (Beer-Lambert Law), forensic odontology evidentiary standards, and volatile memory incident response.',
+  '/guides': 'The ForenClue Editorial Monograph & Forensic Guides Archive publishes peer-reviewed educational articles on crime-scene chain of custody, GC-MS postmortem toxicology, compound & comparison light microscopy, UV-Vis spectrophotometry, forensic odontology evidentiary standards, and volatile memory incident response.',
+  '/about': 'Founded in 2025 and headquartered in Pune, Maharashtra, India, ForenClue (ForenClue Ventures) is an MSME Udyam registered Forensic Science and Cybersecurity EdTech platform led by Founder & CEO Tejas Tapse, Co-Founder Ayush Gaikwad, MD Pranav Kale Patil, CTO Punam Gadade, Academic Mentor Rajat Pithadia, and Advisory Board Member Dr. Riya Mariya.',
+  '/cases': 'The Academic Forensic Case Studies Archive examines how crime-scene documentation, medico-legal autopsy, STR DNA profiling, latent fingerprint development, Section 65B/63 electronic evidence certification, firearm toolmark comparison, and forensic toxicology contribute to judicial findings.',
+  '/courses': 'Browse published forensic science learning paths. Course pages explain the syllabus, intended academic level, estimated duration, instructor credentials, and learning objectives.',
+  '/ebooks': 'The ForenClue Open Forensic Reference E-Library organizes forensic science reference textbooks, laboratory SOP manuals, UGC-NET study notes, and peer-reviewed research papers across Forensic Chemistry, Questioned Documents, Forensic Biology, and Digital Forensics.',
+  '/quizzes': 'Practice forensic science and cybersecurity concepts through UGC-NET (Code 82), NFAT, and FACT aligned diagnostic quizzes and completed weekly challenges with full syllabus unit breakdowns.',
+  '/simulations': 'The ForenClue Virtual Forensic Laboratory provides interactive 3D instrument simulations paired with 950+ word laboratory manuals covering optical physics, Köhler illumination, Numerical Aperture, Beer-Lambert Law spectrophotometry, and evidentiary SOPs.',
+  '/simulations/microscope': 'Virtual Compound Light Microscope Simulator & Laboratory Manual: Learn optical magnification, Abbe diffraction limit (d = 0.61λ/NA), Numerical Aperture, Köhler illumination alignment, forensic trichology (hair medullary index), synthetic fiber birefringence, and acid-digestion diatom diagnosis for antemortem drowning.',
+  '/simulations/spectrophotometer': 'UV-Vis Spectrophotometer Simulator & Laboratory Manual: Master electronic transitions, the Beer-Lambert Law (A = εbc), dark-current and solvent blank zeroing, Holmium Oxide wavelength calibration, carboxyhemoglobin (COHb) multi-wavelength oximetry, and questioned document ink dye ratioing.',
+  '/services': 'ForenClue provides educational workshops and webinars, ForenClue-issued completion credentials, and academic collaboration programs.',
+  '/colleges': 'Your City, Your College — ForenClue Verified Forensic Science Colleges & Universities Directory in India. Compare 120+ accredited institutions for B.Sc. Forensic Science, M.Sc. Forensic Science, Cyber & Digital Forensics, PG Diploma, and Ph.D. programs across NFSU campuses, Central/State Government Universities, and NAAC-accredited private institutions.',
   '/podcast': 'Listen to forensic science discussions and interviews about investigation practice, laboratory methods, digital evidence, education, and professional development.',
-  '/webinar': 'Review upcoming and recorded forensic science learning sessions, including the topic, speaker information, schedule, and registration or playback details when available.',
-  '/contact': 'Contact ForenClue Ventures for learner support, content corrections, workshop questions, institutional collaboration, privacy requests, and general enquiries.',
-  '/privacy': 'Read how ForenClue Ventures collects, uses, protects, and retains personal information, including disclosures about analytics, advertising cookies, user choices, and contact details for privacy requests.',
-  '/terms': 'Review the terms that govern accounts, educational resources, purchases, acceptable use, intellectual property, limitations, and support on the ForenClue platform.',
+  '/webinar': 'Review upcoming and recorded forensic science learning sessions, including the topic, speaker credentials, schedule, and registration or playback details.',
+  '/contact': 'Contact ForenClue Ventures (Pune, Maharashtra, India) at forenclue@gmail.com or support@forenclue.in for learner support, editorial feedback, workshop inquiries, institutional collaboration, and privacy requests.',
+  '/privacy': 'Read how ForenClue Ventures collects, uses, protects, and retains personal information, including disclosures about Google AdSense, DoubleClick DART advertising cookies, personalized ad opt-out choices (adssettings.google.com and aboutads.info/choices), and DPDP Act compliance.',
+  '/terms': 'Review the terms and conditions that govern accounts, educational resources, virtual laboratory simulations, acceptable use, intellectual property, and support on the ForenClue platform.',
 };
 
 function progressiveContentMarkup(metadata: SocialMetadata): string {
@@ -958,12 +1056,47 @@ function progressiveContentMarkup(metadata: SocialMetadata): string {
   const description = escapeHtml(metadata.description);
   const body = escapeHtml(context);
 
+  const articleMatch = path.match(/^\/(?:articles|guides)\/([^/]+)$/);
+  if (articleMatch) {
+    const article = getForensicArticleBySlug(articleMatch[1]);
+    if (article) {
+      const sectionsHtml = article.sections
+        .map(
+          (sec) =>
+            `<section><h2>${escapeHtml(sec.heading)}</h2>${sec.paragraphs
+              .map((p) => `<p>${escapeHtml(p)}</p>`)
+              .join('')}</section>`,
+        )
+        .join('');
+      const refsHtml = article.references
+        .map((r) => `<li>${escapeHtml(`${r.authors} (${r.year}). ${r.title}. ${r.publication}`)}</li>`)
+        .join('');
+      return [
+        '<div data-progressive-content="true">',
+        '<header><a href="/">ForenClue — Your Partner in Forensic Precision</a></header>',
+        `<main><article><h1>${escapeHtml(article.title)}</h1><p>${escapeHtml(article.abstract)}</p><p>By ${escapeHtml(article.author.name)} (${escapeHtml(article.author.role)}) · Published ${escapeHtml(article.publishedDate)} · ${article.readingTimeMinutes} min read</p>${sectionsHtml}<section><h2>References &amp; Citations</h2><ol>${refsHtml}</ol></section></article></main>`,
+        '<nav aria-label="Public learning sections">',
+        '<a href="/articles">Forensic Articles</a> · <a href="/cases">Case Studies</a> · <a href="/simulations">Virtual Labs</a> · <a href="/colleges">Colleges Directory</a> · <a href="/ebooks">E-Library</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms</a>',
+        '</nav>',
+        '</div>',
+      ].join('');
+    }
+  }
+
+  const articlesListHtml =
+    path === '/' || path === '/articles' || path === '/guides'
+      ? `<section><h2>Peer-Reviewed Forensic Science &amp; Cybersecurity Articles</h2><ul>${FORENSIC_ARTICLES.map(
+          (a) =>
+            `<li><a href="/articles/${escapeHtml(a.slug)}">${escapeHtml(a.title)}</a> — ${escapeHtml(a.metaDescription)}</li>`,
+        ).join('')}</ul></section>`
+      : '';
+
   return [
     '<div data-progressive-content="true">',
     '<header><a href="/">ForenClue — Your Partner in Forensic Precision</a></header>',
-    `<main><h1>${title}</h1><p>${description}</p><p>${body}</p></main>`,
+    `<main><article><h1>${title}</h1><p>${description}</p><p>${body}</p>${articlesListHtml}</article></main>`,
     '<nav aria-label="Public learning sections">',
-    '<a href="/colleges">Forensic Science Colleges Directory</a> · <a href="/cases">Case Studies</a> · <a href="/courses">Courses</a> · <a href="/ebooks">E-Library</a> · <a href="/quizzes">Quizzes</a> · <a href="/about">About</a> · <a href="/contact">Contact</a>',
+    '<a href="/articles">Forensic Articles</a> · <a href="/cases">Case Studies</a> · <a href="/simulations">Virtual Labs</a> · <a href="/colleges">Forensic Science Colleges Directory</a> · <a href="/courses">Courses</a> · <a href="/ebooks">E-Library</a> · <a href="/quizzes">Quizzes</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms</a>',
     '</nav>',
     '</div>',
   ].join('');

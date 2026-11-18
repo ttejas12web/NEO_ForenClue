@@ -90,6 +90,7 @@ const Quizzes = lazyWithRetry(() => import('./pages/Quizzes'));
 const QuizPlayer = lazyWithRetry(() => import('./pages/QuizPlayer'));
 const QuizLeaderboard = lazyWithRetry(() => import('./pages/QuizLeaderboard'));
 const Colleges = lazyWithRetry(() => import('./pages/Colleges'));
+const Articles = lazyWithRetry(() => import('./pages/Articles'));
 const LinkedInCallback = lazyWithRetry(() => import('./pages/LinkedInCallback'));
 const Maintenance = lazyWithRetry(() => import('./pages/Maintenance'));
 
@@ -104,7 +105,7 @@ function PageLoader() {
 function RootShareResolver() {
   const { id } = useParams();
   const reserved = [
-    'about', 'courses', 'cases', 'careers', 'services', 
+    'about', 'articles', 'guides', 'courses', 'cases', 'careers', 'services', 
     'ebooks', 'files', 'contact', 'privacy', 'terms', 'refund', 'refund-policy', 'cancellation-refund', 'return-policy', 'shipping', 'shipping-policy', 'profile', 'dashboard', 'login', 'admin', 'podcast', 'certificate', 'webinar', 'employees', 'volunteers', 'ambassadors', 'forms', 'simulations', 'colleges', 'college', 'api'
   ];
   if (id && reserved.includes(id.toLowerCase())) {
@@ -124,6 +125,10 @@ function AppMain() {
         <Suspense fallback={<PageLoader />}>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/articles" element={<Articles />} />
+            <Route path="/articles/:slug" element={<Articles />} />
+            <Route path="/guides" element={<Articles />} />
+            <Route path="/guides/:slug" element={<Articles />} />
             <Route path="/about" element={<About />} />
             <Route path="/courses" element={<Courses />} />
             <Route path="/cases" element={<Cases />} />

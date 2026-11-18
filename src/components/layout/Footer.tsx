@@ -67,22 +67,25 @@ export function Footer() {
             </h4>
             <ul className="space-y-3.5 text-sm text-text-muted">
               <li>
-                <Link to="/courses" className="hover:text-warning transition-colors duration-200">Courses</Link>
-              </li>
-              <li>
-                <Link to="/simulations" className="hover:text-warning transition-colors duration-200">Virtual Labs</Link>
+                <Link to="/articles" className="hover:text-warning transition-colors duration-200">Forensic Articles</Link>
               </li>
               <li>
                 <Link to="/cases" className="hover:text-warning transition-colors duration-200">Case Studies</Link>
               </li>
               <li>
-                <Link to="/ebooks" className="hover:text-warning transition-colors duration-200">E-Library</Link>
-              </li>
-              <li>
-                <Link to="/quizzes" className="hover:text-warning transition-colors duration-200">Quizzes & Assessments</Link>
+                <Link to="/simulations" className="hover:text-warning transition-colors duration-200">Virtual Labs</Link>
               </li>
               <li>
                 <Link to="/colleges" className="hover:text-warning transition-colors duration-200">Colleges Directory</Link>
+              </li>
+              <li>
+                <Link to="/ebooks" className="hover:text-warning transition-colors duration-200">E-Library (Ebooks)</Link>
+              </li>
+              <li>
+                <Link to="/courses" className="hover:text-warning transition-colors duration-200">Courses</Link>
+              </li>
+              <li>
+                <Link to="/quizzes" className="hover:text-warning transition-colors duration-200">Quizzes & Assessments</Link>
               </li>
             </ul>
           </div>
@@ -113,6 +116,15 @@ export function Footer() {
             <ul className="space-y-3.5 text-sm text-text-muted mb-8">
               <li>
                 <Link to="/about" className="hover:text-warning transition-colors duration-200">About Us</Link>
+              </li>
+              <li>
+                <Link to="/contact" className="hover:text-warning transition-colors duration-200">Contact Us</Link>
+              </li>
+              <li>
+                <Link to="/privacy" className="hover:text-warning transition-colors duration-200">Privacy Policy</Link>
+              </li>
+              <li>
+                <Link to="/terms" className="hover:text-warning transition-colors duration-200">Terms & Conditions</Link>
               </li>
               <li>
                 <Link to="/careers" className="hover:text-warning transition-colors duration-200">Careers</Link>

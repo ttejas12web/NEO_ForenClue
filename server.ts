@@ -12,6 +12,8 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client
 import { GoogleGenAI, Type } from "@google/genai";
 
 import { COURSES } from './src/constants';
+import { formatPolicySafeCaseTitle } from './src/data/caseSources';
+import { FORENSIC_ARTICLES, getForensicArticleBySlug } from './src/data/forensicArticles';
 
 const __filename = typeof process !== 'undefined' && process.argv[1] ? process.argv[1] : '';
 const currentDir = typeof __dirname !== 'undefined' ? __dirname : (typeof process !== 'undefined' ? process.cwd() : '');
@@ -1527,6 +1529,46 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
   }
 
   // SPA HTML Fallback & Dynamic Social Meta Tags Handler
+  // Serve Firestore binary blobs at /api/social-image/:blobId so no firestore-blob:// URI is ever exposed
+  app.get('/api/social-image/:blobId', async (req, res) => {
+    try {
+      const blobId = String(req.params.blobId || '').trim();
+      if (!/^[a-zA-Z0-9_-]{1,128}$/.test(blobId)) {
+        return res.status(400).send('Invalid image identifier');
+      }
+      const dbAdmin = getDbAdmin();
+      const metaSnap = await dbAdmin.collection('_cloud_blobs').doc(blobId).get();
+      if (!metaSnap.exists) {
+        return res.redirect(302, '/images/og/home.png');
+      }
+      const meta = metaSnap.data() || {};
+      const mimeType = typeof meta.mimeType === 'string' && meta.mimeType.startsWith('image/') ? meta.mimeType : 'image/jpeg';
+      const totalChunks = Number(meta.totalChunks || 1);
+      const chunksSnap = await dbAdmin.collection('_cloud_blobs').doc(blobId).collection('chunks').get();
+      const chunkMap: Record<number, Buffer> = {};
+      chunksSnap.forEach((docSnap: any) => {
+        const d = docSnap.data();
+        if (d && typeof d.data === 'string') {
+          const cleanBase64 = d.data.replace(/^data:.*?;base64,/, '');
+          chunkMap[Number(d.chunkIndex || 0)] = Buffer.from(cleanBase64, 'base64');
+        }
+      });
+      const ordered: Buffer[] = [];
+      for (let i = 0; i < totalChunks; i++) {
+        if (chunkMap[i]) ordered.push(chunkMap[i]);
+      }
+      if (ordered.length === 0) {
+        return res.redirect(302, '/images/og/home.png');
+      }
+      const merged = Buffer.concat(ordered);
+      res.setHeader('Content-Type', mimeType);
+      res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+      return res.status(200).send(merged);
+    } catch {
+      return res.redirect(302, '/images/og/home.png');
+    }
+  });
+
   // Intercept GET and HEAD HTML requests for social media sharing cards & embed previews
   // This MUST be AFTER static assets are handled
   app.all('*', async (req, res, next) => {
@@ -1559,29 +1601,46 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
     try {
       let html = fs.readFileSync(indexPath, 'utf-8');
       
-      let title = "ForenClue | Your Partner In Forensic Precision";
-      let summary = "India's leading platform for forensic science education, cyber forensics, crime scene investigation, digital investigation, research, certifications and practical learning.";
+      let title = "ForenClue | Forensic Science & Cybersecurity Educational Publication & Virtual Lab";
+      let summary = "India's peer-reviewed forensic science and cybersecurity learning platform. Explore long-form forensic guides, documented case studies, 3D laboratory simulations, and verified university directories.";
       let image = 'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
       
       const cleanPath = req.path.replace(/\/+$/, '') || '/';
+      let matchedArticle = null as ReturnType<typeof getForensicArticleBySlug>;
 
       try {
         if (cleanPath === '/' || cleanPath === '') {
-          title = "ForenClue | Your Partner In Forensic Precision";
-          summary = "India's leading platform for forensic science education, cyber forensics, crime scene investigation, digital investigation, research, certifications and practical learning.";
+          title = "ForenClue | Forensic Science & Cybersecurity Educational Publication & Virtual Lab";
+          summary = "India's peer-reviewed forensic science and cybersecurity learning platform. Explore long-form forensic guides, documented case studies, 3D laboratory simulations, and verified university directories.";
           image = 'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
         }
-        else if (cleanPath === '/cases' || cleanPath === '/case-studies') {
+        else if (cleanPath === '/articles' || cleanPath === '/guides') {
+          title = 'Forensic Science & Cybersecurity Editorial Guides & Monograph Archive | ForenClue';
+          summary = 'Peer-reviewed long-form articles on crime scene protocol, GC-MS toxicology, trace microscopy, UV-Vis spectrophotometry, forensic odontology, and digital incident response.';
+        }
+        else if (cleanPath.startsWith('/articles/') || cleanPath.startsWith('/guides/')) {
+          const slug = cleanPath.split('/')[2] || '';
+          const article = getForensicArticleBySlug(slug);
+          if (article) {
+            matchedArticle = article;
+            title = `${article.title} | ForenClue Forensic Guides`;
+            summary = article.metaDescription || article.abstract;
+            image = article.heroImage || image;
+          }
+        }
+        else if (cleanPath === '/cases' || cleanPath === '/case-studies' || cleanPath.startsWith('/cases/') || cleanPath.startsWith('/case-studies/')) {
           image = '/images/og/case-studies.png';
-          if (req.query.case || req.query.id) {
-            const caseId = String(req.query.case || req.query.id);
+          const pathCaseId = (cleanPath.startsWith('/cases/') || cleanPath.startsWith('/case-studies/')) ? cleanPath.split('/')[2] : '';
+          const caseId = String(pathCaseId || req.query.case || req.query.id || '');
+          if (caseId) {
             try {
               const dbAdmin = getDbAdmin();
               const caseDoc = await dbAdmin.collection('cases').doc(caseId).get();
               if (caseDoc.exists) {
                 const data = caseDoc.data();
                 if (data) {
-                  title = data.title ? `${data.title} | ForenClue Archive` : 'Forensic Case Study | ForenClue';
+                  const safeTitle = data.title ? formatPolicySafeCaseTitle(String(data.title)) : '';
+                  title = safeTitle ? `${safeTitle} | ForenClue Archive` : 'Forensic Case Study | ForenClue';
                   summary = data.summary || data.description || summary;
                   if (data.image) image = data.image;
                   else if (data.thumbnail) image = data.thumbnail;
@@ -1589,8 +1648,8 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
               }
             } catch(e) { /* ignore preview fetch errors if server admin SDK credentials are missing */ }
           } else {
-            title = 'Forensic Case Studies | ForenClue';
-            summary = 'Explore real criminal investigations, forensic evidence analysis and crime scene reconstruction.';
+            title = 'Academic Forensic Case Studies & Evidentiary Analysis Archive | ForenClue';
+            summary = 'Explore peer-reviewed forensic case studies examining crime-scene reconstruction, DNA profiling, toxicology, ballistics, and judicial admissibility.';
           }
         } 
         else if (cleanPath === '/services') {
@@ -1620,13 +1679,13 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
           }
         }
         else if (cleanPath === '/resources' || cleanPath === '/files') {
-          title = 'Forensic Resources | ForenClue';
+          title = 'Forensic Academic Reference Resources | ForenClue';
           summary = 'Study materials, guides, articles and forensic learning resources.';
           image = '/images/og/resources.png';
         }
         else if (cleanPath === '/quizzes') {
-          title = 'Forensic Quiz Challenge | ForenClue';
-          summary = 'Test your forensic science knowledge through interactive quizzes, challenges, and practical assessments. Learn, compete, and sharpen your investigative skills with ForenClue.';
+          title = 'Forensic Science Diagnostic Quizzes & UGC-NET / NFAT Assessments | ForenClue';
+          summary = 'Test your forensic science knowledge through UGC-NET (Code 82) and NFAT aligned practice quizzes, weekly challenges, and structured diagnostic assessments.';
           image = 'https://blogger.googleusercontent.com/img/a/AVvXsEg_OeYXV0qnZe42fjD2ty2vBNDGqhWPnOjQBOiWFbkDcCaUa0Pl5sJyixMvmxEhAKoLMU9A4A2bjvxrpEuGG_jKX7q2su81OGr9eSt3DUWNwQVufTdGQI_NSKBcZduRx-7jyn3dMmQVb4o6Qom_9Ul2qen9YS8c-h2W5PTda-U8x6JsAasJG_3lHFitvX0';
         }
         else if (cleanPath.startsWith('/quizzes/')) {
@@ -1687,8 +1746,8 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
               }
             } catch(e) { /* ignore preview fetch errors */ }
           } else {
-            title = 'Forensic E-Library | ForenClue';
-            summary = 'Digital forensic books, journals, research papers and educational resources.';
+            title = 'Academic eLibrary - Forensic Reference Textbook Vault & Study Guides | ForenClue';
+            summary = 'Browse forensic science reference books, academic notes, research papers, and learning objectives in the ForenClue eLibrary.';
           }
         }
         else if (cleanPath === '/podcast') {
@@ -1738,18 +1797,18 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
           }
         }
         else if (cleanPath === '/simulations') {
-          title = 'Virtual Crime Scene Simulations | ForenClue';
-          summary = 'Interactive forensic simulations for practical learning.';
+          title = 'Virtual Forensic Laboratory Simulations – 3D Microscope & UV-Vis Spectrophotometer | ForenClue';
+          summary = 'Practice forensic laboratory instrumentation and standard operating procedures through interactive 3D virtual simulations and comprehensive lab manuals.';
           image = '/images/og/simulation.png';
         }
         else if (cleanPath === '/simulations/microscope') {
-          title = 'Virtual Compound Microscope Simulator | ForenClue';
-          summary = 'Interactive compound microscope simulator for forensic specimen examination and magnification.';
+          title = 'Virtual Compound Light Microscope Simulator & Forensic Trace Evidence Manual | ForenClue';
+          summary = 'Interactive 3D compound light microscope simulator with a comprehensive educational manual on Köhler illumination, Numerical Aperture, hair medullary index, and diatom analysis.';
           image = '/images/og/microscope.png';
         }
         else if (cleanPath === '/simulations/spectrophotometer') {
-          title = 'UV-Vis Spectrophotometer Simulator | ForenClue';
-          summary = 'Interactive laboratory simulation for forensic chemical absorbance profiling and quantitative analysis.';
+          title = 'UV-Vis Spectrophotometer Simulator & Beer-Lambert Law Forensic Chemistry Guide | ForenClue';
+          summary = 'Interactive 3D UV-Vis spectrophotometer simulator with an educational manual on Beer-Lambert Law (A = εbc), CO-oximetry, questioned document ink analysis, and drug quantification.';
           image = '/images/og/spectrophotometer.png';
         }
         else if (cleanPath === '/certificate') {
@@ -1816,8 +1875,8 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
           image = '/images/og/ambassador.png';
         }
         else if (cleanPath === '/about') {
-          title = 'About ForenClue';
-          summary = "Learn about the mission, vision and journey of India's premier forensic EdTech startup.";
+          title = 'About ForenClue – Mission, Editorial Standards, Leadership & Academic Mentors | ForenClue';
+          summary = "Discover ForenClue, India's MSME Udyam registered Forensic Science & Cybersecurity EdTech platform headquartered in Pune, Maharashtra. Meet our leadership team and academic review board.";
           image = '/images/og/about.png';
         }
         else if (cleanPath === '/courses') {
@@ -1861,17 +1920,17 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
           image = '/images/og/careers.png';
         }
         else if (cleanPath === '/contact') {
-          title = 'Contact ForenClue Support & Inquiries';
-          summary = 'Reach out to support teams, corporate partnerships & academic counseling.';
+          title = 'Contact ForenClue – Forensic Education Support, Editorial Desk & Pune Office | ForenClue';
+          summary = 'Contact ForenClue Ventures in Pune, Maharashtra, India (forenclue@gmail.com). Reach our editorial board, student support desk, or institutional partnership team.';
           image = '/images/og/contact.png';
         }
         else if (cleanPath === '/privacy') {
-          title = 'Privacy Policy | ForenClue';
-          summary = 'Comprehensive overview of data privacy, student information protection & security standards.';
+          title = 'Privacy Policy & Cookie Disclosures | ForenClue';
+          summary = 'Read the ForenClue Privacy Policy, including DPDP Act compliance, Google AdSense & DoubleClick DART cookie disclosures, and user opt-out choices.';
           image = '/images/og/privacy.png';
         }
         else if (cleanPath === '/terms') {
-          title = 'Terms of Service | ForenClue';
+          title = 'Terms and Conditions | ForenClue';
           summary = 'Official terms, academic code of conduct & enrollment conditions.';
           image = '/images/og/terms.png';
         }
@@ -1943,7 +2002,7 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
           // Check if this is a single top-level permalink route like /FC-EBOOK-102
           const seg = cleanPath.slice(1);
           const reservedRoutes = [
-            'about', 'courses', 'cases', 'case-studies', 'careers', 'community', 'services', 
+            'about', 'articles', 'guides', 'courses', 'cases', 'case-studies', 'careers', 'community', 'services', 
             'ebooks', 'files', 'contact', 'privacy', 'terms', 'profile', 'dashboard', 
             'login', 'admin', 'podcast', 'certificate', 'webinar', 'webinars', 'employees', 
             'volunteers', 'ambassadors', 'campus-ambassadors', 'forms', 'simulations', 'quizzes',
@@ -1973,15 +2032,36 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
       // Resolve host dynamically (defaulting to forenclue.in if not provided)
       let host = req.headers['x-forwarded-host'] || req.get('host') || 'forenclue.in';
       if (Array.isArray(host)) host = host[0];
+      const canonicalOrigin = 'https://forenclue.in';
       
-      // Enforce HTTPS URLs for canonical and OpenGraph tags
-      const cleanUrlPath = req.originalUrl || req.path;
-      const absoluteUrl = `https://${host}${cleanUrlPath}`;
+      // Enforce clean canonical URLs:
+      // - /colleges and /college ALWAYS canonicalize to https://forenclue.in/colleges (stripping ?q=, ?country=, ?degree=, ?fee=, etc.)
+      // - /guides and /guides/:slug canonicalize to /articles and /articles/:slug
+      let canonicalPath = cleanPath;
+      if (cleanPath === '/college' || cleanPath === '/colleges') {
+        canonicalPath = '/colleges';
+      } else if (cleanPath === '/guides') {
+        canonicalPath = '/articles';
+      } else if (cleanPath.startsWith('/guides/')) {
+        canonicalPath = `/articles/${cleanPath.split('/')[2] || ''}`;
+      } else if (cleanPath === '/cases' && req.query.case) {
+        canonicalPath = `/cases?case=${encodeURIComponent(String(req.query.case))}`;
+      } else if (cleanPath === '/ebooks' && req.query.id) {
+        canonicalPath = `/ebooks?id=${encodeURIComponent(String(req.query.id))}`;
+      } else if (cleanPath === '/courses' && req.query.id) {
+        canonicalPath = `/courses?id=${encodeURIComponent(String(req.query.id))}`;
+      }
+      const absoluteUrl = `${canonicalOrigin}${canonicalPath === '/' ? '' : canonicalPath}` || `${canonicalOrigin}/`;
 
-      // Format image URL with HTTPS
+      // Convert any firestore-blob://<id> URI to https://forenclue.in/api/social-image/<id>
       let ogImageUrl = image;
       if (ogImageUrl) {
-        if (!ogImageUrl.startsWith('http://') && !ogImageUrl.startsWith('https://')) {
+        if (ogImageUrl.startsWith('firestore-blob://')) {
+          const blobId = ogImageUrl.replace('firestore-blob://', '').trim();
+          ogImageUrl = blobId ? `${canonicalOrigin}/api/social-image/${encodeURIComponent(blobId)}` : `${canonicalOrigin}/images/og/home.png`;
+        } else if (ogImageUrl.startsWith('localdb://') || ogImageUrl.startsWith('blob:') || ogImageUrl.startsWith('data:')) {
+          ogImageUrl = `${canonicalOrigin}/images/og/home.png`;
+        } else if (!ogImageUrl.startsWith('http://') && !ogImageUrl.startsWith('https://')) {
           if (!ogImageUrl.startsWith('/')) {
             ogImageUrl = '/' + ogImageUrl;
           }
@@ -2020,18 +2100,24 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
         ogImageType = 'image/gif';
       }
 
-      const escapeHTML = (str: string) => str ? str.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+      const escapeHTML = (str: string) => str ? str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
 
       // Structured Data (JSON-LD)
       const jsonLdGraph: any[] = [
         {
           '@type': 'EducationalOrganization',
-          '@id': `https://${host}/#organization`,
+          '@id': `${canonicalOrigin}/#organization`,
           'name': 'ForenClue',
-          'url': `https://${host}`,
+          'url': canonicalOrigin,
           'logo': {
             '@type': 'ImageObject',
-            'url': `https://${host}/images/og/home.png`
+            'url': `${canonicalOrigin}/images/og/home.png`
+          },
+          'address': {
+            '@type': 'PostalAddress',
+            'addressLocality': 'Pune',
+            'addressRegion': 'Maharashtra',
+            'addressCountry': 'IN'
           },
           'sameAs': [
             'https://www.youtube.com/@ForenClue',
@@ -2040,13 +2126,13 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
           ]
         },
         {
-          '@type': cleanPath === '/cases' || cleanPath === '/courses' || cleanPath === '/ebooks' ? 'Article' : 'WebPage',
+          '@type': cleanPath.startsWith('/articles') || cleanPath.startsWith('/cases') || cleanPath === '/courses' || cleanPath === '/ebooks' ? 'Article' : 'WebPage',
           '@id': `${absoluteUrl}#webpage`,
           'url': absoluteUrl,
           'name': title,
           'description': summary,
-          'isPartOf': { '@id': `https://${host}/#website` },
-          'publisher': { '@id': `https://${host}/#organization` },
+          'isPartOf': { '@id': `${canonicalOrigin}/#website` },
+          'publisher': { '@id': `${canonicalOrigin}/#organization` },
           'image': ogImageUrl,
           'primaryImageOfPage': {
             '@type': 'ImageObject',
@@ -2059,7 +2145,7 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
       if (cleanPath === '/colleges' || cleanPath === '/college') {
         jsonLdGraph.push({
           '@type': 'FAQPage',
-          '@id': `https://${host}/colleges#faq`,
+          '@id': `${canonicalOrigin}/colleges#faq`,
           'mainEntity': [
             {
               '@type': 'Question',
@@ -2094,12 +2180,15 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
         '@graph': jsonLdGraph
       };
 
+      const isDisallowRoute = ['/dashboard', '/admin', '/profile', '/login'].some(p => cleanPath === p || cleanPath.startsWith(p + '/'));
+      const robotsDirective = isDisallowRoute ? 'noindex, nofollow' : 'index, follow, max-image-preview:large, max-snippet:-1';
+
       // Dynamic meta tags injection
       const metaTags = `
     <!-- Dynamic server-side SEO & social media preview tags -->
     <meta name="description" content="${escapeHTML(summary)}" />
-    <meta name="keywords" content="top forensic science college in delhi, best private msc forensic science college in india, best msc forensic science college under 50,000, best msc forensic science college under 50000, government forensic science colleges in india, nfsu campuses fees, bsc forensic science colleges in india, forenclue colleges" />
-    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+    <meta name="keywords" content="forensic science education india, forensic articles, forensic case studies, virtual forensic laboratory simulations, top forensic science colleges in india, ugc net forensic science, forenclue" />
+    <meta name="robots" content="${robotsDirective}" />
     <link rel="canonical" href="${absoluteUrl}" />
     <link rel="image_src" href="${ogImageUrl}" />
     <meta property="og:site_name" content="ForenClue" />
@@ -2111,7 +2200,7 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:url" content="${absoluteUrl}" />
-    <meta property="og:type" content="${cleanPath === '/cases' || cleanPath === '/courses' || cleanPath === '/ebooks' ? 'article' : 'website'}" />
+    <meta property="og:type" content="${cleanPath.startsWith('/articles') || cleanPath.startsWith('/cases') || cleanPath === '/courses' || cleanPath === '/ebooks' ? 'article' : 'website'}" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@ForenClue" />
     <meta name="twitter:creator" content="@ForenClue" />
@@ -2134,6 +2223,25 @@ ${conversationHistoryText ? `Recent Conversation:\n${conversationHistoryText}\n\
       html = html.replace(/<meta name="robots".*?>/gi, '');
       
       html = html.replace('<head>', `<head>\n${metaTags}`);
+
+      // Inject semantic HTML fallback inside #root so Googlebot and AdSense crawlers always see full semantic <article>, <h1>, <p>, and navigation links on initial HTML response
+      const articleBodyHtml = matchedArticle
+        ? matchedArticle.sections
+            .map(
+              (sec) =>
+                `<section><h2>${escapeHTML(sec.heading)}</h2>${sec.paragraphs
+                  .map((p) => `<p>${escapeHTML(p)}</p>`)
+                  .join('')}</section>`
+            )
+            .join('')
+        : `<p>${escapeHTML(summary)}</p><section><h2>ForenClue Editorial Forensic Science Guides</h2><ul>${FORENSIC_ARTICLES.map(
+            (a) =>
+              `<li><a href="/articles/${escapeHTML(a.slug)}">${escapeHTML(a.title)}</a> — ${escapeHTML(a.metaDescription)}</li>`
+          ).join('')}</ul></section>`;
+
+      const ssrSemanticContent = `<div data-progressive-content="true"><header><nav aria-label="Primary Navigation"><a href="/">ForenClue</a> · <a href="/articles">Articles</a> · <a href="/cases">Cases</a> · <a href="/simulations">Simulations</a> · <a href="/colleges">Colleges</a> · <a href="/ebooks">Ebooks</a> · <a href="/about">About</a> · <a href="/contact">Contact</a> · <a href="/privacy">Privacy Policy</a> · <a href="/terms">Terms</a></nav></header><main><article><h1>${escapeHTML(title.replace(/\s*\|\s*ForenClue.*$/i, ''))}</h1>${articleBodyHtml}</article></main></div>`;
+
+      html = html.replace('<div id="root"></div>', `<div id="root">${ssrSemanticContent}</div>`);
 
 
 

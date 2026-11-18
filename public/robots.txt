@@ -1,33 +1,39 @@
-# Robots.txt for ForenClue (forenclue.in)
-# Designed for maximum SEO crawl efficiency
+# ForenClue Robots.txt
+# Optimized for Google Search Console, Google AdSense (Mediapartners-Google), and AI Crawlers
+
+User-agent: Mediapartners-Google
+Allow: /
 
 User-agent: *
 Allow: /
+Allow: /articles
+Allow: /guides
 Allow: /about
 Allow: /courses
 Allow: /cases
+Allow: /case-studies
+Allow: /ebooks
+Allow: /simulations
+Allow: /quizzes
+Allow: /colleges
+Allow: /college
+Allow: /podcast
+Allow: /webinar
 Allow: /careers
 Allow: /services
-Allow: /ebooks
 Allow: /contact
 Allow: /privacy
 Allow: /terms
-Allow: /webinar
-Allow: /podcast
 Allow: /certificate
-Allow: /colleges
-Allow: /colleges/
-Allow: /quizzes
-Allow: /simulations
 Allow: /volunteers
 Allow: /ambassadors
 
-# Disallow private user/admin zones to save crawl budget
+# Private / Authenticated Routes
 Disallow: /dashboard
 Disallow: /admin
 Disallow: /profile/
 Disallow: /player/
 Disallow: /login
 
-# Provide high-contrast Sitemap path to search robots
+# Sitemaps & Feeds
 Sitemap: https://forenclue.in/sitemap.xml

@@ -11,6 +11,7 @@ import { UpcomingQuizSection } from '@/components/quiz/UpcomingQuizSection';
 import { RecentELibrarySection } from '@/components/library/RecentELibrarySection';
 import { RecentQuizLeaderboardSection } from '@/components/quiz/RecentQuizLeaderboardSection';
 import { LandingColleges3DSlider } from '@/components/colleges/LandingColleges3DSlider';
+import { FeaturedArticlesSection } from '@/components/editorial/FeaturedArticlesSection';
 
 const MotionLink = motion.create(Link);
 
@@ -137,16 +138,16 @@ The ForenClue Curriculum Board
   return (
     <div className="flex flex-col min-h-screen">
       <SEO 
-        title="Your Partner In Forensic Precision"
-        description="Master forensic science, crime scene investigation, fingerprint lifting, digital forensics, and cybersecurity with India's first dedicated, expert-led forensic platform."
-        keywords="forensic science, crime scene investigation, fingerprint analysis, digital forensics, ballistics, bloodstain pattern analysis, forensic training india, docudraft, forenclue"
+        title="Forensic Science & Cybersecurity Publication, Case Studies & Virtual Labs"
+        description="ForenClue is India's dedicated forensic science and cybersecurity educational publication and learning platform based in Pune. Explore peer-reviewed forensic guides, documented case studies, virtual microscope and spectrophotometer labs, and accredited colleges."
+        keywords="forensic science, forensic editorial guides, crime scene investigation, fingerprint analysis, digital forensics, ballistics, forensic toxicology, forensic training india, forenclue"
         canonicalPath=""
         breadcrumbs={[
           { name: 'Home', path: '/' }
         ]}
         faqs={[
-          { question: "What is ForenClue?", answer: "ForenClue is India's first dedicated, expert-led forensic EdTech platform, providing specialized masterclasses, certification courses, solved crime case archives, and study resources." },
-          { question: "Who can enroll in ForenClue courses?", answer: "Students, legal professionals, law enforcement officers, cyber security enthusiasts, and anyone interested in forensic science and crime scene investigation can enroll." }
+          { question: "What is ForenClue?", answer: "ForenClue is India's dedicated, MSME Udyam registered forensic science and cybersecurity publication and EdTech platform based in Pune, providing peer-reviewed forensic guides, documented case studies, 3D virtual laboratory simulations, and academic resources." },
+          { question: "Who can use ForenClue resources?", answer: "B.Sc. and M.Sc. Forensic Science students, UGC-NET/FACT aspirants, university faculty, legal professionals, and cybersecurity researchers can freely access our editorial guides, case studies, and virtual laboratory manuals." }
         ]}
       />
 
@@ -188,7 +189,7 @@ The ForenClue Curriculum Board
             >
               <EditableText 
                 id="home_hero_subtitle" 
-                defaultText="ForenClue is India's dedicated forensic science platform empowering students, educators, and legal professionals with case-based learning, e-books, virtual simulations, and career pathways."
+                defaultText="ForenClue is India's dedicated forensic science platform empowering students, educators, and legal professionals with peer-reviewed forensic guides, case-based learning, e-books, virtual simulations, and career pathways."
                 isTextArea
                 className="text-center"
               />
@@ -196,23 +197,31 @@ The ForenClue Curriculum Board
             
             <motion.div style={{ translateZ: 40 }} className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <MotionLink 
-                to="/cases"
+                to="/articles"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="w-full sm:w-auto px-8 py-4 bg-warning text-crust font-black uppercase tracking-wider rounded-none relative group overflow-hidden transition-all shadow-xl shadow-warning/20"
               >
-                <span className="relative z-10 flex items-center gap-2">
-                  Start Learning <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                <span className="relative z-10 flex items-center justify-center gap-2">
+                  Read Forensic Guides <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </span>
                 <div className="absolute inset-0 bg-warning-dark transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 z-0" />
               </MotionLink>
               <MotionLink 
-                to="/quizzes" 
+                to="/cases"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="w-full sm:w-auto px-8 py-4 bg-surface text-text-main font-bold uppercase tracking-wider rounded-none border border-black/10 dark:border-white/10 hover:border-warning/50 hover:bg-black/5 dark:bg-white/5 transition-all shadow-xl"
               >
-                Explore Quizzes
+                Explore Case Studies
+              </MotionLink>
+              <MotionLink 
+                to="/simulations" 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-full sm:w-auto px-8 py-4 bg-surface text-text-main font-bold uppercase tracking-wider rounded-none border border-black/10 dark:border-white/10 hover:border-warning/50 hover:bg-black/5 dark:bg-white/5 transition-all shadow-xl"
+              >
+                Virtual Labs
               </MotionLink>
             </motion.div>
           </motion.div>
@@ -220,6 +229,9 @@ The ForenClue Curriculum Board
       </section>
 
       <CrimeTape text="INVESTIGATION IN PROGRESS - DO NOT CROSS -" />
+
+      {/* Featured Editorial Forensic Guides & Research Articles (Immediately Below Hero) */}
+      <FeaturedArticlesSection />
 
       {/* 3D Animated Colleges Auto-Slider: "Your City, Your College" */}
       <LandingColleges3DSlider />

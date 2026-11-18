@@ -12,6 +12,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Loader2, CheckCircle, X, BookOpen, User, Users, Clock, ShieldCheck, ChevronRight, Bell, Lock, Unlock, CreditCard, Share2, Heart, Instagram, MessageCircle, Copy, Play, Map, TrendingUp, Search } from "lucide-react";
 import { COURSES, Course } from "@/constants";
 import { buildSocialShareUrl } from '@/lib/socialShare';
+import { normalizePublicBlobUrl } from '@/lib/localFileStore';
 
 declare global {
   interface Window {
@@ -62,7 +63,11 @@ export default function Courses() {
   const allMergedCourses = useMemo(() => {
     const dict: Record<number, Course> = {};
     COURSES.forEach(c => {
-      dict[c.id] = c;
+      dict[c.id] = {
+        ...c,
+        thumbnail: normalizePublicBlobUrl(c.thumbnail) || c.thumbnail,
+        instructorImage: normalizePublicBlobUrl(c.instructorImage) || c.instructorImage,
+      };
     });
     dbCourses.forEach(c => {
       const parsedId = typeof c.id === 'string' ? parseInt(c.id, 10) : c.id;
@@ -71,7 +76,12 @@ export default function Courses() {
         return;
       }
       if (!isNaN(parsedId)) {
-        dict[parsedId] = { ...dict[parsedId], ...c, id: parsedId };
+        const merged = { ...dict[parsedId], ...c, id: parsedId };
+        dict[parsedId] = {
+          ...merged,
+          thumbnail: normalizePublicBlobUrl(merged.thumbnail) || merged.thumbnail,
+          instructorImage: normalizePublicBlobUrl(merged.instructorImage) || merged.instructorImage,
+        };
       }
     });
     return Object.values(dict).sort((a, b) => {

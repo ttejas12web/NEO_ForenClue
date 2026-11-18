@@ -3,6 +3,8 @@ import { getFirestore, getDocs, collection } from 'firebase/firestore';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { formatPolicySafeCaseTitle } from '../src/data/caseSources.ts';
+import { FORENSIC_ARTICLES } from '../src/data/forensicArticles.ts';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,8 +17,39 @@ const UNPUBLISHED_DEMO_CASE_TITLES = new Set([
   'the rg kar medical college tragedy: a forensic investigation',
 ]);
 
-function normalizePublicUrl(value) {
-  return String(value || '').replace(/^https:\/\/www\.forenclue\.in(?=\/|$)/i, 'https://forenclue.in');
+function normalizePublicImageUrl(value, baseUrl = 'https://forenclue.in') {
+  const source = String(value || '').trim();
+  if (!source) return '';
+  if (
+    source.startsWith('data:') ||
+    source.startsWith('blob:') ||
+    source.startsWith('localdb://')
+  ) {
+    return '';
+  }
+  if (source.startsWith('firestore-blob://')) {
+    const blobId = source.slice('firestore-blob://'.length).trim();
+    return /^[a-zA-Z0-9_-]{1,128}$/.test(blobId)
+      ? `${baseUrl}/api/social-image/${encodeURIComponent(blobId)}`
+      : '';
+  }
+  if (source.includes('firestore-blob://')) {
+    const match = source.match(/firestore-blob:\/\/([a-zA-Z0-9_-]{1,128})/);
+    if (match && match[1]) {
+      return `${baseUrl}/api/social-image/${encodeURIComponent(match[1])}`;
+    }
+    return '';
+  }
+  const normalizedHost = source.replace(
+    /^https:\/\/www\.forenclue\.in(?=\/|$)/i,
+    baseUrl
+  );
+  try {
+    const url = new URL(normalizedHost, baseUrl);
+    return ['http:', 'https:'].includes(url.protocol) ? url.toString() : '';
+  } catch {
+    return '';
+  }
 }
 
 function escapeCdata(text) {
@@ -48,21 +81,54 @@ async function generateRssFeed() {
       db = getFirestore(app, config.firestoreDatabaseId);
     }
 
+    // 0. Editorial Forensic Articles
+    FORENSIC_ARTICLES.forEach((article) => {
+      totalItems++;
+      const link = `${baseUrl}/articles/${article.slug}`;
+      const pubDate = formatDate(article.updatedDate || article.publishedDate);
+      const imageUrl = normalizePublicImageUrl(article.heroImage, baseUrl);
+
+      itemsXml += `    <item>\n`;
+      itemsXml += `      <title><![CDATA[${escapeCdata(article.title)}]]></title>\n`;
+      itemsXml += `      <link>${link}</link>\n`;
+      itemsXml += `      <guid isPermaLink="true">${link}</guid>\n`;
+      itemsXml += `      <pubDate>${pubDate}</pubDate>\n`;
+      itemsXml += `      <description><![CDATA[${escapeCdata(article.abstract)}]]></description>\n`;
+      itemsXml += `      <category><![CDATA[${escapeCdata(article.category)}]]></category>\n`;
+      if (imageUrl) {
+        itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/png" />\n`;
+      }
+      itemsXml += `    </item>\n`;
+    });
+
     // 1. Fetch Cases
     if (db) {
       try {
-        const casesSnap = await getDocs(collection(db, "cases"));
+        const casesSnap = await getDocs(collection(db, 'cases'));
         casesSnap.forEach((doc) => {
           const data = doc.data();
           if (data.status === 'draft') return;
-          if (UNPUBLISHED_DEMO_CASE_TITLES.has(String(data.title || '').trim().toLowerCase())) return;
+          if (
+            UNPUBLISHED_DEMO_CASE_TITLES.has(
+              String(data.title || '').trim().toLowerCase()
+            )
+          )
+            return;
           totalItems++;
-          const title = data.title || 'Forensic Case Analysis';
-          const link = `${baseUrl}/cases?case=${doc.id}`;
-          const description = data.summary || data.description || 'Forensic investigation case analysis and findings.';
-          const category = data.category || 'Case Study';
+          const title = formatPolicySafeCaseTitle(
+            data.title || 'Forensic Case Analysis'
+          );
+          const link = `${baseUrl}/cases?case=${encodeURIComponent(doc.id)}`;
+          const description =
+            data.summary ||
+            data.description ||
+            'Forensic investigation case analysis and findings.';
+          const category = 'Case Study';
           const pubDate = formatDate(data.createdAt || data.date);
-          const imageUrl = data.image || data.thumbnail;
+          const imageUrl = normalizePublicImageUrl(
+            data.image || data.thumbnail,
+            baseUrl
+          );
 
           itemsXml += `    <item>\n`;
           itemsXml += `      <title><![CDATA[${escapeCdata(title)}]]></title>\n`;
@@ -72,28 +138,33 @@ async function generateRssFeed() {
           itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
           itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
           if (imageUrl) {
-            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
+            itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
           }
           itemsXml += `    </item>\n`;
         });
       } catch (err) {
-        console.warn("Could not fetch cases for RSS:", err.message);
+        console.warn('Could not fetch cases for RSS:', err.message);
       }
     }
 
     // 2. Fetch Courses
     if (db) {
       try {
-        const coursesSnap = await getDocs(collection(db, "courses"));
+        const coursesSnap = await getDocs(collection(db, 'courses'));
         coursesSnap.forEach((doc) => {
           const data = doc.data();
           totalItems++;
           const title = data.title || 'Forensic Course';
-          const link = `${baseUrl}/courses?id=${doc.id}`;
-          const description = data.description || 'Professional forensic science certification course on ForenClue.';
+          const link = `${baseUrl}/courses?id=${encodeURIComponent(doc.id)}`;
+          const description =
+            data.description ||
+            'Professional forensic science certification course on ForenClue.';
           const category = data.category || 'Courses';
           const pubDate = formatDate(data.createdAt || data.date);
-          const imageUrl = data.thumbnail || data.image;
+          const imageUrl = normalizePublicImageUrl(
+            data.thumbnail || data.image,
+            baseUrl
+          );
 
           itemsXml += `    <item>\n`;
           itemsXml += `      <title><![CDATA[${escapeCdata(title)}]]></title>\n`;
@@ -103,28 +174,42 @@ async function generateRssFeed() {
           itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
           itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
           if (imageUrl) {
-            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
+            itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
           }
           itemsXml += `    </item>\n`;
         });
       } catch (err) {
-        console.warn("Could not fetch courses for RSS:", err.message);
+        console.warn('Could not fetch courses for RSS:', err.message);
       }
     }
 
     // 3. Fetch EBooks
     if (db) {
       try {
-        const ebooksSnap = await getDocs(collection(db, "ebooks"));
+        const ebooksSnap = await getDocs(collection(db, 'ebooks'));
         ebooksSnap.forEach((doc) => {
           const data = doc.data();
+          const titleLower = String(data.title || '').toLowerCase();
+          const authorLower = String(data.author || '').toLowerCase();
+          if (
+            titleLower.includes('careers in forensic science') ||
+            authorLower.includes('mrunmayee bodhe')
+          ) {
+            return;
+          }
           totalItems++;
           const title = data.title || 'Forensic E-Book & Magazine';
-          const link = `${baseUrl}/ebooks?id=${doc.id}`;
-          const description = data.description || data.summary || 'Forensic science literature and research e-books on ForenClue.';
+          const link = `${baseUrl}/ebooks?id=${encodeURIComponent(doc.id)}`;
+          const description =
+            data.description ||
+            data.summary ||
+            'Forensic science literature and research e-books on ForenClue.';
           const category = data.category || 'E-Books';
           const pubDate = formatDate(data.createdAt || data.date);
-          const imageUrl = data.image || data.coverImage;
+          const imageUrl = normalizePublicImageUrl(
+            data.image || data.coverImage,
+            baseUrl
+          );
 
           itemsXml += `    <item>\n`;
           itemsXml += `      <title><![CDATA[${escapeCdata(title)}]]></title>\n`;
@@ -134,102 +219,13 @@ async function generateRssFeed() {
           itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
           itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
           if (imageUrl) {
-            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
+            itemsXml += `      <enclosure url="${imageUrl.replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
           }
           itemsXml += `    </item>\n`;
         });
       } catch (err) {
-        console.warn("Could not fetch ebooks for RSS:", err.message);
+        console.warn('Could not fetch ebooks for RSS:', err.message);
       }
-    }
-
-    // 4. Fetch Podcasts
-    if (db) {
-      try {
-        const podcastsSnap = await getDocs(collection(db, "podcasts"));
-        podcastsSnap.forEach((doc) => {
-          const data = doc.data();
-          totalItems++;
-          const title = data.title || 'The ForenClue Podcast Episode';
-          const link = `${baseUrl}/podcast`;
-          const description = data.description || 'Deep dive into forensic science, crime scene investigation, and digital forensics.';
-          const category = 'Podcast';
-          const pubDate = formatDate(data.date || data.createdAt);
-          const imageUrl = data.image || data.thumbnail || `${baseUrl}/og/podcast.png`;
-
-          itemsXml += `    <item>\n`;
-          itemsXml += `      <title><![CDATA[${escapeCdata(title)}]]></title>\n`;
-          itemsXml += `      <link>${link}</link>\n`;
-          itemsXml += `      <guid isPermaLink="false">podcast-${doc.id}</guid>\n`;
-          itemsXml += `      <pubDate>${pubDate}</pubDate>\n`;
-          itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
-          itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
-          if (imageUrl) {
-            itemsXml += `      <enclosure url="${normalizePublicUrl(imageUrl).replace(/&/g, '&amp;')}" length="0" type="image/jpeg" />\n`;
-          }
-          itemsXml += `    </item>\n`;
-        });
-      } catch (err) {
-        console.warn("Could not fetch podcasts for RSS:", err.message);
-      }
-    }
-
-    // 5. Fetch Webinars
-    if (db) {
-      try {
-        const webinarsSnap = await getDocs(collection(db, "webinars"));
-        webinarsSnap.forEach((doc) => {
-          const data = doc.data();
-          totalItems++;
-          const title = data.title || 'Forensic Science Webinar';
-          const link = `${baseUrl}/webinar`;
-          const description = data.description || 'Interactive masterclass and expert-led forensic webinar.';
-          const category = 'Webinar';
-          const pubDate = formatDate(data.date || data.createdAt);
-
-          itemsXml += `    <item>\n`;
-          itemsXml += `      <title><![CDATA[${escapeCdata(title)}]]></title>\n`;
-          itemsXml += `      <link>${link}</link>\n`;
-          itemsXml += `      <guid isPermaLink="false">webinar-${doc.id}</guid>\n`;
-          itemsXml += `      <pubDate>${pubDate}</pubDate>\n`;
-          itemsXml += `      <description><![CDATA[${escapeCdata(description)}]]></description>\n`;
-          itemsXml += `      <category><![CDATA[${escapeCdata(category)}]]></category>\n`;
-          itemsXml += `    </item>\n`;
-        });
-      } catch (err) {
-        console.warn("Could not fetch webinars for RSS:", err.message);
-      }
-    }
-
-    // Default static items if total dynamic items are zero or low
-    if (totalItems === 0) {
-      itemsXml += `    <item>\n`;
-      itemsXml += `      <title><![CDATA[Introduction to Forensic Science]]></title>\n`;
-      itemsXml += `      <link>${baseUrl}/courses?id=1</link>\n`;
-      itemsXml += `      <guid isPermaLink="true">${baseUrl}/courses?id=1</guid>\n`;
-      itemsXml += `      <pubDate>${nowUtc}</pubDate>\n`;
-      itemsXml += `      <description><![CDATA[Master the fundamentals of forensic science, physical evidence handling, crime scene analysis, and lab techniques on ForenClue.]]></description>\n`;
-      itemsXml += `      <category><![CDATA[Courses]]></category>\n`;
-      itemsXml += `    </item>\n`;
-
-      itemsXml += `    <item>\n`;
-      itemsXml += `      <title><![CDATA[Digital Forensics & Incident Response]]></title>\n`;
-      itemsXml += `      <link>${baseUrl}/courses?id=2</link>\n`;
-      itemsXml += `      <guid isPermaLink="true">${baseUrl}/courses?id=2</guid>\n`;
-      itemsXml += `      <pubDate>${nowUtc}</pubDate>\n`;
-      itemsXml += `      <description><![CDATA[Learn digital evidence collection, file system analysis, network traffic forensics, and malware incident response.]]></description>\n`;
-      itemsXml += `      <category><![CDATA[Courses]]></category>\n`;
-      itemsXml += `    </item>\n`;
-
-      itemsXml += `    <item>\n`;
-      itemsXml += `      <title><![CDATA[The ForenClue Podcast - Forensic Investigation Insights]]></title>\n`;
-      itemsXml += `      <link>${baseUrl}/podcast</link>\n`;
-      itemsXml += `      <guid isPermaLink="true">${baseUrl}/podcast</guid>\n`;
-      itemsXml += `      <pubDate>${nowUtc}</pubDate>\n`;
-      itemsXml += `      <description><![CDATA[Tune in to expert interviews, real crime analysis, cyber security breaches, and forensic technology breakthroughs.]]></description>\n`;
-      itemsXml += `      <category><![CDATA[Podcast]]></category>\n`;
-      itemsXml += `    </item>\n`;
-      totalItems = 3;
     }
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -237,8 +233,8 @@ async function generateRssFeed() {
   <channel>
     <title>ForenClue | Forensic Science EdTech &amp; Investigation Intelligence</title>
     <link>${baseUrl}</link>
-    <description>India's premier forensic science edtech platform. Case studies, forensic analysis, cybersecurity, crime scene investigation, podcasts, masterclasses, and research e-books.</description>
-    <language>en-us</language>
+    <description>India's premier forensic science and cybersecurity publication and learning platform based in Pune. Peer-reviewed forensic guides, documented case studies, virtual laboratories, and research e-books.</description>
+    <language>en-in</language>
     <lastBuildDate>${nowUtc}</lastBuildDate>
     <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml" />
     <image>
@@ -257,9 +253,8 @@ ${itemsXml}  </channel>
     fs.writeFileSync(path.join(publicDir, 'rss.xml'), xml);
     console.log(`✅ Successfully generated /public/rss.xml with ${totalItems} feed items.`);
     process.exit(0);
-
   } catch (error) {
-    console.warn("Failed to generate RSS feed:", error?.message || error);
+    console.warn('Failed to generate RSS feed:', error?.message || error);
     process.exit(0);
   }
 }

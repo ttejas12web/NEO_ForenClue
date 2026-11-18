@@ -6,7 +6,7 @@
   "main": "server.ts",
   "scripts": {
     "sitemap": "tsx scripts/generate-sitemap.mjs",
-    "rss": "node scripts/generate-rss.mjs",
+    "rss": "tsx scripts/generate-rss.mjs",
     "og-images": "node scripts/generate-og-images.mjs",
     "verify-og": "node scripts/verify-og-images.mjs",
     "dev": "tsx server.ts",
